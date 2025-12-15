@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>About Us – Duel_mind Arena</title>
+
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
+
+  <!-- App CSS -->
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="../theme.js"></script>
+
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs/%3E%3Crect width='64' height='64' rx='12' fill='%230f1115'/%3E%3Cpath d='M20 18h24l-6 10 6 10H20l6-10-6-10z' fill='%238ab4ff'/%3E%3C/svg%3E">
+
+  <meta name="theme-color" content="#0f1115">
+  <meta name="description" content="About Duel_mind Arena – Learn about our mission, vision, and team.">
+
+  <style>
+    /* About Page Specific Styles */
+    .about-page {
+      min-height: 100vh;
+      background:
+        radial-gradient(1200px 600px at 60% 40%, rgba(60,70,140,.16), transparent 70%),
+        linear-gradient(180deg, #050608 0%, #080a0f 45%, #0f1115 100%);
+      background-color: var(--bg-0);
+      transition: background-color 0.3s ease;
+    }
+
+    [data-theme="light"] .about-page {
+      background:
+        radial-gradient(1200px 600px at 60% 40%, rgba(59,92,255,.08), transparent 70%),
+        linear-gradient(180deg, #f8f8fa 0%, #ffffff 100%);
+      background-color: #ffffff;
+    }
+
+    .about-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .about-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-1);
+      font-weight: 600;
+      font-size: 14px;
+      text-decoration: none;
+    }
+
+    .about-logo i {
+      font-size: 18px;
+      color: var(--text-3);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-3);
+      font-size: 18px;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 8px;
+      transition: background var(--fast), color var(--fast);
+    }
+
+    .header-btn:hover {
+      background: var(--bg-2);
+      color: var(--text-1);
+    }
+
+    .about-content {
+      max-width: 560px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+
+    .about-title {
+      font-size: 32px;
+      font-weight: 600;
+      color: var(--text-1);
+      margin: 0 0 20px;
+    }
+
+    .about-description {
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--text-2);
+      margin: 0 0 28px;
+    }
+
+    .about-description a {
+      color: var(--brand);
+      text-decoration: none;
+    }
+
+    .about-description a:hover {
+      text-decoration: underline;
+    }
+
+    .about-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 40px;
+    }
+
+    .about-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      background: transparent;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      color: var(--text-2);
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: background var(--fast), border-color var(--fast), color var(--fast);
+    }
+
+    .about-btn:hover {
+      background: var(--bg-2);
+      border-color: var(--text-3);
+      color: var(--text-1);
+    }
+
+    .about-btn i {
+      font-size: 16px;
+    }
+
+    /* Mission/Vision Card */
+    .mission-card {
+      background: var(--bg-1);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 24px;
+    }
+
+    .mission-item {
+      display: flex;
+      gap: 20px;
+      padding: 20px 0;
+    }
+
+    .mission-item:first-child {
+      padding-top: 0;
+    }
+
+    .mission-item:last-child {
+      padding-bottom: 0;
+    }
+
+    .mission-item:not(:last-child) {
+      border-bottom: 1px solid var(--line);
+    }
+
+    .mission-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--bg-2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .mission-icon i {
+      font-size: 22px;
+      color: var(--text-2);
+    }
+
+    .mission-content h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-1);
+      margin: 0 0 8px;
+    }
+
+    .mission-content p {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text-2);
+      margin: 0;
+    }
+
+    /* Info Sections */
+    .info-section {
+      padding: 24px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .info-section h4 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-1);
+      margin: 0 0 8px;
+    }
+
+    .info-section p {
+      font-size: 14px;
+      color: var(--text-2);
+      margin: 0 0 12px;
+      line-height: 1.5;
+    }
+
+    .info-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .info-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--brand);
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: opacity var(--fast);
+    }
+
+    .info-link:hover {
+      opacity: 0.8;
+    }
+
+    .info-link i {
+      font-size: 16px;
+    }
+
+    /* Footer */
+    .about-footer {
+      border-top: 1px solid var(--line);
+      padding: 32px 24px;
+      text-align: center;
+    }
+
+    .footer-social {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .footer-social a {
+      color: var(--text-3);
+      font-size: 20px;
+      transition: color var(--fast);
+    }
+
+    .footer-social a:hover {
+      color: var(--text-1);
+    }
+
+    .footer-legal {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+    }
+
+    .footer-legal a {
+      color: var(--text-3);
+      font-size: 12px;
+      text-decoration: none;
+      transition: color var(--fast);
+    }
+
+    .footer-legal a:hover {
+      color: var(--text-2);
+    }
+  </style>
+</head>
+<body>
+  <div class="about-page">
+    <!-- Header -->
+    <header class="about-header">
+      <a href="../index.html" class="about-logo">
+        <i class="ri-layout-grid-fill"></i>
+        <span>LMArena</span>
+      </a>
+      <div class="header-actions">
+        <a href="../index.html" class="header-btn" title="New Chat"><i class="ri-edit-line"></i></a>
+        <button class="header-btn" title="More"><i class="ri-trophy-line"></i></button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="about-content">
+      <h1 class="about-title">About Us</h1>
+      
+      <p class="about-description">
+        Created by researchers from <a href="#">UC Berkeley</a>, LMArena is an open platform 
+        where everyone can easily access, explore and interact with the world's 
+        leading AI models. By comparing them side by side and casting votes for 
+        the better response, the community helps shape a public leaderboard, 
+        making AI progress more transparent, and grounded in real-world usage.
+      </p>
+
+      <div class="about-buttons">
+        <a href="#" class="about-btn">
+          <i class="ri-article-line"></i>
+          <span>View Blog</span>
+        </a>
+        <a href="../how-it-works/index.html" class="about-btn">
+          <i class="ri-user-line"></i>
+          <span>How it works</span>
+        </a>
+        <a href="#" class="about-btn">
+          <i class="ri-question-answer-line"></i>
+          <span>FAQ</span>
+        </a>
+      </div>
+
+      <!-- Mission & Vision Card -->
+      <div class="mission-card">
+        <div class="mission-item">
+          <div class="mission-icon">
+            <i class="ri-heart-line"></i>
+          </div>
+          <div class="mission-content">
+            <h3>Our Mission</h3>
+            <p>To bring the best AI models to everyone, and to improve them through real-world community evaluations.</p>
+          </div>
+        </div>
+        <div class="mission-item">
+          <div class="mission-icon">
+            <i class="ri-eye-line"></i>
+          </div>
+          <div class="mission-content">
+            <h3>Our Vision</h3>
+            <p>To create an open space to try all the best AIs and shape their future through collective feedback.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Info Sections -->
+      <div class="info-section">
+        <h4>Join the Team</h4>
+        <p>Check out open roles on our job board.</p>
+        <div class="info-links">
+          <a href="#" class="info-link">Open Roles <i class="ri-arrow-right-up-line"></i></a>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <h4>Join The Community</h4>
+        <p>Jump in to connect, discuss, and shape transparent AI evaluations together</p>
+        <div class="info-links">
+          <a href="#" class="info-link"><i class="ri-discord-fill"></i> Discord</a>
+          <a href="#" class="info-link"><i class="ri-twitter-x-line"></i> X/Twitter</a>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <h4>Feedback</h4>
+        <p>Send us your feedback</p>
+        <div class="info-links">
+          <a href="#" class="info-link"><i class="ri-bug-line"></i> Send Bugs <i class="ri-arrow-right-up-line"></i></a>
+          <a href="#" class="info-link"><i class="ri-feedback-line"></i> Feedback Form <i class="ri-arrow-right-up-line"></i></a>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="about-footer">
+      <div class="footer-social">
+        <a href="#" title="Discord"><i class="ri-discord-fill"></i></a>
+        <a href="#" title="X/Twitter"><i class="ri-twitter-x-line"></i></a>
+        <a href="#" title="GitHub"><i class="ri-github-fill"></i></a>
+      </div>
+      <div class="footer-legal">
+        <a href="#">Terms of Use</a>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Cookie Policy</a>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>

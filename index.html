@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <!--
+    Duel_mind Arena — Pixel-close "same to same" dark UI clone.
+    Author: You
+    Notes:
+    - Uses Inter font + Remix Icons via CDN (swap if you prefer local assets).
+  -->
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Duel_mind Arena – Battle</title>
+
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
+
+  <!-- App CSS -->
+  <link rel="stylesheet" href="styles.css" />
+  <script src="theme.js"></script>
+
+  <!-- Favicon (minimal) -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs/%3E%3Crect width='64' height='64' rx='12' fill='%230f1115'/%3E%3Cpath d='M20 18h24l-6 10 6 10H20l6-10-6-10z' fill='%238ab4ff'/%3E%3C/svg%3E">
+
+  <!-- Social tags (optional) -->
+  <meta name="theme-color" content="#0f1115">
+  <meta name="description" content="Duel_mind Arena – Find the best AI for you. Compare answers across top AI models and power the public leaderboard.">
+</head>
+<body>
+  <div class="app">
+    <!-- ========== SIDEBAR ========== -->
+    <aside class="sidebar" id="sidebar" aria-label="Sidebar">
+      <div class="brand-wrapper">
+        <div class="brand-row">
+          <button class="brand" id="brandBtn" title="LMArena" tabindex="0">
+            <span class="brand-logo"><i class="ri-layout-grid-fill grid-icon"></i><i class="ri-menu-unfold-line toggle-icon"></i></span>
+            <span class="brand-text">LMArena</span>
+            <span class="chev"><i class="ri-arrow-up-s-line"></i></span>
+          </button>
+          <button class="sidebar-toggle-right" id="sidebarToggleRight" aria-label="Toggle sidebar" title="Toggle sidebar">
+            <i class="ri-menu-fold-line"></i>
+          </button>
+        </div>
+        
+        <!-- Brand Dropdown Menu -->
+        <div class="brand-menu" id="brandMenu">
+          <a href="about/index.html" class="brand-menu-item">
+            <i class="ri-group-line"></i>
+            <span>About Us</span>
+          </a>
+          <a href="how-it-works/index.html" class="brand-menu-item">
+            <i class="ri-lightbulb-line"></i>
+            <span>How it Works</span>
+          </a>
+          <a href="#" class="brand-menu-item">
+            <i class="ri-question-line"></i>
+            <span>Help Center</span>
+          </a>
+          <div class="brand-menu-divider"></div>
+          <a href="careers/index.html" class="brand-menu-item">
+            <i class="ri-user-add-line"></i>
+            <span>Join the Team</span>
+          </a>
+          <a href="#" class="brand-menu-item">
+            <i class="ri-discord-fill"></i>
+            <span>Join Discord</span>
+          </a>
+          <div class="brand-menu-divider"></div>
+          <div class="brand-menu-item theme-row">
+            <span class="theme-label">Theme</span>
+            <div class="theme-switcher">
+              <button class="theme-btn" data-theme="system" title="System"><i class="ri-computer-line"></i></button>
+              <button class="theme-btn" data-theme="light" title="Light"><i class="ri-sun-line"></i></button>
+              <button class="theme-btn active" data-theme="dark" title="Dark"><i class="ri-moon-line"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn" id="newChatBtn" aria-label="New Chat">
+        <i class="ri-edit-line"></i><span>New Chat</span>
+      </button>
+
+      <button class="navlink" id="leaderboardBtn" aria-label="Leaderboard">
+        <i class="ri-trophy-line"></i><span>Leaderboard</span>
+      </button>
+
+      <div class="section-label">Recent Chats</div>
+      <div id="threadList" class="thread-list">
+        <!-- Threads loaded dynamically -->
+      </div>
+
+      <div class="sidebar-spacer"></div>
+
+      <!-- Account section at bottom -->
+      <div class="account-section" id="accountSection" style="display: none;">
+        <button class="account-btn" id="accountBtn">
+          <span class="account-avatar" id="accountAvatar">R</span>
+          <span class="account-info-text">
+            <span class="account-name" id="accountName">User</span>
+            <span class="account-fullname" id="accountFullName">First Last</span>
+          </span>
+        </button>
+      </div>
+
+      <div class="legal">
+        <a href="#" rel="nofollow">Terms of Use</a>
+        <a href="#" rel="nofollow">Privacy Policy</a>
+        <a href="#" rel="nofollow">Cookies</a>
+      </div>
+    </aside>
+
+    <!-- Leaderboard Modal -->
+    <div class="modal-overlay" id="leaderboardModal">
+      <div class="modal-content modal-lg">
+        <div class="modal-header">
+          <h3><i class="ri-trophy-line"></i> Model Leaderboard</h3>
+          <button class="modal-close" id="leaderboardClose"><i class="ri-close-line"></i></button>
+        </div>
+        <div class="modal-body">
+          <div id="leaderboardContent" class="leaderboard-content">
+            <div class="leaderboard-loading">Loading stats...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Account Modal -->
+    <div class="modal-overlay" id="accountModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>My Account</h3>
+          <button class="modal-close" id="modalClose"><i class="ri-close-line"></i></button>
+        </div>
+        <div class="modal-body">
+          <div class="account-info">
+            <div class="account-avatar-large" id="modalAvatar">R</div>
+            <div class="account-details">
+              <p class="account-fullname" id="modalFullName">User Name</p>
+              <p class="account-email" id="modalEmail">user@example.com</p>
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button class="modal-btn" id="modalLogout">
+              <i class="ri-logout-box-line"></i>
+              <span>Sign Out</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== MAIN ====== ==== -->
+    <main class="main">
+      <!-- Top bar -->
+      <header class="topbar" aria-label="Top bar">
+        <div class="topbar-inner">
+          <div class="crumb">
+            <i class="ri-sword-line"></i>
+            <button class="crumb-dd" id="viewSwitcher" aria-haspopup="menu" aria-expanded="false">
+              <span>Battle</span>
+              <i class="ri-arrow-down-s-line caret" aria-hidden="true"></i>
+            </button>
+          </div>
+          <div class="right-actions">
+            <span class="api-status" id="apiStatus" role="status" aria-live="polite" title="API status">
+              <span class="dot" aria-hidden="true"></span>
+              <span class="label">API</span>
+            </span>
+            <a href="login/index.html" class="login" id="loginBtn">Login</a>
+            <button class="ghost" title="More options" aria-label="More options"><i class="ri-more-2-fill"></i></button>
+          </div>
+        </div>
+
+        <!-- Battle mode dropdown menu -->
+        <div class="menu" id="viewMenu" role="menu" aria-hidden="true">
+          <button class="menu-item" role="menuitem" data-mode="battle">
+            <div class="menu-item-content">
+              <div class="menu-item-text">
+                <span class="menu-item-title">Battle</span>
+                <span class="menu-item-desc">Battle with 2 anonymous models</span>
+              </div>
+              <i class="ri-sword-line"></i>
+            </div>
+          </button>
+          <button class="menu-item" role="menuitem" data-mode="sidebyside">
+            <div class="menu-item-content">
+              <div class="menu-item-text">
+                <span class="menu-item-title">Side by Side</span>
+                <span class="menu-item-desc">Compare 2 models of your choice</span>
+              </div>
+              <i class="ri-layout-column-line"></i>
+            </div>
+          </button>
+          <button class="menu-item" role="menuitem" data-mode="direct">
+            <div class="menu-item-content">
+              <div class="menu-item-text">
+                <span class="menu-item-title">Direct Chat</span>
+                <span class="menu-item-desc">Chat with one model at a time</span>
+              </div>
+              <i class="ri-send-plane-line"></i>
+            </div>
+          </button>
+        </div>
+      </header>
+
+      <!-- Hero + Prompt -->
+      <section class="center">
+        <div class="logo-row" aria-hidden="true">
+          <!-- Simplified brand marks for major AI providers -->
+          <span class="logo-chip logo-g">G</span>
+          <span class="logo-chip logo-perp">𝒫</span>
+          <span class="logo-chip logo-openai">◎</span>
+          <span class="logo-chip logo-anthropic">A</span>
+          <span class="logo-chip logo-meta">M</span>
+          <span class="logo-chip logo-xai">x</span>
+          <span class="logo-chip logo-others">☆</span>
+        </div>
+
+        <h1 class="title">Find the best AI for you</h1>
+        <p class="subtitle">
+          Compare answers across top AI models, share your feedback and power our
+          public <a href="#">leaderboard</a>
+        </p>
+
+        <div class="prompt-wrap" role="search">
+          <div class="halo"></div>
+          <div class="prompt">
+            <div class="model-picker" id="modelPicker" hidden>
+              <div class="model-picker-field">
+                <label class="model-picker-label" for="model1Select">Model A</label>
+                <select id="model1Select" class="model-select" aria-label="Select Model A" disabled>
+                  <option value="">Login to load models</option>
+                </select>
+              </div>
+              <div class="model-picker-field">
+                <label class="model-picker-label" for="model2Select">Model B</label>
+                <select id="model2Select" class="model-select" aria-label="Select Model B" disabled>
+                  <option value="">Login to load models</option>
+                </select>
+              </div>
+              <button type="button" class="model-swap" id="swapModelsBtn" aria-label="Swap models" title="Swap models" disabled>
+                <i class="ri-arrow-left-right-line"></i>
+              </button>
+            </div>
+            <div class="battle-mode-selector" id="battleModeSelector" hidden>
+              <span class="battle-mode-label">Model Selection:</span>
+              <button type="button" class="battle-mode-btn active" id="randomPairBtn" data-mode="random"><i class="ri-shuffle-line"></i><span>Random Pair</span></button>
+              <button type="button" class="battle-mode-btn" id="topperModelBtn" data-mode="topper"><i class="ri-trophy-line"></i><span>Topper + Random</span></button>
+            </div>
+            <div class="model-picker-hint" id="modelPickerHint" hidden></div>
+            <textarea id="promptInput" placeholder="Ask anything..." aria-label="Ask anything" rows="1"></textarea>
+            <div class="tools-row">
+              <div class="tools" aria-hidden="true">
+                <button class="tool" title="Add"><i class="ri-add-line"></i></button>
+                <button class="tool" title="Web"><i class="ri-global-line"></i></button>
+                <button class="tool" title="Upload image"><i class="ri-image-line"></i></button>
+                <button class="tool" title="Options"><i class="ri-code-s-slash-line"></i></button>
+              </div>
+              <button id="sendBtn" class="send" title="Send" aria-label="Send prompt"><i class="ri-arrow-up-line"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Toast -->
+        <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+        <!-- Arena Results -->
+        <section class="arena-results" id="arenaResults" hidden>
+          <div class="arena-grid" id="arenaGrid"></div>
+          <div class="arena-feedback" id="arenaFeedback" hidden></div>
+          <div class="arena-voting" id="arenaVoting" hidden>
+            <p class="voting-prompt">Which response was better?</p>
+            <div class="voting-buttons">
+              <button class="vote-btn" data-vote="agent1"><i class="ri-thumb-up-line"></i> Agent 1</button>
+              <button class="vote-btn vote-tie" data-vote="tie"><i class="ri-equal-line"></i> Tie</button>
+              <button class="vote-btn" data-vote="agent2"><i class="ri-thumb-up-line"></i> Agent 2</button>
+            </div>
+          </div>
+          <div class="arena-footer" id="arenaFooter" hidden></div>
+        </section>
+
+        <!-- Single Chat Result -->
+        <section class="chat-results" id="chatResults" hidden>
+          <div id="chatMessages" class="chat-messages"></div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <!-- Supabase JS client -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  
+  <!-- App JS -->
+  <script src="app.js"></script>
+  
+  <script>
+    // Supabase config (same as login page)
+    const SUPABASE_URL = 'https://calqfzajyidkdzbaswjp.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhbHFmemFqeWlka2R6YmFzd2pwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyNzMwODMsImV4cCI6MjA3OTg0OTA4M30.ptXyUNCcAhGi9u2kVDHOxSBvQv0W72S5HHqkIFXQS08';
+    
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    window.supabaseClient = supabase;
+
+    window.DUALMIND_API_BASE = window.DUALMIND_API_BASE || 'http://localhost:51852';
+    
+    const loginBtn = document.getElementById('loginBtn');
+        const accountSection = document.getElementById('accountSection');
+    const accountBtn = document.getElementById('accountBtn');
+    const accountAvatar = document.getElementById('accountAvatar');
+    const accountName = document.getElementById('accountName');
+    const accountModal = document.getElementById('accountModal');
+    const modalClose = document.getElementById('modalClose');
+    const modalAvatar = document.getElementById('modalAvatar');
+    const modalFullName = document.getElementById('modalFullName');
+    const modalEmail = document.getElementById('modalEmail');
+    const modalLogout = document.getElementById('modalLogout');
+    const accountFullName = document.getElementById('accountFullName');
+    
+    // Update UI with user info
+    function updateUserUI(user) {
+      if (user) {
+        const metadata = user.user_metadata || {};
+        const firstName = metadata.first_name || '';
+        const lastName = metadata.last_name || '';
+        const fullName = metadata.full_name || (firstName + ' ' + lastName).trim() || user.email.split('@')[0];
+        const email = user.email;
+        const initial = (firstName || email || 'U').charAt(0).toUpperCase();
+        
+        // Sidebar account (next to avatar)
+        accountAvatar.textContent = initial;
+        accountName.textContent = email.length > 18 ? email.substring(0, 18) + '...' : email;
+        accountFullName.textContent = fullName;
+        accountSection.style.display = 'block';
+        
+        // Modal
+        modalAvatar.textContent = initial;
+        modalFullName.textContent = fullName;
+        modalEmail.textContent = email;
+        
+        // Hide login button in topbar
+        loginBtn.style.display = 'none';
+      } else {
+        accountSection.style.display = 'none';
+        loginBtn.style.display = 'inline-block';
+      }
+    }
+    
+    // Check auth state on page load
+    async function checkAuth() {
+      const { data: { session } } = await supabase.auth.getSession();
+      updateUserUI(session?.user || null);
+    }
+    
+    // Handle logout (modal button)
+    modalLogout.addEventListener('click', async () => {
+      await supabase.auth.signOut();
+      updateUserUI(null);
+      accountModal.classList.remove('open');
+    });
+    
+    // Open account modal
+    accountBtn.addEventListener('click', () => {
+      accountModal.classList.add('open');
+    });
+    
+    // Close modal
+    modalClose.addEventListener('click', () => {
+      accountModal.classList.remove('open');
+    });
+    
+    // Close modal on overlay click
+    accountModal.addEventListener('click', (e) => {
+      if (e.target === accountModal) {
+        accountModal.classList.remove('open');
+      }
+    });
+    
+    // Close modal on Escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        accountModal.classList.remove('open');
+      }
+    });
+    
+    // Listen for auth state changes
+    supabase.auth.onAuthStateChange((event, session) => {
+      updateUserUI(session?.user || null);
+    });
+    
+    // Check auth on load
+    checkAuth();
+  </script>
+</body>
+</html>
