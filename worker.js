@@ -2,11 +2,11 @@ import indexHtml from "./index.html";
 import styleCss from "./style.css";
 import scriptJs from "./script.js";
 
-import aboutIndex from "./about/index.html";
-import careersIndex from "./careers/index.html";
-import howItWorksIndex from "./how-it-works/index.html";
-import loginIndex from "./login/index.html";
-import loginStyle from "./login/style.css";
+import aboutIndex from "./about/about/index.html";
+import careersIndex from "./careers/careers/index.html";
+import howItWorksIndex from "./how-it-works/how-it-works/index.html";
+import loginIndex from "./login/login/index.html";
+import loginStyle from "./login/login/style.css";
 
 export default {
   fetch(request) {
