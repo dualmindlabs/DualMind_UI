@@ -1,6 +1,5 @@
 import indexHtml from "./index.html";
 import styleCss from "./style.css";
-import scriptJs from "./script.js";
 
 import aboutIndex from "./about/about/index.html";
 import careersIndex from "./careers/careers/index.html";
@@ -15,12 +14,6 @@ export default {
     if (url.pathname === "/style.css") {
       return new Response(styleCss, {
         headers: { "content-type": "text/css" },
-      });
-    }
-
-    if (url.pathname === "/script.js") {
-      return new Response(scriptJs, {
-        headers: { "content-type": "application/javascript" },
       });
     }
 
