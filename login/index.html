@@ -281,8 +281,9 @@
     // Config
     const SUPABASE_URL = 'https://calqfzajyidkdzbaswjp.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhbHFmemFqeWlka2R6YmFzd2pwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyNzMwODMsImV4cCI6MjA3OTg0OTA4M30.ptXyUNCcAhGi9u2kVDHOxSBvQv0W72S5HHqkIFXQS08';
+    const SERVER_URL = 'https://dualmind-arena-cgh0cvdfhkbgatba.uaenorth-01.azurewebsites.net';
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // State
     let isLogin = true;
@@ -346,8 +347,28 @@
 
       try {
         if (isLogin) {
-          const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+          const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
           if (error) throw error;
+
+          // Check if admin
+          const { data: session } = await supabaseClient.auth.getSession();
+          if (session) {
+            try {
+              const response = await fetch(`${SERVER_URL}/api/admin/check`, {
+                headers: {
+                  'Authorization': `Bearer ${session.access_token}`
+                }
+              });
+              const result = await response.json();
+              if (result.success && result.is_admin) {
+                window.location.href = '../../DualMind_Admi1/UI/admin.html';
+                return;
+              }
+            } catch (checkError) {
+              console.log('Admin check failed, proceeding to main app:', checkError);
+            }
+          }
+
           window.location.href = '../index.html';
         } else {
           // Signup
@@ -355,7 +376,7 @@
           const first = parts[0];
           const last = parts.slice(1).join(' ') || '';
 
-          const { data, error } = await supabase.auth.signUp({
+          const { data, error } = await supabaseClient.auth.signUp({
             email,
             password,
             options: {
@@ -390,7 +411,7 @@
     // Google Login
     googleBtn.addEventListener('click', async () => {
       try {
-        const { data, error } = await supabase.auth.signInWithOAuth({
+        const { data, error } = await supabaseClient.auth.signInWithOAuth({
           provider: 'google',
           options: {
             redirectTo: window.location.origin + '/index.html'

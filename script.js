@@ -137,7 +137,7 @@ function escapeHtml(str) {
 }
 
 function getApiBase() {
-  return (window.DUALMIND_API_BASE || 'http://localhost:51852').replace(/\/$/, '');
+  return (window.DUALMIND_API_BASE || 'http://localhost:65476').replace(/\/$/, '');
 }
 
 function setApiOfflineClass(isOffline) {
