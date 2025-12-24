@@ -52,6 +52,7 @@ let authListenerBound = false;
 let isSending = false;
 let isVoting = false;
 const THREAD_ID_STORAGE_KEY = 'dualmind.threadId';
+const LEADERBOARD_CACHE_KEY = 'dualmind.leaderboard.cache';
 
 let lastRequest = null;
 
@@ -69,6 +70,107 @@ function showToast(message) {
   toast.textContent = message;
   toast.classList.add('show');
   setTimeout(() => toast.classList.remove('show'), 1600);
+}
+
+function getCachedLeaderboard() {
+  try {
+    const raw = localStorage.getItem(LEADERBOARD_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed?.timestamp || !parsed?.items) return null;
+    // optional: expire after 5 minutes
+    if (Date.now() - parsed.timestamp > 5 * 60 * 1000) return null;
+    return parsed.items;
+  } catch {
+    return null;
+  }
+}
+
+function setCachedLeaderboard(items) {
+  try {
+    localStorage.setItem(
+      LEADERBOARD_CACHE_KEY,
+      JSON.stringify({ timestamp: Date.now(), items })
+    );
+  } catch {
+    // ignore storage errors
+  }
+}
+
+function renderLeaderboardData(items) {
+  if (!leaderboardContent) return false;
+  if (!Array.isArray(items) || !items.length) {
+    renderLeaderboardState({
+      title: 'No stats yet',
+      subtitle: 'Vote in Battle mode to populate the leaderboard.',
+      actionLabel: 'Refresh'
+    });
+    return false;
+  }
+
+  const totals = items.reduce((acc, it) => {
+    acc.wins += Number(it.totalWins || 0);
+    acc.responses += Number(it.totalResponses || 0);
+    return acc;
+  }, { wins: 0, responses: 0 });
+
+  leaderboardContent.innerHTML = `
+    <div class="leaderboard-shell">
+      <div class="leaderboard-top">
+        <div class="leaderboard-top-left">
+          <div class="leaderboard-title">Model Leaderboard</div>
+          <div class="leaderboard-subtitle">${escapeHtml(String(items.length))} models · ${escapeHtml(String(totals.wins))} wins · ${escapeHtml(String(totals.responses))} responses</div>
+        </div>
+        <button class="leaderboard-refresh" type="button">
+          <i class="ri-refresh-line"></i><span>Refresh</span>
+        </button>
+      </div>
+
+      <div class="leaderboard-table-wrap">
+        <table class="leaderboard-table leaderboard-table-premium">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Model</th>
+              <th>Win rate</th>
+              <th>Wins</th>
+              <th>Responses</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${items.map((item, i) => {
+              const rank = i + 1;
+              const modelName = item.modelName || 'Unknown';
+              const provider = item.providerName || '';
+              const winRate = Number(item.winRate || 0);
+              const wins = Number(item.totalWins || 0);
+              const responses = Number(item.totalResponses || 0);
+
+              const medal = rank <= 3 ? ` rank-${rank}` : '';
+              return `
+                <tr class="leaderboard-row">
+                  <td class="rank${medal}"><span class="rank-pill">#${rank}</span></td>
+                  <td>
+                    <div class="lb-model">
+                      <div class="lb-model-name">${escapeHtml(modelName)}</div>
+                      ${provider ? `<div class="lb-model-provider">${escapeHtml(provider)}</div>` : ''}
+                    </div>
+                  </td>
+                  <td class="win-rate"><span class="win-pill">${escapeHtml(winRate.toFixed(1))}%</span></td>
+                  <td class="stats">${escapeHtml(String(wins))}</td>
+                  <td class="stats">${escapeHtml(String(responses))}</td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  const refresh = leaderboardContent.querySelector('.leaderboard-refresh');
+  if (refresh) refresh.addEventListener('click', () => loadLeaderboard());
+  return true;
 }
 
 function renderArenaFeedback(message, tone = 'info') {
@@ -225,13 +327,21 @@ async function getCurrentUserId() {
   return data?.session?.user?.id || null;
 }
 
-async function apiCall(endpoint, method = 'GET', body = null) {
+async function apiCall(endpoint, method = 'GET', body = null, extraFetchOpts = {}) {
   const token = await getSupabaseAccessToken();
   const headers = { 'Content-Type': 'application/json' };
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
-  const options = { method, headers };
+  const { timeoutMs, ...fetchOpts } = extraFetchOpts || {};
+  const controller = timeoutMs ? new AbortController() : null;
+  const options = { method, headers, ...fetchOpts };
+  if (controller) options.signal = controller.signal;
   if (body) options.body = JSON.stringify(body);
+
+  let timeoutId;
+  if (controller && timeoutMs) {
+    timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  }
 
   let res;
   let json = {};
@@ -239,12 +349,15 @@ async function apiCall(endpoint, method = 'GET', body = null) {
     res = await fetch(`${getApiBase()}${endpoint}`, options);
     json = await res.json().catch(() => ({}));
   } catch (e) {
+    if (timeoutId) clearTimeout(timeoutId);
     notifyApiOffline();
-    const err = new Error('API unreachable');
+    const err = new Error(e?.name === 'AbortError' ? 'Request timed out' : 'API unreachable');
     err.status = 0;
     err.cause = e;
     throw err;
   }
+
+  if (timeoutId) clearTimeout(timeoutId);
 
   // If we got an HTTP response, the API is reachable.
   // (503/500/etc. are server-side errors, not offline.)
@@ -1529,81 +1642,26 @@ async function loadLeaderboard() {
 
   renderLeaderboardSkeleton();
 
+  // Show cached data immediately if available
+  const cached = getCachedLeaderboard();
+  if (cached) {
+    renderLeaderboardData(cached);
+  }
+
+  let slowTimer = setTimeout(() => {
+    renderLeaderboardState({
+      title: 'Still loading…',
+      subtitle: 'Taking longer than expected. Try again.',
+      actionLabel: 'Retry'
+    });
+  }, 6000);
+
   try {
-    const json = await apiCall('/api/arena/model-stats');
+    const json = await apiCall('/api/arena/model-stats', 'GET', null, { timeoutMs: 6000 });
     const items = json.items || json || [];
 
-    if (!Array.isArray(items) || !items.length) {
-      renderLeaderboardState({
-        title: 'No stats yet',
-        subtitle: 'Vote in Battle mode to populate the leaderboard.',
-        actionLabel: 'Refresh'
-      });
-      return;
-    }
-
-    const totals = items.reduce((acc, it) => {
-      acc.wins += Number(it.totalWins || 0);
-      acc.responses += Number(it.totalResponses || 0);
-      return acc;
-    }, { wins: 0, responses: 0 });
-
-    leaderboardContent.innerHTML = `
-      <div class="leaderboard-shell">
-        <div class="leaderboard-top">
-          <div class="leaderboard-top-left">
-            <div class="leaderboard-title">Model Leaderboard</div>
-            <div class="leaderboard-subtitle">${escapeHtml(String(items.length))} models · ${escapeHtml(String(totals.wins))} wins · ${escapeHtml(String(totals.responses))} responses</div>
-          </div>
-          <button class="leaderboard-refresh" type="button">
-            <i class="ri-refresh-line"></i><span>Refresh</span>
-          </button>
-        </div>
-
-        <div class="leaderboard-table-wrap">
-          <table class="leaderboard-table leaderboard-table-premium">
-            <thead>
-              <tr>
-                <th>Rank</th>
-                <th>Model</th>
-                <th>Win rate</th>
-                <th>Wins</th>
-                <th>Responses</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${items.map((item, i) => {
-                const rank = i + 1;
-                const modelName = item.modelName || 'Unknown';
-                const provider = item.providerName || '';
-                const winRate = Number(item.winRate || 0);
-                const wins = Number(item.totalWins || 0);
-                const responses = Number(item.totalResponses || 0);
-
-                const medal = rank <= 3 ? ` rank-${rank}` : '';
-                return `
-                  <tr class="leaderboard-row">
-                    <td class="rank${medal}"><span class="rank-pill">#${rank}</span></td>
-                    <td>
-                      <div class="lb-model">
-                        <div class="lb-model-name">${escapeHtml(modelName)}</div>
-                        ${provider ? `<div class="lb-model-provider">${escapeHtml(provider)}</div>` : ''}
-                      </div>
-                    </td>
-                    <td class="win-rate"><span class="win-pill">${escapeHtml(winRate.toFixed(1))}%</span></td>
-                    <td class="stats">${escapeHtml(String(wins))}</td>
-                    <td class="stats">${escapeHtml(String(responses))}</td>
-                  </tr>
-                `;
-              }).join('')}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    `;
-
-    const refresh = leaderboardContent.querySelector('.leaderboard-refresh');
-    if (refresh) refresh.addEventListener('click', () => loadLeaderboard());
+    const rendered = renderLeaderboardData(items);
+    if (rendered) setCachedLeaderboard(items);
   } catch (e) {
     if (e?.status === 503 || e?.status === 0) {
       notifyApiOffline();
@@ -1620,6 +1678,8 @@ async function loadLeaderboard() {
       subtitle: e?.message || 'Unexpected error',
       actionLabel: 'Retry'
     });
+  } finally {
+    if (slowTimer) clearTimeout(slowTimer);
   }
 }
 
