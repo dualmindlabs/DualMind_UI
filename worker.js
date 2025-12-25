@@ -20,19 +20,28 @@ Allow: /
 search: yes
 ai-input: yes
 ai-train: no`, {
-        headers: { "content-type": "text/plain" },
+        headers: { 
+          "content-type": "text/plain",
+          "cache-control": "public, max-age=86400"
+        },
       });
     }
 
     if (url.pathname === "/style.css") {
       return new Response(styleCss, {
-        headers: { "content-type": "text/css" },
+        headers: { 
+          "content-type": "text/css",
+          "cache-control": "public, max-age=31536000"
+        },
       });
     }
 
     if (url.pathname === "/about" || url.pathname === "/about/") {
       return new Response(aboutIndex, {
-        headers: { "content-type": "text/html" },
+        headers: { 
+          "content-type": "text/html; charset=utf-8",
+          "cache-control": "public, max-age=3600"
+        },
       });
     }
 
@@ -117,7 +126,10 @@ ai-train: no`, {
     // default → index.html
     if (url.pathname === "/" || url.pathname === "/index.html") {
       return new Response(indexHtml, {
-        headers: { "content-type": "text/html" },
+        headers: { 
+          "content-type": "text/html; charset=utf-8",
+          "cache-control": "public, max-age=3600"
+        },
       });
     }
 
