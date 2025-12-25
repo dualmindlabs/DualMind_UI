@@ -5,6 +5,9 @@ import aboutIndex from "./about/index.html";
 import careersIndex from "./careers/index.html";
 import howItWorksIndex from "./how-it-works/index.html";
 import loginIndex from "./login/index.html";
+import leaderboardIndex from "./leaderboard/index.html";
+import modelsIndex from "./models/index.html";
+import faqIndex from "./faq/index.html";
 
 export default {
   async fetch(request, env) {
@@ -60,6 +63,42 @@ export default {
 
     if (url.pathname === "/login/index.html") {
       return new Response(loginIndex, {
+        headers: { "content-type": "text/html" },
+      });
+    }
+
+    if (url.pathname === "/leaderboard" || url.pathname === "/leaderboard/") {
+      return new Response(leaderboardIndex, {
+        headers: { "content-type": "text/html" },
+      });
+    }
+
+    if (url.pathname === "/leaderboard/index.html") {
+      return new Response(leaderboardIndex, {
+        headers: { "content-type": "text/html" },
+      });
+    }
+
+    if (url.pathname === "/models" || url.pathname === "/models/") {
+      return new Response(modelsIndex, {
+        headers: { "content-type": "text/html" },
+      });
+    }
+
+    if (url.pathname === "/models/index.html") {
+      return new Response(modelsIndex, {
+        headers: { "content-type": "text/html" },
+      });
+    }
+
+    if (url.pathname === "/faq" || url.pathname === "/faq/") {
+      return new Response(faqIndex, {
+        headers: { "content-type": "text/html" },
+      });
+    }
+
+    if (url.pathname === "/faq/index.html") {
+      return new Response(faqIndex, {
         headers: { "content-type": "text/html" },
       });
     }
