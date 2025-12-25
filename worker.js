@@ -13,6 +13,17 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
+    if (url.pathname === "/robots.txt") {
+      return new Response(`User-agent: *
+Allow: /
+
+search: yes
+ai-input: yes
+ai-train: no`, {
+        headers: { "content-type": "text/plain" },
+      });
+    }
+
     if (url.pathname === "/style.css") {
       return new Response(styleCss, {
         headers: { "content-type": "text/css" },
