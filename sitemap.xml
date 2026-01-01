@@ -2,37 +2,44 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://arena.dualmindlab.tech/</loc>
-    <lastmod>2025-12-25</lastmod>
+    <lastmod>2026-01-01</lastmod>
+    <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://arena.dualmindlab.tech/about/</loc>
-    <lastmod>2025-12-25</lastmod>
+    <lastmod>2026-01-01</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://arena.dualmindlab.tech/how-it-works/</loc>
-    <lastmod>2025-12-25</lastmod>
+    <lastmod>2026-01-01</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://arena.dualmindlab.tech/leaderboard/</loc>
-    <lastmod>2025-12-25</lastmod>
+    <lastmod>2026-01-01</lastmod>
+    <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://arena.dualmindlab.tech/models/</loc>
-    <lastmod>2025-12-25</lastmod>
+    <lastmod>2026-01-01</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://arena.dualmindlab.tech/faq/</loc>
-    <lastmod>2025-12-25</lastmod>
+    <lastmod>2026-01-01</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://arena.dualmindlab.tech/careers/</loc>
-    <lastmod>2025-12-25</lastmod>
+    <lastmod>2026-01-01</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
 </urlset>

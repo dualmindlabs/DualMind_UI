@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DualMind API - Login</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .login-container {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+
+    .logo {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      color: #667eea;
+    }
+
+    .title {
+      font-size: 1.5rem;
+      color: #333;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 0.9rem;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 5px;
+      color: #333;
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #e1e5e9;
+      border-radius: 10px;
+      font-size: 1rem;
+      transition: border-color 0.3s;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s;
+      margin-bottom: 15px;
+    }
+
+    .login-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .login-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .divider {
+      margin: 20px 0;
+      position: relative;
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    .divider::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: #e1e5e9;
+    }
+
+    .divider span {
+      background: white;
+      padding: 0 15px;
+    }
+
+    .social-btn {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e1e5e9;
+      background: white;
+      border-radius: 10px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .social-btn:hover {
+      border-color: #667eea;
+      transform: translateY(-1px);
+    }
+
+    .toggle {
+      color: #667eea;
+      cursor: pointer;
+      font-size: 0.9rem;
+      margin-top: 20px;
+    }
+
+    .toggle:hover {
+      text-decoration: underline;
+    }
+
+    .error {
+      background: #fee;
+      color: #c33;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      font-size: 0.9rem;
+      border: 1px solid #fcc;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="logo">🎯</div>
+    <h1 class="title">DualMind API Tester</h1>
+    <p class="subtitle">Login to test the streaming API with real data</p>
+
+    <div id="errorMsg" class="error" style="display: none;"></div>
+
+    <form id="authForm">
+      <div class="form-group">
+        <label class="form-label" for="email">Email</label>
+        <input type="email" id="email" class="form-input" placeholder="your@email.com" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password">Password</label>
+        <input type="password" id="password" class="form-input" placeholder="••••••••" required>
+      </div>
+
+      <button type="submit" class="login-btn" id="submitBtn">
+        <span id="btnText">Sign In</span>
+        <span class="loading" id="loadingSpinner" style="display: none;"></span>
+      </button>
+    </form>
+
+    <div class="divider"><span>Or</span></div>
+
+    <button type="button" class="social-btn" id="googleBtn">
+      <span>🌐</span>
+      Continue with Google
+    </button>
+
+    <div class="toggle" id="toggleMode">Don't have an account? Sign up</div>
+  </div>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  
+  <script>
+    // Supabase configuration
+    const SUPABASE_URL = 'https://calqfzajyidkdzbaswjp.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhbHFmemFqeWlka2R6YmFzd2pwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyNzMwODMsImV4cCI6MjA3OTg0OTA4M30.ptXyUNCcAhGi9u2kVDHOxSBvQv0W72S5HHqkIFXQS08';
+    
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Elements
+    const form = document.getElementById('authForm');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const submitBtn = document.getElementById('submitBtn');
+    const btnText = document.getElementById('btnText');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    const errorMsg = document.getElementById('errorMsg');
+    const toggleMode = document.getElementById('toggleMode');
+    const googleBtn = document.getElementById('googleBtn');
+
+    let isLogin = true;
+
+    // Check if already logged in
+    async function checkAuth() {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (session) {
+        // Already logged in, redirect to streaming example
+        window.location.href = 'streaming-example.html';
+      }
+    }
+
+    // Toggle between login/signup
+    toggleMode.addEventListener('click', () => {
+      isLogin = !isLogin;
+      if (isLogin) {
+        btnText.textContent = 'Sign In';
+        toggleMode.textContent = "Don't have an account? Sign up";
+      } else {
+        btnText.textContent = 'Sign Up';
+        toggleMode.textContent = 'Already have an account? Sign in';
+      }
+      errorMsg.style.display = 'none';
+    });
+
+    // Form submit
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+      
+      if (!email || !password) return;
+      
+      setLoading(true);
+      errorMsg.style.display = 'none';
+      
+      try {
+        if (isLogin) {
+          // Sign in
+          const { data, error } = await supabaseClient.auth.signInWithPassword({ 
+            email, 
+            password 
+          });
+          
+          if (error) throw error;
+          
+          // Redirect to streaming example
+          window.location.href = 'streaming-example.html';
+          
+        } else {
+          // Sign up
+          const { data, error } = await supabaseClient.auth.signUp({
+            email,
+            password,
+            options: {
+              data: {
+                full_name: email.split('@')[0]
+              }
+            }
+          });
+          
+          if (error) throw error;
+          
+          if (data.session) {
+            window.location.href = 'streaming-example.html';
+          } else {
+            showMessage('Registration successful! Please check your email to confirm your account, then sign in.', 'success');
+            isLogin = true;
+            btnText.textContent = 'Sign In';
+            toggleMode.textContent = "Don't have an account? Sign up";
+          }
+        }
+        
+      } catch (error) {
+        showMessage(error.message, 'error');
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    // Google OAuth
+    googleBtn.addEventListener('click', async () => {
+      try {
+        const { data, error } = await supabaseClient.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: window.location.origin + '/streaming-example.html'
+          }
+        });
+        
+        if (error) throw error;
+        
+      } catch (error) {
+        showMessage(error.message, 'error');
+      }
+    });
+
+    function setLoading(isLoading) {
+      submitBtn.disabled = isLoading;
+      loadingSpinner.style.display = isLoading ? 'inline-block' : 'none';
+      btnText.style.display = isLoading ? 'none' : 'inline';
+    }
+
+    function showMessage(message, type) {
+      errorMsg.textContent = message;
+      errorMsg.style.display = 'block';
+      errorMsg.className = type === 'success' ? 'success' : 'error';
+      
+      if (type === 'success') {
+        errorMsg.style.background = '#efe';
+        errorMsg.style.color = '#363';
+        errorMsg.style.borderColor = '#cfc';
+      }
+    }
+
+    // Check auth on page load
+    checkAuth();
+
+    // Handle OAuth redirect
+    supabaseClient.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        window.location.href = 'streaming-example.html';
+      }
+    });
+  </script>
+</body>
+</html>

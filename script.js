@@ -64,6 +64,31 @@ const MODEL2_STORAGE_KEY = 'dualmind.sidebyside.model2';
 let availableModels = null;
 let modelsLoadPromise = null;
 
+let dualMindAPI = null;
+let arena = null;
+
+function initializeAPIService() {
+  if (!window.DualMindAPIService) {
+    console.error('DualMindAPIService not loaded');
+    return;
+  }
+  const baseUrl = getApiBase();
+  dualMindAPI = new window.DualMindAPIService(baseUrl, getSupabaseAccessToken);
+  
+  // Initialize Arena Mode
+  if (window.ArenaMode) {
+    arena = new window.ArenaMode(arenaGrid, arenaResults, arenaVoting, arenaFeedback);
+  }
+}
+
+if (typeof window !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeAPIService);
+  } else {
+    initializeAPIService();
+  }
+}
+
 // ========== Utilities ==========
 function showToast(message) {
   if (!toast) return;
@@ -78,8 +103,10 @@ function getCachedLeaderboard() {
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     if (!parsed?.timestamp || !parsed?.items) return null;
-    // optional: expire after 5 minutes
-    if (Date.now() - parsed.timestamp > 5 * 60 * 1000) return null;
+    
+    // Use config for cache expiry
+    const expiryMs = window.DUALMIND_CONFIG.cache?.leaderboardExpiry || (5 * 60 * 1000);
+    if (Date.now() - parsed.timestamp > expiryMs) return null;
     return parsed.items;
   } catch {
     return null;
@@ -218,8 +245,8 @@ async function copyToClipboard(text) {
       ta.style.left = '-9999px';
       ta.style.top = '0';
       document.body.appendChild(ta);
-      ta.focus();
-      ta.select();
+      checkHealth();
+      setInterval(checkHealth, window.DUALMIND_CONFIG.api?.healthCheckInterval || 30000);
       document.execCommand('copy');
       ta.remove();
     }
@@ -341,6 +368,11 @@ async function apiCall(endpoint, method = 'GET', body = null, extraFetchOpts = {
   let timeoutId;
   if (controller && timeoutMs) {
     timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  }
+
+  // Debug logging if enabled
+  if (window.DUALMIND_CONFIG?.debug?.logApiCalls) {
+    console.log(`API ${method} ${endpoint}`, { body, timeoutMs });
   }
 
   let res;
@@ -567,8 +599,7 @@ async function loadModels(force = false) {
       model2Select.disabled = true;
       swapModelsBtn && (swapModelsBtn.disabled = true);
 
-      const json = await apiCall('/api/models');
-      availableModels = json?.items || json || [];
+      availableModels = await dualMindAPI.getModels();
       populateModelSelects(availableModels);
       updateModelPickerVisibility();
       setModelPickerHint('Pick two different models to compare.');
@@ -624,14 +655,28 @@ if (swapModelsBtn && model1Select && model2Select) {
   });
 }
 
-// ========== Focus Effects ==========
-if (promptInput && promptWrap) {
-  promptInput.addEventListener('focus', () => {
-    promptWrap.style.boxShadow = 'var(--focus-ring)';
-  });
-  promptInput.addEventListener('blur', () => {
-    promptWrap.style.boxShadow = '';
-  });
+let useStreaming = true; // Force streaming always enabled
+
+// Streaming toggle functionality
+const streamingToggle = document.getElementById('streamingToggle');
+if (streamingToggle) {
+  // Check if streaming feature is enabled in config
+  const streamingEnabled = window.DUALMIND_CONFIG?.features?.streaming !== false;
+  if (!streamingEnabled) {
+    streamingToggle.style.display = 'none';
+    useStreaming = false;
+  } else {
+    streamingToggle.addEventListener('click', () => {
+      useStreaming = !useStreaming;
+      streamingToggle.classList.toggle('active', useStreaming);
+      const icon = streamingToggle.querySelector('i');
+      if (icon) {
+        icon.className = useStreaming ? 'ri-play-circle-line' : 'ri-pause-circle-line';
+      }
+      streamingToggle.title = useStreaming ? 'Streaming Enabled' : 'Streaming Disabled';
+      showToast(useStreaming ? 'Streaming enabled' : 'Streaming disabled');
+    });
+  }
 }
 
 // ========== Arena (Dual Chat) Rendering ==========
@@ -847,8 +892,21 @@ function renderSingleResponse(data, userPrompt, pendingId = null) {
 async function sendDualChat(prompt) {
   const token = await getSupabaseAccessToken();
   if (!token) {
-    renderError('Please login to use the arena.');
+    if (arena) {
+      arena.renderError('Please login to use the arena.', false);
+    } else {
+      renderError('Please login to use the arena.');
+    }
     showToast('Login required');
+    return;
+  }
+
+  if (!dualMindAPI) {
+    if (arena) {
+      arena.renderError('API service not initialized', false);
+    } else {
+      renderError('API service not initialized');
+    }
     return;
   }
 
@@ -871,36 +929,104 @@ async function sendDualChat(prompt) {
     b.classList.remove('voted');
   });
 
-  renderSkeleton();
   hasVoted = false;
   userWinner = null;
   lastDualResponse = null;
 
+  // Use new Arena module if available
+  if (arena) {
+    // Prepare model configurations based on mode
+    const models = [
+      { 
+        id: 'agent1', 
+        label: 'Agent 1',
+        name: currentMode === 'sidebyside' ? model1Select?.value : null,
+        hidden: currentMode === 'battle'
+      },
+      { 
+        id: 'agent2', 
+        label: 'Agent 2',
+        name: currentMode === 'sidebyside' ? model2Select?.value : null,
+        hidden: currentMode === 'battle'
+      }
+    ];
+    
+    arena.initialize(models);
+    arena.renderSkeleton();
+  } else {
+    renderSkeleton();
+  }
+
   try {
     const userId = await getCurrentUserId();
-    let body;
-    if (currentMode === 'sidebyside') {
-      body = {
-        prompt,
-        model1: model1Select?.value,
-        model2: model2Select?.value
-      };
-    } else {
-      // Battle mode - use battleSelectionMode
-      body = { prompt, selectionMode: battleSelectionMode };
-    }
-    if (userId) body.userId = userId;
-    if (currentThreadId) body.threadId = currentThreadId;
+    const options = {
+      threadId: currentThreadId,
+      userId: userId,
+      battleMode: battleSelectionMode
+    };
 
-    const json = await apiCall('/api/arena/dualchat', 'POST', body);
+    if (currentMode === 'sidebyside') {
+      options.model1 = model1Select?.value;
+      options.model2 = model2Select?.value;
+    }
+
+    const result = await dualMindAPI.dualChat(prompt, options);
+    
+    const json = {
+      agent1: {
+        message: result.agent1.text,
+        model: result.agent1.model,
+        responseTimeMs: result.agent1.responseTimeMs
+      },
+      agent2: {
+        message: result.agent2.text,
+        model: result.agent2.model,
+        responseTimeMs: result.agent2.responseTimeMs
+      },
+      comparisonId: result.comparisonId,
+      arena: result.arena
+    };
+    
     lastDualResponse = json;
-    renderDualResponse(json, false);
+    
+    // Update using Arena module if available
+    if (arena) {
+      // Update models with actual metadata from response
+      arena.models[0].displayName = json.agent1.model?.displayName || json.agent1.model?.name || 'Model A';
+      arena.models[0].model = json.agent1.model;
+      arena.models[0].responseTimeMs = json.agent1.responseTimeMs;
+      
+      arena.models[1].displayName = json.agent2.model?.displayName || json.agent2.model?.name || 'Model B';
+      arena.models[1].model = json.agent2.model;
+      arena.models[1].responseTimeMs = json.agent2.responseTimeMs;
+      
+      // Update card content
+      arena.updateModelCard('agent1', json.agent1.message, true);
+      arena.updateModelCard('agent2', json.agent2.message, true);
+      
+      // Show voting for battle mode
+      if (currentMode === 'battle') {
+        arena.showVoting([
+          { id: 'agent1', label: 'Agent 1' },
+          { id: 'agent2', label: 'Agent 2' }
+        ]);
+      } else {
+        // Reveal model names immediately in side-by-side mode
+        arena.revealModels();
+      }
+    } else {
+      renderDualResponse(json, false);
+    }
   } catch (e) {
-    renderError(e.message || 'Failed to get response');
+    if (arena) {
+      arena.renderError(e.message || 'Failed to get response', Boolean(lastRequest?.prompt));
+    } else {
+      renderError(e.message || 'Failed to get response');
+    }
   }
 }
 
-async function sendSingleChat(prompt) {
+async function sendSingleChat(prompt, useStreaming = false) {
   const token = await getSupabaseAccessToken();
   if (!token) {
     if (chatResults && chatMessages) {
@@ -915,6 +1041,11 @@ async function sendSingleChat(prompt) {
       renderError('Please login to chat.');
     }
     showToast('Login required');
+    return;
+  }
+
+  if (!dualMindAPI) {
+    showToast('API service not initialized');
     return;
   }
 
@@ -939,12 +1070,76 @@ async function sendSingleChat(prompt) {
 
   try {
     const userId = await getCurrentUserId();
-    const body = { prompt, model: 'auto' };
-    if (userId) body.userId = userId;
-    if (currentThreadId) body.threadId = currentThreadId;
+    const options = {
+      model: window.DUALMIND_CONFIG.models?.defaultModel || 'llama-3.1-8b-instant',
+      threadId: currentThreadId,
+      userId: userId
+    };
 
-    const json = await apiCall('/api/arena/chat', 'POST', body);
-    renderSingleResponse(json, prompt, pendingId);
+    if (useStreaming) {
+      // Streaming mode
+      await dualMindAPI.chatStreaming(
+        prompt,
+        options,
+        (deltaText, fullText) => {
+          // Update the streaming response in real-time
+          const pending = pendingId ? chatMessages?.querySelector(`[data-pending-id="${pendingId}"]`) : null;
+          if (pending) {
+            // Replace skeleton with streaming content
+            pending.innerHTML = `
+              <div class="chat-bubble-top">
+                <div class="model-tag">AI</div>
+                <button class="copy-btn copy-chat" type="button" aria-label="Copy response"><i class="ri-file-copy-line"></i></button>
+              </div>
+              <div class="chat-content">${escapeHtml(fullText)}</div>
+            `;
+            // Use config for smooth scrolling
+            const scrollBehavior = window.DUALMIND_CONFIG.ui?.scrollBehavior || 'smooth';
+            pending.scrollIntoView({ behavior: scrollBehavior, block: 'end' });
+          }
+        },
+        (result) => {
+          // Streaming complete - update with final result
+          const pending = pendingId ? chatMessages?.querySelector(`[data-pending-id="${pendingId}"]`) : null;
+          if (pending) {
+            pending.innerHTML = `
+              <div class="chat-bubble-top">
+                <div class="model-tag">${escapeHtml(result.model?.displayName || result.model?.name || 'AI')}</div>
+                <button class="copy-btn copy-chat" type="button" aria-label="Copy response"><i class="ri-file-copy-line"></i></button>
+              </div>
+              <div class="chat-content">${escapeHtml(result.text)}</div>
+            `;
+            pending.removeAttribute('data-pending-id');
+            const scrollBehavior = window.DUALMIND_CONFIG.ui?.scrollBehavior || 'smooth';
+            pending.scrollIntoView({ behavior: scrollBehavior, block: 'end' });
+          }
+          console.log('Streaming complete:', result);
+        },
+        (error) => {
+          // Handle streaming error
+          const pending = pendingId ? chatMessages?.querySelector(`[data-pending-id="${pendingId}"]`) : null;
+          if (pending) {
+            pending.style.color = 'var(--danger)';
+            pending.innerHTML = `<div class="model-tag">Error</div><div class="chat-content">${escapeHtml(error.message)}</div>`;
+            pending.removeAttribute('data-pending-id');
+            pending.scrollIntoView({ behavior: 'auto', block: 'end' });
+          } else {
+            showToast('Request failed: ' + (error?.message || 'Unknown error'));
+          }
+        }
+      );
+    } else {
+      // Non-streaming mode (original behavior)
+      const result = await dualMindAPI.chatNonStreaming(prompt, options);
+      
+      const json = {
+        message: result.text,
+        model: result.model,
+        responseTimeMs: result.responseTimeMs
+      };
+      
+      renderSingleResponse(json, prompt, pendingId);
+    }
   } catch (e) {
     const pending = pendingId ? chatMessages?.querySelector(`[data-pending-id="${pendingId}"]`) : null;
     if (pending) {
@@ -979,8 +1174,16 @@ async function submitVote(winner) {
     hasVoted = true;
     userWinner = 'tie';
     showToast('Tie recorded');
-    renderArenaFeedback('Vote recorded. Thanks for helping improve the leaderboard.', 'success');
-    renderDualResponse(responseSnapshot, true);
+    
+    if (arena) {
+      arena.showFeedback('Vote recorded. Thanks for helping improve the leaderboard.', 'success');
+      arena.highlightWinner(['agent1', 'agent2']);
+      arena.revealModels();
+    } else {
+      renderArenaFeedback('Vote recorded. Thanks for helping improve the leaderboard.', 'success');
+      renderDualResponse(responseSnapshot, true);
+    }
+    
     arenaVoting && (arenaVoting.hidden = true);
 
     document.querySelectorAll('.vote-btn').forEach((b) => {
@@ -1009,11 +1212,7 @@ async function submitVote(winner) {
     });
 
     const userId = await getCurrentUserId();
-    await apiCall('/api/arena/model-vote', 'POST', {
-      comparisonId,
-      winnerModelName,
-      userId
-    });
+    await dualMindAPI.submitVote(comparisonId, winnerModelName, userId);
 
     const stillSameComparison = lastDualResponse?.comparisonId === comparisonId;
     showToast('Vote submitted!');
@@ -1023,8 +1222,15 @@ async function submitVote(winner) {
       hasVoted = true;
       userWinner = winner;
 
-      // Reveal model names and highlight winner
-      renderDualResponse(responseSnapshot, true);
+      // Reveal model names and highlight winner using Arena module
+      if (arena) {
+        arena.showFeedback('Vote recorded. Thanks for helping improve the leaderboard.', 'success');
+        arena.highlightWinner(winner);
+        arena.revealModels();
+      } else {
+        renderDualResponse(responseSnapshot, true);
+      }
+      
       arenaVoting && (arenaVoting.hidden = true);
 
       document.querySelectorAll('.vote-btn').forEach((b) => {
@@ -1056,12 +1262,24 @@ async function submitVote(winner) {
   }
 }
 
-// Vote button handlers
-document.querySelectorAll('.vote-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
+// Vote button handlers - use event delegation for dynamically created buttons
+if (arenaVoting) {
+  arenaVoting.addEventListener('click', (e) => {
+    const btn = e.target.closest('.vote-btn');
+    if (btn && !btn.disabled) {
+      const vote = btn.dataset.vote;
+      submitVote(vote);
+    }
+  });
+}
+
+// Fallback for statically created vote buttons
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.vote-btn');
+  if (btn && !btn.disabled && !arenaVoting?.contains(btn)) {
     const vote = btn.dataset.vote;
     submitVote(vote);
-  });
+  }
 });
 
 // ========== Threads ==========
@@ -1090,8 +1308,7 @@ async function loadThreads() {
 
   try {
     const userId = await getCurrentUserId();
-    const json = await apiCall(`/api/threads?limit=20${userId ? `&userId=${userId}` : ''}`);
-    const threads = json.items || json || [];
+    const threads = await dualMindAPI.getThreads(20, userId);
 
     if (!threads.length) {
       renderThreadListState({
@@ -1148,8 +1365,7 @@ async function loadThread(threadId) {
   }
 
   try {
-    const json = await apiCall(`/api/threads/${threadId}/messages`);
-    const messages = json.items || json || [];
+    const messages = await dualMindAPI.getThreadMessages(threadId);
 
     if (chatMessages) {
       chatResults.hidden = false;
@@ -1235,7 +1451,7 @@ async function loadThread(threadId) {
 async function createNewThread(title) {
   try {
     const userId = await getCurrentUserId();
-    const json = await apiCall('/api/threads', 'POST', { title, userId });
+    const json = await dualMindAPI.createThread(title, userId);
     currentThreadId = json.threadId;
     localStorage.setItem(THREAD_ID_STORAGE_KEY, currentThreadId);
     await loadThreads();
@@ -1379,7 +1595,7 @@ async function handleSend() {
     }
 
     if (currentMode === 'direct') {
-      await sendSingleChat(value);
+      await sendSingleChat(value, useStreaming);
     } else {
       await sendDualChat(value);
     }
@@ -1399,8 +1615,13 @@ async function handleSend() {
 if (promptInput && sendBtn && toast) {
   const autoResizePrompt = () => {
     if (promptInput.tagName !== 'TEXTAREA') return;
+    
+    // Use config for auto-resize
+    const autoResize = window.DUALMIND_CONFIG.ui?.autoResizeTextarea ?? true;
+    if (!autoResize) return;
+    
     promptInput.style.height = 'auto';
-    const maxHeight = 180;
+    const maxHeight = window.DUALMIND_CONFIG.ui?.maxTextareaHeight || 180;
     const next = Math.min(promptInput.scrollHeight || 0, maxHeight);
     promptInput.style.height = (next ? `${next}px` : 'auto');
     promptInput.style.overflowY = (promptInput.scrollHeight > maxHeight) ? 'auto' : 'hidden';
@@ -1657,8 +1878,7 @@ async function loadLeaderboard() {
   }, 6000);
 
   try {
-    const json = await apiCall('/api/arena/model-stats', 'GET', null, { timeoutMs: 6000 });
-    const items = json.items || json || [];
+    const items = await dualMindAPI.getLeaderboard();
 
     const rendered = renderLeaderboardData(items);
     if (rendered) setCachedLeaderboard(items);

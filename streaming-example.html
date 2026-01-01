@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DualMind API - Streaming Example</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0f1115;
+      color: #e4e4e7;
+      padding: 20px;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+      
+    h1 {
+      margin-bottom: 30px;
+      color: #8ab4ff;
+    }
+
+    .chat-container {
+      background: #18181b;
+      border: 1px solid #27272a;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      min-height: 400px;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+
+    .message {
+      margin-bottom: 16px;
+      padding: 12px;
+      border-radius: 8px;
+    }
+
+    .message.user {
+      background: #1e40af;
+      margin-left: 40px;
+    }
+
+    .message.assistant {
+      background: #27272a;
+      margin-right: 40px;
+    }
+
+    .message.error {
+      background: #7f1d1d;
+      border: 1px solid #dc2626;
+    }
+
+    .message-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #a1a1aa;
+      margin-bottom: 6px;
+    }
+
+    .message-content {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .input-container {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 12px;
+      background: #18181b;
+      border: 1px solid #27272a;
+      border-radius: 8px;
+      color: #e4e4e7;
+      font-size: 14px;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: #3b82f6;
+    }
+
+    button {
+      padding: 12px 24px;
+      background: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: background 0.2s;
+    }
+
+    button:hover:not(:disabled) {
+      background: #2563eb;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .status {
+      padding: 8px 12px;
+      background: #18181b;
+      border: 1px solid #27272a;
+      border-radius: 6px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+    }
+
+    .status-dot.offline {
+      background: #ef4444;
+    }
+
+    .stats {
+      background: #18181b;
+      border: 1px solid #27272a;
+      border-radius: 8px;
+      padding: 16px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 16px;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #a1a1aa;
+      margin-bottom: 4px;
+    }
+
+    .mode-toggle {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      font-size: 14px;
+    }
+
+    .mode-toggle label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1em;
+      background: #8ab4ff;
+      animation: blink 1s infinite;
+      margin-left: 2px;
+    }
+
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>DualMind API - Streaming Example</h1>
+
+    <div class="controls">
+      <div class="status">
+        <span class="status-dot" id="statusDot"></span>
+        <span id="statusText">Checking...</span>
+      </div>
+      <div class="mode-toggle">
+        <label><input type="radio" name="mode" value="demo" checked> Demo Mode</label>
+        <label><input type="radio" name="mode" value="auth"> Auth Mode</label>
+      </div>
+      <button id="clearBtn">Clear Chat</button>
+      <button id="testBtn">Run Tests</button>
+    </div>
+
+    <div class="input-container">
+      <input type="text" id="promptInput" placeholder="Type your message..." />
+      <button id="sendStreamBtn">Send (Stream)</button>
+      <button id="sendNonStreamBtn">Send (Non-Stream)</button>
+    </div>
+
+    <div class="chat-container" id="chatContainer"></div>
+
+    <div class="stats">
+      <div class="stat-item">
+        <div class="stat-label">Messages</div>
+        <div class="stat-value" id="messageCount">0</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Avg Response Time</div>
+        <div class="stat-value" id="avgTime">0ms</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Total Tokens</div>
+        <div class="stat-value" id="totalTokens">0</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="api-service.js"></script>
+  
+  <script>
+    const SUPABASE_URL = 'https://calqfzajyidkdzbaswjp.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhbHFmemFqeWlka2R6YmFzd2pwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyNzMwODMsImV4cCI6MjA3OTg0OTA4M30.ptXyUNCcAhGi9u2kVDHOxSBvQv0W72S5HHqkIFXQS08';
+    const API_BASE_URL = window.DUALMIND_CONFIG?.serverUrl || 'http://localhost:65476';
+    console.log('DUALMIND_CONFIG:', window.DUALMIND_CONFIG);
+    console.log('API_BASE_URL:', API_BASE_URL);
+
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    async function getAuthToken() {
+      const { data } = await supabaseClient.auth.getSession();
+      return data?.session?.access_token || null;
+    }
+
+    const dualMindAPI = new DualMindAPIService(API_BASE_URL, getAuthToken);
+
+    const modeInputs = document.querySelectorAll('input[name="mode"]');
+    let currentMode = 'demo';
+
+    // Use config for default streaming state - FORCE ALWAYS ENABLED
+    let useStreaming = true; // Always streaming for demo
+
+    let stats = { messages: 0, totalTime: 0, tokens: 0 };
+
+    modeInputs.forEach(input => {
+      input.addEventListener('change', (e) => {
+        currentMode = e.target.value;
+        addMessage('assistant', `Switched to ${currentMode === 'demo' ? 'Demo' : 'Auth'} mode`);
+      });
+    });
+
+    // Mock API for demo mode
+    class MockDualMindAPI {
+      async chatNonStreaming(prompt) {
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+
+        const responses = [
+          "Hello! I'm a demo AI assistant. This is a simulated response to show how the non-streaming API works.",
+          "That's an interesting question. In demo mode, I'm providing mock responses to help you test the interface.",
+          "I understand you're exploring the DualMind API. This response demonstrates the text extraction from output.content[].text.",
+          "Great! The streaming functionality works by accumulating text from ai.stream.delta events. This is a non-streaming example.",
+          "Thanks for testing! The API integration follows all the documentation rules for authentication and response handling."
+        ];
+
+        const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+        const model = { name: 'demo-model', displayName: 'Demo AI', provider: 'mock' };
+        const usage = { promptTokens: prompt.split(' ').length, completionTokens: randomResponse.split(' ').length, totalTokens: prompt.split(' ').length + randomResponse.split(' ').length };
+
+        return {
+          text: randomResponse,
+          message: randomResponse,
+          model,
+          usage,
+          responseTimeMs: Math.round(500 + Math.random() * 1500)
+        };
+      }
+
+      async chatStreaming(prompt, options, onChunk, onComplete, onError) {
+        const fullResponse = "This is a demo streaming response. I'm simulating the real-time text generation by sending chunks of text progressively, just like the actual DualMind API would do with ai.stream.delta events. Each chunk represents a piece of the response being built up over time.";
+
+        let accumulated = '';
+        const chunks = fullResponse.split(' ');
+        const model = { name: 'demo-streaming', displayName: 'Demo Streaming AI', provider: 'mock' };
+        const usage = { promptTokens: prompt.split(' ').length, completionTokens: chunks.length, totalTokens: prompt.split(' ').length + chunks.length };
+
+        // Simulate streaming with delays
+        for (let i = 0; i < chunks.length; i++) {
+          await new Promise(resolve => setTimeout(resolve, 50 + Math.random() * 100));
+          const chunk = chunks[i] + ' ';
+          accumulated += chunk;
+          onChunk(chunk, accumulated);
+        }
+
+        if (onComplete) {
+          onComplete({
+            text: accumulated,
+            finishReason: 'stop',
+            usage,
+            model
+          });
+        }
+      }
+
+      async healthCheck() {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        return true;
+      }
+
+      async getModels() {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        return [
+          { name: 'demo-gpt4', displayName: 'Demo GPT-4', provider: 'openai' },
+          { name: 'demo-claude', displayName: 'Demo Claude', provider: 'anthropic' },
+          { name: 'demo-llama', displayName: 'Demo Llama', provider: 'meta' }
+        ];
+      }
+    }
+
+    const mockAPI = new MockDualMindAPI();
+
+    function addMessage(role, content, isStreaming = false) {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${role}`;
+      
+      const label = document.createElement('div');
+      label.className = 'message-label';
+      label.textContent = role === 'user' ? 'You' : 'Assistant';
+      
+      const contentDiv = document.createElement('div');
+      contentDiv.className = 'message-content';
+      contentDiv.textContent = content;
+      
+      if (isStreaming) {
+        const cursor = document.createElement('span');
+        cursor.className = 'cursor';
+        contentDiv.appendChild(cursor);
+      }
+      
+      messageDiv.appendChild(label);
+      messageDiv.appendChild(contentDiv);
+      chatContainer.appendChild(messageDiv);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+      
+      return contentDiv;
+    }
+
+    function updateStats(responseTime, tokens) {
+      stats.messages++;
+      stats.totalTime += responseTime;
+      stats.tokens += tokens || 0;
+
+      messageCount.textContent = stats.messages;
+      avgTime.textContent = Math.round(stats.totalTime / stats.messages) + 'ms';
+      totalTokens.textContent = stats.tokens;
+    }
+
+    async function sendStreaming() {
+      const prompt = promptInput.value.trim();
+      if (!prompt) return;
+
+      const api = currentMode === 'demo' ? mockAPI : dualMindAPI;
+
+      if (currentMode === 'auth') {
+        const token = await getAuthToken();
+        if (!token) {
+          alert('Please login first');
+          return;
+        }
+      }
+
+      promptInput.value = '';
+      sendStreamBtn.disabled = true;
+      sendNonStreamBtn.disabled = true;
+
+      addMessage('user', prompt);
+      const contentDiv = addMessage('assistant', '', true);
+      
+      const startTime = Date.now();
+
+      try {
+        console.log('STARTING STREAMING:', { prompt, useStreaming, currentMode });
+        await api.chatStreaming(
+          prompt,
+          { model: window.DUALMIND_CONFIG.models?.defaultModel || 'llama-3.1-8b-instant' }, // Use config for model
+          (deltaText, fullText) => {
+            console.log('STREAMING CHUNK RECEIVED:', { delta: deltaText, fullLength: fullText.length, fullText });
+            // Use config for debug logging
+            if (window.DUALMIND_CONFIG?.debug?.logApiCalls) {
+              console.log('STREAMING CHUNK:', { delta: deltaText, full: fullText });
+            }
+            const cursor = contentDiv.querySelector('.cursor');
+            contentDiv.textContent = fullText;
+            if (cursor) contentDiv.appendChild(cursor);
+          },
+          (result) => {
+            console.log('STREAMING COMPLETED:', result);
+            console.log('STREAMING COMPLETE:', result);
+            const cursor = contentDiv.querySelector('.cursor');
+            if (cursor) cursor.remove();
+            
+            const responseTime = Date.now() - startTime;
+            updateStats(responseTime, result.usage?.totalTokens || 0);
+            
+            console.log('Streaming complete:', result);
+          },
+          (error) => {
+            console.error('STREAMING ERROR:', error);
+            contentDiv.textContent = 'Error: ' + error.message;
+            contentDiv.parentElement.classList.add('error');
+          }
+        );
+      } catch (error) {
+        console.error('Streaming error:', error);
+      } finally {
+        sendStreamBtn.disabled = false;
+        sendNonStreamBtn.disabled = false;
+      }
+    }
+
+    async function sendNonStreaming() {
+      const prompt = promptInput.value.trim();
+      if (!prompt) return;
+
+      const api = currentMode === 'demo' ? mockAPI : dualMindAPI;
+
+      if (currentMode === 'auth') {
+        const token = await getAuthToken();
+        if (!token) {
+          alert('Please login first');
+          return;
+        }
+      }
+
+      promptInput.value = '';
+      sendStreamBtn.disabled = true;
+      sendNonStreamBtn.disabled = true;
+
+      addMessage('user', prompt);
+      const contentDiv = addMessage('assistant', 'Thinking...', false);
+      
+      const startTime = Date.now();
+
+      try {
+        const result = await api.chatNonStreaming(prompt, {
+          model: window.DUALMIND_CONFIG.models?.defaultModel || 'llama-3.1-8b-instant'
+        });
+
+        contentDiv.textContent = result.text;
+        
+        const responseTime = Date.now() - startTime;
+        updateStats(responseTime, result.usage?.totalTokens || 0);
+        
+        console.log('Non-streaming complete:', result);
+      } catch (error) {
+        contentDiv.textContent = 'Error: ' + error.message;
+        contentDiv.parentElement.classList.add('error');
+        console.error('Non-streaming error:', error);
+      } finally {
+        sendStreamBtn.disabled = false;
+        sendNonStreamBtn.disabled = false;
+      }
+    }
+
+    async function checkHealth() {
+      if (currentMode === 'demo') {
+        // Skip health check in demo mode
+        statusDot.classList.remove('offline');
+        statusText.textContent = 'Demo Mode (No Server Required)';
+        return;
+      }
+
+      const isHealthy = await dualMindAPI.healthCheck();
+      
+      if (isHealthy) {
+        statusDot.classList.remove('offline');
+        statusText.textContent = 'API Online';
+      } else {
+        statusDot.classList.add('offline');
+        statusText.textContent = 'API Offline';
+      }
+    }
+
+    async function runTests() {
+      testBtn.disabled = true;
+      
+      try {
+        addMessage('assistant', '🧪 Running API tests...');
+
+        addMessage('assistant', 'Test 1: Health check...');
+        const isHealthy = await dualMindAPI.healthCheck();
+        addMessage('assistant', isHealthy ? '✅ Health check passed' : '❌ Health check failed');
+
+        const token = await getAuthToken();
+        if (!token) {
+          addMessage('assistant', '⚠️ Not logged in. Skipping authenticated tests.');
+          return;
+        }
+
+        addMessage('assistant', 'Test 2: Loading models...');
+        const models = await dualMindAPI.getModels();
+        addMessage('assistant', `✅ Loaded ${models.length} models`);
+
+        addMessage('assistant', 'Test 3: Non-streaming chat...');
+        const result1 = await dualMindAPI.chatNonStreaming('Say "test passed"');
+        addMessage('assistant', `✅ Non-streaming: ${result1.text.substring(0, 50)}...`);
+
+        addMessage('assistant', 'Test 4: Streaming chat...');
+        let streamedText = '';
+        await dualMindAPI.chatStreaming(
+          'Count to 3',
+          {},
+          (delta, full) => { streamedText = full; },
+          () => {}
+        );
+        addMessage('assistant', `✅ Streaming: ${streamedText.substring(0, 50)}...`);
+
+        addMessage('assistant', '✅ All tests passed!');
+      } catch (error) {
+        addMessage('assistant', `❌ Test failed: ${error.message}`);
+      } finally {
+        testBtn.disabled = false;
+      }
+    }
+
+    sendStreamBtn.addEventListener('click', sendStreaming);
+    sendNonStreamBtn.addEventListener('click', sendNonStreaming);
+    clearBtn.addEventListener('click', () => {
+      chatContainer.innerHTML = '';
+      stats = { messages: 0, totalTime: 0, tokens: 0 };
+      messageCount.textContent = '0';
+      avgTime.textContent = '0ms';
+      totalTokens.textContent = '0';
+    });
+    testBtn.addEventListener('click', runTests);
+
+    promptInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        sendStreaming();
+      }
+    });
+
+    checkHealth();
+    setInterval(checkHealth, 30000);
+
+    addMessage('assistant', 'Welcome! This is a streaming example for the DualMind API. Try sending a message using either streaming or non-streaming mode.');
+  </script>
+</body>
+</html>

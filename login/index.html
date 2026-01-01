@@ -363,7 +363,7 @@
               });
               const result = await response.json();
               if (result.success && result.is_admin) {
-                window.location.href = '../../DualMind_Admi1/UI/admin.html';
+                window.location.href = '../../DM_admin_UI/public/admin.html';
                 return;
               }
             } catch (checkError) {
@@ -371,7 +371,7 @@
             }
           }
 
-          window.location.href = SITE_URL + '/index.html';
+          window.location.href = '../index.html';
         } else {
           // Signup
           const parts = name.split(' ');
@@ -395,7 +395,7 @@
           // Auto login or show message?
           // Usually supabase returns session on signup if confirm not required
           if (data.session) {
-            window.location.href = SITE_URL + '/index.html';
+            window.location.href = '../index.html';
           } else {
             alert('Registration successful! Please check your email to confirm.');
             isLogin = true;
