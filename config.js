@@ -1,16 +1,55 @@
 window.DUALMIND_CONFIG = window.DUALMIND_CONFIG || {};
 
-// ========== API Configuration ==========
-window.DUALMIND_CONFIG.serverUrl = window.DUALMIND_CONFIG.serverUrl || 'http://localhost:65476';
+// ========== BACKEND URL CONFIGURATION ==========
+// 👇 CHANGE THIS TO SWITCH BETWEEN LOCALHOST AND PRODUCTION 👇
+
+// Set to 'localhost' for local testing, 'production' for hosted version
+const BACKEND_MODE = 'production'; // Options: 'localhost' | 'production'
+
+// Backend URLs - Configure your URLs here
+const BACKEND_URLS = {
+  localhost: 'http://localhost:65476',        // Local development
+  production: 'https://api.dualmindlab.tech'  // Production server
+};
+
+// Get the backend URL based on mode
+const getBackendUrl = () => {
+  // Priority 1: Explicit override (if set before config loads)
+  if (window.DUALMIND_API_URL) {
+    return window.DUALMIND_API_URL;
+  }
+  
+  // Priority 2: Meta tag (if set in HTML)
+  const metaApiUrl = document.querySelector('meta[name="api-url"]')?.content;
+  if (metaApiUrl) {
+    return metaApiUrl;
+  }
+  
+  // Priority 3: Use BACKEND_MODE setting
+  const mode = BACKEND_MODE.toLowerCase();
+  if (BACKEND_URLS[mode]) {
+    return BACKEND_URLS[mode];
+  }
+  
+  // Priority 4: Auto-detect based on hostname
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    return BACKEND_URLS.localhost;
+  } else {
+    return BACKEND_URLS.production;
+  }
+};
+
+// Set the server URL
+window.DUALMIND_CONFIG.serverUrl = window.DUALMIND_CONFIG.serverUrl || getBackendUrl();
 window.DUALMIND_CONFIG.siteUrl = window.DUALMIND_CONFIG.siteUrl || window.location.origin;
 
 // ========== Speed & Performance Settings ==========
 
 // Streaming Configuration
 window.DUALMIND_CONFIG.streaming = window.DUALMIND_CONFIG.streaming || {};
-window.DUALMIND_CONFIG.streaming.enabled = true; // Force streaming always enabled
-window.DUALMIND_CONFIG.streaming.chunkDelay = window.DUALMIND_CONFIG.streaming.chunkDelay || 2000   ; // Increased from 50ms to 200ms for more visible streaming
-window.DUALMIND_CONFIG.streaming.maxChunkSize = window.DUALMIND_CONFIG.streaming.maxChunkSize || 10; // characters per chunk
+window.DUALMIND_CONFIG.streaming.enabled = true; // Streaming always enabled
+window.DUALMIND_CONFIG.streaming.chunkDelay = window.DUALMIND_CONFIG.streaming.chunkDelay || 50; // Optimized for smooth streaming
+window.DUALMIND_CONFIG.streaming.maxChunkSize = window.DUALMIND_CONFIG.streaming.maxChunkSize || 10; // Characters per chunk
 window.DUALMIND_CONFIG.streaming.smoothScrolling = window.DUALMIND_CONFIG.streaming.smoothScrolling !== false; // Default: true
 
 // API Timeouts & Performance

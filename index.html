@@ -9,6 +9,12 @@
   -->
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- 
+    Backend URL Configuration:
+    - For local testing: Set BACKEND_MODE = 'localhost' in config.js
+    - For production: Set BACKEND_MODE = 'production' in config.js
+    - Or override with: <meta name="api-url" content="YOUR_URL" />
+  -->
   <title>DualMind Arena (Dual Mind) — AI Model Battle & LLM Leaderboard</title>
 
   <!-- Primary Meta Tags -->
@@ -357,24 +363,46 @@
 
       <!-- Hero + Prompt -->
       <section class="center">
-        <div class="logo-row" aria-hidden="true">
-          <!-- Simplified brand marks for major AI providers -->
-          <span class="logo-chip logo-g">G</span>
-          <span class="logo-chip logo-perp">𝒫</span>
-          <span class="logo-chip logo-openai">◎</span>
-          <span class="logo-chip logo-anthropic">A</span>
-          <span class="logo-chip logo-meta">M</span>
-          <span class="logo-chip logo-xai">x</span>
-          <span class="logo-chip logo-others">☆</span>
-        </div>
+        <div class="hero-section">
+          <div class="logo-row" aria-hidden="true">
+            <!-- Simplified brand marks for major AI providers -->
+            <span class="logo-chip logo-g" data-animate="fade-in" style="animation-delay: 0.1s">G</span>
+            <span class="logo-chip logo-perp" data-animate="fade-in" style="animation-delay: 0.2s">𝒫</span>
+            <span class="logo-chip logo-openai" data-animate="fade-in" style="animation-delay: 0.3s">◎</span>
+            <span class="logo-chip logo-anthropic" data-animate="fade-in" style="animation-delay: 0.4s">A</span>
+            <span class="logo-chip logo-meta" data-animate="fade-in" style="animation-delay: 0.5s">M</span>
+            <span class="logo-chip logo-xai" data-animate="fade-in" style="animation-delay: 0.6s">x</span>
+            <span class="logo-chip logo-others" data-animate="fade-in" style="animation-delay: 0.7s">☆</span>
+          </div>
 
-        <h1 class="title">DualMind Arena — AI Arena to Compare and Benchmark LLMs</h1>
-        <p class="subtitle">
-          DualMind (often searched as "Dual Mind") is an AI arena for comparing and benchmarking LLMs. Battle AI models side-by-side, vote on responses, and explore real-time performance leaderboards for coding, reasoning, creativity, and speed.
-        </p>
-        <p class="subtitle">
-          Our platform helps developers and researchers choose the right model for their use case with transparent metrics and community feedback. Compare LLMs, test prompts, and discover which AI performs best for your needs.
-        </p>
+          <h1 class="title" data-animate="slide-up">DualMind Arena — AI Arena to Compare and Benchmark LLMs</h1>
+          <p class="subtitle" data-animate="slide-up" style="animation-delay: 0.1s">
+            DualMind (often searched as "Dual Mind") is an AI arena for comparing and benchmarking LLMs. Battle AI models side-by-side, vote on responses, and explore real-time performance leaderboards for coding, reasoning, creativity, and speed.
+          </p>
+          <p class="subtitle" data-animate="slide-up" style="animation-delay: 0.2s">
+            Our platform helps developers and researchers choose the right model for their use case with transparent metrics and community feedback. Compare LLMs, test prompts, and discover which AI performs best for your needs.
+          </p>
+
+          <!-- Feature highlights -->
+          <div class="feature-highlights" data-animate="fade-in" style="animation-delay: 0.3s">
+            <div class="feature-badge">
+              <i class="ri-sword-line"></i>
+              <span>Battle Mode</span>
+            </div>
+            <div class="feature-badge">
+              <i class="ri-layout-column-line"></i>
+              <span>Side-by-Side</span>
+            </div>
+            <div class="feature-badge">
+              <i class="ri-trophy-line"></i>
+              <span>Live Leaderboard</span>
+            </div>
+            <div class="feature-badge">
+              <i class="ri-speed-line"></i>
+              <span>Real-time Results</span>
+            </div>
+          </div>
+        </div>
 
         <div class="prompt-wrap" role="search">
           <div class="halo"></div>
@@ -432,35 +460,35 @@
 
           <!-- FAQ Section -->
           <div class="faq-section" style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border-color, #374151);">
-            <h2 style="color: var(--text-primary, #f3f4f6); font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem;">Frequently Asked Questions</h2>
+            <h2 style="color: var(--text-1, #e8eaf0); font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; letter-spacing: -0.01em;">Frequently Asked Questions</h2>
             
             <div class="faq-item" style="margin-bottom: 1.5rem;">
-              <h3 style="color: var(--text-primary, #f3f4f6); font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem;">What is an AI arena?</h3>
+              <h3 style="color: var(--text-1, #e8eaf0); font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem;">What is an AI arena?</h3>
               <p style="margin: 0;">An AI arena is a platform where multiple AI models can be tested and compared side-by-side. DualMind Arena allows you to battle different LLMs (Large Language Models) against each other, evaluate their responses in real-time, and vote on which performs better for specific tasks like coding, reasoning, or creativity.</p>
             </div>
 
             <div class="faq-item" style="margin-bottom: 1.5rem;">
-              <h3 style="color: var(--text-primary, #f3f4f6); font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem;">How does DualMind Arena compare models?</h3>
+              <h3 style="color: var(--text-1, #e8eaf0); font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem;">How does DualMind Arena compare models?</h3>
               <p style="margin: 0;">DualMind Arena compares AI models by allowing you to send the same prompt to multiple models simultaneously. You can view their responses side-by-side, vote on which is better, and see aggregated performance data on our LLM leaderboard. The platform tracks metrics for reasoning, coding, creativity, and response speed.</p>
             </div>
 
             <div class="faq-item" style="margin-bottom: 1.5rem;">
-              <h3 style="color: var(--text-primary, #f3f4f6); font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem;">What is an LLM leaderboard?</h3>
+              <h3 style="color: var(--text-1, #e8eaf0); font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem;">What is an LLM leaderboard?</h3>
               <p style="margin: 0;">An LLM leaderboard ranks AI models based on community votes and performance metrics. Our leaderboard shows which models excel in different categories, helping users discover the best models for coding, reasoning, creativity, and other specific use cases based on real-world comparisons.</p>
             </div>
 
             <div class="faq-item" style="margin-bottom: 1.5rem;">
-              <h3 style="color: var(--text-primary, #f3f4f6); font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem;">Can I compare models side-by-side?</h3>
+              <h3 style="color: var(--text-1, #e8eaf0); font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem;">Can I compare models side-by-side?</h3>
               <p style="margin: 0;">Yes! DualMind Arena offers multiple comparison modes: Battle mode (random pairs), Side-by-Side mode (choose two specific models), and Direct Chat mode (single model). The Side-by-Side mode lets you select exactly which two models you want to compare and view their responses simultaneously.</p>
             </div>
 
             <div class="faq-item" style="margin-bottom: 1.5rem;">
-              <h3 style="color: var(--text-primary, #f3f4f6); font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem;">What is AI benchmarking?</h3>
+              <h3 style="color: var(--text-1, #e8eaf0); font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem;">What is AI benchmarking?</h3>
               <p style="margin: 0;">AI benchmarking is the process of evaluating and comparing AI models using standardized tests and metrics. DualMind Arena provides AI benchmarking through community-driven comparisons, voting, and performance tracking across multiple dimensions like reasoning ability, coding proficiency, creative output, and response speed.</p>
             </div>
 
             <div class="faq-item" style="margin-bottom: 1.5rem;">
-              <h3 style="color: var(--text-primary, #f3f4f6); font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem;">Is DualMind Arena free to use?</h3>
+              <h3 style="color: var(--text-1, #e8eaf0); font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem;">Is DualMind Arena free to use?</h3>
               <p style="margin: 0;">Yes, DualMind Arena is free to use. You can compare AI models, vote on responses, and explore the leaderboard without any cost. Simply create an account to get started with full access to all comparison features and the model battle platform.</p>
             </div>
           </div>
@@ -506,8 +534,14 @@
         window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       }
 
+      // Use config serverUrl which auto-detects Azure or localhost
       const fallbackApi = window.DUALMIND_CONFIG?.serverUrl || 'http://localhost:65476';
       window.DUALMIND_API_BASE = window.DUALMIND_API_BASE || fallbackApi;
+      
+      // Log API base for debugging
+      if (window.DUALMIND_CONFIG?.debug?.enabled) {
+        console.log('DualMind API Base URL:', window.DUALMIND_API_BASE);
+      }
     })();
   </script>
   

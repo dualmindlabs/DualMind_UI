@@ -34,14 +34,15 @@ class DualMindAPIService {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
+    // Backend expects camelCase (JSON serialization with CamelCasePropertyNamesContractResolver)
     const body = {
       prompt,
       model,
-      max_tokens: maxTokens
+      maxTokens: maxTokens
     };
 
     if (system) body.system = system;
-    if (threadId) body.thread_id = threadId;
+    if (threadId) body.threadId = threadId; // Backend expects camelCase
     if (userId) body.userId = userId;
 
     const response = await fetch(`${this.baseUrl}/api/arena/chat`, {
@@ -82,14 +83,15 @@ class DualMindAPIService {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
+    // Backend expects camelCase (JSON serialization with CamelCasePropertyNamesContractResolver)
     const body = {
       prompt,
       model,
-      max_tokens: maxTokens
+      maxTokens: maxTokens
     };
 
     if (system) body.system = system;
-    if (threadId) body.thread_id = threadId;
+    if (threadId) body.threadId = threadId; // Backend expects camelCase
     if (userId) body.userId = userId;
 
     try {
@@ -167,14 +169,23 @@ class DualMindAPIService {
       console.log('API SERVICE: Streaming loop completed, accumulated text length:', accumulatedText.length);
 
       if (onComplete) {
+        // Extract model info from final data if available
+        const modelInfo = finalData?.model || null;
         onComplete({
           text: accumulatedText,
+          message: accumulatedText,
+          model: modelInfo,
           finishReason: finalData?.finish_reason || 'stop',
           usage: finalData?.usage || null
         });
       }
 
-      return accumulatedText;
+      return {
+        text: accumulatedText,
+        message: accumulatedText,
+        model: finalData?.model || null,
+        usage: finalData?.usage || null
+      };
     } catch (error) {
       console.error('API SERVICE: Streaming error:', error);
       if (onError) {
@@ -203,16 +214,17 @@ class DualMindAPIService {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
+    // Backend expects camelCase (JSON serialization with CamelCasePropertyNamesContractResolver)
     const body = {
       prompt,
-      max_tokens: maxTokens,
-      battle_mode: battleMode
+      maxTokens: maxTokens,
+      selectionMode: battleMode // Backend uses SelectionMode property
     };
 
     if (model1) body.model1 = model1;
     if (model2) body.model2 = model2;
     if (system) body.system = system;
-    if (threadId) body.thread_id = threadId;
+    if (threadId) body.threadId = threadId; // Backend expects camelCase
     if (userId) body.userId = userId;
 
     const response = await fetch(`${this.baseUrl}/api/arena/dualchat`, {
@@ -232,9 +244,22 @@ class DualMindAPIService {
       throw new Error(data.message || 'AI Gateway error');
     }
 
+    // Backend returns agent1 and agent2 with message, model, responseTimeMs
     return {
-      agent1: this.extractResponse(data.agent1),
-      agent2: this.extractResponse(data.agent2),
+      agent1: {
+        text: data.agent1?.message || data.agent1?.text || '',
+        message: data.agent1?.message || data.agent1?.text || '',
+        model: data.agent1?.model || null,
+        responseTimeMs: data.agent1?.responseTimeMs || null,
+        usage: data.agent1?.usage || null
+      },
+      agent2: {
+        text: data.agent2?.message || data.agent2?.text || '',
+        message: data.agent2?.message || data.agent2?.text || '',
+        model: data.agent2?.model || null,
+        responseTimeMs: data.agent2?.responseTimeMs || null,
+        usage: data.agent2?.usage || null
+      },
       arena: data.arena || null,
       comparisonId: data.comparisonId || null
     };
@@ -432,13 +457,26 @@ class DualMindAPIService {
 
   async healthCheck() {
     try {
-      // Use config for timeout
-      const timeout = window.DUALMIND_CONFIG?.api?.timeout || 3000;
-      const response = await fetch(`${this.baseUrl}/health`, {
-        method: 'GET',
-        signal: AbortSignal.timeout(timeout)
-      });
-      return response.ok;
+      // Use shorter timeout for health check (5 seconds)
+      const timeout = 5000;
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
+      
+      try {
+        const response = await fetch(`${this.baseUrl}/health`, {
+          method: 'GET',
+          signal: controller.signal,
+          cache: 'no-cache'
+        });
+        clearTimeout(timeoutId);
+        return response.ok;
+      } catch (error) {
+        clearTimeout(timeoutId);
+        if (window.DUALMIND_CONFIG?.debug?.enabled && error.name !== 'AbortError') {
+          console.warn('Health check failed:', error);
+        }
+        return false;
+      }
     } catch {
       return false;
     }

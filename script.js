@@ -104,23 +104,21 @@ function getCachedLeaderboard() {
     const parsed = JSON.parse(raw);
     if (!parsed?.timestamp || !parsed?.items) return null;
     
-    // Use config for cache expiry
-    const expiryMs = window.DUALMIND_CONFIG.cache?.leaderboardExpiry || (5 * 60 * 1000);
+    const expiryMs = window.DUALMIND_CONFIG?.cache?.leaderboardExpiry || 300000;
     if (Date.now() - parsed.timestamp > expiryMs) return null;
     return parsed.items;
-  } catch {
+  } catch (err) {
+    console.warn('Failed to parse cached leaderboard:', err);
     return null;
   }
 }
 
 function setCachedLeaderboard(items) {
   try {
-    localStorage.setItem(
-      LEADERBOARD_CACHE_KEY,
-      JSON.stringify({ timestamp: Date.now(), items })
-    );
-  } catch {
-    // ignore storage errors
+    const data = { timestamp: Date.now(), items };
+    localStorage.setItem(LEADERBOARD_CACHE_KEY, JSON.stringify(data));
+  } catch (err) {
+    console.warn('Failed to cache leaderboard:', err);
   }
 }
 
@@ -245,8 +243,7 @@ async function copyToClipboard(text) {
       ta.style.left = '-9999px';
       ta.style.top = '0';
       document.body.appendChild(ta);
-      checkHealth();
-      setInterval(checkHealth, window.DUALMIND_CONFIG.api?.healthCheckInterval || 30000);
+      ta.select();
       document.execCommand('copy');
       ta.remove();
     }
@@ -266,7 +263,11 @@ function escapeHtml(str) {
 }
 
 function getApiBase() {
-  return (window.DUALMIND_API_BASE || 'http://localhost:65476').replace(/\/$/, '');
+  // Priority: 1. Explicit override, 2. Config serverUrl, 3. Default localhost
+  const apiBase = window.DUALMIND_API_BASE || 
+                  window.DUALMIND_CONFIG?.serverUrl || 
+                  'http://localhost:65476';
+  return apiBase.replace(/\/$/, '');
 }
 
 function setApiOfflineClass(isOffline) {
@@ -310,7 +311,7 @@ function notifyApiOnline() {
     apiStatus.classList.add('is-online');
     const label = apiStatus.querySelector('.label');
     if (label) label.textContent = 'Online';
-    apiStatus.title = 'API online';
+    apiStatus.title = `API online - ${getApiBase()}`;
   }
 }
 
@@ -972,19 +973,20 @@ async function sendDualChat(prompt) {
 
     const result = await dualMindAPI.dualChat(prompt, options);
     
+    // Handle response structure - backend returns agent1 and agent2 with message/text
     const json = {
       agent1: {
-        message: result.agent1.text,
-        model: result.agent1.model,
-        responseTimeMs: result.agent1.responseTimeMs
+        message: result.agent1?.message || result.agent1?.text || '',
+        model: result.agent1?.model || null,
+        responseTimeMs: result.agent1?.responseTimeMs || null
       },
       agent2: {
-        message: result.agent2.text,
-        model: result.agent2.model,
-        responseTimeMs: result.agent2.responseTimeMs
+        message: result.agent2?.message || result.agent2?.text || '',
+        model: result.agent2?.model || null,
+        responseTimeMs: result.agent2?.responseTimeMs || null
       },
-      comparisonId: result.comparisonId,
-      arena: result.arena
+      comparisonId: result.comparisonId || null,
+      arena: result.arena || null
     };
     
     lastDualResponse = json;
@@ -1102,18 +1104,21 @@ async function sendSingleChat(prompt, useStreaming = false) {
           // Streaming complete - update with final result
           const pending = pendingId ? chatMessages?.querySelector(`[data-pending-id="${pendingId}"]`) : null;
           if (pending) {
+            const modelName = result.model?.displayName || result.model?.name || result.model || 'AI';
             pending.innerHTML = `
               <div class="chat-bubble-top">
-                <div class="model-tag">${escapeHtml(result.model?.displayName || result.model?.name || 'AI')}</div>
+                <div class="model-tag">${escapeHtml(modelName)}</div>
                 <button class="copy-btn copy-chat" type="button" aria-label="Copy response"><i class="ri-file-copy-line"></i></button>
               </div>
-              <div class="chat-content">${escapeHtml(result.text)}</div>
+              <div class="chat-content">${escapeHtml(result.text || result.message || '')}</div>
             `;
             pending.removeAttribute('data-pending-id');
             const scrollBehavior = window.DUALMIND_CONFIG.ui?.scrollBehavior || 'smooth';
             pending.scrollIntoView({ behavior: scrollBehavior, block: 'end' });
           }
-          console.log('Streaming complete:', result);
+          if (window.DUALMIND_CONFIG?.debug?.enabled) {
+            console.log('Streaming complete:', result);
+          }
         },
         (error) => {
           // Handle streaming error
@@ -1987,6 +1992,34 @@ themeBtns.forEach(btn => {
   });
 });
 
+// ========== Health Check ==========
+async function checkHealth() {
+  if (!dualMindAPI) return;
+  
+  try {
+    const isHealthy = await dualMindAPI.healthCheck();
+    if (isHealthy) {
+      notifyApiOnline();
+    } else {
+      notifyApiOffline();
+    }
+  } catch {
+    notifyApiOffline();
+  }
+}
+
+// Start health check on load and periodically
+if (typeof window !== 'undefined') {
+  // Initial check after a short delay
+  setTimeout(() => {
+    checkHealth();
+  }, 2000);
+  
+  // Periodic health checks
+  const healthCheckInterval = window.DUALMIND_CONFIG?.api?.healthCheckInterval || 30000;
+  setInterval(checkHealth, healthCheckInterval);
+}
+
 // ========== Initialization ==========
 async function initApp() {
   await loadThreads();
@@ -2031,6 +2064,22 @@ async function initApp() {
   }
 }
 
+// ========== Health Check ==========
+async function checkHealth() {
+  if (!dualMindAPI) return;
+  
+  try {
+    const isHealthy = await dualMindAPI.healthCheck();
+    if (isHealthy) {
+      notifyApiOnline();
+    } else {
+      notifyApiOffline();
+    }
+  } catch {
+    notifyApiOffline();
+  }
+}
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
   initApp();
@@ -2038,6 +2087,15 @@ document.addEventListener('DOMContentLoaded', () => {
   requestAnimationFrame(() => {
     document.documentElement.classList.add('ui-ready');
   });
+
+  // Start health check after initialization
+  setTimeout(() => {
+    checkHealth();
+  }, 2000);
+  
+  // Periodic health checks
+  const healthCheckInterval = window.DUALMIND_CONFIG?.api?.healthCheckInterval || 30000;
+  setInterval(checkHealth, healthCheckInterval);
 
   const inlineLb = document.querySelector('.subtitle a');
   if (inlineLb) {
