@@ -1,0 +1,16 @@
+node_modules
+.git
+.wrangler
+*.log
+package-lock.json
+*.md
+.eslintrc.json
+start.bat
+mock-api-server.js
+old-html-backup
+*.py
+OneDrive
+.vscode
+package.json
+wrangler.jsonc
+worker.js

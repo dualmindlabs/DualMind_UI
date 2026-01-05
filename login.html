@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DualMind - Login</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Inria+Sans:wght@400;700&display=swap" rel="stylesheet">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 21 21'><rect width='9' height='9' rx='1' fill='%23577B87'/><rect x='12' width='9' height='9' rx='1' fill='%234AABC2'/><rect x='12' y='12' width='9' height='9' rx='1' fill='%23CB9275'/><rect y='12' width='9' height='9' rx='1' fill='%23FDF4CD'/></svg>">
+  
+  <!-- App Styles -->
+  <link rel="stylesheet" href="./css/styles.css">
+  <link rel="stylesheet" href="./css/auth-styles.css">
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --color-teal: #577B87;
+      --color-cyan: #4AABC2;
+      --color-terra: #CB9275;
+      --color-cream: #FDF4CD;
+      --glass-dark: rgba(0, 0, 0, 0.65);
+      --glass-input: rgba(0, 0, 0, 0.75);
+    }
+
+    body {
+      font-family: 'Inria Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Background */
+    .background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
+
+    /* Logo */
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 32px;
+      justify-content: center;
+    }
+
+    .logo-icon svg {
+      width: 32px;
+      height: 32px;
+    }
+
+    .logo-text {
+      font-family: 'Do Hyeon', sans-serif;
+      font-size: 28px;
+      color: white;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Login Container */
+    .login-container {
+      background: var(--glass-dark);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 24px;
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .login-title {
+      font-family: 'Do Hyeon', sans-serif;
+      font-size: 32px;
+      color: white;
+      margin-bottom: 8px;
+    }
+
+    .login-subtitle {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 15px;
+    }
+
+    /* Tabs */
+    .auth-tabs {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 32px;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 4px;
+      border-radius: 12px;
+    }
+
+    .auth-tab {
+      flex: 1;
+      padding: 12px;
+      background: transparent;
+      border: none;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+
+    .auth-tab.active {
+      background: var(--color-cyan);
+      color: white;
+    }
+
+    /* Form */
+    .auth-form {
+      display: none;
+    }
+
+    .auth-form.active {
+      display: block;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 14px 16px;
+      background: var(--glass-input);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      color: white;
+      font-size: 15px;
+      transition: all 0.2s;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--color-cyan);
+      box-shadow: 0 0 0 3px rgba(74, 171, 194, 0.2);
+    }
+
+    .form-input::placeholder {
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    /* Button */
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--color-cyan), var(--color-teal));
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 24px;
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(74, 171, 194, 0.4);
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Error/Success Messages */
+    .message {
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      display: none;
+    }
+
+    .message.show {
+      display: block;
+    }
+
+    .message.error {
+      background: rgba(244, 67, 54, 0.2);
+      border: 1px solid rgba(244, 67, 54, 0.3);
+      color: #ff6b6b;
+    }
+
+    .message.success {
+      background: rgba(76, 175, 80, 0.2);
+      border: 1px solid rgba(76, 175, 80, 0.3);
+      color: #69f0ae;
+    }
+
+    /* Loading Spinner */
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-left: 8px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Footer */
+    .login-footer {
+      margin-top: 24px;
+      text-align: center;
+    }
+
+    .footer-link {
+      color: var(--color-cyan);
+      text-decoration: none;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .footer-link:hover {
+      color: white;
+    }
+
+    /* Guest Mode */
+    .guest-mode {
+      margin-top: 24px;
+      text-align: center;
+    }
+
+    .guest-btn {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: rgba(255, 255, 255, 0.8);
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .guest-btn:hover {
+      border-color: white;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <img src="https://images.unsplash.com/photo-1676299081847-824916de030a?w=1920&q=80" alt="" class="background">
+  
+  <div class="login-container">
+    <!-- Logo -->
+    <div class="logo">
+      <div class="logo-icon">
+        <svg width="32" height="32" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M0 1C0 0.447715 0.447715 0 1 0H8C8.55228 0 9 0.447715 9 1V8C9 8.55228 8.55228 9 8 9H1C0.447715 9 0 8.55228 0 8V1Z" fill="#577B87"/>
+          <path d="M12 1C12 0.447715 12.4477 0 13 0H20C20.5523 0 21 0.447715 21 1V8C21 8.55228 20.5523 9 20 9H13C12.4477 9 12 8.55228 12 8V1Z" fill="#4AABC2"/>
+          <path d="M12 13C12 12.4477 12.4477 12 13 12H20C20.5523 12 21 12.4477 21 13V20C21 20.5523 20.5523 21 20 21H13C12.4477 21 12 20.5523 12 20V13Z" fill="#CB9275"/>
+          <path d="M0 13C0 12.4477 0.447715 12 1 12H8C8.55228 12 9 12.4477 9 13V20C9 20.5523 8.55228 21 8 21H1C0.447715 21 0 20.5523 0 20V13Z" fill="#FDF4CD"/>
+        </svg>
+      </div>
+      <div class="logo-text">DualMind</div>
+    </div>
+
+    <!-- Header -->
+    <div class="login-header">
+      <h1 class="login-title">Welcome</h1>
+      <p class="login-subtitle">Sign in to access AI Battle Arena</p>
+    </div>
+
+    <!-- Message -->
+    <div id="message" class="message"></div>
+
+    <!-- Tabs -->
+    <div class="auth-tabs">
+      <button class="auth-tab active" data-tab="login">Login</button>
+      <button class="auth-tab" data-tab="signup">Sign Up</button>
+    </div>
+
+    <!-- Login Form - Step 1: Email -->
+    <form id="loginEmailForm" class="auth-form active">
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" class="form-input" id="loginEmail" placeholder="your@email.com" required>
+      </div>
+      <button type="submit" class="submit-btn" id="loginEmailBtn">
+        Send Login Code
+      </button>
+    </form>
+
+    <!-- Login Form - Step 2: Email OTP -->
+    <form id="loginOtpForm" class="auth-form">
+      <div class="form-group">
+        <label class="form-label">Enter the 6-digit code sent to your email</label>
+        <input type="text" class="form-input" id="loginOtp" placeholder="123456" maxlength="6" required>
+      </div>
+      <button type="submit" class="submit-btn" id="loginOtpBtn">
+        Verify Code
+      </button>
+      <button type="button" class="guest-btn" id="loginBackBtn" style="margin-top: 12px;">
+        ← Back to Email
+      </button>
+    </form>
+
+    <!-- Login Form - Step 3: Phone -->
+    <form id="loginPhoneForm" class="auth-form">
+      <div class="form-group">
+        <label class="form-label">Phone Number (for additional security)</label>
+        <input type="tel" class="form-input" id="loginPhone" placeholder="+1234567890" required>
+      </div>
+      <button type="submit" class="submit-btn" id="loginPhoneBtn">
+        Send SMS Code
+      </button>
+      <button type="button" class="guest-btn" id="loginSkipPhoneBtn" style="margin-top: 12px;">
+        Skip Phone Verification
+      </button>
+    </form>
+
+    <!-- Login Form - Step 4: Phone OTP -->
+    <form id="loginPhoneOtpForm" class="auth-form">
+      <div class="form-group">
+        <label class="form-label">Enter the 6-digit SMS code</label>
+        <input type="text" class="form-input" id="loginPhoneOtp" placeholder="123456" maxlength="6" required>
+      </div>
+      <button type="submit" class="submit-btn" id="loginPhoneOtpBtn">
+        Complete Login
+      </button>
+      <button type="button" class="guest-btn" id="loginPhoneBackBtn" style="margin-top: 12px;">
+        ← Back to Phone
+      </button>
+    </form>
+
+    <!-- Signup Form - Step 1: Email -->
+    <form id="signupEmailForm" class="auth-form">
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <input type="text" class="form-input" id="signupName" placeholder="John Doe" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" class="form-input" id="signupEmail" placeholder="your@email.com" required>
+      </div>
+      <button type="submit" class="submit-btn" id="signupEmailBtn">
+        Send Verification Code
+      </button>
+    </form>
+
+    <!-- Signup Form - Step 2: Email OTP -->
+    <form id="signupOtpForm" class="auth-form">
+      <div class="form-group">
+        <label class="form-label">Enter the 6-digit code sent to your email</label>
+        <input type="text" class="form-input" id="signupOtp" placeholder="123456" maxlength="6" required>
+      </div>
+      <button type="submit" class="submit-btn" id="signupOtpBtn">
+        Verify Email
+      </button>
+      <button type="button" class="guest-btn" id="signupBackBtn" style="margin-top: 12px;">
+        ← Back to Email
+      </button>
+    </form>
+
+    <!-- Signup Form - Step 3: Phone -->
+    <form id="signupPhoneForm" class="auth-form">
+      <div class="form-group">
+        <label class="form-label">Phone Number (for account security)</label>
+        <input type="tel" class="form-input" id="signupPhone" placeholder="+1234567890" required>
+      </div>
+      <button type="submit" class="submit-btn" id="signupPhoneBtn">
+        Send SMS Code
+      </button>
+      <button type="button" class="guest-btn" id="signupSkipPhoneBtn" style="margin-top: 12px;">
+        Skip Phone Verification
+      </button>
+    </form>
+
+    <!-- Signup Form - Step 4: Phone OTP -->
+    <form id="signupPhoneOtpForm" class="auth-form">
+      <div class="form-group">
+        <label class="form-label">Enter the 6-digit SMS code</label>
+        <input type="text" class="form-input" id="signupPhoneOtp" placeholder="123456" maxlength="6" required>
+      </div>
+      <button type="submit" class="submit-btn" id="signupPhoneOtpBtn">
+        Complete Registration
+      </button>
+      <button type="button" class="guest-btn" id="signupPhoneBackBtn" style="margin-top: 12px;">
+        ← Back to Phone
+      </button>
+    </form>
+
+    <!-- Guest Mode -->
+    <div class="guest-mode">
+      <button class="guest-btn" id="guestBtn">Continue as Guest</button>
+    </div>
+
+    <!-- Footer -->
+    <div class="login-footer">
+      <a href="#" class="footer-link">Forgot password?</a>
+    </div>
+  </div>
+
+  <script src="./config.js"></script>
+  <script type="module">
+    import { initializeSupabaseAuth } from '/js/supabase-auth.js';
+
+    // Initialize Supabase Auth
+    const supabaseConfig = window.DUALMIND_CONFIG.supabase;
+    console.log('🔧 Supabase config:', supabaseConfig);
+    
+    if (!supabaseConfig.url || supabaseConfig.url.includes('your-project')) {
+      console.error('❌ Supabase configuration missing! Update config.js with your Supabase credentials.');
+      document.querySelector('.login-container').innerHTML = `
+        <div style="color: #ff6b6b; text-align: center; padding: 40px; font-size: 16px;">
+          <h2>Configuration Error</h2>
+          <p>Supabase credentials not configured.</p>
+          <p>Please update <code>config.js</code> with your Supabase URL and API key.</p>
+          <p style="margin-top: 20px; color: rgba(255,255,255,0.6); font-size: 14px;">
+            Get credentials from: https://app.supabase.com/project/[your-project]/settings/api
+          </p>
+        </div>
+      `;
+      throw new Error('Supabase not configured');
+    }
+
+    const auth = initializeSupabaseAuth(supabaseConfig.url, supabaseConfig.anonKey);
+    console.log('✅ Supabase auth initialized:', auth);
+    const message = document.getElementById('message');
+
+    // State management for multi-step flow
+    let currentStep = 'email';
+    let userEmail = '';
+    let userName = '';
+    let userPhone = '';
+    let isLogin = true;
+
+    // Tab Switching
+    document.querySelectorAll('.auth-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const tabName = tab.dataset.tab;
+        isLogin = tabName === 'login';
+        
+        // Update tabs
+        document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        
+        // Reset to first step
+        showStep('email');
+        
+        // Clear message
+        hideMessage();
+      });
+    });
+
+    // Show specific step
+    function showStep(step) {
+      currentStep = step;
+      
+      // Hide all forms
+      document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+      
+      // Show appropriate form
+      if (isLogin) {
+        if (step === 'email') document.getElementById('loginEmailForm').classList.add('active');
+        else if (step === 'otp') document.getElementById('loginOtpForm').classList.add('active');
+        else if (step === 'phone') document.getElementById('loginPhoneForm').classList.add('active');
+        else if (step === 'phoneOtp') document.getElementById('loginPhoneOtpForm').classList.add('active');
+      } else {
+        if (step === 'email') document.getElementById('signupEmailForm').classList.add('active');
+        else if (step === 'otp') document.getElementById('signupOtpForm').classList.add('active');
+        else if (step === 'phone') document.getElementById('signupPhoneForm').classList.add('active');
+        else if (step === 'phoneOtp') document.getElementById('signupPhoneOtpForm').classList.add('active');
+      }
+    }
+
+    // Message functions
+    function showMessage(text, type = 'info') {
+      message.textContent = text;
+      message.className = `message ${type}`;
+      message.classList.add('show');
+    }
+
+    function hideMessage() {
+      message.classList.remove('show');
+    }
+
+    // Login Email Form
+    document.getElementById('loginEmailForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('loginEmailBtn');
+      userEmail = document.getElementById('loginEmail').value;
+
+      btn.disabled = true;
+      btn.innerHTML = 'Sending... <span class="spinner"></span>';
+      hideMessage();
+
+      try {
+        const result = await auth.loginWithEmailOtp(userEmail);
+        if (result.success) {
+          showMessage(result.message, 'success');
+          showStep('otp');
+        } else {
+          showMessage(result.error || 'Failed to send code', 'error');
+          btn.disabled = false;
+          btn.innerHTML = 'Send Login Code';
+        }
+      } catch (error) {
+        console.error('Login email error:', error);
+        showMessage(error.message || 'Failed to send code', 'error');
+        btn.disabled = false;
+        btn.innerHTML = 'Send Login Code';
+      }
+    });
+
+    // Login OTP Form
+    document.getElementById('loginOtpForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('loginOtpBtn');
+      const otp = document.getElementById('loginOtp').value;
+
+      btn.disabled = true;
+      btn.innerHTML = 'Verifying... <span class="spinner"></span>';
+      hideMessage();
+
+      try {
+        const result = await auth.verifyEmailOtp(userEmail, otp);
+        if (result.success) {
+          showMessage('✅ Email verified! Adding phone verification...', 'success');
+          setTimeout(() => showStep('phone'), 1000);
+        } else {
+          showMessage(result.error || 'Invalid code', 'error');
+          btn.disabled = false;
+          btn.innerHTML = 'Verify Code';
+        }
+      } catch (error) {
+        console.error('Login OTP error:', error);
+        showMessage(error.message || 'Verification failed', 'error');
+        btn.disabled = false;
+        btn.innerHTML = 'Verify Code';
+      }
+    });
+
+    // Login Phone Form
+    document.getElementById('loginPhoneForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('loginPhoneBtn');
+      userPhone = document.getElementById('loginPhone').value;
+
+      btn.disabled = true;
+      btn.innerHTML = 'Sending... <span class="spinner"></span>';
+      hideMessage();
+
+      try {
+        // Update phone in profile first
+        const updateResult = await auth.updatePhone(userPhone);
+        if (!updateResult.success) {
+          showMessage(updateResult.error || 'Failed to update phone', 'error');
+          btn.disabled = false;
+          btn.innerHTML = 'Send SMS Code';
+          return;
+        }
+
+        // Then send SMS OTP
+        const result = await auth.sendSmsOtp(userPhone);
+        if (result.success) {
+          showMessage(result.message, 'success');
+          showStep('phoneOtp');
+        } else {
+          showMessage(result.error || 'Failed to send SMS', 'error');
+          btn.disabled = false;
+          btn.innerHTML = 'Send SMS Code';
+        }
+      } catch (error) {
+        console.error('Login phone error:', error);
+        showMessage(error.message || 'Failed to send SMS', 'error');
+        btn.disabled = false;
+        btn.innerHTML = 'Send SMS Code';
+      }
+    });
+
+    // Login Phone OTP Form
+    document.getElementById('loginPhoneOtpForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('loginPhoneOtpBtn');
+      const otp = document.getElementById('loginPhoneOtp').value;
+
+      btn.disabled = true;
+      btn.innerHTML = 'Completing... <span class="spinner"></span>';
+      hideMessage();
+
+      try {
+        const result = await auth.verifySmsOtp(userPhone, otp);
+        if (result.success) {
+          showMessage('✅ Login successful! Welcome back!', 'success');
+          setTimeout(() => {
+            window.location.href = 'index.html';
+          }, 1500);
+        } else {
+          showMessage(result.error || 'Invalid SMS code', 'error');
+          btn.disabled = false;
+          btn.innerHTML = 'Complete Login';
+        }
+      } catch (error) {
+        console.error('Login phone OTP error:', error);
+        showMessage(error.message || 'SMS verification failed', 'error');
+        btn.disabled = false;
+        btn.innerHTML = 'Complete Login';
+      }
+    });
+
+    // Signup Email Form
+    document.getElementById('signupEmailForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('signupEmailBtn');
+      userName = document.getElementById('signupName').value;
+      userEmail = document.getElementById('signupEmail').value;
+
+      btn.disabled = true;
+      btn.innerHTML = 'Sending... <span class="spinner"></span>';
+      hideMessage();
+
+      try {
+        const result = await auth.signupWithEmailOtp(userEmail, userName);
+        if (result.success) {
+          showMessage(result.message, 'success');
+          showStep('otp');
+        } else {
+          showMessage(result.error || 'Failed to send code', 'error');
+          btn.disabled = false;
+          btn.innerHTML = 'Send Verification Code';
+        }
+      } catch (error) {
+        console.error('Signup email error:', error);
+        showMessage(error.message || 'Failed to send code', 'error');
+        btn.disabled = false;
+        btn.innerHTML = 'Send Verification Code';
+      }
+    });
+
+    // Signup OTP Form
+    document.getElementById('signupOtpForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('signupOtpBtn');
+      const otp = document.getElementById('signupOtp').value;
+
+      btn.disabled = true;
+      btn.innerHTML = 'Verifying... <span class="spinner"></span>';
+      hideMessage();
+
+      try {
+        const result = await auth.verifyEmailOtp(userEmail, otp);
+        if (result.success) {
+          showMessage('✅ Email verified! Adding phone verification...', 'success');
+          setTimeout(() => showStep('phone'), 1000);
+        } else {
+          showMessage(result.error || 'Invalid code', 'error');
+          btn.disabled = false;
+          btn.innerHTML = 'Verify Email';
+        }
+      } catch (error) {
+        console.error('Signup OTP error:', error);
+        showMessage(error.message || 'Verification failed', 'error');
+        btn.disabled = false;
+        btn.innerHTML = 'Verify Email';
+      }
+    });
+
+    // Signup Phone Form
+    document.getElementById('signupPhoneForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('signupPhoneBtn');
+      userPhone = document.getElementById('signupPhone').value;
+
+      btn.disabled = true;
+      btn.innerHTML = 'Sending... <span class="spinner"></span>';
+      hideMessage();
+
+      try {
+        // Update phone in profile first
+        const updateResult = await auth.updatePhone(userPhone);
+        if (!updateResult.success) {
+          showMessage(updateResult.error || 'Failed to update phone', 'error');
+          btn.disabled = false;
+          btn.innerHTML = 'Send SMS Code';
+          return;
+        }
+
+        // Then send SMS OTP
+        const result = await auth.sendSmsOtp(userPhone);
+        if (result.success) {
+          showMessage(result.message, 'success');
+          showStep('phoneOtp');
+        } else {
+          showMessage(result.error || 'Failed to send SMS', 'error');
+          btn.disabled = false;
+          btn.innerHTML = 'Send SMS Code';
+        }
+      } catch (error) {
+        console.error('Signup phone error:', error);
+        showMessage(error.message || 'Failed to send SMS', 'error');
+        btn.disabled = false;
+        btn.innerHTML = 'Send SMS Code';
+      }
+    });
+
+    // Signup Phone OTP Form
+    document.getElementById('signupPhoneOtpForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('signupPhoneOtpBtn');
+      const otp = document.getElementById('signupPhoneOtp').value;
+
+      btn.disabled = true;
+      btn.innerHTML = 'Completing... <span class="spinner"></span>';
+      hideMessage();
+
+      try {
+        const result = await auth.verifySmsOtp(userPhone, otp);
+        if (result.success) {
+          showMessage('✅ Registration complete! Welcome!', 'success');
+          setTimeout(() => {
+            window.location.href = 'index.html';
+          }, 1500);
+        } else {
+          showMessage(result.error || 'Invalid SMS code', 'error');
+          btn.disabled = false;
+          btn.innerHTML = 'Complete Registration';
+        }
+      } catch (error) {
+        console.error('Signup phone OTP error:', error);
+        showMessage(error.message || 'SMS verification failed', 'error');
+        btn.disabled = false;
+        btn.innerHTML = 'Complete Registration';
+      }
+    });
+
+    // Back buttons
+    document.getElementById('loginBackBtn').addEventListener('click', () => showStep('email'));
+    document.getElementById('loginPhoneBackBtn').addEventListener('click', () => showStep('phone'));
+    document.getElementById('signupBackBtn').addEventListener('click', () => showStep('email'));
+    document.getElementById('signupPhoneBackBtn').addEventListener('click', () => showStep('phone'));
+
+    // Skip phone buttons
+    document.getElementById('loginSkipPhoneBtn').addEventListener('click', () => {
+      showMessage('✅ Login successful! Welcome back!', 'success');
+      setTimeout(() => {
+        window.location.href = 'index.html';
+      }, 1000);
+    });
+
+    document.getElementById('signupSkipPhoneBtn').addEventListener('click', () => {
+      showMessage('✅ Registration complete! Welcome!', 'success');
+      setTimeout(() => {
+        window.location.href = 'index.html';
+      }, 1000);
+    });
+
+    // Guest Mode
+    document.getElementById('guestBtn').addEventListener('click', () => {
+      // Store guest mode flag
+      localStorage.setItem('dualmind.guest', 'true');
+      showMessage('📝 Continuing as guest...', 'success');
+      setTimeout(() => {
+        window.location.href = 'index.html';
+      }, 500);
+    });
+
+    // Helper Functions
+    function showMessage(text, type) {
+      message.textContent = text;
+      message.className = `message ${type} show`;
+    }
+
+    function hideMessage() {
+      message.className = 'message';
+    }
+
+    // Check if already logged in
+    setTimeout(() => {
+      if (auth.isAuthenticated()) {
+        window.location.href = 'index.html';
+      }
+    }, 500);
+  </script>
+</body>
+</html>

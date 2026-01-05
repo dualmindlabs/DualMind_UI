@@ -1,0 +1,6 @@
+{
+  "compilerOptions": {
+    "lib": ["deno.window"],
+    "types": ["deno"]
+  }
+}
