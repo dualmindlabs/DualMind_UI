@@ -26,6 +26,7 @@ class App {
       backendAvailable: false, // Track if backend is available
       currentThreadId: null // Track current conversation thread
     };
+    this._backendHealthFailures = 0;
     this._activeStreams = [];
     this.api = new DualMindApiClient({ 
       baseUrl: getApiBaseUrl(),
@@ -126,57 +127,50 @@ class App {
     // Skip backend check if offline mode is preferred
     if (window.DUALMIND_CONFIG?.offline?.enabled === false) {
       try {
-        // First check basic health endpoint
-        const healthResponse = await fetch('/api/health', {
-          method: 'GET',
-          signal: AbortSignal.timeout(5000) // 5 second timeout
-        });
-        
-        if (healthResponse.ok) {
-          // Health check passed, now test a real API endpoint for APP_SECRET issues
+        const baseUrl = getApiBaseUrl();
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+        let ok = false;
+        try {
+          const res = await fetch(`${baseUrl}/api/health`, { method: 'GET', signal: controller.signal });
+          ok = res.ok;
+        } catch {
+          ok = false;
+        }
+
+        if (!ok) {
           try {
-            const testResponse = await fetch('/api/arena/dualchat', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                prompt: 'test',
-                selectionMode: 'random'
-              }),
-              signal: AbortSignal.timeout(3000) // 3 second timeout for test
-            });
-            
-            // If the API call succeeds or fails with a normal error (not APP_SECRET), backend is available
-            const responseText = await testResponse.text();
-            if (!responseText.includes('APP_SECRET') && !responseText.includes('EncryptionService')) {
-              this.state.backendAvailable = true;
-              console.log('✅ Backend available and fully functional');
-              return;
-            }
-          } catch (apiError) {
-            // If API call fails with APP_SECRET error, backend has config issues
-            const errorMsg = apiError?.message || '';
-            if (errorMsg.includes('APP_SECRET') || errorMsg.includes('EncryptionService')) {
-              console.log('📱 Backend has configuration issues, running in offline mode');
-              this.state.backendAvailable = false;
-              this.state.apiEnabled = true; // Enable mock responses
-              return;
-            }
-            
-            // Other API errors mean backend is available but endpoint failed normally
-            this.state.backendAvailable = true;
-            console.log('✅ Backend available (API test failed but not APP_SECRET related)');
-            return;
+            const res = await fetch(`${baseUrl}/health`, { method: 'GET', signal: controller.signal });
+            ok = res.ok;
+          } catch {
+            ok = false;
           }
         }
-        
-        // Health check failed
-        this.state.backendAvailable = false;
-        console.log('⚠️ Backend health check failed, running in offline mode');
+
+        clearTimeout(timeoutId);
+
+        if (ok) {
+          this._backendHealthFailures = 0;
+          this.state.backendAvailable = true;
+          console.log('✅ Backend available');
+          this.hideBackendUnavailableBanner();
+          return;
+        }
+
+        this._backendHealthFailures += 1;
+        if (this._backendHealthFailures >= 2) {
+          this.state.backendAvailable = false;
+          console.log('⚠️ Backend health check failed (consecutive), some features may be unavailable');
+          this.showBackendUnavailableBanner();
+        }
       } catch (error) {
-        this.state.backendAvailable = false;
-        console.log('⚠️ Backend not available, running in offline mode');
+        this._backendHealthFailures += 1;
+        if (this._backendHealthFailures >= 2) {
+          this.state.backendAvailable = false;
+          console.log('⚠️ Backend not available (consecutive), some features may be unavailable');
+          this.showBackendUnavailableBanner();
+        }
       }
     } else {
       // Offline mode preferred - don't check backend
@@ -188,6 +182,51 @@ class App {
     if (!this.state.backendAvailable) {
       this.state.apiEnabled = true; // Enable for mock responses
     }
+  }
+
+  showBackendUnavailableBanner() {
+    if (document.getElementById('backend-unavailable-banner')) return;
+
+    const banner = document.createElement('div');
+    banner.id = 'backend-unavailable-banner';
+    banner.style.cssText = [
+      'position:fixed',
+      'left:50%',
+      'bottom:16px',
+      'transform:translateX(-50%)',
+      'background:#111827',
+      'color:#fff',
+      'padding:10px 12px',
+      'border-radius:10px',
+      'z-index:10000',
+      'box-shadow:0 8px 24px rgba(0,0,0,0.35)',
+      'font-size:12px',
+      'display:flex',
+      'gap:10px',
+      'align-items:center'
+    ].join(';');
+
+    const msg = document.createElement('div');
+    msg.textContent = 'Backend unavailable. Some features may be disabled.';
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = 'Retry';
+    btn.style.cssText = 'background:#2563eb;color:#fff;border:0;border-radius:8px;padding:6px 10px;cursor:pointer;font-weight:600;';
+    btn.addEventListener('click', async () => {
+      this._backendHealthFailures = 0;
+      await this.checkBackendAvailability();
+      this.renderChat();
+    });
+
+    banner.appendChild(msg);
+    banner.appendChild(btn);
+    document.body.appendChild(banner);
+  }
+
+  hideBackendUnavailableBanner() {
+    const el = document.getElementById('backend-unavailable-banner');
+    if (el) el.remove();
   }
 
   setup() {
@@ -202,15 +241,11 @@ class App {
       this.components.sidebar.updateUserInfo();
     }
 
-    // Leaderboard modal (only if backend is available)
-    if (this.state.backendAvailable) {
-      this.leaderboard = new LeaderboardModal({
-        api: this.api,
-        isApiEnabled: () => !!this.state.apiEnabled,
-      });
-    } else {
-      console.log('📱 Leaderboard disabled - backend not available');
-    }
+    // Leaderboard modal
+    this.leaderboard = new LeaderboardModal({
+      api: this.api,
+      isApiEnabled: () => !!this.state.apiEnabled,
+    });
     
     // Set up global event listeners
     this.attachGlobalListeners();

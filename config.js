@@ -4,6 +4,9 @@ window.DUALMIND_CONFIG = window.DUALMIND_CONFIG || {};
 // ⚡ SINGLE SOURCE OF TRUTH - CHANGE THIS ONE LINE ONLY ⚡
 const BACKEND_URL = 'https://api.dualmindlab.tech';
 
+// Single API base URL used by UI for all fetch calls
+window.DUALMIND_CONFIG.apiBaseUrl = BACKEND_URL;
+
 // Set it globally so all code can access it
 window.DUALMIND_CONFIG.backendUrl = BACKEND_URL;
 
@@ -22,6 +25,9 @@ const getBackendUrl = () => {
 // Set the server URL
 window.DUALMIND_CONFIG.serverUrl = window.DUALMIND_CONFIG.serverUrl || getBackendUrl();
 window.DUALMIND_CONFIG.siteUrl = window.DUALMIND_CONFIG.siteUrl || window.location.origin;
+
+// Optional local-dev override (must be explicitly set; never accidental)
+window.DUALMIND_CONFIG.dev = window.DUALMIND_CONFIG.dev || {};
 
 // ========== Speed & Performance Settings ==========
 

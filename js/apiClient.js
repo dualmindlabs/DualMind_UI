@@ -22,14 +22,26 @@ export class DualMindApiClient {
     }
 
     try {
+      const logApiCalls = !!window.DUALMIND_CONFIG?.debug?.logApiCalls;
+      if (logApiCalls) {
+        console.log(`[DualMind API] ${method} ${url}`);
+      }
+
       const res = await fetch(url, {
         method,
         headers,
         body: body === undefined ? undefined : JSON.stringify(body),
       });
 
+      const traceId = res.headers.get('x-trace-id') || res.headers.get('x-request-id') || null;
+
       const text = await res.text();
       const data = text ? safeJsonParse(text) : null;
+
+      if (logApiCalls) {
+        const bodyTraceId = data?.traceId || data?.data?.traceId || null;
+        console.log(`[DualMind API] ${res.status} ${method} ${url}${traceId || bodyTraceId ? ` (traceId=${traceId || bodyTraceId})` : ''}`);
+      }
 
       if (!res.ok) {
         const msg =
@@ -59,6 +71,14 @@ export class DualMindApiClient {
       
       // Re-throw other errors
       throw error;
+    }
+  }
+
+  async health() {
+    try {
+      return await this._request('/api/health', { method: 'GET' });
+    } catch (e) {
+      return await this._request('/health', { method: 'GET' });
     }
   }
 
@@ -144,9 +164,18 @@ export class DualMindApiClient {
 }
 
 export function getApiBaseUrl() {
-  // Use relative URLs to go through Cloudflare Worker proxy
-  // Worker will forward to https://api.dualmindlab.tech
-  return '';
+  const configured =
+    window.DUALMIND_CONFIG?.apiBaseUrl ||
+    window.DUALMIND_CONFIG?.backendUrl ||
+    window.DUALMIND_API_BASE_URL ||
+    'https://api.dualmindlab.tech';
+
+  const override = window.DUALMIND_CONFIG?.dev?.apiBaseUrlOverride;
+  if (typeof override === 'string' && override.trim()) {
+    return override.trim().replace(/\/+$/, '');
+  }
+
+  return String(configured || '').trim().replace(/\/+$/, '');
 }
 
 export async function defaultGetAuthToken() {
