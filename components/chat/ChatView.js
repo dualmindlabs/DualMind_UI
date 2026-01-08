@@ -7,6 +7,26 @@
 
 import { Icons } from '../../js/icons.js';
 
+function renderRefreshIcon(color = 'white', size = 18) {
+  return `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M20 12a8 8 0 1 1-2.343-5.657" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M20 4v6h-6" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  `;
+}
+
+function renderExpandIcon(color = 'white', size = 18) {
+  return `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M9 3H3v6" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M15 21h6v-6" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M3 3l7 7" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M21 21l-7-7" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  `;
+}
+
 function escapeHtml(str) {
   return String(str)
     .replace(/&/g, '&amp;')
@@ -18,6 +38,8 @@ export class ChatView {
   constructor(containerId) {
     this.container = document.getElementById(containerId);
     this._onClick = null;
+    this._shouldAutoScroll = true;
+    this._isUserScrolling = false;
     this.state = {
       mode: 'battle',
       turns: [],
@@ -27,11 +49,59 @@ export class ChatView {
 
     this.render();
     this.attach();
+    this.attachScrollListener();
   }
 
   setState(next) {
+    const prevTurnsLength = this.state.turns?.length || 0;
     this.state = { ...this.state, ...next };
+    const newTurnsLength = this.state.turns?.length || 0;
+
+    // If a new turn was added, append it without full re-render
+    if (newTurnsLength > prevTurnsLength) {
+      const newTurn = this.state.turns[newTurnsLength - 1];
+      this.appendTurn(newTurn);
+      return;
+    }
+
+    // Otherwise, full render (e.g., mode change, clear)
     this.render();
+  }
+
+  appendTurn(turn) {
+    const turnsContainer = this.container.querySelector('.chat-turns');
+    if (!turnsContainer) {
+      this.render();
+      return;
+    }
+    const turnHtml = this.renderTurn(turn);
+    const temp = document.createElement('div');
+    temp.innerHTML = turnHtml;
+    const newSection = temp.firstElementChild;
+    
+    // Insert before sentinel
+    const sentinel = turnsContainer.querySelector('#chat-scroll-sentinel');
+    if (sentinel) {
+      turnsContainer.insertBefore(newSection, sentinel);
+    } else {
+      turnsContainer.appendChild(newSection);
+    }
+    
+    // Re-attach listeners for the new section only
+    this.attachListenersTo(newSection);
+    
+    // Auto-scroll to new message
+    this.scrollToBottom();
+  }
+
+  attachListenersTo(root = this.container) {
+    if (!root) return;
+    const refreshBtn = root.querySelector('button[data-action="refresh"]');
+    const expandBtn = root.querySelector('button[data-action="expand"]');
+    const copyBtn = root.querySelector('button[data-action="copy"]');
+    refreshBtn?.addEventListener('click', this._onClick);
+    expandBtn?.addEventListener('click', this._onClick);
+    copyBtn?.addEventListener('click', this._onClick);
   }
 
   clear() {
@@ -67,7 +137,9 @@ export class ChatView {
 
     return `
       <div class="chat-turns">
-        ${turns.map((t, idx) => this.renderTurn(t, idx)).join('')}
+        ${turns.map((t) => this.renderTurn(t)).join('')}
+        <!-- Scroll anchor: positioned to create gap above vote buttons -->
+        <div id="chat-scroll-sentinel" class="scroll-sentinel" aria-hidden="true"></div>
       </div>
     `;
   }
@@ -79,10 +151,9 @@ export class ChatView {
 
     return `
       <section class="chat-turn" data-turn-id="${turn.id}">
-        <div class="prompt-row">
-          <div class="prompt-bubble glass-panel">
-            <div class="prompt-label">Prompt</div>
-            <div class="prompt-text">${prompt}</div>
+        <div class="user-message">
+          <div class="user-bubble">
+            <div class="user-text">${prompt}</div>
           </div>
         </div>
 
@@ -102,6 +173,7 @@ export class ChatView {
     const bodyId = `resp-${turnId}-${side}`;
     const text = escapeHtml(data.text || '');
     const streaming = !!data.streaming;
+    const assistantLabel = side === 'left' ? 'A' : 'B';
 
     const voteStatus = turn.voteStatus || 'idle';
     const voteChoice = turn.voteChoice || null;
@@ -110,17 +182,35 @@ export class ChatView {
     const isLoser = voted && voteChoice && voteChoice !== 'tie' && voteChoice !== side;
     const voteClass = `${isWinner ? ' is-winner' : ''}${isLoser ? ' is-loser' : ''}`;
 
+    const hasGreenSelection =
+      voteChoice === 'tie' ||
+      voteChoice === side;
+
+    const hasRedSelection =
+      voteChoice === 'both-bad';
+
+    const persistentSelectionClass =
+      hasRedSelection ? ' vote-selected-red' :
+      (voteChoice && hasGreenSelection ? ' vote-selected-green' : '');
+
     return `
-      <article class="response-card glass-panel ${streaming ? 'is-streaming' : ''}${voteClass}" data-turn-id="${turnId}" data-side="${side}">
+      <article class="response-card glass-panel ${streaming ? 'is-streaming' : ''}${voteClass}${persistentSelectionClass}" data-turn-id="${turnId}" data-side="${side}">
         <div class="response-header">
           <div class="model-badge">
+            <span class="assistant-tag">${assistantLabel}</span>
             <span class="model-dot ${side}"></span>
             <span class="model-name">${modelName}</span>
           </div>
 
           <div class="message-actions">
+            <button class="icon-btn" type="button" data-action="refresh" data-turn-id="${turnId}" data-side="${side}" aria-label="Regenerate reply">
+              ${renderRefreshIcon('white', 18)}
+            </button>
             <button class="icon-btn copy-btn" type="button" data-action="copy" data-target="${bodyId}" aria-label="Copy reply">
               ${Icons.code('white', 18)}
+            </button>
+            <button class="icon-btn" type="button" data-action="expand" data-turn-id="${turnId}" data-side="${side}" aria-label="Expand reply">
+              ${renderExpandIcon('white', 18)}
             </button>
           </div>
         </div>
@@ -131,71 +221,8 @@ export class ChatView {
   }
 
   renderVoteBar(turn) {
-    const leftDone = !turn.left?.streaming;
-    const rightDone = !turn.right?.streaming;
-    const ready = leftDone && rightDone;
-
-    const status = turn.voteStatus || 'idle';
-    const choice = turn.voteChoice || null;
-    const submitted = status === 'submitted';
-    const submitting = status === 'submitting';
-
-    const apiEnabled = !!this.state.apiEnabled;
-    const hasComparison = !!turn.comparisonId;
-
-    const leftLabel = escapeHtml(turn.left?.modelName || 'Left');
-    const rightLabel = escapeHtml(turn.right?.modelName || 'Right');
-
-    const disableCommon = !ready || submitting || submitted;
-    const leftDisabled = disableCommon || !apiEnabled || !hasComparison;
-    const rightDisabled = disableCommon || !apiEnabled || !hasComparison;
-    const tieDisabled = disableCommon; // tie is local-only
-
-    const hint =
-      turn.voteMessage ||
-      (!ready ? 'Vote after both replies finish.' :
-      (!apiEnabled ? 'API is off — enable API to submit votes.' :
-      (!hasComparison ? 'Vote needs a comparisonId — use API battle mode.' : '')));
-
-    return `
-      <div class="vote-row">
-        <div class="vote-panel glass-panel">
-          <div class="vote-title">Which response was better?</div>
-          <div class="vote-actions">
-            <button
-              class="vote-btn ${choice === 'left' ? 'active' : ''}"
-              type="button"
-              data-action="vote"
-              data-vote="left"
-              data-turn-id="${turn.id}"
-              ${leftDisabled ? 'disabled' : ''}
-              aria-pressed="${choice === 'left' ? 'true' : 'false'}"
-            >${leftLabel}</button>
-
-            <button
-              class="vote-btn vote-tie ${choice === 'tie' ? 'active' : ''}"
-              type="button"
-              data-action="vote"
-              data-vote="tie"
-              data-turn-id="${turn.id}"
-              ${tieDisabled ? 'disabled' : ''}
-              aria-pressed="${choice === 'tie' ? 'true' : 'false'}"
-            >Tie</button>
-
-            <button
-              class="vote-btn ${choice === 'right' ? 'active' : ''}"
-              type="button"
-              data-action="vote"
-              data-vote="right"
-              data-turn-id="${turn.id}"
-              ${rightDisabled ? 'disabled' : ''}
-              aria-pressed="${choice === 'right' ? 'true' : 'false'}"
-            >${rightLabel}</button>
-          </div>
-          ${hint ? `<div class="vote-hint ${status === 'error' ? 'is-error' : ''}">${escapeHtml(hint)}</div>` : ''}
-        </div>
-      </div>
-    `;
+    // Voting disabled - return empty
+    return '';
   }
 
   renderDirect() {
@@ -232,6 +259,24 @@ export class ChatView {
     if (this._onClick) this.container.removeEventListener('click', this._onClick);
 
     this._onClick = async (e) => {
+      const refreshBtn = e.target.closest?.('button[data-action="refresh"]');
+      if (refreshBtn) {
+        const turnId = Number(refreshBtn.getAttribute('data-turn-id'));
+        const turn = (this.state.turns || []).find((t) => Number(t.id) === turnId);
+        const prompt = turn?.prompt || '';
+        if (prompt.trim()) {
+          document.dispatchEvent(new CustomEvent('chat-submit', { detail: { message: prompt.trim(), attachments: [] } }));
+        }
+        return;
+      }
+
+      const expandBtn = e.target.closest?.('button[data-action="expand"]');
+      if (expandBtn) {
+        const card = expandBtn.closest?.('.response-card');
+        card?.classList.toggle('is-expanded');
+        return;
+      }
+
       const voteBtn = e.target.closest?.('button[data-action="vote"]');
       if (voteBtn) {
         const turnId = voteBtn.getAttribute('data-turn-id');
@@ -281,11 +326,81 @@ export class ChatView {
     if (streaming) {
       el.insertAdjacentHTML('beforeend', '<span class="stream-caret" aria-hidden="true"></span>');
     }
+
+    // Auto-scroll during streaming if user hasn't scrolled up
+    this.scrollToBottom();
   }
 
   finishResponse(turnId, side) {
     const el = document.getElementById(`resp-${turnId}-${side}`);
     el?.querySelector?.('.stream-caret')?.remove();
+    
+    // Remove is-streaming class from response card
+    const card = document.querySelector(`.response-card[data-turn-id="${turnId}"][data-side="${side}"]`);
+    card?.classList.remove('is-streaming');
+  }
+
+  attachScrollListener() {
+    // The scroll container is #main-content (parent of this.container)
+    const scrollContainer = this.container.parentElement;
+    if (!scrollContainer) return;
+
+    let scrollTimeout;
+    scrollContainer.addEventListener('scroll', () => {
+      // Detect if user manually scrolled up (ChatGPT-style)
+      clearTimeout(scrollTimeout);
+      this._isUserScrolling = true;
+
+      scrollTimeout = setTimeout(() => {
+        this._isUserScrolling = false;
+        // Check if user is near bottom - if yes, resume auto-scroll
+        const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
+        const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+        // More generous threshold (150px) for better UX
+        this._shouldAutoScroll = distanceFromBottom < 150;
+      }, 150);
+    });
+  }
+
+  scrollToBottom(force = false) {
+    // ChatGPT-style scroll behavior: respect user scroll position
+    if (!force && !this._shouldAutoScroll) return;
+    if (this._isUserScrolling && !force) return;
+
+    const scrollContainer = this.container.parentElement;
+    if (!scrollContainer) return;
+
+    // Use scroll sentinel as anchor point (positioned above vote buttons)
+    const sentinel = document.getElementById('chat-scroll-sentinel');
+    if (!sentinel) {
+      // Fallback: scroll to bottom if sentinel not found
+      scrollContainer.scrollTo({
+        top: scrollContainer.scrollHeight,
+        behavior: 'smooth'
+      });
+      return;
+    }
+
+    // ChatGPT-style: scroll sentinel into view with 'end' alignment
+    // This positions the sentinel at the bottom of the viewport,
+    // keeping content visible above the vote buttons
+    try {
+      sentinel.scrollIntoView({
+        behavior: 'smooth',
+        block: 'end',
+        inline: 'nearest'
+      });
+    } catch (e) {
+      // Fallback for older browsers
+      const sentinelTop = sentinel.offsetTop;
+      const containerHeight = scrollContainer.clientHeight;
+      const targetScroll = sentinelTop - containerHeight + sentinel.offsetHeight;
+      
+      scrollContainer.scrollTo({
+        top: Math.max(0, targetScroll),
+        behavior: 'smooth'
+      });
+    }
   }
 }
 

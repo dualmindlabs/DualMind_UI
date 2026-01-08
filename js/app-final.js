@@ -73,18 +73,34 @@ class App {
     // Wait for DualMindAuth to be ready
     await this.waitForAuth();
     
+    // Add a small delay to ensure Supabase auth is fully initialized
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
     // Check authentication with Supabase
     const isLoggedIn = window.DualMindAuth ? window.DualMindAuth.isLoggedIn() : false;
+    console.log('🔍 Auth check - isLoggedIn:', isLoggedIn);
+    console.log('🔍 Auth object available:', !!window.DualMindAuth);
+    console.log('🔍 Supabase auth available:', !!window._DUALMIND_AUTH);
     
     if (!isLoggedIn) {
-      // Check if guest mode
-      const isGuest = localStorage.getItem('dualmind.guest') === 'true';
-      if (!isGuest) {
-        // Redirect to login with current page as redirect target
+      // Enable guest mode by default to allow app to work without login
+      const guestMode = localStorage.getItem('dualmind.guest');
+      
+      // If guest mode is not explicitly set, enable it by default
+      if (guestMode === null) {
+        localStorage.setItem('dualmind.guest', 'true');
+        console.log('✅ Guest mode enabled (default)');
+      }
+      
+      // Only redirect to login if guest mode is explicitly disabled
+      if (guestMode === 'false') {
         const currentPath = window.location.pathname;
-        window.location.href = `login/index.html?redirect=${encodeURIComponent(currentPath)}`;
+        console.log('🔄 Redirecting to login:', currentPath);
+        window.location.href = `login.html?redirect=${encodeURIComponent(currentPath)}`;
         return;
       }
+      
+      console.log('🔍 Running in guest mode');
     }
 
     // Set user info
@@ -282,6 +298,39 @@ class App {
       this.handleVoteSubmit(e.detail);
     });
 
+    // Floating voting buttons - click handler
+    document.addEventListener('click', (e) => {
+      if (e.target.matches('.vote-btn-light')) {
+        const vote = e.target.getAttribute('data-vote');
+        const turnId = e.target.closest('#floating-voting')?.getAttribute('data-turn-id');
+        if (vote && turnId) {
+          this.handleFloatingVote(vote, turnId);
+          this.applyVoteSelection(vote, turnId);
+        }
+      }
+    });
+
+    // Floating voting buttons - hover handlers
+    document.addEventListener('mouseover', (e) => {
+      if (e.target.matches('.vote-btn-light')) {
+        const vote = e.target.getAttribute('data-vote');
+        const turnId = e.target.closest('#floating-voting')?.getAttribute('data-turn-id');
+        if (vote && turnId) {
+          this.highlightResponseCards(vote, turnId, true);
+        }
+      }
+    });
+
+    document.addEventListener('mouseout', (e) => {
+      if (e.target.matches('.vote-btn-light')) {
+        const vote = e.target.getAttribute('data-vote');
+        const turnId = e.target.closest('#floating-voting')?.getAttribute('data-turn-id');
+        if (vote && turnId) {
+          this.highlightResponseCards(vote, turnId, false);
+        }
+      }
+    });
+
     // Web search toggle
     document.addEventListener('toggle-web-search', (e) => {
       this.state.webSearchEnabled = e.detail.active;
@@ -335,6 +384,9 @@ class App {
     if (this.state.streaming) return; // no double-send
 
     console.log('Chat submitted:', data);
+
+    // ✅ RESET VOTE STATE - New prompt = new comparison session
+    this.resetVoteState();
 
     // Add to recent chats
     this.components.sidebar.addRecentChat({
@@ -397,6 +449,9 @@ class App {
     this.components.chatInput.setLoading(true);
     this.renderChat();
 
+    // Show voting buttons immediately after prompt is submitted
+    this.showFloatingVoting(turnId);
+
     // Build demo replies (slightly different variants)
     const leftText = buildMockReply(prompt, left.name, 'precise');
     const rightText = buildMockReply(prompt, right.name, 'balanced');
@@ -420,7 +475,7 @@ class App {
     this.components.chatView.finishResponse(turnId, 'left');
     this.components.chatView.finishResponse(turnId, 'right');
 
-    // Mark streaming false in state
+    // Mark streaming false in state (no need to re-render, finishResponse already updated DOM)
     this.state.turns = this.state.turns.map((t) => {
       if (t.id !== turnId) return t;
       return {
@@ -433,7 +488,10 @@ class App {
     this.state.streaming = false;
     this._activeStreams = [];
     this.components.chatInput.setLoading(false);
-    this.renderChat();
+    // ✅ NO renderChat() - turn already exists, streaming updates done via DOM patches
+
+    // ChatInput re-renders when loading changes; ensure voting stays visible until user clicks
+    this.showFloatingVoting(turnId);
   }
 
   async runArenaApi(prompt) {
@@ -465,6 +523,9 @@ class App {
     this.components.chatInput.setLoading(true);
     this.renderChat();
 
+    // Show voting buttons immediately after prompt is submitted
+    this.showFloatingVoting(turnId);
+
     try {
       const userId = this.state.user?.id || null;
       const resp = await this.api.dualChat(prompt, { 
@@ -479,6 +540,7 @@ class App {
       turn.comparisonId = resp?.comparisonId || null;
 
       // Prefer displayName in UI, keep internal model name for the vote payload.
+      // Update state
       turn.left.modelName = a1?.model?.displayName || a1?.model?.name || 'Agent 1';
       turn.left.voteModelName = a1?.model?.name || a1?.model?.displayName || null;
       turn.left.text = a1?.message || a1?.text || '';
@@ -489,9 +551,29 @@ class App {
       turn.right.text = a2?.message || a2?.text || '';
       turn.right.streaming = false;
 
+      // Update DOM directly instead of full re-render
+      const leftEl = document.getElementById(`resp-${turnId}-left`);
+      const rightEl = document.getElementById(`resp-${turnId}-right`);
+      if (leftEl) leftEl.textContent = turn.left.text;
+      if (rightEl) rightEl.textContent = turn.right.text;
+
+      // Update model names in badges
+      const leftBadge = document.querySelector(`.response-card[data-turn-id="${turnId}"][data-side="left"] .model-name`);
+      const rightBadge = document.querySelector(`.response-card[data-turn-id="${turnId}"][data-side="right"] .model-name`);
+      if (leftBadge) leftBadge.textContent = turn.left.modelName;
+      if (rightBadge) rightBadge.textContent = turn.right.modelName;
+
+      // Remove streaming classes
+      this.components.chatView.finishResponse(turnId, 'left');
+      this.components.chatView.finishResponse(turnId, 'right');
+
       this.state.streaming = false;
       this.components.chatInput.setLoading(false);
-      this.renderChat();
+      // ✅ NO renderChat() - turn already exists, just patched response text
+      
+      // ChatInput re-renders when loading changes; ensure voting stays visible until user clicks
+      this.showFloatingVoting(turnId);
+      
     } catch (err) {
       const msg = err?.message || 'API request failed';
       console.warn('API request failed, falling back to mock responses:', msg);
@@ -693,7 +775,9 @@ class App {
     const chatContainer = document.getElementById('chat-input-container');
     
     if (!state.isMobile) {
-      const offset = state.isOpen ? 'var(--sidebar-width)' : '0';
+      const offset = state.isCollapsed
+        ? 'var(--sidebar-collapsed-width)'
+        : (state.isOpen ? 'var(--sidebar-width)' : '0');
       
       if (headerContainer) {
         headerContainer.style.left = offset;
@@ -702,7 +786,9 @@ class App {
       if (chatContainer) {
         const wrapper = chatContainer.querySelector('.chat-input-wrapper');
         if (wrapper) {
-          wrapper.style.marginLeft = state.isOpen ? 'calc(var(--sidebar-width) / 2)' : '0';
+          wrapper.style.marginLeft = state.isCollapsed
+            ? 'calc(var(--sidebar-collapsed-width) / 2)'
+            : (state.isOpen ? 'calc(var(--sidebar-width) / 2)' : '0');
         }
       }
     } else {
@@ -733,7 +819,8 @@ class App {
     // Ctrl/Cmd + B - Toggle sidebar
     if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
       e.preventDefault();
-      this.components.sidebar.toggle();
+      const state = this.components.sidebar.getState();
+      if (state.isMobile) this.components.sidebar.toggle();
     }
     
     // Escape - Close sidebar on mobile
@@ -754,6 +841,189 @@ class App {
       localStorage.removeItem('dualmind.auth.token');
       window.location.href = 'login/index.html';
     }
+  }
+
+  showFloatingVoting(turnId) {
+    const votingContainer = document.getElementById('floating-voting');
+    console.log('showFloatingVoting called, container:', votingContainer, 'turnId:', turnId);
+    if (!votingContainer) {
+      console.error('Floating voting container not found!');
+      return;
+    }
+    
+    votingContainer.hidden = false;
+    votingContainer.setAttribute('data-turn-id', turnId);
+    console.log('Voting container shown');
+  }
+
+  hideFloatingVoting() {
+    const votingContainer = document.getElementById('floating-voting');
+    if (!votingContainer) return;
+    
+    votingContainer.hidden = true;
+  }
+
+  /**
+   * Reset all vote state and UI when new prompt is submitted
+   * Each prompt/response pair is a new comparison session
+   */
+  resetVoteState() {
+    console.log('🔄 Resetting vote state for new comparison');
+    
+    // Hide voting buttons
+    this.hideFloatingVoting();
+    
+    // Remove all vote button active states
+    const votingContainer = document.getElementById('floating-voting');
+    if (votingContainer) {
+      const allButtons = votingContainer.querySelectorAll('.vote-btn-light');
+      allButtons.forEach(btn => {
+        btn.classList.remove('active');
+        btn.disabled = false; // Re-enable if disabled
+      });
+    }
+    
+    // Remove all vote highlight classes from response cards
+    const allCards = document.querySelectorAll('.response-card');
+    allCards.forEach(card => {
+      card.classList.remove(
+        'vote-highlight-green',
+        'vote-highlight-red',
+        'vote-selected-green',
+        'vote-selected-red'
+      );
+    });
+    
+    // Clear vote state from all turns in state
+    this.state.turns = this.state.turns.map(turn => ({
+      ...turn,
+      voteStatus: undefined,
+      voteChoice: undefined,
+      voteMessage: undefined
+    }));
+    
+    console.log('✅ Vote state reset complete');
+  }
+
+  /**
+   * Highlight response cards on hover
+   * @param {string} vote - 'left', 'right', 'tie', or 'both-bad'
+   * @param {string} turnId - The turn ID
+   * @param {boolean} highlight - true to add highlight, false to remove
+   */
+  highlightResponseCards(vote, turnId, highlight) {
+    const leftCard = document.querySelector(`.response-card[data-turn-id="${turnId}"][data-side="left"]`);
+    const rightCard = document.querySelector(`.response-card[data-turn-id="${turnId}"][data-side="right"]`);
+    
+    if (!leftCard || !rightCard) return;
+
+    const hasPermanentSelection =
+      leftCard.classList.contains('vote-selected-green') ||
+      leftCard.classList.contains('vote-selected-red') ||
+      rightCard.classList.contains('vote-selected-green') ||
+      rightCard.classList.contains('vote-selected-red');
+
+    if (hasPermanentSelection) return;
+
+    // Remove all hover highlights first
+    leftCard.classList.remove('vote-highlight-green', 'vote-highlight-red');
+    rightCard.classList.remove('vote-highlight-green', 'vote-highlight-red');
+
+    if (!highlight) return;
+
+    // Apply hover highlights based on vote type
+    if (vote === 'left') {
+      leftCard.classList.add('vote-highlight-green');
+    } else if (vote === 'right') {
+      rightCard.classList.add('vote-highlight-green');
+    } else if (vote === 'tie') {
+      leftCard.classList.add('vote-highlight-green');
+      rightCard.classList.add('vote-highlight-green');
+    } else if (vote === 'both-bad') {
+      leftCard.classList.add('vote-highlight-red');
+      rightCard.classList.add('vote-highlight-red');
+    }
+  }
+
+  /**
+   * Apply permanent selection styling after click
+   * @param {string} vote - 'left', 'right', 'tie', or 'both-bad'
+   * @param {string} turnId - The turn ID
+   */
+  applyVoteSelection(vote, turnId) {
+    const turn = this.state.turns.find(t => t.id === parseInt(turnId));
+    if (!turn) return;
+    if (turn.left?.streaming || turn.right?.streaming) return;
+
+    const leftCard = document.querySelector(`.response-card[data-turn-id="${turnId}"][data-side="left"]`);
+    const rightCard = document.querySelector(`.response-card[data-turn-id="${turnId}"][data-side="right"]`);
+    const votingContainer = document.getElementById('floating-voting');
+    
+    if (!leftCard || !rightCard || !votingContainer) return;
+
+    // Remove all previous selections and highlights
+    leftCard.classList.remove('vote-highlight-green', 'vote-highlight-red', 'vote-selected-green', 'vote-selected-red');
+    rightCard.classList.remove('vote-highlight-green', 'vote-highlight-red', 'vote-selected-green', 'vote-selected-red');
+
+    // Remove active class from all buttons
+    const allButtons = votingContainer.querySelectorAll('.vote-btn-light');
+    allButtons.forEach(btn => btn.classList.remove('active'));
+
+    // Add active class to clicked button
+    const clickedButton = votingContainer.querySelector(`.vote-btn-light[data-vote="${vote}"]`);
+    if (clickedButton) {
+      clickedButton.classList.add('active');
+    }
+
+    // Apply permanent selection styling
+    if (vote === 'left') {
+      leftCard.classList.add('vote-selected-green');
+    } else if (vote === 'right') {
+      rightCard.classList.add('vote-selected-green');
+    } else if (vote === 'tie') {
+      leftCard.classList.add('vote-selected-green');
+      rightCard.classList.add('vote-selected-green');
+    } else if (vote === 'both-bad') {
+      leftCard.classList.add('vote-selected-red');
+      rightCard.classList.add('vote-selected-red');
+    }
+  }
+
+  async handleFloatingVote(vote, turnId) {
+    const turn = this.state.turns.find(t => t.id === parseInt(turnId));
+    if (!turn) return;
+
+    // Don't allow voting until both responses have finished
+    if (turn.left?.streaming || turn.right?.streaming) return;
+    
+    // Hide voting buttons immediately
+    this.hideFloatingVoting();
+    
+    // Update turn state (no need to re-render, applyVoteSelection already updated DOM)
+    turn.voteStatus = 'submitting';
+    turn.voteChoice = vote;
+    // ✅ NO renderChat() - vote classes already applied via applyVoteSelection()
+    
+    try {
+      if (vote === 'both-bad') {
+        // Handle "both are bad" locally
+        turn.voteStatus = 'submitted';
+        turn.voteMessage = 'Both responses marked as poor.';
+      } else {
+        // Submit vote to API
+        const winnerModelName = vote === 'left' ? turn.left.voteModelName : turn.right.voteModelName;
+        await this.api.submitVote(turn.comparisonId, winnerModelName);
+        
+        turn.voteStatus = 'submitted';
+        turn.voteMessage = 'Vote recorded. Thanks!';
+      }
+    } catch (err) {
+      turn.voteStatus = 'error';
+      turn.voteMessage = 'Failed to submit vote.';
+    }
+    
+    // ✅ NO renderChat() - vote state already in DOM via applyVoteSelection()
+    // Vote message is not displayed in UI, so no need to update DOM
   }
 
   // Public API

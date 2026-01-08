@@ -26,6 +26,12 @@ export class ChatInput {
     this.container.innerHTML = `
       <div id="chat-input-wrapper" class="chat-input-wrapper">
         <div class="chat-input-container">
+          <div id="floating-voting" class="floating-voting" hidden>
+            <button class="vote-btn-light" data-vote="left">Left is better</button>
+            <button class="vote-btn-light" data-vote="tie">It's a tie</button>
+            <button class="vote-btn-light" data-vote="both-bad">Both are bad</button>
+            <button class="vote-btn-light" data-vote="right">Right is better</button>
+          </div>
           <!-- Attachments Preview -->
           <div id="attachments-preview" class="attachments-preview ${this.attachments.length ? 'has-items' : ''}">
             ${this.renderAttachments()}
@@ -187,8 +193,20 @@ export class ChatInput {
 
   setLoading(loading) {
     this.isLoading = loading;
-    this.render();
-    this.attachEventListeners();
+    
+    // Update DOM directly instead of full re-render to prevent color flash
+    const textarea = this.container.querySelector('#chat-input');
+    const submitBtn = this.container.querySelector('#submit-btn');
+    
+    if (textarea) {
+      textarea.disabled = loading;
+    }
+    
+    if (submitBtn) {
+      submitBtn.disabled = loading;
+      submitBtn.classList.toggle('loading', loading);
+      submitBtn.innerHTML = loading ? this.renderLoader() : Icons.arrowUp('white', 15);
+    }
   }
 
   handleAdd() {

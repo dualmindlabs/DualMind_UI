@@ -733,7 +733,8 @@ class App {
     // Ctrl/Cmd + B - Toggle sidebar
     if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
       e.preventDefault();
-      this.components.sidebar.toggle();
+      const state = this.components.sidebar.getState();
+      if (state.isMobile) this.components.sidebar.toggle();
     }
     
     // Escape - Close sidebar on mobile

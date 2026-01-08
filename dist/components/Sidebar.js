@@ -115,7 +115,10 @@ export class Sidebar {
   attachEventListeners() {
     // Toggle sidebar
     const toggleBtn = this.container.querySelector('#sidebar-toggle');
-    toggleBtn?.addEventListener('click', () => this.toggle());
+    toggleBtn?.addEventListener('click', () => {
+      // Disable desktop collapse/shrink behavior. Keep mobile drawer behavior.
+      if (this.isMobile) this.toggle();
+    });
 
     // Floating toggle button
     const floatingToggle = this.container.querySelector('#floating-toggle');
@@ -202,8 +205,13 @@ export class Sidebar {
   }
 
   toggle() {
-    this.isOpen = !this.isOpen;
-    this.updateClasses();
+    if (this.isMobile) {
+      this.isOpen = !this.isOpen;
+      this.updateClasses();
+    } else {
+      // Desktop: do not allow collapse/shrink
+      return;
+    }
   }
 
   open() {

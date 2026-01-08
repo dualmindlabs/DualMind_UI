@@ -10,13 +10,12 @@ export class Header {
     this.container = document.getElementById(containerId);
     this.currentMode = 'battle';
     this.modes = [
-      { id: 'battle', name: 'Battle', icon: Icons.battle },
-      { id: 'arena', name: 'Arena', icon: Icons.battle },
-      { id: 'direct', name: 'Direct Chat', icon: Icons.chat }
+      { id: 'battle', name: 'Battle', subtitle: 'Battle with 2 anonymous models', icon: Icons.battle },
+      { id: 'arena', name: 'Side by Side', subtitle: 'Compare 2 models of your choice', icon: Icons.splitRectangle },
+      { id: 'direct', name: 'Direct Chat', subtitle: 'Chat with one model at a time', icon: Icons.arrowUp }
     ];
     this.isDropdownOpen = false;
     this.isUserMenuOpen = false;
-    this.isApiActive = true;
     this._onDocumentClick = null;
     this._onDocumentKeyDown = null;
     
@@ -60,28 +59,28 @@ export class Header {
             role="menu"
             aria-label="Mode selector"
           >
-            ${this.modes.map(mode => `
+            ${this.modes.map((mode, index) => `
               <button
                 class="mode-option ${mode.id === this.currentMode ? 'active' : ''}"
                 data-mode="${mode.id}"
                 role="menuitemradio"
                 aria-checked="${mode.id === this.currentMode ? 'true' : 'false'}"
               >
-                <span class="mode-option-icon">${mode.icon('white')}</span>
-                <span class="mode-option-text">${mode.name}</span>
+                <div class="mode-option-content">
+                  <div class="mode-option-text">
+                    <span class="mode-option-title">${mode.name}</span>
+                    <span class="mode-option-subtitle">${mode.subtitle}</span>
+                  </div>
+                  <span class="mode-option-icon">${mode.icon('white')}</span>
+                </div>
               </button>
+              ${index < this.modes.length - 1 ? '<div class="mode-option-divider"></div>' : ''}
             `).join('')}
           </div>
         </div>
 
         <!-- Right Controls -->
         <div class="header-controls">
-          <!-- API Status -->
-          <button id="api-btn" class="api-btn ${this.isApiActive ? 'active' : ''}" aria-pressed="${this.isApiActive ? 'true' : 'false'}">
-            <span class="api-indicator ${this.isApiActive ? 'active' : ''}"></span>
-            <span class="api-text">API</span>
-          </button>
-
           <!-- User Menu -->
           <div class="user-menu">
             <button id="user-btn" class="user-btn" aria-label="User menu">
@@ -91,8 +90,11 @@ export class Header {
             <!-- User Dropdown -->
             <div id="user-dropdown" class="user-dropdown ${this.isUserMenuOpen ? 'open' : ''}">
               <div class="user-info">
-                <div class="user-name">${this.getUserName()}</div>
-                <div class="user-email">${this.getUserEmail()}</div>
+                <div class="user-avatar-large">${this.getUserInitials()}</div>
+                <div class="user-details">
+                  <div class="user-name">${this.getUserName()}</div>
+                  <div class="user-email">${this.getUserEmail()}</div>
+                </div>
               </div>
               <div class="user-actions">
                 <button id="logout-btn" class="user-action-btn">
@@ -125,14 +127,6 @@ export class Header {
         this.selectMode(option.dataset.mode);
       });
     });
-
-    // API button
-    const apiBtn = this.container.querySelector('#api-btn');
-    apiBtn?.addEventListener('click', () => this.toggleApi());
-
-    // More button
-    const moreBtn = this.container.querySelector('#more-btn');
-    moreBtn?.addEventListener('click', () => this.openMoreMenu());
 
     // User menu toggle
     const userBtn = this.container.querySelector('#user-btn');
@@ -209,26 +203,6 @@ export class Header {
     document.dispatchEvent(new CustomEvent('mode-change', { 
       detail: { mode: modeId } 
     }));
-  }
-
-  toggleApi() {
-    this.isApiActive = !this.isApiActive;
-    const btn = this.container.querySelector('#api-btn');
-    const indicator = this.container.querySelector('.api-indicator');
-    
-    btn?.classList.toggle('active', this.isApiActive);
-    btn?.setAttribute('aria-pressed', this.isApiActive ? 'true' : 'false');
-    indicator?.classList.toggle('active', this.isApiActive);
-
-    // Dispatch API toggle event
-    document.dispatchEvent(new CustomEvent('api-toggle', { 
-      detail: { active: this.isApiActive } 
-    }));
-  }
-
-  openMoreMenu() {
-    // Dispatch more menu event
-    document.dispatchEvent(new CustomEvent('open-more-menu'));
   }
 
   toggleUserMenu() {

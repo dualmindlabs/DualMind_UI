@@ -163,29 +163,8 @@ class ArenaMode {
    * @param {Array} options - Voting options (model IDs and labels)
    */
   showVoting(options) {
-    if (!this.arenaVoting) return;
-    
-    const buttons = options.map(opt => `
-      <button class="vote-btn" data-vote="${opt.id}">
-        <i class="ri-thumb-up-line"></i> ${this.escapeHtml(opt.label)}
-      </button>
-    `).join('');
-    
-    const tieButton = `
-      <button class="vote-btn vote-tie" data-vote="tie">
-        <i class="ri-equal-line"></i> Tie
-      </button>
-    `;
-    
-    this.arenaVoting.innerHTML = `
-      <p class="voting-prompt">Which response was better?</p>
-      <div class="voting-buttons">
-        ${buttons}
-        ${tieButton}
-      </div>
-    `;
-    
-    this.arenaVoting.hidden = false;
+    // Voting disabled - do nothing
+    return;
   }
 
   /**

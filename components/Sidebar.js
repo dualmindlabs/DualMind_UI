@@ -11,6 +11,7 @@ export class Sidebar {
     this.isMobile = window.innerWidth < 1024;
     // Desktop opens by default; mobile starts closed (drawer)
     this.isOpen = !this.isMobile;
+    this.isCollapsed = false;
     this.recentChats = [];
     this._focusTrapHandler = null;
     this._escapeHandler = null;
@@ -30,20 +31,19 @@ export class Sidebar {
       <!-- Mobile Overlay -->
       <div id="sidebar-overlay" class="sidebar-overlay ${this.isOpen && this.isMobile ? 'active' : ''}"></div>
       
-      <!-- Floating Toggle Button (appears when sidebar is closed) -->
-      <button id="floating-toggle" class="floating-toggle" aria-label="Open sidebar" style="display: ${!this.isOpen && !this.isMobile ? 'flex' : 'none'}">
+      <!-- Floating Toggle Button (appears when sidebar is collapsed) -->
+      <button id="floating-toggle" class="floating-toggle" aria-label="Open sidebar" style="display: ${this.isCollapsed && !this.isMobile ? 'flex' : 'none'}">
         ${Icons.menu('white', 24)}
       </button>
       
       <!-- Sidebar -->
-      <aside id="sidebar" class="sidebar ${this.isOpen ? 'open' : 'closed'}" aria-label="Sidebar">
+      <aside id="sidebar" class="sidebar ${this.isCollapsed ? 'collapsed' : 'open'}" aria-label="Sidebar">
         <!-- Header Section -->
         <div class="sidebar-header">
           <!-- Logo -->
-          <button id="logo-btn" class="logo-btn" aria-label="DualMind Menu">
+          <button id="logo-btn" class="logo-btn" aria-label="DualMind">
             <span class="logo-icon">${Icons.logo(21)}</span>
             <span class="logo-text">DualMind</span>
-            <span class="logo-chevron">${Icons.chevronDown('#577B87', 12)}</span>
           </button>
           
           <!-- Toggle Button (Desktop) -->
@@ -54,11 +54,11 @@ export class Sidebar {
 
         <!-- Navigation -->
         <nav class="sidebar-nav" aria-label="Primary navigation">
-          <a href="#" class="nav-item active" data-action="new-chat">
+          <a href="#" class="nav-item active" data-action="new-chat" title="New Chat">
             <span class="nav-icon">${Icons.newChat('white', 18)}</span>
             <span class="nav-text">New Chat</span>
           </a>
-          <a href="#" class="nav-item" data-action="leaderboard">
+          <a href="#" class="nav-item" data-action="leaderboard" title="Leaderboard">
             <span class="nav-icon">${Icons.leaderboard('white', 0.5)}</span>
             <span class="nav-text">Leaderboard</span>
           </a>
@@ -69,15 +69,6 @@ export class Sidebar {
           <h3 class="section-title">Recent Chat</h3>
           <div id="recent-chats-list" class="recent-chats-list">
             ${this.renderRecentChats()}
-          </div>
-        </div>
-
-        <!-- User Profile -->
-        <div class="user-profile">
-          <div class="user-avatar" id="user-avatar"></div>
-          <div class="user-info">
-            <div class="user-name" id="user-name">Guest</div>
-            <button class="logout-btn" id="logout-btn">Logout</button>
           </div>
         </div>
 
@@ -115,11 +106,39 @@ export class Sidebar {
   attachEventListeners() {
     // Toggle sidebar
     const toggleBtn = this.container.querySelector('#sidebar-toggle');
-    toggleBtn?.addEventListener('click', () => this.toggle());
+    toggleBtn?.addEventListener('click', () => {
+      if (this.isMobile) {
+        // Mobile: open/close drawer
+        this.toggle();
+        return;
+      }
+
+      // Desktop: collapse to icon rail
+      this.isCollapsed = !this.isCollapsed;
+      // Desktop sidebar should remain visible
+      this.isOpen = true;
+      this.updateClasses();
+    });
+
+    // Logo click: expand/collapse on desktop
+    const logoBtn = this.container.querySelector('#logo-btn');
+    logoBtn?.addEventListener('click', () => {
+      if (this.isMobile) return;
+      this.isCollapsed = !this.isCollapsed;
+      this.isOpen = true;
+      this.updateClasses();
+    });
 
     // Floating toggle button
     const floatingToggle = this.container.querySelector('#floating-toggle');
-    floatingToggle?.addEventListener('click', () => this.open());
+    floatingToggle?.addEventListener('click', () => {
+      if (this.isCollapsed) {
+        this.isCollapsed = false;
+        this.updateClasses();
+      } else {
+        this.open();
+      }
+    });
 
     // Close on overlay click (mobile)
     const overlay = this.container.querySelector('#sidebar-overlay');
@@ -134,22 +153,8 @@ export class Sidebar {
       });
     });
 
-    // Logo dropdown
-    const logoBtn = this.container.querySelector('#logo-btn');
-    logoBtn?.addEventListener('click', () => this.toggleLogoDropdown());
-
-    // Logout button
-    const logoutBtn = this.container.querySelector('#logout-btn');
-    logoutBtn?.addEventListener('click', (e) => {
-      e.preventDefault();
-      this.handleLogout();
-    });
-
     // Resize handler
     window.addEventListener('resize', () => this.handleResize());
-    
-    // Update user info
-    this.updateUserInfo();
   }
 
   handleResize() {
@@ -172,10 +177,26 @@ export class Sidebar {
     const sidebar = this.container.querySelector('#sidebar');
     const overlay = this.container.querySelector('#sidebar-overlay');
     const floatingToggle = this.container.querySelector('#floating-toggle');
+    const mainContent = document.querySelector('.main-content');
+
+    if (!this.isMobile) {
+      this.container.style.width = this.isCollapsed
+        ? 'var(--sidebar-collapsed-width)'
+        : 'var(--sidebar-width)';
+    } else {
+      this.container.style.width = '';
+    }
     
     if (sidebar) {
-      sidebar.classList.toggle('open', this.isOpen);
-      sidebar.classList.toggle('closed', !this.isOpen);
+      // Mobile drawer behavior: use open/closed
+      // Desktop collapse behavior: use collapsed/open
+      if (this.isMobile) {
+        sidebar.classList.toggle('open', this.isOpen);
+        sidebar.classList.toggle('collapsed', false);
+      } else {
+        sidebar.classList.toggle('open', !this.isCollapsed);
+        sidebar.classList.toggle('collapsed', this.isCollapsed);
+      }
     }
     
     if (overlay) {
@@ -183,7 +204,11 @@ export class Sidebar {
     }
     
     if (floatingToggle) {
-      floatingToggle.style.display = (!this.isOpen && !this.isMobile) ? 'flex' : 'none';
+      floatingToggle.style.display = 'none';
+    }
+
+    if (mainContent) {
+      mainContent.classList.toggle('collapsed', !!this.isCollapsed && !this.isMobile);
     }
 
     // Mobile drawer hardening: scroll lock + focus trap + Escape
@@ -197,13 +222,40 @@ export class Sidebar {
 
     // Dispatch event for other components
     document.dispatchEvent(new CustomEvent('sidebar-toggle', { 
-      detail: { isOpen: this.isOpen, isMobile: this.isMobile } 
+      detail: { isOpen: this.isOpen, isCollapsed: this.isCollapsed, isMobile: this.isMobile } 
     }));
   }
 
   toggle() {
-    this.isOpen = !this.isOpen;
-    this.updateClasses();
+    if (this.isMobile) {
+      // Mobile: open/close drawer
+      this.isOpen ? this.close() : this.open();
+    } else {
+      // Desktop: collapse to icon rail
+      this.isCollapsed = !this.isCollapsed;
+      this.isOpen = true;
+      this.updateClasses();
+    }
+  }
+
+  updateSidebarState() {
+    const sidebar = this.container.querySelector('#sidebar');
+    const mainContent = document.querySelector('.main-content');
+    const headerContainer = document.querySelector('#header-container');
+    
+    if (sidebar) {
+      sidebar.classList.toggle('collapsed', this.isCollapsed);
+      sidebar.classList.toggle('open', !this.isCollapsed);
+    }
+    
+    if (mainContent) {
+      mainContent.classList.toggle('collapsed', this.isCollapsed);
+    }
+    
+    // Dispatch event for other components
+    document.dispatchEvent(new CustomEvent('sidebar-toggle', { 
+      detail: { isCollapsed: this.isCollapsed, isMobile: this.isMobile } 
+    }));
   }
 
   open() {
@@ -306,11 +358,6 @@ export class Sidebar {
     }
   }
 
-  toggleLogoDropdown() {
-    const logoBtn = this.container.querySelector('#logo-btn');
-    logoBtn?.classList.toggle('dropdown-open');
-  }
-
   addRecentChat(chat) {
     this.recentChats.unshift(chat);
     if (this.recentChats.length > 10) {
@@ -326,52 +373,11 @@ export class Sidebar {
     }
   }
 
-  updateUserInfo() {
-    if (window.DualMindAuth && window.DualMindAuth.isLoggedIn()) {
-      const userName = window.DualMindAuth.getUserName();
-      const user = window.DualMindAuth.getUser();
-      
-      let initials = 'U';
-      if (user && user.user_metadata && user.user_metadata.full_name) {
-        const name = user.user_metadata.full_name;
-        const parts = name.split(' ');
-        if (parts.length >= 2) {
-          initials = (parts[0][0] + parts[1][0]).toUpperCase();
-        } else {
-          initials = name.substring(0, 2).toUpperCase();
-        }
-      } else if (user && user.email) {
-        initials = user.email.substring(0, 2).toUpperCase();
-      }
-      
-      const nameEl = this.container.querySelector('#user-name');
-      const avatarEl = this.container.querySelector('#user-avatar');
-      
-      if (nameEl) nameEl.textContent = userName;
-      if (avatarEl) avatarEl.textContent = initials;
-    } else {
-      const nameEl = this.container.querySelector('#user-name');
-      const avatarEl = this.container.querySelector('#user-avatar');
-      
-      if (nameEl) nameEl.textContent = 'Guest';
-      if (avatarEl) avatarEl.textContent = 'G';
-    }
-  }
-
-  async handleLogout() {
-    if (confirm('Are you sure you want to logout?')) {
-      if (window.DualMindAuth && window.DualMindAuth.logout) {
-        await window.DualMindAuth.logout();
-      } else {
-        document.dispatchEvent(new CustomEvent('user-logout'));
-      }
-    }
-  }
-
   // Public method to get current state
   getState() {
     return {
       isOpen: this.isOpen,
+      isCollapsed: this.isCollapsed,
       isMobile: this.isMobile
     };
   }

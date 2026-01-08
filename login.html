@@ -627,9 +627,8 @@
         const result = await auth.verifySmsOtp(userPhone, otp);
         if (result.success) {
           showMessage('✅ Login successful! Welcome back!', 'success');
-          setTimeout(() => {
-            window.location.href = 'index.html';
-          }, 1500);
+          // Immediate redirect to prevent timing issues
+          window.location.href = 'index.html';
         } else {
           showMessage(result.error || 'Invalid SMS code', 'error');
           btn.disabled = false;
@@ -752,9 +751,8 @@
         const result = await auth.verifySmsOtp(userPhone, otp);
         if (result.success) {
           showMessage('✅ Registration complete! Welcome!', 'success');
-          setTimeout(() => {
-            window.location.href = 'index.html';
-          }, 1500);
+          // Immediate redirect to prevent timing issues
+          window.location.href = 'index.html';
         } else {
           showMessage(result.error || 'Invalid SMS code', 'error');
           btn.disabled = false;
@@ -777,16 +775,12 @@
     // Skip phone buttons
     document.getElementById('loginSkipPhoneBtn').addEventListener('click', () => {
       showMessage('✅ Login successful! Welcome back!', 'success');
-      setTimeout(() => {
-        window.location.href = 'index.html';
-      }, 1000);
+      window.location.href = 'index.html';
     });
 
     document.getElementById('signupSkipPhoneBtn').addEventListener('click', () => {
       showMessage('✅ Registration complete! Welcome!', 'success');
-      setTimeout(() => {
-        window.location.href = 'index.html';
-      }, 1000);
+      window.location.href = 'index.html';
     });
 
     // Guest Mode
@@ -794,9 +788,7 @@
       // Store guest mode flag
       localStorage.setItem('dualmind.guest', 'true');
       showMessage('📝 Continuing as guest...', 'success');
-      setTimeout(() => {
-        window.location.href = 'index.html';
-      }, 500);
+      window.location.href = 'index.html';
     });
 
     // Helper Functions
