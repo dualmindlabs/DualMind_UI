@@ -4,6 +4,11 @@
  * Must be included in all pages that use authentication
  */
 
+// Create promise that resolves when auth is ready
+window.DualMindAuthReady = new Promise((resolve) => {
+  window._resolveDualMindAuthReady = resolve;
+});
+
 (function initSupabaseAuth() {
   // Check if already initialized
   if (window._SUPABASE_AUTH_INITIALIZED) {
@@ -17,6 +22,7 @@
 
   if (!config || !config.supabase) {
     console.warn('⚠️ Supabase configuration not found. Make sure config.js is loaded first.');
+    window._resolveDualMindAuthReady?.();
     return;
   }
 
@@ -24,6 +30,7 @@
   if (!config.supabase.url || config.supabase.url.includes('your-project')) {
     console.warn('⚠️ Supabase credentials not configured in config.js');
     console.info('ℹ️ Update config.js with your Supabase URL and API key');
+    window._resolveDualMindAuthReady?.();
     return;
   }
 
@@ -51,12 +58,20 @@
 
         // Setup global auth reference
         window.getAuth = () => auth;
+        
+        // Resolve the ready promise
+        window._resolveDualMindAuthReady?.();
       } catch (error) {
         console.error('❌ Failed to initialize Supabase Auth:', error);
+        window._resolveDualMindAuthReady?.();
       }
     }).catch(error => {
       console.error('❌ Failed to load Supabase auth module:', error);
+      window._resolveDualMindAuthReady?.();
     });
+  } else {
+    // Auth not configured, resolve immediately
+    window._resolveDualMindAuthReady?.();
   }
 })();
 

@@ -71,11 +71,11 @@ class App {
   }
 
   async init() {
-    // Wait for DualMindAuth to be ready
-    await this.waitForAuth();
-    
-    // Add a small delay to ensure Supabase auth is fully initialized
-    await new Promise(resolve => setTimeout(resolve, 100));
+    // Wait for Supabase auth to fully initialize
+    if (window.DualMindAuthReady) {
+      await window.DualMindAuthReady;
+      console.log('✅ Auth initialization complete');
+    }
     
     // Check authentication with Supabase
     const isLoggedIn = window.DualMindAuth ? window.DualMindAuth.isLoggedIn() : false;
