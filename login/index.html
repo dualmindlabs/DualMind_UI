@@ -475,7 +475,7 @@
         if (response.ok) {
           const result = await response.json();
           if (result.success && result.is_admin) {
-            window.location.href = '../../DM_admin_UI/public/admin.html';
+            window.location.href = window.DUALMIND_CONFIG?.adminUrl || '../index.html';
             return;
           }
         }
@@ -483,8 +483,18 @@
         console.log('Admin check failed, proceeding to main app:', checkError);
       }
 
-      // Redirect to main app
-      const redirectUrl = new URLSearchParams(window.location.search).get('redirect') || '../index.html';
+      // Redirect to main app with safety check
+      let redirectUrl = new URLSearchParams(window.location.search).get('redirect');
+      const isValidRedirect = redirectUrl && (
+          redirectUrl.startsWith('/') && !redirectUrl.startsWith('//') ||
+          redirectUrl.startsWith('../') ||
+          redirectUrl.startsWith(window.location.origin)
+      );
+
+      if (!isValidRedirect) {
+          redirectUrl = '../index.html';
+      }
+
       window.location.href = redirectUrl;
     }
 

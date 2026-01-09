@@ -125,7 +125,7 @@ export class APIClient {
             const { getSupabaseAuthService } = await import('/js/supabase-auth.js');
             const auth = getSupabaseAuthService();
             await auth.logout();
-            window.location.href = '/login.html';
+            window.location.href = '/login/index.html';
           } catch (error) {
             console.error('Could not logout:', error);
           }

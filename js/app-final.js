@@ -97,7 +97,7 @@ class App {
       if (guestMode === 'false') {
         const currentPath = window.location.pathname;
         console.log('🔄 Redirecting to login:', currentPath);
-        window.location.href = `login.html?redirect=${encodeURIComponent(currentPath)}`;
+        window.location.href = `login/index.html?redirect=${encodeURIComponent(currentPath)}`;
         return;
       }
       

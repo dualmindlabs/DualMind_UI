@@ -401,10 +401,8 @@ export class ChatView {
   }
 
   async copyToClipboard(text, btn) {
-    try {
-      await navigator.clipboard.writeText(text.replace(/\u200B/g, ''));
+    const showSuccess = () => {
       btn.classList.add('copied');
-
       // Update tooltip if present
       const originalTitle = btn.getAttribute('title');
       btn.setAttribute('title', 'Copied!');
@@ -413,14 +411,36 @@ export class ChatView {
         btn.classList.remove('copied');
         if (originalTitle) btn.setAttribute('title', originalTitle);
       }, 1500);
+    };
+
+    try {
+      await navigator.clipboard.writeText(text.replace(/\u200B/g, ''));
+      showSuccess();
     } catch {
       // fallback
-      const ta = document.createElement('textarea');
-      ta.value = text;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand('copy');
-      document.body.removeChild(ta);
+      let success = false;
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        success = document.execCommand('copy');
+        document.body.removeChild(ta);
+      } catch (e) {
+        success = false;
+      }
+
+      if (success) {
+        showSuccess();
+      } else {
+        const originalTitle = btn.getAttribute('title');
+        btn.setAttribute('title', 'Failed to copy');
+        setTimeout(() => {
+          if (originalTitle) btn.setAttribute('title', originalTitle);
+        }, 2000);
+      }
     }
   }
 
@@ -465,12 +485,22 @@ export class ChatView {
         }
     });
 
-    // Close on Escape
-    document.addEventListener('keydown', (e) => {
+    // Close on Escape - store bound handler to remove later
+    this.onDocumentKeydown = (e) => {
         if (e.key === 'Escape' && !this.modalContainer.hidden) {
             this.closeModal();
         }
-    });
+    };
+    document.addEventListener('keydown', this.onDocumentKeydown);
+  }
+
+  destroy() {
+    if (this.onDocumentKeydown) {
+        document.removeEventListener('keydown', this.onDocumentKeydown);
+    }
+    if (this._onClick && this.container) {
+        this.container.removeEventListener('click', this._onClick);
+    }
   }
 
   closeModal() {

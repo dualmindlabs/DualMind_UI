@@ -125,6 +125,9 @@ window.DUALMIND_CONFIG.auth = window.DUALMIND_CONFIG.auth || {};
 window.DUALMIND_CONFIG.auth.mode = window.DUALMIND_CONFIG.auth.mode || 'supabase'; // 'supabase' for direct auth, 'backend' for server auth
 window.DUALMIND_CONFIG.auth.autoInitialize = window.DUALMIND_CONFIG.auth.autoInitialize !== false; // Auto-init on page load
 
+// Admin URL Configuration
+window.DUALMIND_CONFIG.adminUrl = window.DUALMIND_CONFIG.adminUrl || '../../DM_admin_UI/public/admin.html';
+
 // ========== OFFLINE MODE CONFIGURATION ==========
 // When backend is not available, app runs in offline/demo mode
 window.DUALMIND_CONFIG.offline = window.DUALMIND_CONFIG.offline || {};
