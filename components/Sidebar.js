@@ -98,7 +98,10 @@ export class Sidebar {
     return this.recentChats.map((chat, index) => `
       <a href="#" class="chat-item animate-fade-in stagger-${Math.min(index + 1, 5)}" data-chat-id="${chat.id}">
         <span class="chat-icon">${Icons.chat('white', 16)}</span>
-        <span class="chat-title">${chat.title}</span>
+        <div class="chat-meta">
+            <span class="chat-title">${chat.title}</span>
+            <span class="chat-date">${new Date(chat.id).toLocaleDateString(undefined, {month:'short', day:'numeric'})}</span>
+        </div>
       </a>
     `).join('');
   }
@@ -155,6 +158,11 @@ export class Sidebar {
 
     // Resize handler
     window.addEventListener('resize', () => this.handleResize());
+
+    // Listen for mode changes
+    document.addEventListener('mode-change', (e) => {
+        this.updateLogo(e.detail.mode);
+    });
   }
 
   handleResize() {
@@ -224,6 +232,23 @@ export class Sidebar {
     document.dispatchEvent(new CustomEvent('sidebar-toggle', { 
       detail: { isOpen: this.isOpen, isCollapsed: this.isCollapsed, isMobile: this.isMobile } 
     }));
+  }
+
+  updateLogo(mode) {
+    const logoContainer = this.container.querySelector('#logo-btn .logo-icon');
+    const logoText = this.container.querySelector('#logo-btn .logo-text');
+    if (!logoContainer) return;
+
+    if (mode === 'battle') {
+        logoContainer.innerHTML = Icons.logo(21);
+        if (logoText) logoText.textContent = 'DualMind';
+    } else if (mode === 'arena') {
+        logoContainer.innerHTML = Icons.splitRectangle(null, 21); // Using split icon for arena
+        if (logoText) logoText.textContent = 'Side by Side';
+    } else if (mode === 'direct') {
+        logoContainer.innerHTML = Icons.chat(null, 21); // Using chat icon for direct
+        if (logoText) logoText.textContent = 'Direct Chat';
+    }
   }
 
   toggle() {

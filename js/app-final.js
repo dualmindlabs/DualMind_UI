@@ -95,9 +95,9 @@ class App {
       
       // Only redirect to login if guest mode is explicitly disabled
       if (guestMode === 'false') {
-        const currentPath = window.location.pathname;
-        console.log('🔄 Redirecting to login:', currentPath);
-        window.location.href = `login.html?redirect=${encodeURIComponent(currentPath)}`;
+        const returnUrl = window.location.pathname + window.location.search + window.location.hash;
+        console.log('🔄 Redirecting to login:', returnUrl);
+        window.location.href = `/login/index.html?redirect=${encodeURIComponent(returnUrl)}`;
         return;
       }
       
@@ -563,11 +563,39 @@ class App {
 
     try {
       const userId = this.state.user?.id || null;
-      const resp = await this.api.dualChat(prompt, { 
-        selectionMode: 'random',
+      const mode = this.state.currentMode;
+      const apiOptions = {
         threadId: this.state.currentThreadId,
         userId: userId
-      });
+      };
+
+      if (mode === 'battle') {
+        apiOptions.selectionMode = 'random';
+      } else if (mode === 'arena') {
+        // Side by Side mode - use selected models
+        // Guard access to potentially undefined nested properties
+        if (
+          this.components &&
+          this.components.chatView &&
+          this.components.chatView.state &&
+          this.components.chatView.state.selectedModels
+        ) {
+          const selected = this.components.chatView.state.selectedModels;
+          if (selected.left && selected.right) {
+            apiOptions.selectionMode = 'specific';
+            apiOptions.model1 = selected.left;
+            apiOptions.model2 = selected.right;
+          } else {
+             console.warn('Selected models incomplete for arena mode, falling back to random');
+             apiOptions.selectionMode = 'random';
+          }
+        } else {
+          console.warn('ChatView state not available, falling back to random');
+          apiOptions.selectionMode = 'random';
+        }
+      }
+
+      const resp = await this.api.dualChat(prompt, apiOptions);
 
       const a1 = resp?.agent1;
       const a2 = resp?.agent2;
@@ -679,8 +707,10 @@ class App {
 
     try {
       const authUserId = this.state.user?.id || null;
+      const selectedModel = this.components.chatView?.state?.selectedModels?.direct || null;
+
       const resp = await this.api.chat(prompt, { 
-        model: 'auto',
+        model: selectedModel || 'auto',
         threadId: this.state.currentThreadId,
         userId: authUserId
       });

@@ -97,8 +97,8 @@ export class Header {
                 </div>
               </div>
               <div class="user-actions">
-                <button id="logout-btn" class="user-action-btn">
-                  <span class="user-action-icon">${Icons.logout('white')}</span>
+                <button id="logout-btn" class="user-action-btn logout-danger">
+                  <span class="user-action-icon">${Icons.logout('#ef4444')}</span>
                   <span class="user-action-text">Logout</span>
                 </button>
               </div>
