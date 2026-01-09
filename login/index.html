@@ -484,15 +484,27 @@
       }
 
       // Redirect to main app with safety check
-      let redirectUrl = new URLSearchParams(window.location.search).get('redirect');
-      const isValidRedirect = redirectUrl && (
-          redirectUrl.startsWith('/') && !redirectUrl.startsWith('//') ||
-          redirectUrl.startsWith('../') ||
-          redirectUrl.startsWith(window.location.origin)
-      );
+      const rawRedirect = new URLSearchParams(window.location.search).get('redirect');
+      let redirectUrl = '../index.html'; // Safe default
 
-      if (!isValidRedirect) {
-          redirectUrl = '../index.html';
+      if (rawRedirect) {
+          try {
+            // Construct absolute URL to check origin and path traversal
+            const url = new URL(rawRedirect, window.location.origin);
+
+            // Security Checks:
+            // 1. Must be same origin
+            // 2. Must NOT contain /../ (path traversal)
+            // 3. Must NOT be an absolute URL with a different protocol (e.g. javascript:)
+            if (url.origin === window.location.origin && !url.pathname.includes('/../')) {
+                // If it's a root-relative path or safe absolute path, use it.
+                // We prefer the pathname + search + hash to ensure we stay on the same origin.
+                redirectUrl = url.pathname + url.search + url.hash;
+            }
+          } catch (e) {
+            // Invalid URL, stick to default
+            console.warn('Invalid redirect URL:', rawRedirect);
+          }
       }
 
       window.location.href = redirectUrl;

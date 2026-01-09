@@ -573,10 +573,26 @@ class App {
         apiOptions.selectionMode = 'random';
       } else if (mode === 'arena') {
         // Side by Side mode - use selected models
-        const selected = this.components.chatView.state.selectedModels;
-        apiOptions.selectionMode = 'specific'; // Assuming API supports this or infers from model1/model2
-        apiOptions.model1 = selected.left;
-        apiOptions.model2 = selected.right;
+        // Guard access to potentially undefined nested properties
+        if (
+          this.components &&
+          this.components.chatView &&
+          this.components.chatView.state &&
+          this.components.chatView.state.selectedModels
+        ) {
+          const selected = this.components.chatView.state.selectedModels;
+          if (selected.left && selected.right) {
+            apiOptions.selectionMode = 'specific';
+            apiOptions.model1 = selected.left;
+            apiOptions.model2 = selected.right;
+          } else {
+             console.warn('Selected models incomplete for arena mode, falling back to random');
+             apiOptions.selectionMode = 'random';
+          }
+        } else {
+          console.warn('ChatView state not available, falling back to random');
+          apiOptions.selectionMode = 'random';
+        }
       }
 
       const resp = await this.api.dualChat(prompt, apiOptions);
