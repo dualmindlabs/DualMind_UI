@@ -286,7 +286,7 @@
           <i class="ri-google-fill"></i> Google
         </button>
         <!-- Phone Login Support -->
-        <button type="button" class="social-btn" id="phoneBtn" title="Sign in with Phone">
+        <button type="button" class="social-btn" id="phoneBtn" title="Coming Soon" disabled>
           <i class="ri-smartphone-line"></i> Phone
         </button>
       </div>
@@ -448,10 +448,13 @@
     });
 
     // Phone Login Placeholder (needs actual implementation if Supabase SMS is set up)
+    // Disabled in UI
+    /*
     phoneBtn.addEventListener('click', () => {
        // Placeholder for phone login UI switch
        alert("Phone login feature coming soon.");
     });
+    */
 
     async function handleSuccessfulLogin(data) {
       // Store session for the app
@@ -464,13 +467,19 @@
 
       // Check if admin
       try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
         const response = await fetch(`${SERVER_URL}/api/admin/check`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${data.session.access_token}`,
             'Content-Type': 'application/json'
-          }
+          },
+          signal: controller.signal
         });
+
+        clearTimeout(timeoutId);
 
         if (response.ok) {
           const result = await response.json();
@@ -494,9 +503,13 @@
 
             // Security Checks:
             // 1. Must be same origin
-            // 2. Must NOT contain /../ (path traversal)
+            // 2. Must NOT contain /../ (path traversal) or backslashes
             // 3. Must NOT be an absolute URL with a different protocol (e.g. javascript:)
-            if (url.origin === window.location.origin && !url.pathname.includes('/../')) {
+            if (
+                url.origin === window.location.origin &&
+                !url.pathname.includes('/../') &&
+                !url.pathname.includes('\\')
+            ) {
                 // If it's a root-relative path or safe absolute path, use it.
                 // We prefer the pathname + search + hash to ensure we stay on the same origin.
                 redirectUrl = url.pathname + url.search + url.hash;

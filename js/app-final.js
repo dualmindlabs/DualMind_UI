@@ -95,9 +95,9 @@ class App {
       
       // Only redirect to login if guest mode is explicitly disabled
       if (guestMode === 'false') {
-        const currentPath = window.location.pathname;
-        console.log('🔄 Redirecting to login:', currentPath);
-        window.location.href = `login/index.html?redirect=${encodeURIComponent(currentPath)}`;
+        const returnUrl = window.location.pathname + window.location.search + window.location.hash;
+        console.log('🔄 Redirecting to login:', returnUrl);
+        window.location.href = `/login/index.html?redirect=${encodeURIComponent(returnUrl)}`;
         return;
       }
       
@@ -707,7 +707,7 @@ class App {
 
     try {
       const authUserId = this.state.user?.id || null;
-      const selectedModel = this.components.chatView.state.selectedModels.direct;
+      const selectedModel = this.components.chatView?.state?.selectedModels?.direct || null;
 
       const resp = await this.api.chat(prompt, { 
         model: selectedModel || 'auto',
