@@ -75,7 +75,7 @@ export class ChatInput {
 
             <!-- Submit Button -->
             <button class="submit-btn ${this.isLoading ? 'loading' : ''}" id="submit-btn" ${this.isLoading ? 'disabled' : ''}>
-              ${this.isLoading ? this.renderLoader() : Icons.arrowUp('white', 15)}
+              ${this.isLoading ? this.renderLoader() : Icons.arrowUp('black', 18)}
             </button>
           </div>
         </div>
@@ -205,7 +205,7 @@ export class ChatInput {
     if (submitBtn) {
       submitBtn.disabled = loading;
       submitBtn.classList.toggle('loading', loading);
-      submitBtn.innerHTML = loading ? this.renderLoader() : Icons.arrowUp('white', 15);
+      submitBtn.innerHTML = loading ? this.renderLoader() : Icons.arrowUp('black', 18);
     }
   }
 

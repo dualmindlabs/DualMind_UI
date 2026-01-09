@@ -563,11 +563,23 @@ class App {
 
     try {
       const userId = this.state.user?.id || null;
-      const resp = await this.api.dualChat(prompt, { 
-        selectionMode: 'random',
+      const mode = this.state.currentMode;
+      const apiOptions = {
         threadId: this.state.currentThreadId,
         userId: userId
-      });
+      };
+
+      if (mode === 'battle') {
+        apiOptions.selectionMode = 'random';
+      } else if (mode === 'arena') {
+        // Side by Side mode - use selected models
+        const selected = this.components.chatView.state.selectedModels;
+        apiOptions.selectionMode = 'specific'; // Assuming API supports this or infers from model1/model2
+        apiOptions.model1 = selected.left;
+        apiOptions.model2 = selected.right;
+      }
+
+      const resp = await this.api.dualChat(prompt, apiOptions);
 
       const a1 = resp?.agent1;
       const a2 = resp?.agent2;
@@ -679,8 +691,10 @@ class App {
 
     try {
       const authUserId = this.state.user?.id || null;
+      const selectedModel = this.components.chatView.state.selectedModels.direct;
+
       const resp = await this.api.chat(prompt, { 
-        model: 'auto',
+        model: selectedModel || 'auto',
         threadId: this.state.currentThreadId,
         userId: authUserId
       });

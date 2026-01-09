@@ -18,8 +18,10 @@
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-      background: var(--bg-0);
+      background: #000000; /* Pure black background as requested */
       overflow: hidden;
+      margin: 0;
+      font-family: 'Inter', sans-serif;
     }
 
     .login-container {
@@ -31,12 +33,14 @@
     }
 
     .login-card {
-      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(0,0,0,.22)), var(--bg-1);
-      border: 1px solid var(--line);
+      background: rgba(20, 20, 20, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 24px;
-      padding: 32px 28px;
-      box-shadow: var(--shadow-lg);
+      padding: 40px 32px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
       text-align: center;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) backwards;
     }
 
@@ -46,67 +50,73 @@
     }
 
     .brand-logo {
-      font-size: 32px;
-      margin-bottom: 8px;
+      font-size: 36px;
+      margin-bottom: 16px;
       display: inline-block;
-      color: var(--text-1);
+      color: #ffffff;
     }
 
     .brand-title {
-      font-size: 20px;
+      font-size: 24px;
       font-weight: 700;
-      color: var(--text-1);
-      margin-bottom: 6px;
+      color: #ffffff;
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
     }
 
     .brand-subtitle {
-      font-size: 14px;
-      color: var(--text-3);
-      margin-bottom: 28px;
+      font-size: 15px;
+      color: rgba(255, 255, 255, 0.6);
+      margin-bottom: 32px;
     }
 
     .form-group {
-      margin-bottom: 16px;
+      margin-bottom: 20px;
       text-align: left;
     }
 
     .form-label {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-2);
-      margin-bottom: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.8);
+      margin-bottom: 8px;
       display: block;
     }
 
     .form-input {
       width: 100%;
-      height: 44px;
+      height: 48px;
       border-radius: 12px;
-      background: rgba(255,255,255,.03);
-      border: 1px solid var(--line);
-      color: var(--text-1);
-      padding: 0 14px;
-      font-size: 14px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+      padding: 0 16px;
+      font-size: 15px;
       transition: all 0.2s ease;
+      outline: none;
     }
 
     .form-input:focus {
-      border-color: rgba(138,180,255,.35);
-      box-shadow: 0 0 0 1px rgba(138,180,255,.15), 0 0 0 4px rgba(138,180,255,.08);
-      background: rgba(255,255,255,.05);
+      border-color: #3b82f6;
+      background: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    }
+
+    .form-input::placeholder {
+      color: rgba(255, 255, 255, 0.3);
     }
 
     .submit-btn {
       width: 100%;
-      height: 44px;
+      height: 48px;
       border-radius: 12px;
-      background: linear-gradient(135deg, #3b82f6, #2563eb);
-      color: #fff;
+      background: #ffffff;
+      color: #000000;
       font-weight: 600;
       border: none;
       cursor: pointer;
-      margin-top: 8px;
-      font-size: 14px;
+      margin-top: 12px;
+      font-size: 15px;
       transition: all 0.2s ease;
       display: flex;
       align-items: center;
@@ -115,8 +125,9 @@
     }
 
     .submit-btn:hover {
-      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+      background: #f0f0f0;
       transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
     }
 
     .submit-btn:active {
@@ -129,7 +140,7 @@
     }
 
     .divider {
-      margin: 24px 0;
+      margin: 28px 0;
       position: relative;
       text-align: center;
     }
@@ -140,15 +151,27 @@
       left: 0; top: 50%;
       width: 100%;
       height: 1px;
-      background: var(--line);
+      background: rgba(255, 255, 255, 0.1);
     }
 
     .divider span {
       position: relative;
-      background: var(--bg-1);
-      padding: 0 10px;
-      color: var(--text-3);
-      font-size: 12px;
+      background: #141414; /* Matches card bg somewhat to hide line */
+      padding: 0 12px;
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 13px;
+    }
+
+    /* Fix for the divider span background matching the card */
+    .login-card .divider span {
+      background: transparent; /* Changed to transparent since card has blur */
+      /* To hide the line behind text, we can use a text-shadow or box-shadow hack,
+         but simpler to just clear the background on the line for that segment.
+         Actually, let's just use a solid background that matches the visual perception
+         or just let the line be there but fade it out?
+         Let's stick to a solid color that approximates the dark theme */
+      background: #181818;
+      border-radius: 4px;
     }
 
     .social-login {
@@ -158,72 +181,73 @@
 
     .social-btn {
       flex: 1;
-      height: 40px;
+      height: 44px;
       border-radius: 12px;
-      background: rgba(255,255,255,.03);
-      border: 1px solid var(--line);
-      color: var(--text-1);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #ffffff;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      font-size: 13px;
+      gap: 10px;
+      font-size: 14px;
       font-weight: 500;
       transition: all 0.2s ease;
     }
 
-    .social-btn:hover {
-      background: rgba(255,255,255,.06);
-      border-color: var(--text-3);
+    .social-btn:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .social-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
 
     .toggle-link {
-      margin-top: 20px;
-      font-size: 13px;
-      color: var(--text-2);
+      margin-top: 24px;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.6);
     }
 
     .toggle-link a {
-      color: var(--brand);
+      color: #ffffff;
       text-decoration: none;
       font-weight: 600;
+      margin-left: 4px;
     }
 
     .toggle-link a:hover {
       text-decoration: underline;
     }
 
-    /* Background glow effects */
-    .bg-glow {
-      position: fixed;
-      width: 600px;
-      height: 600px;
-      background: radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%);
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      pointer-events: none;
-      z-index: 0;
-    }
-
     /* Error message */
     .error-msg {
-      background: rgba(239,68,68,0.1);
-      border: 1px solid rgba(239,68,68,0.2);
-      color: #f87171;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      color: #fca5a5;
       font-size: 13px;
-      padding: 10px;
-      border-radius: 8px;
-      margin-bottom: 16px;
+      padding: 12px;
+      border-radius: 12px;
+      margin-bottom: 20px;
       display: none;
       text-align: left;
+      line-height: 1.4;
+    }
+
+    .spin-anim {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
   </style>
   <script src="../theme.js"></script>
 </head>
 <body>
-  <div class="bg-glow"></div>
 
   <div class="login-container">
     <div class="login-card">
@@ -261,8 +285,9 @@
         <button type="button" class="social-btn" id="googleBtn">
           <i class="ri-google-fill"></i> Google
         </button>
-        <button type="button" class="social-btn" disabled title="Coming soon">
-          <i class="ri-github-fill"></i> GitHub
+        <!-- Phone Login Support -->
+        <button type="button" class="social-btn" id="phoneBtn" title="Sign in with Phone">
+          <i class="ri-smartphone-line"></i> Phone
         </button>
       </div>
 
@@ -271,7 +296,7 @@
       </p>
 
       <p class="toggle-link">
-        <a href="../index.html" style="color: var(--text-3); font-size: 12px;"><i class="ri-arrow-left-line"></i> Back to Arena</a>
+        <a href="../index.html" style="color: rgba(255,255,255,0.4); font-size: 13px;"><i class="ri-arrow-left-line"></i> Back to Arena</a>
       </p>
     </div>
   </div>
@@ -302,6 +327,7 @@
     const toggleText = document.getElementById('toggleText');
     const errorMsg = document.getElementById('errorMsg');
     const googleBtn = document.getElementById('googleBtn');
+    const phoneBtn = document.getElementById('phoneBtn');
     const title = document.querySelector('.brand-title');
     const subtitle = document.querySelector('.brand-subtitle');
 
@@ -357,36 +383,8 @@
             throw new Error('Login failed - no session returned');
           }
 
-          // Store session for the app
-          localStorage.setItem('dualmind.auth.supabase', JSON.stringify({
-            user: data.user,
-            session: data.session
-          }));
+          handleSuccessfulLogin(data);
 
-          // Check if admin
-          try {
-            const response = await fetch(`${SERVER_URL}/api/admin/check`, {
-              method: 'GET',
-              headers: {
-                'Authorization': `Bearer ${data.session.access_token}`,
-                'Content-Type': 'application/json'
-              }
-            });
-            
-            if (response.ok) {
-              const result = await response.json();
-              if (result.success && result.is_admin) {
-                window.location.href = '../../DM_admin_UI/public/admin.html';
-                return;
-              }
-            }
-          } catch (checkError) {
-            console.log('Admin check failed, proceeding to main app:', checkError);
-          }
-
-          // Redirect to main app
-          const redirectUrl = new URLSearchParams(window.location.search).get('redirect') || '../index.html';
-          window.location.href = redirectUrl;
         } else {
           // Signup
           const parts = name.split(' ');
@@ -401,7 +399,8 @@
                 full_name: name,
                 first_name: first,
                 last_name: last
-              }
+              },
+              emailRedirectTo: `${window.location.origin}/auth-callback.html`
             }
           });
 
@@ -409,21 +408,7 @@
 
           // Store session if available
           if (data.session) {
-            localStorage.setItem('dualmind.auth.supabase', JSON.stringify({
-              user: data.user,
-              session: data.session
-            }));
-            
-            // Show success message
-            errorMsg.style.display = 'block';
-            errorMsg.style.background = 'rgba(34, 197, 94, 0.1)';
-            errorMsg.style.borderColor = 'rgba(34, 197, 94, 0.2)';
-            errorMsg.style.color = '#4ade80';
-            errorMsg.textContent = 'Account created successfully! Redirecting...';
-            
-            setTimeout(() => {
-              window.location.href = '../index.html';
-            }, 1500);
+            handleSuccessfulLogin(data);
           } else {
             // Email confirmation required
             errorMsg.style.display = 'block';
@@ -452,7 +437,7 @@
         const { data, error } = await supabaseClient.auth.signInWithOAuth({
           provider: 'google',
           options: {
-            redirectTo: `${SITE_URL}/index.html`
+            redirectTo: `${window.location.origin}/auth-callback.html`
           }
         });
         if (error) throw error;
@@ -461,6 +446,47 @@
         errorMsg.style.display = 'block';
       }
     });
+
+    // Phone Login Placeholder (needs actual implementation if Supabase SMS is set up)
+    phoneBtn.addEventListener('click', () => {
+       // Placeholder for phone login UI switch
+       alert("Phone login feature coming soon.");
+    });
+
+    async function handleSuccessfulLogin(data) {
+      // Store session for the app
+      localStorage.setItem('dualmind.auth.supabase', JSON.stringify({
+        user: data.user,
+        session: data.session
+      }));
+
+      localStorage.setItem('dualmind.auth.token', data.session.access_token);
+
+      // Check if admin
+      try {
+        const response = await fetch(`${SERVER_URL}/api/admin/check`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${data.session.access_token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success && result.is_admin) {
+            window.location.href = '../../DM_admin_UI/public/admin.html';
+            return;
+          }
+        }
+      } catch (checkError) {
+        console.log('Admin check failed, proceeding to main app:', checkError);
+      }
+
+      // Redirect to main app
+      const redirectUrl = new URLSearchParams(window.location.search).get('redirect') || '../index.html';
+      window.location.href = redirectUrl;
+    }
 
     function setLoading(isLoading) {
       submitBtn.disabled = isLoading;
