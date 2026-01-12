@@ -123,7 +123,7 @@ export class LeaderboardModal {
         <div class="dm-lb-state">
           <div class="dm-lb-state-title">${safeTitle}</div>
           ${safeSubtitle ? `<div class="dm-lb-state-subtitle">${safeSubtitle}</div>` : ''}
-          ${actionLabel ? `<button class="dm-lb-action" type="button" data-action="refresh">${escapeHtml(actionLabel)}</button>` : ''}
+          ${actionLabel ? `<div class="dm-lb-state-subtitle">${escapeHtml(actionLabel)}</div>` : ''}
         </div>
       </div>
     `;
@@ -189,7 +189,6 @@ export class LeaderboardModal {
             <div class="dm-lb-title">Model Leaderboard</div>
             <div class="dm-lb-subtitle">${escapeHtml(String(items.length))} models · ${escapeHtml(String(totals.wins))} wins · ${escapeHtml(String(totals.responses))} responses</div>
           </div>
-          <button class="dm-lb-refresh" type="button" data-action="refresh">Refresh</button>
         </div>
 
         <div class="dm-lb-table-wrap">

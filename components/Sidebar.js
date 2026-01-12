@@ -16,6 +16,7 @@ export class Sidebar {
     this._focusTrapHandler = null;
     this._escapeHandler = null;
     this._scrollY = 0;
+    this._threadActionsClickHandler = null;
 
     this.init();
   }
@@ -108,9 +109,12 @@ export class Sidebar {
 
         <!-- Footer -->
         <footer class="sidebar-footer">
-          <a href="#" class="footer-link">Terms of use</a>
-          <a href="#" class="footer-link">Privacy Policy</a>
-          <a href="#" class="footer-link">Cookies</a>
+          <a href="./terms/" class="footer-link">Terms of use</a>
+          <a href="./privacy/" class="footer-link">Privacy Policy</a>
+          <div class="footer-row">
+            <a href="#" class="footer-link logout-btn" id="logout-btn">Log Out</a>
+            <a href="./cookies/" class="footer-link">Cookies</a>
+          </div>
         </footer>
       </aside>
     `;
@@ -235,8 +239,15 @@ export class Sidebar {
 
     // Thread click handlers are attached by attachThreadClickHandlers() called from updateRecentChats()
 
-    // Initial attachment of action handlers
+    // Initial attachment of action handlers (delegated)
     this.attachActionHandlers();
+
+    // Logout button
+    const logoutBtn = this.container.querySelector('#logout-btn');
+    logoutBtn?.addEventListener('click', (e) => {
+      e.preventDefault();
+      document.dispatchEvent(new CustomEvent('user-logout'));
+    });
 
     // Resize handler
     window.addEventListener('resize', () => this.handleResize());
@@ -244,30 +255,34 @@ export class Sidebar {
 
   attachActionHandlers() {
     // Thread action handlers (rename, delete)
-    // We use a slightly different approach: delegate or re-attach
-    // Re-attaching is safer given the innerHTML replacement in renderRecentChats
-    const actionButtons = this.container.querySelectorAll('.chat-action-btn');
-    actionButtons.forEach(btn => {
-      // Remove old listeners to avoid duplicates if any (though innerHTML wipes them usually)
-      const newBtn = btn.cloneNode(true);
-      btn.parentNode.replaceChild(newBtn, btn);
+    // Use event delegation so we only ever have ONE listener, even after re-renders.
+    const listContainer = this.container.querySelector('#recent-chats-list');
+    if (!listContainer) return;
 
-      newBtn.addEventListener('click', async (e) => {
-        e.preventDefault();
-        e.stopPropagation(); // Prevent thread click
+    if (this._threadActionsClickHandler) {
+      listContainer.removeEventListener('click', this._threadActionsClickHandler);
+    }
 
-        const action = newBtn.getAttribute('data-action');
-        const chatId = newBtn.getAttribute('data-chat-id');
+    this._threadActionsClickHandler = async (e) => {
+      const btn = e.target.closest?.('.chat-action-btn');
+      if (!btn) return;
 
-        console.log(`Action button clicked: ${action} on ${chatId}`);
+      e.preventDefault();
+      e.stopPropagation(); // Prevent thread click
 
-        if (action === 'rename') {
-          await this.handleRenameThread(chatId);
-        } else if (action === 'delete') {
-          await this.handleDeleteThread(chatId);
-        }
-      });
-    });
+      const action = btn.getAttribute('data-action');
+      const chatId = btn.getAttribute('data-chat-id');
+
+      console.log(`Action button clicked: ${action} on ${chatId}`);
+
+      if (action === 'rename') {
+        await this.handleRenameThread(chatId);
+      } else if (action === 'delete') {
+        await this.handleDeleteThread(chatId);
+      }
+    };
+
+    listContainer.addEventListener('click', this._threadActionsClickHandler);
   }
 
   async handleRenameThread(threadId) {

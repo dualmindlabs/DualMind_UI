@@ -245,18 +245,29 @@ export class ChatView {
     const prompt = escapeHtml(turn.prompt || '');
     const left = turn.left ?? {};
     const right = turn.right ?? {};
+    const voteChoice = turn.voteChoice || null;
+    const voted = turn.voteStatus === 'submitted';
+
+    // Smart display logic: show only voted response unless tie/both-bad
+    const showLeft = !voted || voteChoice === 'left' || voteChoice === 'tie' || voteChoice === 'both-bad';
+    const showRight = !voted || voteChoice === 'right' || voteChoice === 'tie' || voteChoice === 'both-bad';
 
     return `
       <section class="chat-turn" data-turn-id="${turn.id}">
-        <div class="user-message">
-          <div class="user-bubble">
-            <div class="user-text">${prompt}</div>
+        <!-- User message on right side -->
+        <div class="user-message-container">
+          <div class="user-message">
+            <div class="user-avatar">You</div>
+            <div class="user-bubble">
+              <div class="user-text">${prompt}</div>
+            </div>
           </div>
         </div>
 
-        <div class="responses-grid">
-          ${this.renderResponseCard(turn, 'left', left)}
-          ${this.renderResponseCard(turn, 'right', right)}
+        <!-- AI responses -->
+        <div class="responses-grid ${!showLeft || !showRight ? 'single-response' : ''}">
+          ${showLeft ? this.renderResponseCard(turn, 'left', left) : ''}
+          ${showRight ? this.renderResponseCard(turn, 'right', right) : ''}
         </div>
 
         ${this.renderVoteBar(turn)}
@@ -366,11 +377,15 @@ export class ChatView {
             <label class="model-label">Choose Your Model</label>
             <select id="model-select-direct" class="model-select">
               <option value="">🎲 Random Model</option>
-              ${models.map(m => `
-                <option value="${m.modelId}" ${savedModel === m.modelId ? 'selected' : ''}>
-                  ${window._APP ? window._APP.prettifyModelName(m.modelName) : m.modelName}
+              ${models.map(m => {
+                const id = String(m.modelId ?? m.model_id ?? '');
+                const name = m.modelName ?? m.model_name ?? '';
+                return `
+                <option value="${id}" ${id && savedModel === id ? 'selected' : ''}>
+                  ${window._APP ? window._APP.prettifyModelName(name) : name}
                 </option>
-              `).join('')}
+              `;
+              }).join('')}
             </select>
           </div>
           

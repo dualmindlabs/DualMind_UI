@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Auth Test</title>
+</head>
+<body>
+    <h1>Authentication Test</h1>
+    <div id="status">Checking...</div>
+    <div id="user-info"></div>
+    
+    <script src="./js/supabase-init.js"></script>
+    <script>
+        async function testAuth() {
+            const status = document.getElementById('status');
+            const userInfo = document.getElementById('user-info');
+            
+            try {
+                // Wait for auth to initialize
+                if (window.DualMindAuthReady) {
+                    await window.DualMindAuthReady;
+                }
+                
+                const isLoggedIn = window.DualMindAuth ? window.DualMindAuth.isLoggedIn() : false;
+                status.innerHTML = `Logged in: ${isLoggedIn}`;
+                
+                if (isLoggedIn) {
+                    const user = window.DualMindAuth.getUser();
+                    userInfo.innerHTML = `
+                        <h2>User Info:</h2>
+                        <pre>${JSON.stringify(user, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                status.innerHTML = `Error: ${error.message}`;
+            }
+        }
+        
+        testAuth();
+    </script>
+</body>
+</html>

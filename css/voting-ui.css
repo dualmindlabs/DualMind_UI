@@ -1,0 +1,160 @@
+/* ========================================
+   Floating Voting UI - Positioned Above Chat Input
+   ======================================== */
+
+#floating-voting {
+  position: fixed;
+  bottom: 140px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: var(--input-width);
+  padding: 0 20px;
+  z-index: 150;
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#floating-voting:not([hidden]) {
+  pointer-events: all;
+}
+
+.floating-voting-container {
+  background: rgba(15, 17, 25, 0.98);
+  backdrop-filter: blur(24px) saturate(1.2);
+  -webkit-backdrop-filter: blur(24px) saturate(1.2);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  padding: 20px 28px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  animation: slideUpFade 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.vote-prompt {
+  text-align: center;
+  margin-bottom: 18px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+.vote-buttons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap;
+}
+
+.vote-btn-light {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 28px;
+  background: rgba(30, 32, 40, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+  min-width: 140px;
+  text-align: center;
+}
+
+.vote-btn-light:hover {
+  background: rgba(40, 42, 50, 0.98);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.vote-btn-light:active {
+  transform: translateY(0);
+}
+
+.vote-btn-light.active {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.6);
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.3), inset 0 0 20px rgba(59, 130, 246, 0.1);
+  color: #60a5fa;
+}
+
+.vote-btn-light.vote-left.active {
+  background: rgba(74, 171, 194, 0.25);
+  border-color: rgba(74, 171, 194, 0.5);
+}
+
+.vote-btn-light.vote-right.active {
+  background: rgba(203, 146, 117, 0.25);
+  border-color: rgba(203, 146, 117, 0.5);
+  color: #CB9275;
+}
+
+.vote-btn-light.vote-tie.active {
+  background: rgba(253, 244, 205, 0.15);
+  border-color: rgba(253, 244, 205, 0.4);
+  color: #FDF4CD;
+}
+
+.vote-btn-light.vote-both-bad.active {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #ef4444;
+}
+
+.vote-emoji {
+  font-size: 18px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1024px) {
+  #floating-voting {
+    bottom: 120px;
+    max-width: 100%;
+    padding: 0 16px;
+  }
+}
+
+@media (max-width: 640px) {
+  #floating-voting {
+    bottom: 110px;
+    padding: 0 12px;
+  }
+
+  .floating-voting-container {
+    padding: 16px 20px;
+    border-radius: 16px;
+  }
+
+  .vote-buttons {
+    gap: 8px;
+  }
+
+  .vote-btn-light {
+    padding: 10px 18px;
+    font-size: 13px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .vote-prompt {
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+}

@@ -17,7 +17,11 @@
   <!-- App CSS -->
   <link rel="stylesheet" href="../css/styles.css" />
   <link rel="stylesheet" href="../css/auth-styles.css" />
+  <link rel="stylesheet" href="../css/leaderboard-page.css" />
   <script src="../theme.js"></script>
+
+  <script src="../config.js"></script>
+  <script src="../js/supabase-init.js"></script>
 
   <!-- Favicon -->
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs/%3E%3Crect width='64' height='64' rx='12' fill='%230f1115'/%3E%3Cpath d='M20 18h24l-6 10 6 10H20l6-10-6-10z' fill='%238ab4ff'/%3E%3C/svg%3E">
@@ -25,13 +29,16 @@
   <meta name="theme-color" content="#0f1115">
 </head>
 <body>
-  <div class="about-page">
+  <div id="leaderboard-mount-root" class="about-page">
     <header class="about-header">
       <a href="../" class="about-logo">
         <i class="ri-arrow-left-line"></i>
         <span>DualMind Arena</span>
       </a>
       <div class="header-actions">
+        <button id="leaderboard-refresh" class="header-btn" type="button" title="Refresh">
+          <i class="ri-refresh-line"></i>
+        </button>
         <a href="../login/" class="header-btn" title="Login"><i class="ri-user-line"></i></a>
       </div>
     </header>
@@ -51,6 +58,10 @@
           <i class="ri-lightbulb-line"></i>
           <span>How It Works</span>
         </a>
+      </div>
+
+      <div class="mission-card">
+        <div id="leaderboard-root"></div>
       </div>
 
       <div class="mission-card">
@@ -145,5 +156,7 @@
       </div>
     </main>
   </div>
+
+  <script type="module" src="../js/leaderboardPage.js"></script>
 </body>
 </html>

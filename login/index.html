@@ -203,6 +203,69 @@
       text-decoration: underline;
     }
 
+    /* Auth Tabs */
+    .auth-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 4px;
+      border-radius: 12px;
+    }
+
+    .auth-tab {
+      flex: 1;
+      padding: 10px;
+      background: transparent;
+      border: none;
+      color: var(--text-2);
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .auth-tab.active {
+      background: rgba(59, 130, 246, 0.15);
+      color: #60a5fa;
+    }
+
+    .auth-tab:hover:not(.active) {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    /* Forgot Password */
+    .forgot-password {
+      text-align: right;
+      margin-top: -8px;
+      margin-bottom: 16px;
+    }
+
+    .forgot-password a {
+      font-size: 12px;
+      color: var(--brand);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .forgot-password a:hover {
+      text-decoration: underline;
+    }
+
+    /* Success Message */
+    .success-msg {
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.2);
+      color: #4ade80;
+      font-size: 13px;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      display: none;
+      text-align: left;
+    }
+
     /* Background glow effects */
     .bg-glow {
       position: fixed;
@@ -242,6 +305,13 @@
       <p class="brand-subtitle">Sign in to battle AI models</p>
 
       <div id="errorMsg" class="error-msg"></div>
+      <div id="successMsg" class="success-msg"></div>
+
+      <!-- Auth Method Tabs -->
+      <div class="auth-tabs">
+        <button type="button" class="auth-tab active" data-method="email">Email</button>
+        <button type="button" class="auth-tab" data-method="phone">Phone</button>
+      </div>
 
       <form id="authForm">
         <div class="form-group" id="nameField" style="display: none;">
@@ -249,14 +319,34 @@
           <input type="text" id="fullName" class="form-input" placeholder="John Doe">
         </div>
 
-        <div class="form-group">
-          <label class="form-label" for="email">Email</label>
-          <input type="email" id="email" class="form-input" placeholder="name@example.com" required>
+        <!-- Email Auth Fields -->
+        <div id="emailFields">
+          <div class="form-group">
+            <label class="form-label" for="email">Email</label>
+            <input type="email" id="email" class="form-input" placeholder="name@example.com" autocomplete="email">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="password">Password</label>
+            <input type="password" id="password" class="form-input" placeholder="••••••••" autocomplete="current-password">
+          </div>
+
+          <div class="forgot-password" id="forgotPasswordLink">
+            <a href="#" id="forgotBtn">Forgot password?</a>
+          </div>
         </div>
 
-        <div class="form-group">
-          <label class="form-label" for="password">Password</label>
-          <input type="password" id="password" class="form-input" placeholder="••••••••" required>
+        <!-- Phone Auth Fields -->
+        <div id="phoneFields" style="display: none;">
+          <div class="form-group">
+            <label class="form-label" for="phone">Phone Number</label>
+            <input type="tel" id="phone" class="form-input" placeholder="Enter 10-digit mobile number" autocomplete="tel">
+          </div>
+
+          <div class="form-group" id="otpField" style="display: none;">
+            <label class="form-label" for="otp">Verification Code</label>
+            <input type="text" id="otp" class="form-input" placeholder="123456" maxlength="6">
+          </div>
         </div>
 
         <button type="submit" class="submit-btn" id="submitBtn">
@@ -271,24 +361,18 @@
         <button type="button" class="social-btn" id="googleBtn">
           <i class="ri-google-fill"></i> Google
         </button>
-        <button type="button" class="social-btn" disabled title="Coming soon">
-          <i class="ri-github-fill"></i> GitHub
-        </button>
       </div>
 
       <p class="toggle-link" id="toggleText">
         Don't have an account? <a href="#" id="toggleBtn">Sign up</a>
-      </p>
-
-      <p class="toggle-link">
-        <a href="../index.html" style="color: var(--text-3); font-size: 12px;"><i class="ri-arrow-left-line"></i> Back
-          to Arena</a>
       </p>
     </div>
   </div>
 
   <!-- Supabase JS client -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+  <script src="auth-complete.js"></script>
 
   <script>
     // Config

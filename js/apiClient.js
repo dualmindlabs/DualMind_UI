@@ -147,6 +147,13 @@ export class DualMindApiClient {
     });
   }
 
+  async syncUser(userData) {
+    return this._request('/api/users/sync', {
+      method: 'POST',
+      body: userData,
+    });
+  }
+
   async getThreads(limit = 20, userId = null) {
     const params = new URLSearchParams({ limit: limit.toString() });
     if (userId) params.append('userId', userId);
@@ -259,6 +266,11 @@ export async function defaultGetAuthToken() {
       parsed?.session?.access_token ||
       parsed?.data?.session?.access_token;
     if (typeof token === 'string' && token.trim()) return token.trim();
+  }
+
+  // 4) Fallback to Supabase Anon Key (for guest access)
+  if (window.DUALMIND_CONFIG?.supabase?.anonKey) {
+    return window.DUALMIND_CONFIG.supabase.anonKey;
   }
 
   return null;

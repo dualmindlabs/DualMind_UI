@@ -1,0 +1,520 @@
+/* ========================================
+   UI Improvements - Battle Mode, Model Selector, Empty States
+   Matching reference designs for clean, modern look
+   ======================================== */
+
+/* Battle Mode Empty State - Centered Card */
+.chat-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 60px 40px;
+  max-width: 700px;
+  margin: 80px auto;
+  background: rgba(20, 22, 35, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.chat-empty-icon {
+  margin-bottom: 24px;
+  opacity: 0.8;
+}
+
+.chat-empty-title {
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0 0 12px;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.chat-empty-subtitle {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0 0 32px;
+  line-height: 1.5;
+}
+
+/* Random Battle Card */
+.random-battle-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  margin: 32px 0;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 500px;
+}
+
+.random-model {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.random-icon {
+  font-size: 32px;
+  opacity: 0.8;
+}
+
+.random-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.vs-badge {
+  font-size: 18px;
+  font-weight: 700;
+  color: #4AABC2;
+  padding: 8px 16px;
+  background: rgba(74, 171, 194, 0.1);
+  border: 1px solid rgba(74, 171, 194, 0.3);
+  border-radius: 12px;
+}
+
+.model-selector-hint {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 24px 0 0;
+}
+
+/* Arena/Side-by-Side Model Selector - Horizontal Layout */
+.model-selector-grid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 20px;
+  align-items: start;
+  width: 100%;
+  max-width: 800px;
+  margin: 32px 0;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+}
+
+.model-selector-column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.model-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.model-select {
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='rgba(255,255,255,0.6)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
+
+.model-select:hover {
+  border-color: rgba(74, 171, 194, 0.4);
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+.model-select:focus {
+  outline: none;
+  border-color: rgba(74, 171, 194, 0.6);
+  box-shadow: 0 0 0 3px rgba(74, 171, 194, 0.1);
+}
+
+.model-select option {
+  background: #1a1b2e;
+  color: rgba(255, 255, 255, 0.95);
+  padding: 10px;
+}
+
+.model-selector-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  padding-top: 24px;
+}
+
+.icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.icon-btn:hover {
+  background: rgba(74, 171, 194, 0.2);
+  border-color: rgba(74, 171, 194, 0.4);
+  transform: scale(1.05);
+}
+
+.icon-btn:active {
+  transform: scale(0.95);
+}
+
+.secondary-btn {
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.secondary-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.secondary-btn:active {
+  transform: translateY(0);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .chat-empty {
+    padding: 40px 24px;
+    margin: 40px 20px;
+  }
+
+  .chat-empty-title {
+    font-size: 26px;
+  }
+
+  .random-battle-card {
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px;
+  }
+
+  .vs-badge {
+    transform: rotate(90deg);
+  }
+
+  .model-selector-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 16px;
+    padding: 20px;
+  }
+
+  .model-selector-actions {
+    flex-direction: row;
+    padding-top: 0;
+  }
+
+  .model-select {
+    font-size: 16px;
+    padding: 14px 16px;
+    padding-right: 40px;
+  }
+}
+
+/* Direct Chat Model Selector */
+.direct-model-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 32px 0;
+  max-width: 400px;
+}
+
+.direct-model-selector .model-label {
+  text-align: left;
+}
+
+.direct-model-selector .model-select {
+  width: 100%;
+}
+
+/* Thread List Improvements */
+.chat-item-wrapper {
+  position: relative;
+  margin-bottom: 4px;
+}
+
+.chat-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  padding-right: 80px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  color: inherit;
+  position: relative;
+}
+
+.chat-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.chat-item.active {
+  background: rgba(74, 171, 194, 0.1);
+  border-color: rgba(74, 171, 194, 0.3);
+}
+
+.chat-actions {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.chat-item-wrapper:hover .chat-actions {
+  opacity: 1;
+}
+
+.chat-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+.chat-action-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: scale(1.05);
+}
+
+.chat-action-btn[data-action="delete"]:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+/* Inline Thread Editing */
+.chat-item.editing {
+  background: rgba(74, 171, 194, 0.1);
+  border-color: rgba(74, 171, 194, 0.3);
+}
+
+.chat-item.editing .chat-title {
+  display: none;
+}
+
+.chat-title-input {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(74, 171, 194, 0.4);
+  border-radius: 6px;
+  padding: 6px 10px;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 14px;
+  outline: none;
+}
+
+.chat-title-input:focus {
+  border-color: rgba(74, 171, 194, 0.6);
+  box-shadow: 0 0 0 2px rgba(74, 171, 194, 0.1);
+}
+
+/* Improved Response Cards */
+.response-card {
+  background: rgba(20, 22, 35, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 20px;
+  transition: all 0.3s ease;
+}
+
+.response-card:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.response-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.model-badge {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  padding: 6px 12px;
+  background: rgba(74, 171, 194, 0.15);
+  border: 1px solid rgba(74, 171, 194, 0.3);
+  border-radius: 8px;
+}
+
+.response-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.response-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  opacity: 0.7;
+}
+
+.response-action-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+/* Loading States */
+.response-loading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+}
+
+.response-loading .loader-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-top-color: #4AABC2;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Error States */
+.response-error {
+  padding: 16px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+}
+
+/* User Message Bubble */
+.user-bubble {
+  background: rgba(74, 171, 194, 0.15);
+  border: 1px solid rgba(74, 171, 194, 0.3);
+  border-radius: 16px;
+  padding: 16px 20px;
+  max-width: 800px;
+  margin: 0 auto 32px;
+}
+
+.user-text {
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 15px;
+  line-height: 1.6;
+  word-wrap: break-word;
+}
+
+/* Voting UI Improvements */
+.floating-voting-container {
+  background: rgba(15, 17, 25, 0.95);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  padding: 16px 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.vote-buttons {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+}
+
+.vote-btn-light {
+  padding: 12px 24px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.vote-btn-light:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+}
+
+.vote-btn-light.active {
+  background: rgba(74, 171, 194, 0.2);
+  border-color: rgba(74, 171, 194, 0.4);
+  box-shadow: 0 0 20px rgba(74, 171, 194, 0.3);
+}

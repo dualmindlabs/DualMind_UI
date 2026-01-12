@@ -51,6 +51,10 @@ class App {
       }
       console.log('Chat Settings:', this.state.chatSettings);
     });
+
+    // Listen for Logout
+    document.addEventListener('user-logout', () => this.handleLogout());
+
     this._backendHealthFailures = 0;
     this._activeStreams = [];
     this.api = new DualMindApiClient({
@@ -109,48 +113,55 @@ class App {
     console.log('🔍 Auth check - isLoggedIn:', isLoggedIn);
     console.log('🔍 Auth object available:', !!window.DualMindAuth);
     console.log('🔍 Supabase auth available:', !!window._DUALMIND_AUTH);
+    console.log('🔍 Current user:', window.DualMindAuth ? window.DualMindAuth.getUser() : null);
 
     if (!isLoggedIn) {
-      // Check if guest mode is enabled
-      const guestMode = localStorage.getItem('dualmind.guest');
-
-      // Only redirect to login if guest mode is explicitly disabled
-      if (guestMode !== 'true') {
-        const currentPath = window.location.pathname;
-        console.log('🔄 Redirecting to login:', currentPath);
-        window.location.href = `login.html?redirect=${encodeURIComponent(currentPath)}`;
-        return;
-      }
-
-      console.log('🔍 Running in guest mode');
+      // No guest mode - require authentication
+      const currentPath = window.location.pathname;
+      console.log('🔄 User not authenticated. Redirecting to login:', currentPath);
+      window.location.href = `login/index.html?redirect=${encodeURIComponent(currentPath)}`;
+      return;
     }
 
     // Set user info
     this.state.user = window.DualMindAuth ? window.DualMindAuth.getUser() : null;
-    console.log('✅ User authenticated:', this.state.user ? this.state.user.email : 'Guest');
+    console.log('✅ User authenticated:', this.state.user ? this.state.user.email : 'Unknown');
+
+    // Sync user with backend database
+    if (this.state.user) {
+      await this.syncUserWithBackend();
+    }
 
     // 🚨 Hide loading overlay, show app
     const overlay = document.getElementById('auth-loading-overlay');
     if (overlay) {
       overlay.style.display = 'none';
+      console.log('✅ Loading overlay hidden');
     }
     const app = document.getElementById('app');
     if (app) {
       app.style.display = 'block';
+      console.log('✅ App displayed - display set to block');
+    } else {
+      console.error('❌ App element not found!');
     }
 
-    // Check if backend is available
-    await this.checkBackendAvailability();
-
-    // 🚨 NEW: Fetch models on startup
-    await this.fetchModels();
-
-    // Wait for DOM
+    // Wait for DOM and initialize components immediately
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => this.setup());
     } else {
       this.setup();
     }
+
+    // Check if backend is available (non-blocking)
+    this.checkBackendAvailability().then(() => {
+      console.log('Backend check completed');
+    }).catch(err => {
+      console.warn('Backend check failed:', err);
+    });
+
+    // 🚨 NEW: Fetch models on startup
+    await this.fetchModels();
   }
 
   /**
@@ -166,7 +177,7 @@ class App {
 
         let ok = false;
         try {
-          const res = await fetch(`${baseUrl}/api/health`, { method: 'GET', signal: controller.signal });
+          const res = await fetch(`${baseUrl}/api/arena/ping`, { method: 'GET', signal: controller.signal });
           ok = res.ok;
         } catch {
           ok = false;
@@ -174,7 +185,7 @@ class App {
 
         if (!ok) {
           try {
-            const res = await fetch(`${baseUrl}/health`, { method: 'GET', signal: controller.signal });
+            const res = await fetch(`${baseUrl}/api/arena/ping`, { method: 'GET', signal: controller.signal });
             ok = res.ok;
           } catch {
             ok = false;
@@ -691,13 +702,13 @@ class App {
     const leftStream = streamText(leftText, (chunk) => {
       // Persist into state so re-renders don't wipe streamed content
       turn.left.text += chunk;
-      this.components.chatView.appendToResponse(turnId, 'left', chunk, true);
+      this.components.chatView.updateResponse(turnId, 'left', turn.left.text, true);
     }, { minDelay: 10, maxDelay: 22, minChunk: 1, maxChunk: 4 });
 
     const rightStream = streamText(rightText, (chunk) => {
       // Persist into state so re-renders don't wipe streamed content
       turn.right.text += chunk;
-      this.components.chatView.appendToResponse(turnId, 'right', chunk, true);
+      this.components.chatView.updateResponse(turnId, 'right', turn.right.text, true);
     }, { minDelay: 12, maxDelay: 26, minChunk: 1, maxChunk: 4 });
 
     this._activeStreams = [leftStream, rightStream];
@@ -1156,6 +1167,33 @@ class App {
     }
   }
 
+  async syncUserWithBackend() {
+    if (!this.state.backendAvailable || !this.state.user) return;
+
+    try {
+      console.log('🔄 Syncing user with backend...');
+      
+      // Prepare user data for backend
+      const userData = {
+        id: this.state.user.id,
+        email: this.state.user.email,
+        phone: this.state.user.phone || null,
+        name: this.state.user.user_metadata?.name || 
+               this.state.user.user_metadata?.full_name || 
+               this.state.user.email?.split('@')[0] || 'User',
+        avatar_url: this.state.user.user_metadata?.avatar_url || null,
+        provider: this.state.user.app_metadata?.provider || 'email'
+      };
+
+      // Call backend to sync/create user
+      await this.api.syncUser(userData);
+      console.log('✅ User synced with backend:', userData.email);
+    } catch (error) {
+      console.warn('⚠️ Failed to sync user with backend:', error);
+      // Don't block the app, just continue
+    }
+  }
+
   async createThread(firstMessage) {
     if (!this.state.backendAvailable) return;
 
@@ -1176,7 +1214,30 @@ class App {
         });
       }
     } catch (error) {
-      console.warn('Failed to create thread:', error);
+      // If user doesn't exist in database, try to sync and retry once
+      if (error.message?.includes('user_id') && error.message?.includes('not present in table')) {
+        console.log('🔄 User not in database, syncing and retrying...');
+        await this.syncUserWithBackend();
+        
+        // Retry thread creation
+        try {
+          const userId = this.state.user?.id || null;
+          const result = await this.api.createThread(title, userId);
+          this.state.currentThreadId = result?.threadId || result?.id || null;
+          console.log('✅ Thread created on retry:', this.state.currentThreadId);
+          
+          if (this.state.currentThreadId) {
+            this.components.sidebar.addRecentChat({
+              id: this.state.currentThreadId,
+              title: title
+            });
+          }
+        } catch (retryError) {
+          console.warn('❌ Thread creation failed even after retry:', retryError);
+        }
+      } else {
+        console.warn('Failed to create thread:', error);
+      }
     }
   }
 
@@ -1263,7 +1324,9 @@ class App {
 
   showLeaderboard() {
     console.log('Showing leaderboard...');
-    this.leaderboard?.open?.();
+    // Dedicated leaderboard page (static route)
+    // Use relative URL so it works on localhost and deployed subpaths.
+    window.location.assign('./leaderboard/');
   }
 
   adjustLayout(sidebarState = null) {
@@ -1337,7 +1400,7 @@ class App {
       // Fallback: clear local storage and redirect
       localStorage.removeItem('dualmind.auth.supabase');
       localStorage.removeItem('dualmind.auth.token');
-      window.location.href = 'login/index.html';
+      window.location.href = './login/';
     }
   }
 
@@ -1569,6 +1632,11 @@ class App {
     console.log('📊 Turn state updated:', { voteStatus: turn.voteStatus, voteChoice: turn.voteChoice });
 
     try {
+      // Ensure we have a comparisonId
+      if (!turn.comparisonId) {
+        throw new Error('No comparison ID available for this turn');
+      }
+
       // ✅ CORRECTED API CALL: Use object with voteChoice enum
       await this.api.submitVote({
         comparisonId: turn.comparisonId,
@@ -1603,6 +1671,26 @@ class App {
 
   getComponent(name) {
     return this.components[name];
+  }
+
+  handleLogout() {
+    console.log('🚪 Logging out...');
+
+    // Clear Supabase session if exists & wired
+    if (window.supabase) {
+      window.supabase.auth.signOut().catch(console.error);
+    }
+
+    // Clear local storage tokens
+    localStorage.removeItem('dualmind.auth.token');
+    localStorage.removeItem('supabase.auth.token');
+    localStorage.removeItem('sb-access-token');
+
+    // Clear user state
+    this.state.user = null;
+
+    // Redirect to login
+    window.location.href = '/login/index.html';
   }
 }
 

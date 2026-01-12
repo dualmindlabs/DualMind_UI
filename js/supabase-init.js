@@ -140,7 +140,7 @@ window.DualMindAuth = {
    */
   getUserName() {
     const auth = window._DUALMIND_AUTH || window.getAuth?.();
-    return auth ? auth.getUserName() : 'Guest';
+    return auth ? auth.getUserName() : 'User';
   },
 
   /**
@@ -158,7 +158,7 @@ window.DualMindAuth = {
     const auth = window._DUALMIND_AUTH || window.getAuth?.();
     if (auth) {
       await auth.logout();
-      window.location.href = 'login.html';
+      window.location.href = './login/';
     }
   },
 
@@ -168,7 +168,7 @@ window.DualMindAuth = {
   requireLogin() {
     if (!this.isLoggedIn()) {
       const currentPath = window.location.pathname;
-      window.location.href = 'login.html?redirect=' + encodeURIComponent(currentPath);
+      window.location.href = './login/?redirect=' + encodeURIComponent(currentPath);
     }
   },
 
