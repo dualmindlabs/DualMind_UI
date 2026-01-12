@@ -62,13 +62,13 @@ export class DualMindApiClient {
         console.warn(`⚠️ Backend not available for ${method} ${path}`);
         throw new Error('Backend server is not available. Running in offline mode.');
       }
-      
+
       // Handle timeout errors
       if (error.name === 'AbortError') {
         console.warn(`⏰ Request timeout for ${method} ${path}`);
         throw new Error('Request timed out. Backend may be unavailable.');
       }
-      
+
       // Re-throw other errors
       throw error;
     }
@@ -93,8 +93,11 @@ export class DualMindApiClient {
         selectionMode: opts.selectionMode, // "random" | "topper"
         model1: opts.model1,
         model2: opts.model2,
+        battleId: opts.battleId, // UUID for linking
+        threadId: opts.threadId,
         threadId: opts.threadId,
         userId: opts.userId || undefined,
+        temperature: opts.temperature
       },
     });
   }
@@ -109,17 +112,19 @@ export class DualMindApiClient {
         maxTokens: opts.maxTokens,
         model: opts.model, // or "auto"
         threadId: opts.threadId,
+        threadId: opts.threadId,
         userId: opts.userId || undefined,
+        temperature: opts.temperature
       },
     });
   }
 
-  async submitVote(comparisonId, winnerModelName, userId) {
+  async submitVote({ comparisonId, voteChoice, userId }) {
     return this._request('/api/arena/model-vote', {
       method: 'POST',
       body: {
         comparisonId,
-        winnerModelName,
+        voteChoice, // 'left' | 'right' | 'tie' | 'both-bad'
         userId: userId || undefined,
       },
     });
@@ -156,10 +161,49 @@ export class DualMindApiClient {
     });
   }
 
+  async updateThread(threadId, title) {
+    return this._request(`/api/threads/${threadId}`, {
+      method: 'PATCH',
+      body: { title },
+    });
+  }
+
+  async deleteThread(threadId) {
+    return this._request(`/api/threads/${threadId}`, {
+      method: 'DELETE',
+    });
+  }
+
   async getModels() {
     return this._request('/api/models', {
       method: 'GET',
     });
+  }
+
+  async textToSpeech(text, voice = 'Celeste-PlayAI') {
+    const url = `${this.baseUrl}/api/speech/generate`; // Correct endpoint
+    const token = await this.getAuthToken();
+
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ text, voice }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`TTS failed: ${response.statusText}`);
+    }
+
+    // Return audio blob
+    return await response.blob();
   }
 }
 

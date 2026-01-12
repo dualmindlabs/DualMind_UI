@@ -47,9 +47,43 @@ export class ChatView {
       apiEnabled: true,
     };
 
+    this.setupMarkdown();
     this.render();
     this.attach();
     this.attachScrollListener();
+  }
+
+  setupMarkdown() {
+    if (window.marked && window.hljs) {
+      window.marked.setOptions({
+        highlight: function (code, lang) {
+          if (lang && window.hljs.getLanguage(lang)) {
+            return window.hljs.highlight(code, { language: lang }).value;
+          }
+          return window.hljs.highlightAuto(code).value;
+        },
+        breaks: true,
+        gfm: true
+      });
+    }
+  }
+
+  renderMarkdown(text) {
+    if (!text) return '';
+    if (window.marked) {
+      try {
+        return window.marked.parse(text);
+      } catch (e) {
+        console.error('Markdown parse error:', e);
+        return text;
+      }
+    }
+    // Fallback if marked not loaded
+    return String(text)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/\n/g, '<br>');
   }
 
   setState(next) {
@@ -78,7 +112,7 @@ export class ChatView {
     const temp = document.createElement('div');
     temp.innerHTML = turnHtml;
     const newSection = temp.firstElementChild;
-    
+
     // Insert before sentinel
     const sentinel = turnsContainer.querySelector('#chat-scroll-sentinel');
     if (sentinel) {
@@ -86,10 +120,10 @@ export class ChatView {
     } else {
       turnsContainer.appendChild(newSection);
     }
-    
+
     // Re-attach listeners for the new section only
     this.attachListenersTo(newSection);
-    
+
     // Auto-scroll to new message
     this.scrollToBottom();
   }
@@ -122,11 +156,74 @@ export class ChatView {
   }
 
   renderEmptyArena() {
+    const models = window._DUALMIND_MODELS || [];
+    const savedLeft = localStorage.getItem('battle.model.left') || '';
+    const savedRight = localStorage.getItem('battle.model.right') || '';
+    const mode = this.state.mode; // 'battle' (blind) or 'arena' (side-by-side)
+
+    // BATTLE MODE: Pure Random, No Selection
+    if (mode === 'battle') {
+      return `
+        <div class="chat-empty glass-panel">
+          <div class="chat-empty-icon">${Icons.battle ? Icons.battle('white', 32) : '⚔️'}</div>
+          <div class="chat-empty-title">Battle Mode</div>
+          <p class="chat-empty-subtitle">Two anonymous models. One winner. Your vote.</p>
+          
+          <div class="random-battle-card">
+            <div class="random-model">
+              <span class="random-icon">❓</span>
+              <span class="random-label">Random Model</span>
+            </div>
+            <div class="vs-badge">VS</div>
+            <div class="random-model">
+              <span class="random-icon">❓</span>
+              <span class="random-label">Random Model</span>
+            </div>
+          </div>
+          
+          <p class="model-selector-hint">Enter your prompt below to start the battle!</p>
+        </div>
+      `;
+    }
+
+    // ARENA/SIDE-BY-SIDE MODE: Model Selection
     return `
       <div class="chat-empty glass-panel">
-        <div class="chat-empty-icon">${Icons.chat('white', 28)}</div>
-        <div class="chat-empty-title">Start a battle</div>
-        <div class="chat-empty-subtitle">Type a prompt — you’ll get two model replies side-by-side.</div>
+        <div class="chat-empty-icon">${Icons.splitRectangle ? Icons.splitRectangle('white', 32) : '◫'}</div>
+        <div class="chat-empty-title">Side-by-Side Comparison</div>
+        
+        <div class="model-selector-grid">
+          <div class="model-selector-column">
+            <label class="model-label">Left Model</label>
+            <select id="model-select-left" class="model-select">
+              <option value="">🎲 Random</option>
+              ${models.map(m => `
+                <option value="${m.modelId}" ${savedLeft === m.modelId ? 'selected' : ''}>
+                  ${window._APP ? window._APP.prettifyModelName(m.modelName) : m.modelName}
+                </option>
+              `).join('')}
+            </select>
+          </div>
+          
+          <div class="model-selector-actions">
+            <button id="swap-models-btn" class="icon-btn" title="Swap models">⇄</button>
+            <button id="random-pair-btn" class="secondary-btn">🎲 Random Pair</button>
+          </div>
+          
+          <div class="model-selector-column">
+            <label class="model-label">Right Model</label>
+            <select id="model-select-right" class="model-select">
+              <option value="">🎲 Random</option>
+              ${models.map(m => `
+                <option value="${m.modelId}" ${savedRight === m.modelId ? 'selected' : ''}>
+                  ${window._APP ? window._APP.prettifyModelName(m.modelName) : m.modelName}
+                </option>
+              `).join('')}
+            </select>
+          </div>
+        </div>
+        
+        <p class="model-selector-hint">Select models above, then type your prompt below</p>
       </div>
     `;
   }
@@ -169,15 +266,41 @@ export class ChatView {
 
   renderResponseCard(turn, side, data) {
     const turnId = turn.id;
-    const modelName = escapeHtml(data.modelName || (side === 'left' ? 'Model A' : 'Model B'));
     const bodyId = `resp-${turnId}-${side}`;
     const text = escapeHtml(data.text || '');
     const streaming = !!data.streaming;
     const assistantLabel = side === 'left' ? 'A' : 'B';
 
+    // Model anonymization: Show real name only AFTER voting
     const voteStatus = turn.voteStatus || 'idle';
     const voteChoice = turn.voteChoice || null;
     const voted = voteStatus === 'submitted';
+
+    // Pre-vote: Anonymous labels. Post-vote: Reveal real model name (just the name string)
+    const anonymousLabel = side === 'left' ? 'Model A' : 'Model B';
+    const realModelName = data.modelName;
+
+    // Safety check: sometimes modelName might be "undefined" string or null
+    let safeModelName = realModelName;
+    if (!safeModelName || safeModelName === 'undefined' || safeModelName === 'null') {
+      safeModelName = anonymousLabel;
+    }
+
+    // CRITICAL: Strip description from model name 
+    let cleanModelName = safeModelName;
+    if (safeModelName && safeModelName !== anonymousLabel) {
+      // Strip everything after em-dash (–) or hyphen with space ( - )
+      cleanModelName = safeModelName.split('–')[0].split(' - ')[0].trim();
+    }
+
+    // VISIBILITY LOGIC:
+    // - Battle Mode: Hidden until voted
+    // - Side-by-Side / Direct: Always visible
+    const isBattle = this.state.mode === 'battle';
+    const showRealName = !isBattle || voted;
+
+    const displayName = showRealName ? escapeHtml(cleanModelName) : anonymousLabel;
+
     const isWinner = voted && (voteChoice === 'tie' || voteChoice === side);
     const isLoser = voted && voteChoice && voteChoice !== 'tie' && voteChoice !== side;
     const voteClass = `${isWinner ? ' is-winner' : ''}${isLoser ? ' is-loser' : ''}`;
@@ -191,7 +314,7 @@ export class ChatView {
 
     const persistentSelectionClass =
       hasRedSelection ? ' vote-selected-red' :
-      (voteChoice && hasGreenSelection ? ' vote-selected-green' : '');
+        (voteChoice && hasGreenSelection ? ' vote-selected-green' : '');
 
     return `
       <article class="response-card glass-panel ${streaming ? 'is-streaming' : ''}${voteClass}${persistentSelectionClass}" data-turn-id="${turnId}" data-side="${side}">
@@ -199,7 +322,7 @@ export class ChatView {
           <div class="model-badge">
             <span class="assistant-tag">${assistantLabel}</span>
             <span class="model-dot ${side}"></span>
-            <span class="model-name">${modelName}</span>
+            <span class="model-name">${displayName}</span>
           </div>
 
           <div class="message-actions">
@@ -208,6 +331,9 @@ export class ChatView {
             </button>
             <button class="icon-btn copy-btn" type="button" data-action="copy" data-target="${bodyId}" aria-label="Copy reply">
               ${Icons.code('white', 18)}
+            </button>
+            <button class="icon-btn tts-btn" type="button" data-action="speak" data-target="${bodyId}" aria-label="Read aloud">
+              🔊
             </button>
             <button class="icon-btn" type="button" data-action="expand" data-turn-id="${turnId}" data-side="${side}" aria-label="Expand reply">
               ${renderExpandIcon('white', 18)}
@@ -228,11 +354,27 @@ export class ChatView {
   renderDirect() {
     const msgs = this.state.direct || [];
     if (msgs.length === 0) {
+      const models = window._DUALMIND_MODELS || [];
+      const savedModel = localStorage.getItem('direct.model') || '';
+
       return `
         <div class="chat-empty glass-panel">
-          <div class="chat-empty-icon">${Icons.chat('white', 28)}</div>
-          <div class="chat-empty-title">Start chatting</div>
-          <div class="chat-empty-subtitle">Type a message — you’ll get a demo reply instantly.</div>
+          <div class="chat-empty-icon">${Icons.chat('white', 32)}</div>
+          <div class="chat-empty-title">Direct Chat Mode</div>
+          
+          <div class="direct-model-selector">
+            <label class="model-label">Choose Your Model</label>
+            <select id="model-select-direct" class="model-select">
+              <option value="">🎲 Random Model</option>
+              ${models.map(m => `
+                <option value="${m.modelId}" ${savedModel === m.modelId ? 'selected' : ''}>
+                  ${window._APP ? window._APP.prettifyModelName(m.modelName) : m.modelName}
+                </option>
+              `).join('')}
+            </select>
+          </div>
+          
+          <p class="model-selector-hint">Select a model above, then start chatting</p>
         </div>
       `;
     }
@@ -240,16 +382,16 @@ export class ChatView {
     return `
       <div class="direct-thread">
         ${msgs.map((m) => {
-          const role = m.role === 'user' ? 'user' : 'assistant';
-          return `
+      const role = m.role === 'user' ? 'user' : 'assistant';
+      return `
             <div class="direct-msg ${role}">
               <div class="direct-bubble glass-panel">
                 <div class="direct-meta">${role === 'user' ? 'You' : escapeHtml(m.modelName || 'Assistant')}</div>
-                <div class="direct-text">${escapeHtml(m.text || '')}</div>
+                <div class="direct-text markdown-body">${role === 'user' ? escapeHtml(m.text || '') : this.renderMarkdown(m.text || '')}</div>
               </div>
             </div>
           `;
-        }).join('')}
+    }).join('')}
       </div>
     `;
   }
@@ -310,34 +452,95 @@ export class ChatView {
       }
     };
 
+    // Event delegation for clicks
     this.container.addEventListener('click', this._onClick);
+
+    // Initial attachment for model selectors (since they are rendered immediately in empty state)
+    this.attachModelSelectorListeners();
   }
 
-  /** Directly patch a specific response text without full re-render (for streaming). */
-  appendToResponse(turnId, side, chunk, streaming = true) {
+  attachModelSelectorListeners() {
+    if (!this.container) return;
+
+    // Model Selectors
+    const leftSelect = this.container.querySelector('#model-select-left');
+    const rightSelect = this.container.querySelector('#model-select-right');
+
+    const handleModelChange = () => {
+      const leftVal = leftSelect?.value || '';
+      const rightVal = rightSelect?.value || '';
+
+      localStorage.setItem('battle.model.left', leftVal);
+      localStorage.setItem('battle.model.right', rightVal);
+      console.log('Saved model selection:', { left: leftVal, right: rightVal });
+    };
+
+    leftSelect?.addEventListener('change', handleModelChange);
+    rightSelect?.addEventListener('change', handleModelChange);
+
+    // Swap Button
+    const swapBtn = this.container.querySelector('#swap-models-btn');
+    swapBtn?.addEventListener('click', () => {
+      if (leftSelect && rightSelect) {
+        const temp = leftSelect.value;
+        leftSelect.value = rightSelect.value;
+        rightSelect.value = temp;
+        handleModelChange();
+      }
+    });
+
+    // Random Pair Button
+    const randomBtn = this.container.querySelector('#random-pair-btn');
+    randomBtn?.addEventListener('click', () => {
+      if (leftSelect && rightSelect) {
+        const optionsLeft = Array.from(leftSelect.options).filter(o => o.value);
+        const optionsRight = Array.from(rightSelect.options).filter(o => o.value);
+
+        if (optionsLeft.length > 0 && optionsRight.length > 0) {
+          const randLeft = optionsLeft[Math.floor(Math.random() * optionsLeft.length)].value;
+          const randRight = optionsRight[Math.floor(Math.random() * optionsRight.length)].value;
+
+          leftSelect.value = randLeft;
+          rightSelect.value = randRight;
+          handleModelChange();
+        }
+      }
+    });
+  }
+
+  /**
+   * Updates the response content with full text (re-renders Markdown).
+   * Used for streaming updates.
+   */
+  updateResponse(turnId, side, fullText, streaming = true) {
     const el = document.getElementById(`resp-${turnId}-${side}`);
     if (!el) return;
 
-    // Keep caret at end
-    const caret = el.querySelector?.('.stream-caret');
-    if (caret) caret.remove();
+    // Re-render Markdown
+    el.innerHTML = this.renderMarkdown(fullText) + (streaming ? '<span class="stream-caret" aria-hidden="true"></span>' : '');
 
-    el.insertAdjacentText('beforeend', chunk);
-    if (streaming) {
-      el.insertAdjacentHTML('beforeend', '<span class="stream-caret" aria-hidden="true"></span>');
-    }
-
-    // Auto-scroll during streaming if user hasn't scrolled up
+    // Auto-scroll
     this.scrollToBottom();
   }
 
   finishResponse(turnId, side) {
     const el = document.getElementById(`resp-${turnId}-${side}`);
-    el?.querySelector?.('.stream-caret')?.remove();
-    
+    if (!el) return;
+
+    // Remove caret
+    const caret = el.querySelector('.stream-caret');
+    caret?.remove();
+
     // Remove is-streaming class from response card
     const card = document.querySelector(`.response-card[data-turn-id="${turnId}"][data-side="${side}"]`);
     card?.classList.remove('is-streaming');
+
+    // Syntax highlight specifically if needed (though marked already handles it via callback)
+    if (window.hljs) {
+      el.querySelectorAll('pre code').forEach((block) => {
+        window.hljs.highlightElement(block);
+      });
+    }
   }
 
   attachScrollListener() {
@@ -395,7 +598,7 @@ export class ChatView {
       const sentinelTop = sentinel.offsetTop;
       const containerHeight = scrollContainer.clientHeight;
       const targetScroll = sentinelTop - containerHeight + sentinel.offsetHeight;
-      
+
       scrollContainer.scrollTo({
         top: Math.max(0, targetScroll),
         behavior: 'smooth'

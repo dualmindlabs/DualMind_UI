@@ -16,7 +16,7 @@ export class Sidebar {
     this._focusTrapHandler = null;
     this._escapeHandler = null;
     this._scrollY = 0;
-    
+
     this.init();
   }
 
@@ -24,6 +24,40 @@ export class Sidebar {
     this.render();
     this.attachEventListeners();
     this.handleResize();
+
+    // Load threads if user is authenticated
+    this.loadThreads();
+  }
+
+  async loadThreads() {
+    // Only load threads if user is logged in
+    if (!window.DualMindAuth || !window.DualMindAuth.isLoggedIn()) {
+      console.log('User not logged in, skipping thread load');
+      return;
+    }
+
+    try {
+      // Get API client from window (set by app-final.js)
+      const api = window._DUALMIND_API;
+      if (!api) {
+        console.warn('API client not available');
+        return;
+      }
+
+      const result = await api.getThreads(20);
+      const threads = result?.items || [];
+
+      // Map to expected format
+      this.recentChats = threads.map(thread => ({
+        id: thread.threadId || thread.thread_id,
+        title: thread.title || 'Untitled Thread'
+      }));
+
+      this.updateRecentChats();
+      console.log(`✅ Loaded ${this.recentChats.length} threads`);
+    } catch (error) {
+      console.warn('Failed to load threads:', error);
+    }
   }
 
   render() {
@@ -96,11 +130,57 @@ export class Sidebar {
     }
 
     return this.recentChats.map((chat, index) => `
-      <a href="#" class="chat-item animate-fade-in stagger-${Math.min(index + 1, 5)}" data-chat-id="${chat.id}">
-        <span class="chat-icon">${Icons.chat('white', 16)}</span>
-        <span class="chat-title">${chat.title}</span>
-      </a>
+      <div class="chat-item-wrapper animate-fade-in stagger-${Math.min(index + 1, 5)}">
+        <a href="#" class="chat-item" data-chat-id="${chat.id}">
+          <span class="chat-icon">${Icons.chat('white', 16)}</span>
+          <span class="chat-title">${this.escapeHtml(chat.title)}</span>
+        </a>
+        <div class="chat-actions">
+          <button class="chat-action-btn" data-action="rename" data-chat-id="${chat.id}" title="Rename">
+            ✏️
+          </button>
+          <button class="chat-action-btn" data-action="delete" data-chat-id="${chat.id}" title="Delete">
+            🗑️
+          </button>
+        </div>
+      </div>
     `).join('');
+  }
+
+  escapeHtml(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  updateRecentChats() {
+    const listContainer = this.container.querySelector('#recent-chats-list');
+    if (listContainer) {
+      listContainer.innerHTML = this.renderRecentChats();
+      // Re-attach thread click handlers after updating
+      this.attachThreadClickHandlers();
+      // Re-attach action handlers
+      this.attachActionHandlers();
+    }
+  }
+
+  attachThreadClickHandlers() {
+    const chatItems = this.container.querySelectorAll('.chat-item');
+    chatItems.forEach(item => {
+      item.addEventListener('click', (e) => {
+        e.preventDefault();
+        const threadId = item.getAttribute('data-chat-id');
+        if (threadId) {
+          document.dispatchEvent(new CustomEvent('thread-clicked', {
+            detail: { threadId }
+          }));
+          if (this.isMobile) {
+            this.close();
+          }
+        }
+      });
+    });
   }
 
   attachEventListeners() {
@@ -153,14 +233,107 @@ export class Sidebar {
       });
     });
 
+    // Thread click handlers are attached by attachThreadClickHandlers() called from updateRecentChats()
+
+    // Initial attachment of action handlers
+    this.attachActionHandlers();
+
     // Resize handler
     window.addEventListener('resize', () => this.handleResize());
+  }
+
+  attachActionHandlers() {
+    // Thread action handlers (rename, delete)
+    // We use a slightly different approach: delegate or re-attach
+    // Re-attaching is safer given the innerHTML replacement in renderRecentChats
+    const actionButtons = this.container.querySelectorAll('.chat-action-btn');
+    actionButtons.forEach(btn => {
+      // Remove old listeners to avoid duplicates if any (though innerHTML wipes them usually)
+      const newBtn = btn.cloneNode(true);
+      btn.parentNode.replaceChild(newBtn, btn);
+
+      newBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        e.stopPropagation(); // Prevent thread click
+
+        const action = newBtn.getAttribute('data-action');
+        const chatId = newBtn.getAttribute('data-chat-id');
+
+        console.log(`Action button clicked: ${action} on ${chatId}`);
+
+        if (action === 'rename') {
+          await this.handleRenameThread(chatId);
+        } else if (action === 'delete') {
+          await this.handleDeleteThread(chatId);
+        }
+      });
+    });
+  }
+
+  async handleRenameThread(threadId) {
+    const thread = this.recentChats.find(t => t.id === threadId);
+    if (!thread) return;
+
+    const newTitle = prompt('Enter new thread name:', thread.title);
+    if (!newTitle || newTitle.trim() === '' || newTitle === thread.title) return;
+
+    try {
+      const api = window._DUALMIND_API;
+      if (!api) {
+        alert('API not available');
+        return;
+      }
+
+      await api.updateThread(threadId, newTitle.trim());
+
+      // Update local state
+      thread.title = newTitle.trim();
+      this.updateRecentChats();
+
+      console.log('✅ Thread renamed successfully');
+    } catch (error) {
+      console.error('Failed to rename thread:', error);
+      alert('Failed to rename thread: ' + error.message);
+    }
+  }
+
+  async handleDeleteThread(threadId) {
+    const thread = this.recentChats.find(t => t.id === threadId);
+    if (!thread) return;
+
+    if (!confirm(`Delete "${thread.title}"?\n\nThis cannot be undone.`)) return;
+
+    try {
+      const api = window._DUALMIND_API;
+      if (!api) {
+        alert('API not available');
+        return;
+      }
+
+      await api.deleteThread(threadId);
+
+      // Remove from local state
+      this.recentChats = this.recentChats.filter(t => t.id !== threadId);
+      this.updateRecentChats();
+
+      // If this was the active thread, clear it
+      if (window._APP && window._APP.state.currentThreadId === threadId) {
+        window._APP.state.currentThreadId = null;
+        window._APP.state.turns = [];
+        window._APP.renderChat();
+      }
+
+      console.log('✅ Thread deleted successfully');
+    } catch (error) {
+      console.error('Failed to delete thread:', error);
+      alert('Failed to delete thread: ' + error.message);
+    }
   }
 
   handleResize() {
     const wasMobile = this.isMobile;
     this.isMobile = window.innerWidth < 1024;
-    
+
     // Auto-close on mobile, auto-open on desktop
     if (wasMobile !== this.isMobile) {
       if (this.isMobile) {
@@ -169,7 +342,7 @@ export class Sidebar {
         this.open();
       }
     }
-    
+
     this.updateClasses();
   }
 
@@ -186,7 +359,7 @@ export class Sidebar {
     } else {
       this.container.style.width = '';
     }
-    
+
     if (sidebar) {
       // Mobile drawer behavior: use open/closed
       // Desktop collapse behavior: use collapsed/open
@@ -198,11 +371,11 @@ export class Sidebar {
         sidebar.classList.toggle('collapsed', this.isCollapsed);
       }
     }
-    
+
     if (overlay) {
       overlay.classList.toggle('active', this.isOpen && this.isMobile);
     }
-    
+
     if (floatingToggle) {
       floatingToggle.style.display = 'none';
     }
@@ -221,8 +394,8 @@ export class Sidebar {
     }
 
     // Dispatch event for other components
-    document.dispatchEvent(new CustomEvent('sidebar-toggle', { 
-      detail: { isOpen: this.isOpen, isCollapsed: this.isCollapsed, isMobile: this.isMobile } 
+    document.dispatchEvent(new CustomEvent('sidebar-toggle', {
+      detail: { isOpen: this.isOpen, isCollapsed: this.isCollapsed, isMobile: this.isMobile }
     }));
   }
 
@@ -242,19 +415,19 @@ export class Sidebar {
     const sidebar = this.container.querySelector('#sidebar');
     const mainContent = document.querySelector('.main-content');
     const headerContainer = document.querySelector('#header-container');
-    
+
     if (sidebar) {
       sidebar.classList.toggle('collapsed', this.isCollapsed);
       sidebar.classList.toggle('open', !this.isCollapsed);
     }
-    
+
     if (mainContent) {
       mainContent.classList.toggle('collapsed', this.isCollapsed);
     }
-    
+
     // Dispatch event for other components
-    document.dispatchEvent(new CustomEvent('sidebar-toggle', { 
-      detail: { isCollapsed: this.isCollapsed, isMobile: this.isMobile } 
+    document.dispatchEvent(new CustomEvent('sidebar-toggle', {
+      detail: { isCollapsed: this.isCollapsed, isMobile: this.isMobile }
     }));
   }
 
@@ -344,7 +517,7 @@ export class Sidebar {
     // Remove active from all
     const navItems = this.container.querySelectorAll('.nav-item');
     navItems.forEach(item => item.classList.remove('active'));
-    
+
     // Add active to clicked
     const clicked = this.container.querySelector(`[data-action="${action}"]`);
     clicked?.classList.add('active');
@@ -366,12 +539,6 @@ export class Sidebar {
     this.updateRecentChats();
   }
 
-  updateRecentChats() {
-    const list = this.container.querySelector('#recent-chats-list');
-    if (list) {
-      list.innerHTML = this.renderRecentChats();
-    }
-  }
 
   // Public method to get current state
   getState() {

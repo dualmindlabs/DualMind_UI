@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -31,7 +32,7 @@
     }
 
     .login-card {
-      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(0,0,0,.22)), var(--bg-1);
+      background: linear-gradient(180deg, rgba(255, 255, 255, .03), rgba(0, 0, 0, .22)), var(--bg-1);
       border: 1px solid var(--line);
       border-radius: 24px;
       padding: 32px 28px;
@@ -41,8 +42,15 @@
     }
 
     @keyframes slideUp {
-      from { opacity: 0; transform: translateY(20px) scale(0.96); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
+      from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.96);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
     }
 
     .brand-logo {
@@ -82,7 +90,7 @@
       width: 100%;
       height: 44px;
       border-radius: 12px;
-      background: rgba(255,255,255,.03);
+      background: rgba(255, 255, 255, .03);
       border: 1px solid var(--line);
       color: var(--text-1);
       padding: 0 14px;
@@ -91,9 +99,9 @@
     }
 
     .form-input:focus {
-      border-color: rgba(138,180,255,.35);
-      box-shadow: 0 0 0 1px rgba(138,180,255,.15), 0 0 0 4px rgba(138,180,255,.08);
-      background: rgba(255,255,255,.05);
+      border-color: rgba(138, 180, 255, .35);
+      box-shadow: 0 0 0 1px rgba(138, 180, 255, .15), 0 0 0 4px rgba(138, 180, 255, .08);
+      background: rgba(255, 255, 255, .05);
     }
 
     .submit-btn {
@@ -137,7 +145,8 @@
     .divider::before {
       content: "";
       position: absolute;
-      left: 0; top: 50%;
+      left: 0;
+      top: 50%;
       width: 100%;
       height: 1px;
       background: var(--line);
@@ -160,7 +169,7 @@
       flex: 1;
       height: 40px;
       border-radius: 12px;
-      background: rgba(255,255,255,.03);
+      background: rgba(255, 255, 255, .03);
       border: 1px solid var(--line);
       color: var(--text-1);
       cursor: pointer;
@@ -174,7 +183,7 @@
     }
 
     .social-btn:hover {
-      background: rgba(255,255,255,.06);
+      background: rgba(255, 255, 255, .06);
       border-color: var(--text-3);
     }
 
@@ -199,7 +208,7 @@
       position: fixed;
       width: 600px;
       height: 600px;
-      background: radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%);
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
@@ -209,8 +218,8 @@
 
     /* Error message */
     .error-msg {
-      background: rgba(239,68,68,0.1);
-      border: 1px solid rgba(239,68,68,0.2);
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.2);
       color: #f87171;
       font-size: 13px;
       padding: 10px;
@@ -222,6 +231,7 @@
   </style>
   <script src="../theme.js"></script>
 </head>
+
 <body>
   <div class="bg-glow"></div>
 
@@ -271,7 +281,8 @@
       </p>
 
       <p class="toggle-link">
-        <a href="../index.html" style="color: var(--text-3); font-size: 12px;"><i class="ri-arrow-left-line"></i> Back to Arena</a>
+        <a href="../index.html" style="color: var(--text-3); font-size: 12px;"><i class="ri-arrow-left-line"></i> Back
+          to Arena</a>
       </p>
     </div>
   </div>
@@ -290,6 +301,35 @@
 
     // State
     let isLogin = true;
+
+    // Check if already logged in or handling a magic link
+    async function checkExistingSession() {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (session) {
+        // Store session for the app
+        localStorage.setItem('dualmind.auth.supabase', JSON.stringify({
+          user: session.user,
+          session: session
+        }));
+
+        // Redirect to main app
+        const redirectUrl = new URLSearchParams(window.location.search).get('redirect') || '../index.html';
+        window.location.href = redirectUrl;
+      }
+
+      // Listen for auth changes (Magic Link, OAuth)
+      supabaseClient.auth.onAuthStateChange((event, session) => {
+        if (event === 'SIGNED_IN' && session) {
+          localStorage.setItem('dualmind.auth.supabase', JSON.stringify({
+            user: session.user,
+            session: session
+          }));
+          const redirectUrl = new URLSearchParams(window.location.search).get('redirect') || '../index.html';
+          window.location.href = redirectUrl;
+        }
+      });
+    }
+    checkExistingSession();
 
     // Elements
     const form = document.getElementById('authForm');
@@ -372,7 +412,7 @@
                 'Content-Type': 'application/json'
               }
             });
-            
+
             if (response.ok) {
               const result = await response.json();
               if (result.success && result.is_admin) {
@@ -413,14 +453,14 @@
               user: data.user,
               session: data.session
             }));
-            
+
             // Show success message
             errorMsg.style.display = 'block';
             errorMsg.style.background = 'rgba(34, 197, 94, 0.1)';
             errorMsg.style.borderColor = 'rgba(34, 197, 94, 0.2)';
             errorMsg.style.color = '#4ade80';
             errorMsg.textContent = 'Account created successfully! Redirecting...';
-            
+
             setTimeout(() => {
               window.location.href = '../index.html';
             }, 1500);
@@ -431,7 +471,7 @@
             errorMsg.style.borderColor = 'rgba(59, 130, 246, 0.2)';
             errorMsg.style.color = '#60a5fa';
             errorMsg.textContent = 'Registration successful! Please check your email to confirm your account.';
-            
+
             setTimeout(() => {
               isLogin = true;
               toggleBtn.click();
@@ -474,4 +514,5 @@
     }
   </script>
 </body>
+
 </html>

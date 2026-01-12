@@ -24,16 +24,43 @@ class App {
       apiEnabled: true,
       user: null,
       backendAvailable: false, // Track if backend is available
-      currentThreadId: null // Track current conversation thread
+      currentThreadId: null, // Track current conversation thread
+      chatSettings: {
+        codeMode: false,
+        webSearch: false
+      }
     };
+
+    // Listen for Toggle Events
+    document.addEventListener('toggle-code-mode', (e) => {
+      this.state.chatSettings.codeMode = e.detail.active;
+      // If Code Mode on, turn off Web Search
+      if (e.detail.active && this.state.chatSettings.webSearch) {
+        this.state.chatSettings.webSearch = false;
+        document.dispatchEvent(new CustomEvent('toggle-web-search', { detail: { active: false } }));
+      }
+      console.log('Chat Settings:', this.state.chatSettings);
+    });
+
+    document.addEventListener('toggle-web-search', (e) => {
+      this.state.chatSettings.webSearch = e.detail.active;
+      // If Web Search on, turn off Code Mode
+      if (e.detail.active && this.state.chatSettings.codeMode) {
+        this.state.chatSettings.codeMode = false;
+        document.dispatchEvent(new CustomEvent('toggle-code-mode', { detail: { active: false } }));
+      }
+      console.log('Chat Settings:', this.state.chatSettings);
+    });
     this._backendHealthFailures = 0;
     this._activeStreams = [];
-    this.api = new DualMindApiClient({ 
+    this.api = new DualMindApiClient({
       baseUrl: getApiBaseUrl(),
       getAuthToken: () => this.getAuthToken()
     });
+    // Expose API globally for Sidebar to fetch threads
+    window._DUALMIND_API = this.api;
     this.leaderboard = null;
-    
+
     this.init();
   }
 
@@ -60,7 +87,7 @@ class App {
       if (window.DualMindAuth && window.DualMindAuth.isLoggedIn()) {
         return await window.DualMindAuth.getAccessToken();
       }
-      
+
       // Fallback to stored token
       const storedToken = localStorage.getItem('dualmind.auth.token');
       return storedToken;
@@ -71,47 +98,53 @@ class App {
   }
 
   async init() {
-    // Wait for Supabase auth to fully initialize
+    // 🚨 CRITICAL: Wait for Supabase auth to fully initialize
     if (window.DualMindAuthReady) {
       await window.DualMindAuthReady;
       console.log('✅ Auth initialization complete');
     }
-    
+
     // Check authentication with Supabase
     const isLoggedIn = window.DualMindAuth ? window.DualMindAuth.isLoggedIn() : false;
     console.log('🔍 Auth check - isLoggedIn:', isLoggedIn);
     console.log('🔍 Auth object available:', !!window.DualMindAuth);
     console.log('🔍 Supabase auth available:', !!window._DUALMIND_AUTH);
-    
+
     if (!isLoggedIn) {
-      // Enable guest mode by default to allow app to work without login
+      // Check if guest mode is enabled
       const guestMode = localStorage.getItem('dualmind.guest');
-      
-      // If guest mode is not explicitly set, enable it by default
-      if (guestMode === null) {
-        localStorage.setItem('dualmind.guest', 'true');
-        console.log('✅ Guest mode enabled (default)');
-      }
-      
+
       // Only redirect to login if guest mode is explicitly disabled
-      if (guestMode === 'false') {
+      if (guestMode !== 'true') {
         const currentPath = window.location.pathname;
         console.log('🔄 Redirecting to login:', currentPath);
         window.location.href = `login.html?redirect=${encodeURIComponent(currentPath)}`;
         return;
       }
-      
+
       console.log('🔍 Running in guest mode');
     }
 
     // Set user info
     this.state.user = window.DualMindAuth ? window.DualMindAuth.getUser() : null;
-    
     console.log('✅ User authenticated:', this.state.user ? this.state.user.email : 'Guest');
-    
+
+    // 🚨 Hide loading overlay, show app
+    const overlay = document.getElementById('auth-loading-overlay');
+    if (overlay) {
+      overlay.style.display = 'none';
+    }
+    const app = document.getElementById('app');
+    if (app) {
+      app.style.display = 'block';
+    }
+
     // Check if backend is available
     await this.checkBackendAvailability();
-    
+
+    // 🚨 NEW: Fetch models on startup
+    await this.fetchModels();
+
     // Wait for DOM
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => this.setup());
@@ -177,7 +210,7 @@ class App {
       this.state.backendAvailable = false;
       console.log('📱 Running in offline mode (no backend check)');
     }
-    
+
     // Always enable API for mock responses in offline mode
     if (!this.state.backendAvailable) {
       this.state.apiEnabled = true; // Enable for mock responses
@@ -229,13 +262,52 @@ class App {
     if (el) el.remove();
   }
 
+  /**
+   * Fetch all models from backend for model selection UI
+   */
+  async fetchModels() {
+    try {
+      const response = await this.api.getModels();
+      window._DUALMIND_MODELS = response.items || response || [];
+      console.log('✅ Loaded models:', window._DUALMIND_MODELS.length);
+    } catch (error) {
+      console.warn('Failed to load models:', error);
+      window._DUALMIND_MODELS = [];
+    }
+  }
+
+  /**
+   * Prettify model name for display (NO display_name in DB)
+   * Converts "llama-3.3-70b-versatile" -> "Llama 3.3 70B Versatile"
+   */
+  prettifyModelName(modelName) {
+    if (!modelName) return modelName;
+    return modelName
+      .replace(/-/g, ' ')
+      .replace(/\b\w/g, l => l.toUpperCase())
+      .replace(/\d+b\b/gi, m => m.toUpperCase());
+  }
+
+  /**
+   * Get model ID by model_name from cached list
+   * Used when backend returns model_name instead of model_id
+   */
+  getModelIdByName(modelName) {
+    const models = window._DUALMIND_MODELS || [];
+    const model = models.find(m => m.modelName === modelName);
+    return model?.modelId || null;
+  }
+
   setup() {
+    // Expose app globally for components
+    window._APP = this;
+
     // Initialize components
     this.components.sidebar = new Sidebar('sidebar-container');
     this.components.header = new Header('header-container');
     this.components.chatInput = new ChatInput('chat-input-container');
     this.components.chatView = new ChatView('main-content');
-    
+
     // Update sidebar with user info after initialization
     if (this.components.sidebar && this.components.sidebar.updateUserInfo) {
       this.components.sidebar.updateUserInfo();
@@ -246,13 +318,13 @@ class App {
       api: this.api,
       isApiEnabled: () => !!this.state.apiEnabled,
     });
-    
+
     // Set up global event listeners
     this.attachGlobalListeners();
-    
+
     // Initial layout adjustment
     this.adjustLayout();
-    
+
     console.log('🚀 DualMind App Initialized');
     console.log('📊 Backend available:', this.state.backendAvailable ? '✅' : '❌ (Offline mode)');
 
@@ -263,6 +335,15 @@ class App {
 
     // Initial render
     this.renderChat();
+
+    // Hide loading indicator and mark app as ready
+    const loadingEl = document.getElementById('auth-loading-overlay');
+    if (loadingEl) {
+      loadingEl.style.opacity = '0';
+      loadingEl.style.transition = 'opacity 0.3s ease';
+      setTimeout(() => loadingEl.remove(), 300);
+    }
+    window._DUALMIND_APP_READY = true;
   }
 
   /**
@@ -323,6 +404,99 @@ class App {
       console.log('API status:', this.state.apiEnabled ? 'Active' : 'Inactive');
     });
 
+    // Model selection change handlers
+    document.addEventListener('change', (e) => {
+      if (e.target.id === 'model-select-left') {
+        const value = e.target.value;
+        localStorage.setItem('battle.model.left', value);
+        // Prevent same model selection
+        const right = localStorage.getItem('battle.model.right');
+        if (value && right && value === right) {
+          alert('Please select different models for left and right');
+          e.target.value = '';
+          localStorage.removeItem('battle.model.left');
+        }
+      }
+
+      if (e.target.id === 'model-select-right') {
+        const value = e.target.value;
+        localStorage.setItem('battle.model.right', value);
+        // Prevent same model selection
+        const left = localStorage.getItem('battle.model.left');
+        if (value && left && value === left) {
+          alert('Please select different models for left and right');
+          e.target.value = '';
+          localStorage.removeItem('battle.model.right');
+        }
+      }
+
+      // Direct Chat model selection
+      if (e.target.id === 'model-select-direct') {
+        const value = e.target.value;
+        localStorage.setItem('direct.model', value);
+        console.log('✅ Direct chat model selected:', value);
+      }
+    });
+
+    // Voting handler (Global delegation for #floating-voting)
+    document.addEventListener('click', (e) => {
+      const voteBtn = e.target.closest('#floating-voting button');
+      if (voteBtn) {
+        const vote = voteBtn.getAttribute('data-vote');
+        const container = document.getElementById('floating-voting');
+        const turnId = container?.getAttribute('data-turn-id');
+
+        if (vote && turnId) {
+          this.handleFloatingVote(vote, turnId);
+        }
+      }
+    });
+
+    // Model selector action buttons
+    document.addEventListener('click', (e) => {
+      // Swap models
+      if (e.target.closest('#swap-models-btn')) {
+        const left = localStorage.getItem('battle.model.left') || '';
+        const right = localStorage.getItem('battle.model.right') || '';
+        localStorage.setItem('battle.model.left', right);
+        localStorage.setItem('battle.model.right', left);
+        this.components.chatView.render();
+        return;
+      }
+
+      // Random pair
+      if (e.target.closest('#random-pair-btn')) {
+        const models = window._DUALMIND_MODELS || [];
+        if (models.length >= 2) {
+          const shuffled = [...models].sort(() => Math.random() - 0.5);
+          localStorage.setItem('battle.model.left', shuffled[0].model_id);
+          localStorage.setItem('battle.model.right', shuffled[1].model_id);
+          this.components.chatView.render();
+        }
+        return;
+      }
+
+      // Vote submission
+      const voteBtn = e.target.closest('[data-action="vote"]');
+      if (voteBtn) {
+        const turnId = voteBtn.getAttribute('data-turn-id');
+        const choice = voteBtn.getAttribute('data-vote');
+        this.handleVoteSubmit(turnId, choice);
+        return;
+      }
+
+      // Text-to-Speech
+      const speakBtn = e.target.closest('[data-action="speak"]');
+      if (speakBtn) {
+        const targetId = speakBtn.getAttribute('data-target');
+        const textEl = document.getElementById(targetId);
+        if (textEl) {
+          this.handleTextToSpeech(textEl.textContent, speakBtn);
+        }
+        return;
+      }
+    });
+
     // Chat submission
     document.addEventListener('chat-submit', (e) => {
       this.handleChatSubmit(e.detail);
@@ -335,9 +509,10 @@ class App {
 
     // Floating voting buttons - click handler
     document.addEventListener('click', (e) => {
-      if (e.target.matches('.vote-btn-light')) {
-        const vote = e.target.getAttribute('data-vote');
-        const turnId = e.target.closest('#floating-voting')?.getAttribute('data-turn-id');
+      const voteBtn = e.target.closest('.vote-btn-light');
+      if (voteBtn) {
+        const vote = voteBtn.getAttribute('data-vote');
+        const turnId = voteBtn.closest('#floating-voting')?.getAttribute('data-turn-id');
         if (vote && turnId) {
           this.handleFloatingVote(vote, turnId);
           this.applyVoteSelection(vote, turnId);
@@ -347,9 +522,10 @@ class App {
 
     // Floating voting buttons - hover handlers
     document.addEventListener('mouseover', (e) => {
-      if (e.target.matches('.vote-btn-light')) {
-        const vote = e.target.getAttribute('data-vote');
-        const turnId = e.target.closest('#floating-voting')?.getAttribute('data-turn-id');
+      const voteBtn = e.target.closest('.vote-btn-light');
+      if (voteBtn) {
+        const vote = voteBtn.getAttribute('data-vote');
+        const turnId = voteBtn.closest('#floating-voting')?.getAttribute('data-turn-id');
         if (vote && turnId) {
           this.highlightResponseCards(vote, turnId, true);
         }
@@ -357,9 +533,10 @@ class App {
     });
 
     document.addEventListener('mouseout', (e) => {
-      if (e.target.matches('.vote-btn-light')) {
-        const vote = e.target.getAttribute('data-vote');
-        const turnId = e.target.closest('#floating-voting')?.getAttribute('data-turn-id');
+      const voteBtn = e.target.closest('.vote-btn-light');
+      if (voteBtn) {
+        const vote = voteBtn.getAttribute('data-vote');
+        const turnId = voteBtn.closest('#floating-voting')?.getAttribute('data-turn-id');
         if (vote && turnId) {
           this.highlightResponseCards(vote, turnId, false);
         }
@@ -383,6 +560,11 @@ class App {
       this.adjustLayout(e.detail);
     });
 
+    // Thread clicked - load thread messages
+    document.addEventListener('thread-clicked', (e) => {
+      this.loadThread(e.detail.threadId);
+    });
+
     // User logout
     document.addEventListener('user-logout', () => {
       this.handleLogout();
@@ -401,7 +583,7 @@ class App {
 
   handleNavigation(action) {
     console.log('Navigation:', action);
-    
+
     switch (action) {
       case 'new-chat':
         this.startNewChat();
@@ -423,11 +605,13 @@ class App {
     // ✅ RESET VOTE STATE - New prompt = new comparison session
     this.resetVoteState();
 
-    // Add to recent chats
-    this.components.sidebar.addRecentChat({
-      id: Date.now(),
-      title: data.message.substring(0, 30) + (data.message.length > 30 ? '...' : '')
-    });
+    // Add to recent chats ONLY if backend offline (online handled in createThread)
+    if (!this.state.backendAvailable) {
+      this.components.sidebar.addRecentChat({
+        id: Date.now(),
+        title: data.message.substring(0, 30) + (data.message.length > 30 ? '...' : '')
+      });
+    }
 
     // Cancel any in-flight streams
     this.cancelStreams();
@@ -439,8 +623,13 @@ class App {
       return;
     }
 
+    // Determine Temperature Scheme
+    let temp = 0.7; // Default balanced
+    if (this.state.chatSettings?.codeMode) temp = 0.5; // Precise for code
+    if (this.state.chatSettings?.webSearch) temp = 1.0; // Creative for search/beast mode
+
     // Battle/Arena: 1 prompt -> 2 replies
-    this.runArenaDemo(data.message);
+    this.runArenaDemo(data.message, false, temp);
   }
 
   renderChat() {
@@ -460,17 +649,25 @@ class App {
     this.components.chatInput.setLoading(false);
   }
 
-  async runArenaDemo(prompt) {
-    // Use mock responses if backend is not available OR API is disabled
-    if (!this.state.backendAvailable || !this.state.apiEnabled) {
+  async runArenaDemo(prompt, forceMock = false, temperature = 0.7) {
+    // Use mock responses if backend is not available OR API is disabled OR forced
+    if ((!this.state.backendAvailable || !this.state.apiEnabled) || forceMock) {
       // Use mock responses
     } else {
       // Backend is available and API is enabled - use real API
-      return this.runArenaApi(prompt);
+      return this.runArenaApi(prompt, temperature);
     }
 
     const turnId = Date.now();
     const { left, right } = pickModelPair();
+
+    const payload = {
+      prompt: prompt,
+      model1: left.id,
+      model2: right.id,
+      selectionMode: 'random', // For mock, we always pick random
+      temperature: temperature
+    };
 
     const turn = {
       id: turnId,
@@ -529,11 +726,11 @@ class App {
     this.showFloatingVoting(turnId);
   }
 
-  async runArenaApi(prompt) {
+  async runArenaApi(prompt, temperature = 0.7) {
     // If backend is not available, fall back to mock responses
     if (!this.state.backendAvailable) {
       console.log('📱 Backend not available, using mock responses');
-      return this.runArenaDemo(prompt);
+      return this.runArenaDemo(prompt, true);
     }
 
     // Auto-create thread on first message
@@ -541,16 +738,73 @@ class App {
       await this.createThread(prompt);
     }
 
-    const turnId = Date.now();
+    // 🚨 CRITICAL: Use UUID for turn ID (same as comparison_id and message_id)
+    const battleId = crypto.randomUUID();
+
+    // Get selected models from localStorage
+    let model1 = localStorage.getItem('battle.model.left') || null;
+    let model2 = localStorage.getItem('battle.model.right') || null;
+
+    // IF IN BATTLE MODE (BLIND): FORCE RANDOM
+    const currentMode = this.components.header?.getCurrentMode?.() || 'battle';
+    if (currentMode === 'battle') {
+      console.log('⚔️ Battle Mode: Forcing Random Models');
+      model1 = null;
+      model2 = null;
+    }
+
+    // Logic to handle Mixed Selection (One Specific vs Random) in Side-by-Side Mode
+    // The backend requires BOTH models if selectionMode is manual (i.e. if ANY model is specified).
+    // So if user picks "Llama 3" vs "Random", we must pick a random model for the empty slot here.
+    if (this.state.backendAvailable && window._DUALMIND_MODELS?.length > 0) {
+      if ((model1 && !model2) || (!model1 && model2)) {
+        console.log('🎲 Mixed Selection: Auto-filling random model for empty slot');
+        const models = window._DUALMIND_MODELS;
+
+        if (!model1) {
+          const randomM = models[Math.floor(Math.random() * models.length)];
+          model1 = randomM.modelId;
+        }
+
+        if (!model2) {
+          const randomM = models[Math.floor(Math.random() * models.length)];
+          model2 = randomM.modelId;
+        }
+      }
+    }
+
+    // For Side-by-Side, look up real names
+    let leftName = 'Model A';
+    let rightName = 'Model B';
+
+    if (model1 && window._DUALMIND_MODELS) {
+      const m1 = window._DUALMIND_MODELS.find(m => m.modelId === model1);
+      if (m1) leftName = m1.modelName;
+    }
+
+    if (model2 && window._DUALMIND_MODELS) {
+      const m2 = window._DUALMIND_MODELS.find(m => m.modelId === model2);
+      if (m2) rightName = m2.modelName;
+    }
+
     const turn = {
-      id: turnId,
+      id: battleId, // UUID string
       prompt,
-      comparisonId: null,
-      left: { modelId: 'agent1', modelName: 'Agent 1', voteModelName: null, text: '…', streaming: true },
-      right: { modelId: 'agent2', modelName: 'Agent 2', voteModelName: null, text: '…', streaming: true },
-      voteStatus: 'idle', // idle | submitting | submitted | error
-      voteChoice: null, // left | right | tie
-      voteMessage: '',
+      comparisonId: battleId, // Same UUID
+      left: {
+        modelId: model1, // UUID or null for random
+        modelName: leftName,
+        text: '…',
+        streaming: true
+      },
+      right: {
+        modelId: model2, // UUID or null for random
+        modelName: rightName,
+        text: '…',
+        streaming: true
+      },
+      voteStatus: 'idle',
+      voteChoice: null,
     };
 
     this.state.turns = [...this.state.turns, turn];
@@ -558,69 +812,88 @@ class App {
     this.components.chatInput.setLoading(true);
     this.renderChat();
 
-    // Show voting buttons immediately after prompt is submitted
-    this.showFloatingVoting(turnId);
-
     try {
       const userId = this.state.user?.id || null;
-      const resp = await this.api.dualChat(prompt, { 
-        selectionMode: 'random',
+      const resp = await this.api.dualChat(prompt, {
+        model1: model1, // Send UUID or null
+        model2: model2, // Send UUID or null
         threadId: this.state.currentThreadId,
-        userId: userId
+        battleId: battleId, // Send battleId for linking
+        userId: userId,
+        temperature: temperature
       });
 
       const a1 = resp?.agent1;
       const a2 = resp?.agent2;
 
-      turn.comparisonId = resp?.comparisonId || null;
+      // ✅ CRITICAL FIX: Use the backend-generated comparisonId for voting
+      // The backend ignores our battleId and creates its own comparisonId
+      if (resp?.comparisonId) {
+        console.log('🔗 Updated comparisonId from backend:', resp.comparisonId);
+        turn.comparisonId = resp.comparisonId;
+      }
 
-      // Prefer displayName in UI, keep internal model name for the vote payload.
-      // Update state
-      turn.left.modelName = a1?.model?.displayName || a1?.model?.name || 'Agent 1';
-      turn.left.voteModelName = a1?.model?.name || a1?.model?.displayName || null;
-      turn.left.text = a1?.message || a1?.text || '';
+      // ✅ CRITICAL FIX: Update model names from backend response so they can be revealed after voting
+      if (a1?.model) {
+        turn.left.modelName = a1.model.displayName || a1.model.name || 'Model A';
+      }
+      if (a2?.model) {
+        turn.right.modelName = a2.model.displayName || a2.model.name || 'Model B';
+      }
+
+      // Reset text for streaming
+      turn.left.text = '';
+      turn.right.text = '';
+
+      // FORCE CLEAR DOM to remove '...'
+      const leftEl = document.getElementById(`resp-${turn.id}-left`);
+      const rightEl = document.getElementById(`resp-${turn.id}-right`);
+      if (leftEl) leftEl.innerHTML = '';
+      if (rightEl) rightEl.innerHTML = '';
+
+      // Initialize response cards with empty text to prepare for streaming
+      this.components.chatView.updateResponse(turn.id, 'left', '', true);
+      this.components.chatView.updateResponse(turn.id, 'right', '', true);
+
+      // Pseudo-stream the response
+      const leftStream = streamText(a1?.message || '', (chunk) => {
+        turn.left.text += chunk;
+        this.components.chatView.updateResponse(turn.id, 'left', turn.left.text, true);
+      }, { minDelay: 5, maxDelay: 15, minChunk: 2, maxChunk: 8 }); // Faster than generic
+
+      const rightStream = streamText(a2?.message || '', (chunk) => {
+        turn.right.text += chunk;
+        this.components.chatView.updateResponse(turn.id, 'right', turn.right.text, true);
+      }, { minDelay: 5, maxDelay: 15, minChunk: 2, maxChunk: 8 });
+
+      this._activeStreams = [leftStream, rightStream];
+      await Promise.all([leftStream.promise, rightStream.promise]);
+
+      this.components.chatView.finishResponse(turn.id, 'left');
+      this.components.chatView.finishResponse(turn.id, 'right');
+
+      // ✅ CRITICAL FIX: Mark individual model streams as finished to unblock voting
       turn.left.streaming = false;
-
-      turn.right.modelName = a2?.model?.displayName || a2?.model?.name || 'Agent 2';
-      turn.right.voteModelName = a2?.model?.name || a2?.model?.displayName || null;
-      turn.right.text = a2?.message || a2?.text || '';
       turn.right.streaming = false;
-
-      // Update DOM directly instead of full re-render
-      const leftEl = document.getElementById(`resp-${turnId}-left`);
-      const rightEl = document.getElementById(`resp-${turnId}-right`);
-      if (leftEl) leftEl.textContent = turn.left.text;
-      if (rightEl) rightEl.textContent = turn.right.text;
-
-      // Update model names in badges
-      const leftBadge = document.querySelector(`.response-card[data-turn-id="${turnId}"][data-side="left"] .model-name`);
-      const rightBadge = document.querySelector(`.response-card[data-turn-id="${turnId}"][data-side="right"] .model-name`);
-      if (leftBadge) leftBadge.textContent = turn.left.modelName;
-      if (rightBadge) rightBadge.textContent = turn.right.modelName;
-
-      // Remove streaming classes
-      this.components.chatView.finishResponse(turnId, 'left');
-      this.components.chatView.finishResponse(turnId, 'right');
 
       this.state.streaming = false;
       this.components.chatInput.setLoading(false);
-      // ✅ NO renderChat() - turn already exists, just patched response text
-      
+
       // ChatInput re-renders when loading changes; ensure voting stays visible until user clicks
-      this.showFloatingVoting(turnId);
-      
+      this.showFloatingVoting(turn.id);
+
     } catch (err) {
       const msg = err?.message || 'API request failed';
       console.warn('API request failed, falling back to mock responses:', msg);
-      
+
       // Fall back to mock responses
-      this.state.turns = this.state.turns.filter(t => t.id !== turnId); // Remove failed turn
-      return this.runArenaDemo(prompt);
+      this.state.turns = this.state.turns.filter(t => t.id !== turn.id); // Remove failed turn
+      return this.runArenaDemo(prompt, true);
     }
   }
 
-  async runDirectDemo(prompt) {
-    if (this.state.apiEnabled) {
+  async runDirectDemo(prompt, forceMock = false) {
+    if (this.state.apiEnabled && !forceMock) {
       return this.runDirectApi(prompt);
     }
 
@@ -658,7 +931,7 @@ class App {
     // If backend is not available, fall back to mock responses
     if (!this.state.backendAvailable) {
       console.log('📱 Backend not available, using mock responses');
-      return this.runDirectDemo(prompt);
+      return this.runDirectDemo(prompt, true);
     }
 
     // Auto-create thread on first message
@@ -666,11 +939,21 @@ class App {
       await this.createThread(prompt);
     }
 
+    // Get selected model from localStorage
+    const selectedModelId = localStorage.getItem('direct.model') || 'auto';
+    let displayModelName = 'Assistant';
+
+    // Optimistic lookup
+    if (selectedModelId !== 'auto' && window._DUALMIND_MODELS) {
+      const m = window._DUALMIND_MODELS.find(x => x.modelId === selectedModelId);
+      if (m) displayModelName = m.modelName;
+    }
+
     const userId = Date.now();
     this.state.direct = [
       ...this.state.direct,
       { id: userId, role: 'user', text: prompt },
-      { id: userId + 1, role: 'assistant', modelName: 'Assistant', text: '…' },
+      { id: userId + 1, role: 'assistant', modelName: displayModelName, text: '…' },
     ];
 
     this.state.streaming = true;
@@ -679,21 +962,34 @@ class App {
 
     try {
       const authUserId = this.state.user?.id || null;
-      const resp = await this.api.chat(prompt, { 
-        model: 'auto',
+      const resp = await this.api.chat(prompt, {
+        model: selectedModelId,
         threadId: this.state.currentThreadId,
         userId: authUserId
       });
       const last = this.state.direct[this.state.direct.length - 1];
-      last.modelName = resp?.model?.displayName || resp?.model?.name || last.modelName;
+
+      // Update model name if backend provides it, otherwise keep optimistic
+      if (resp?.model) {
+        last.modelName = resp.model.displayName || resp.model.name || last.modelName;
+      } else if (resp?.modelId) {
+        // If backend returns only ID, lookup name again
+        const m = window._DUALMIND_MODELS?.find(x => x.modelId === resp.modelId);
+        if (m) last.modelName = m.modelName;
+      }
+
       last.text = resp?.message || resp?.text || '';
     } catch (err) {
       const msg = err?.message || 'API request failed';
       console.warn('API request failed, falling back to mock responses:', msg);
-      
+
       // Fall back to mock responses
       this.state.direct = this.state.direct.slice(0, -2); // Remove the failed messages
-      return this.runDirectDemo(prompt);
+      // If backend is not available, fall back to mock responses
+      if (!this.state.backendAvailable) {
+        console.log('📱 Backend not available, using mock responses');
+        return this.runDirectDemo(prompt, true);
+      }
     } finally {
       this.state.streaming = false;
       this.components.chatInput.setLoading(false);
@@ -701,89 +997,256 @@ class App {
     }
   }
 
-  async handleVoteSubmit({ turnId, choice } = {}) {
-    const id = Number(turnId);
-    if (!id || !choice) return;
-
-    const turn = (this.state.turns || []).find((t) => t.id === id);
-    if (!turn) return;
-    if (turn.voteStatus === 'submitting' || turn.voteStatus === 'submitted') return;
-
-    // Must have finished responses
-    if (turn.left?.streaming || turn.right?.streaming) return;
-
-    // Tie vote is local-only (backend requires WinnerModelName)
-    if (choice === 'tie') {
-      turn.voteChoice = 'tie';
-      turn.voteStatus = 'submitted';
-      turn.voteMessage = 'Tie recorded (not sent to leaderboard).';
-      this.renderChat();
+  /**
+   * Show floating voting UI above input
+   */
+  showFloatingVoting(turnId) {
+    const container = document.getElementById('floating-voting');
+    if (!container) {
+      console.warn('❌ Floating voting container not found!');
       return;
     }
 
-    if (!this.state.apiEnabled) {
-      turn.voteStatus = 'error';
-      turn.voteMessage = 'Enable API to submit a vote.';
-      this.renderChat();
+    container.innerHTML = `
+      <button class="vote-btn-light" data-action="vote" data-turn-id="${turnId}" data-vote="left">
+        👈 Left is Better
+      </button>
+      <button class="vote-btn-light" data-action="vote" data-turn-id="${turnId}" data-vote="tie">
+        🤝 It's a Tie
+      </button>
+      <button class="vote-btn-light" data-action="vote" data-turn-id="${turnId}" data-vote="both-bad">
+        👎 Both are Bad
+      </button>
+      <button class="vote-btn-light" data-action="vote" data-turn-id="${turnId}" data-vote="right">
+        👉 Right is Better
+      </button>
+    `;
+
+    container.hidden = false;
+    console.log('✅ Voting UI shown for turn:', turnId);
+  }
+
+  /**
+   * Hide floating voting UI
+   */
+  hideFloatingVoting() {
+    const container = document.getElementById('floating-voting');
+    if (container) {
+      container.hidden = true;
+      container.innerHTML = '';
+    }
+  }
+
+  /**
+   * Handle vote submission with corrected API contract
+   * @param {string} turnId - UUID of the turn
+   * @param {string} voteChoice - 'left' | 'right' | 'tie' | 'both-bad'
+   */
+  async handleVoteSubmit(turnId, voteChoice) {
+    const turn = this.state.turns.find(t => t.id === turnId);
+    if (!turn || turn.voteStatus === 'submitted') {
+      console.warn('Turn not found or already voted');
       return;
     }
 
-    const comparisonId = turn.comparisonId;
-    if (!comparisonId) {
-      turn.voteStatus = 'error';
-      turn.voteMessage = 'Voting unavailable (missing comparisonId). Use API battle mode.';
-      this.renderChat();
-      return;
-    }
-
-    const winnerModelName =
-      choice === 'left' ? (turn.left?.voteModelName || turn.left?.modelName) :
-      choice === 'right' ? (turn.right?.voteModelName || turn.right?.modelName) :
-      null;
-
-    if (!winnerModelName) {
-      turn.voteStatus = 'error';
-      turn.voteMessage = 'Vote failed (missing winner model name).';
-      this.renderChat();
-      return;
-    }
+    // Disable all vote buttons immediately
+    document.querySelectorAll(`[data-turn-id="${turnId}"][data-action="vote"]`).forEach(btn => {
+      btn.disabled = true;
+      btn.style.opacity = '0.5';
+    });
 
     try {
       turn.voteStatus = 'submitting';
-      turn.voteChoice = choice;
-      turn.voteMessage = 'Submitting vote…';
+      turn.voteChoice = voteChoice;
       this.renderChat();
 
-      await this.api.submitVote(comparisonId, winnerModelName);
+      // 🚨 CORRECTED: Send voteChoice enum, NOT model names
+      await this.api.submitVote({
+        comparisonId: turn.comparisonId,
+        voteChoice: voteChoice, // 'left' | 'right' | 'tie' | 'both-bad'
+        userId: this.state.user?.id
+      });
 
       turn.voteStatus = 'submitted';
-      turn.voteMessage = 'Vote recorded. Thanks!';
+      this.hideFloatingVoting();
       this.renderChat();
 
-      // If leaderboard is open, refresh it so the UI reflects new totals.
+      console.log('✅ Vote submitted:', voteChoice);
+
+      // Refresh leaderboard if open
       if (this.leaderboard?.isOpen?.()) {
         this.leaderboard.load({ force: true });
       }
-    } catch (err) {
-      turn.voteStatus = 'error';
-      turn.voteMessage = `Vote failed: ${err?.message || 'Unknown error'}`;
-      this.renderChat();
+    } catch (error) {
+      console.error('❌ Vote submission failed:', error);
+      alert('Failed to submit vote: ' + error.message);
+
+      // Re-enable buttons
+      document.querySelectorAll(`[data-turn-id="${turnId}"][data-action="vote"]`).forEach(btn => {
+        btn.disabled = false;
+        btn.style.opacity = '1';
+      });
+
+      turn.voteStatus = 'idle';
+      turn.voteChoice = null;
+    }
+  }
+
+  /**
+   * Handle text-to-speech for AI responses
+   */
+  async handleTextToSpeech(text, buttonElement) {
+    if (!text || !text.trim()) return;
+
+    // Show loading state
+    const originalContent = buttonElement.innerHTML;
+    buttonElement.innerHTML = '⏳';
+    buttonElement.disabled = true;
+
+    try {
+      // Get audio blob from TTS API
+      const audioBlob = await this.api.textToSpeech(text.trim());
+
+      // Create audio URL and play
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
+
+      // Update button while playing
+      buttonElement.innerHTML = '🔇';
+
+      audio.onended = () => {
+        buttonElement.innerHTML = originalContent;
+        buttonElement.disabled = false;
+        URL.revokeObjectURL(audioUrl);
+      };
+
+      audio.onerror = () => {
+        buttonElement.innerHTML = originalContent;
+        buttonElement.disabled = false;
+        URL.revokeObjectURL(audioUrl);
+        alert('Failed to play audio');
+      };
+
+      await audio.play();
+    } catch (error) {
+      // Reset button state
+      buttonElement.innerHTML = originalContent;
+      buttonElement.disabled = false;
+      console.warn('Backend TTS failed, falling back to browser API:', error);
+
+      // Fallback to Browser Speech API
+      try {
+        const utterance = new SpeechSynthesisUtterance(text.trim());
+        // Optional: Try to pick a decent voice
+        const voices = window.speechSynthesis.getVoices();
+        const preferredVoice = voices.find(v => v.lang.includes('en') && (v.name.includes('Google') || v.name.includes('Samantha')));
+        if (preferredVoice) utterance.voice = preferredVoice;
+
+        utterance.onstart = () => { buttonElement.innerHTML = '🔇'; };
+        utterance.onend = () => { buttonElement.innerHTML = originalContent; buttonElement.disabled = false; };
+        utterance.onerror = () => { buttonElement.innerHTML = originalContent; buttonElement.disabled = false; };
+
+        window.speechSynthesis.speak(utterance);
+      } catch (browserError) {
+        console.error('Browser TTS also failed:', browserError);
+        buttonElement.innerHTML = originalContent;
+        buttonElement.disabled = false;
+        alert('Text-to-speech failed completely.');
+      }
     }
   }
 
   async createThread(firstMessage) {
     if (!this.state.backendAvailable) return;
-    
+
     try {
-      const title = firstMessage.length > 40 
-        ? firstMessage.substring(0, 40) + '...' 
+      const title = firstMessage.length > 40
+        ? firstMessage.substring(0, 40) + '...'
         : firstMessage;
       const userId = this.state.user?.id || null;
       const result = await this.api.createThread(title, userId);
       this.state.currentThreadId = result?.threadId || result?.id || null;
       console.log('✅ Thread created:', this.state.currentThreadId);
+
+      // Add to sidebar with real UUID
+      if (this.state.currentThreadId) {
+        this.components.sidebar.addRecentChat({
+          id: this.state.currentThreadId,
+          title: title
+        });
+      }
     } catch (error) {
       console.warn('Failed to create thread:', error);
+    }
+  }
+
+  async loadThread(threadId) {
+    if (!this.state.backendAvailable) {
+      this.state.currentThreadId = threadId;
+      return;
+    }
+
+    try {
+      this.components.chatInput.setLoading(true);
+      const result = await this.api.getThreadMessages(threadId);
+      const messages = result?.items || result || [];
+
+      // Clear current chat
+      this.cancelStreams();
+      this.state.turns = [];
+      this.state.direct = [];
+      this.state.currentThreadId = threadId;
+
+      if (messages.length === 0) {
+        this.renderChat();
+        this.components.chatInput.setLoading(false);
+        return;
+      }
+
+      // Reconstruct turns from thread messages
+      // This is a simplified reconstruction. 
+      // Real implementation depends on how backend stores turns vs messages.
+      // Assuming flat list of "turns" for now based on previous code structure
+      messages.forEach((msg, idx) => {
+        // Restore vote status if available
+        const voteChoice = msg.voteChoice || msg.vote_choice || msg.userVote || null;
+        // If voteChoice exists, status is 'submitted', otherwise 'idle'
+        const voteStatus = voteChoice ? 'submitted' : 'idle';
+
+        // Restore model names if available (from backend DTO)
+        const leftModelName = msg.model1Name || msg.model1_name || 'Model A';
+        const rightModelName = msg.model2Name || msg.model2_name || 'Model B';
+
+        const turn = {
+          id: msg.messageId || msg.message_id || Date.now() + idx,
+          comparisonId: msg.comparisonId || msg.comparison_id || null, // Restore comparisonId for voting
+          prompt: msg.promptText || msg.prompt_text || '',
+          left: {
+            modelId: msg.model1Id || msg.model1_id,
+            modelName: leftModelName,
+            text: msg.model1Response || msg.model1_response || '',
+            streaming: false
+          },
+          right: {
+            modelId: msg.model2Id || msg.model2_id,
+            modelName: rightModelName,
+            text: msg.model2Response || msg.model2_response || '',
+            streaming: false
+          },
+          voteStatus: voteStatus,
+          voteChoice: voteChoice,
+          userVote: voteChoice // Keep sync
+        };
+
+        this.state.turns.push(turn);
+      });
+
+      this.renderChat();
+      console.log(`✅ Loaded ${messages.length} messages from thread`);
+    } catch (error) {
+      console.error('Failed to load thread:', error);
+    } finally {
+      this.components.chatInput.setLoading(false);
     }
   }
 
@@ -805,19 +1268,19 @@ class App {
 
   adjustLayout(sidebarState = null) {
     const state = sidebarState || this.components.sidebar?.getState() || { isOpen: true, isMobile: false };
-    
+
     const headerContainer = document.getElementById('header-container');
     const chatContainer = document.getElementById('chat-input-container');
-    
+
     if (!state.isMobile) {
       const offset = state.isCollapsed
         ? 'var(--sidebar-collapsed-width)'
         : (state.isOpen ? 'var(--sidebar-width)' : '0');
-      
+
       if (headerContainer) {
         headerContainer.style.left = offset;
       }
-      
+
       if (chatContainer) {
         const wrapper = chatContainer.querySelector('.chat-input-wrapper');
         if (wrapper) {
@@ -830,7 +1293,7 @@ class App {
       if (headerContainer) {
         headerContainer.style.left = '0';
       }
-      
+
       if (chatContainer) {
         const wrapper = chatContainer.querySelector('.chat-input-wrapper');
         if (wrapper) {
@@ -850,14 +1313,14 @@ class App {
       e.preventDefault();
       this.components.chatInput.focus();
     }
-    
+
     // Ctrl/Cmd + B - Toggle sidebar
     if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
       e.preventDefault();
       const state = this.components.sidebar.getState();
       if (state.isMobile) this.components.sidebar.toggle();
     }
-    
+
     // Escape - Close sidebar on mobile
     if (e.key === 'Escape') {
       const state = this.components.sidebar.getState();
@@ -880,21 +1343,79 @@ class App {
 
   showFloatingVoting(turnId) {
     const votingContainer = document.getElementById('floating-voting');
-    console.log('showFloatingVoting called, container:', votingContainer, 'turnId:', turnId);
+    console.log('🗳️ showFloatingVoting called, turnId:', turnId);
+
     if (!votingContainer) {
-      console.error('Floating voting container not found!');
+      console.error('❌ Floating voting container not found!');
       return;
     }
-    
+
+    // Create voting bar with NO inline handlers (will attach after)
+    votingContainer.innerHTML = `
+      <div class="floating-vote-bar animate-pop-in" style="display: flex; gap: 10px; background: rgba(31, 41, 55, 0.95); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); padding: 16px 20px; border-radius: 16px; box-shadow: 0 20px 60px -15px rgba(0, 0, 0, 0.6), 0 10px 20px -10px rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.15); position: fixed; bottom: 140px; left: 50%; transform: translateX(-50%); z-index: 99999; pointer-events: auto; user-select: none;">
+        <button id="vote-left-btn" class="vote-btn-light" data-vote="left" style="background: linear-gradient(135deg, #4aabc2 0%, #3a8ea0 100%); color: white; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s; pointer-events: auto; box-shadow: 0 4px 12px rgba(74, 171, 194, 0.3);">
+          ← 👈 Left
+        </button>
+        <button id="vote-tie-btn" class="vote-btn-light" data-vote="tie" style="background: linear-gradient(135deg, #fdf4cd 0%, #f0e5a0 100%); color: #1a1a2e; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s; pointer-events: auto; box-shadow: 0 4px 12px rgba(253, 244, 205, 0.3);">
+          🤝 Tie
+        </button>
+        <button id="vote-bad-btn" class="vote-btn-light" data-vote="both-bad" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s; pointer-events: auto; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);">
+          ❌ Both Bad
+        </button>
+        <button id="vote-right-btn" class="vote-btn-light" data-vote="right" style="background: linear-gradient(135deg, #cb9275 0%, #b87d5f 100%); color: white; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s; pointer-events: auto; box-shadow: 0 4px 12px rgba(203, 146, 117, 0.3);">
+          Right 👉 →
+        </button>
+      </div>
+    `;
+
     votingContainer.hidden = false;
     votingContainer.setAttribute('data-turn-id', turnId);
-    console.log('Voting container shown');
+
+    // CRITICAL: Attach event listeners AFTER HTML is inserted
+    const attachVoteListener = (buttonId, voteChoice) => {
+      const btn = document.getElementById(buttonId);
+      if (btn) {
+        // Remove any existing listeners first
+        const clone = btn.cloneNode(true);
+        btn.parentNode.replaceChild(clone, btn);
+
+        clone.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log(`🎯 Vote button clicked: ${voteChoice}, turnId: ${turnId}`);
+          this.handleFloatingVote(voteChoice, turnId);
+          this.applyVoteSelection(voteChoice, turnId);
+        });
+
+        // Hover effect
+        clone.addEventListener('mouseenter', () => {
+          clone.style.transform = 'scale(1.05)';
+          clone.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.4)';
+        });
+        clone.addEventListener('mouseleave', () => {
+          clone.style.transform = 'scale(1)';
+          clone.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
+        });
+
+        console.log(`✅ Listener attached to ${buttonId}`);
+      } else {
+        console.error(`❌ Button ${buttonId} not found!`);
+      }
+    };
+
+    // Attach all listeners
+    attachVoteListener('vote-left-btn', 'left');
+    attachVoteListener('vote-tie-btn', 'tie');
+    attachVoteListener('vote-bad-btn', 'both-bad');
+    attachVoteListener('vote-right-btn', 'right');
+
+    console.log('✅ Voting container shown and listeners attached');
   }
 
   hideFloatingVoting() {
     const votingContainer = document.getElementById('floating-voting');
     if (!votingContainer) return;
-    
+
     votingContainer.hidden = true;
   }
 
@@ -904,10 +1425,10 @@ class App {
    */
   resetVoteState() {
     console.log('🔄 Resetting vote state for new comparison');
-    
+
     // Hide voting buttons
     this.hideFloatingVoting();
-    
+
     // Remove all vote button active states
     const votingContainer = document.getElementById('floating-voting');
     if (votingContainer) {
@@ -917,7 +1438,7 @@ class App {
         btn.disabled = false; // Re-enable if disabled
       });
     }
-    
+
     // Remove all vote highlight classes from response cards
     const allCards = document.querySelectorAll('.response-card');
     allCards.forEach(card => {
@@ -928,7 +1449,7 @@ class App {
         'vote-selected-red'
       );
     });
-    
+
     // Clear vote state from all turns in state
     this.state.turns = this.state.turns.map(turn => ({
       ...turn,
@@ -936,7 +1457,7 @@ class App {
       voteChoice: undefined,
       voteMessage: undefined
     }));
-    
+
     console.log('✅ Vote state reset complete');
   }
 
@@ -949,7 +1470,7 @@ class App {
   highlightResponseCards(vote, turnId, highlight) {
     const leftCard = document.querySelector(`.response-card[data-turn-id="${turnId}"][data-side="left"]`);
     const rightCard = document.querySelector(`.response-card[data-turn-id="${turnId}"][data-side="right"]`);
-    
+
     if (!leftCard || !rightCard) return;
 
     const hasPermanentSelection =
@@ -986,14 +1507,14 @@ class App {
    * @param {string} turnId - The turn ID
    */
   applyVoteSelection(vote, turnId) {
-    const turn = this.state.turns.find(t => t.id === parseInt(turnId));
+    const turn = this.state.turns.find(t => String(t.id) === String(turnId));
     if (!turn) return;
     if (turn.left?.streaming || turn.right?.streaming) return;
 
     const leftCard = document.querySelector(`.response-card[data-turn-id="${turnId}"][data-side="left"]`);
     const rightCard = document.querySelector(`.response-card[data-turn-id="${turnId}"][data-side="right"]`);
     const votingContainer = document.getElementById('floating-voting');
-    
+
     if (!leftCard || !rightCard || !votingContainer) return;
 
     // Remove all previous selections and highlights
@@ -1025,40 +1546,54 @@ class App {
   }
 
   async handleFloatingVote(vote, turnId) {
-    const turn = this.state.turns.find(t => t.id === parseInt(turnId));
-    if (!turn) return;
+    console.log(`📝 handleFloatingVote called: vote=${vote}, turnId=${turnId}`);
+    const turn = this.state.turns.find(t => String(t.id) === String(turnId));
+    if (!turn) {
+      console.warn('❌ Turn not found:', turnId);
+      return;
+    }
 
     // Don't allow voting until both responses have finished
-    if (turn.left?.streaming || turn.right?.streaming) return;
-    
+    if (turn.left?.streaming || turn.right?.streaming) {
+      console.warn('⏳ Cannot vote while responses are streaming');
+      return;
+    }
+
     // Hide voting buttons immediately
     this.hideFloatingVoting();
-    
-    // Update turn state (no need to re-render, applyVoteSelection already updated DOM)
+    console.log('🗳️ Voting UI hidden');
+
+    // Update turn state
     turn.voteStatus = 'submitting';
     turn.voteChoice = vote;
-    // ✅ NO renderChat() - vote classes already applied via applyVoteSelection()
-    
+    console.log('📊 Turn state updated:', { voteStatus: turn.voteStatus, voteChoice: turn.voteChoice });
+
     try {
-      if (vote === 'both-bad') {
-        // Handle "both are bad" locally
-        turn.voteStatus = 'submitted';
-        turn.voteMessage = 'Both responses marked as poor.';
-      } else {
-        // Submit vote to API
-        const winnerModelName = vote === 'left' ? turn.left.voteModelName : turn.right.voteModelName;
-        await this.api.submitVote(turn.comparisonId, winnerModelName);
-        
-        turn.voteStatus = 'submitted';
-        turn.voteMessage = 'Vote recorded. Thanks!';
+      // ✅ CORRECTED API CALL: Use object with voteChoice enum
+      await this.api.submitVote({
+        comparisonId: turn.comparisonId,
+        voteChoice: vote, // 'left' | 'right' | 'tie' | 'both-bad'
+        userId: this.state.user?.id
+      });
+
+      turn.voteStatus = 'submitted';
+      turn.voteMessage = 'Vote recorded. Thanks!';
+      console.log('✅ Vote submitted successfully');
+
+      // Refresh leaderboard if open
+      if (this.leaderboard?.isOpen?.()) {
+        this.leaderboard.load({ force: true });
       }
     } catch (err) {
+      console.error('❌ Vote submission failed:', err);
       turn.voteStatus = 'error';
-      turn.voteMessage = 'Failed to submit vote.';
+      turn.voteMessage = 'Failed to submit vote: ' + (err.message || 'Unknown error');
     }
-    
-    // ✅ NO renderChat() - vote state already in DOM via applyVoteSelection()
-    // Vote message is not displayed in UI, so no need to update DOM
+
+    // CRITICAL: Re-render to reveal model names
+    // After voting, voteStatus = 'submitted' which triggers ChatView to show real names
+    console.log('🔄 Re-rendering chat to reveal model names...');
+    this.renderChat();
   }
 
   // Public API
@@ -1074,8 +1609,9 @@ class App {
 // Initialize app
 const app = new App();
 
-// Expose to window for debugging
+// Expose to window for debugging and component access
 window.LMArena = app;
+window._APP = app;
 
 export default app;
 

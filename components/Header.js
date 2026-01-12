@@ -18,7 +18,7 @@ export class Header {
     this.isUserMenuOpen = false;
     this._onDocumentClick = null;
     this._onDocumentKeyDown = null;
-    
+
     this.init();
   }
 
@@ -29,7 +29,7 @@ export class Header {
 
   render() {
     const currentModeData = this.modes.find(m => m.id === this.currentMode);
-    
+
     this.container.innerHTML = `
       <header id="main-header" class="main-header">
         <!-- Mobile Menu Toggle -->
@@ -186,7 +186,7 @@ export class Header {
     const btn = this.container.querySelector('#mode-btn');
     const dropdown = this.container.querySelector('#mode-dropdown');
     const chevron = this.container.querySelector('.mode-chevron');
-    
+
     btn?.classList.toggle('open', this.isDropdownOpen);
     dropdown?.classList.toggle('open', this.isDropdownOpen);
     chevron?.classList.toggle('rotated', this.isDropdownOpen);
@@ -198,10 +198,10 @@ export class Header {
     this.closeDropdown();
     this.render();
     this.attachEventListeners();
-    
+
     // Dispatch mode change event
-    document.dispatchEvent(new CustomEvent('mode-change', { 
-      detail: { mode: modeId } 
+    document.dispatchEvent(new CustomEvent('mode-change', {
+      detail: { mode: modeId }
     }));
   }
 
@@ -232,50 +232,45 @@ export class Header {
   }
 
   getUserInitials() {
-    if (window.DualMindAuth && window.DualMindAuth.getUser) {
-      const user = window.DualMindAuth.getUser();
-      if (user && user.user_metadata && user.user_metadata.full_name) {
-        const name = user.user_metadata.full_name;
-        const parts = name.split(' ');
-        if (parts.length >= 2) {
-          return (parts[0][0] + parts[1][0]).toUpperCase();
-        }
-        return name.substring(0, 2).toUpperCase();
-      }
-      if (user && user.email) {
-        return user.email.substring(0, 2).toUpperCase();
-      }
+    if (!window.DualMindAuth) return '...';
+
+    const user = window.DualMindAuth.getUser();
+    if (!user) return 'G';
+
+    const name = user.user_metadata?.full_name || user.email;
+    if (!name) return 'U';
+
+    const parts = name.split(/[\s@]/);
+    if (parts.length >= 2) {
+      return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
     }
-    return 'U';
+    return name.substring(0, 2).toUpperCase();
   }
 
   getUserName() {
-    if (window.DualMindAuth && window.DualMindAuth.getUserName) {
-      return window.DualMindAuth.getUserName();
+    if (!window.DualMindAuth) return 'Loading...';
+
+    const user = window.DualMindAuth.getUser();
+    if (!user) return 'Guest';
+
+    // Try user_metadata.full_name first
+    if (user.user_metadata?.full_name) {
+      return user.user_metadata.full_name;
     }
-    if (window.DualMindAuth && window.DualMindAuth.getUser) {
-      const user = window.DualMindAuth.getUser();
-      if (user && user.user_metadata && user.user_metadata.full_name) {
-        return user.user_metadata.full_name;
-      }
-      if (user && user.email) {
-        return user.email.split('@')[0];
-      }
+
+    // Fallback to email username
+    if (user.email) {
+      return user.email.split('@')[0];
     }
-    return 'Guest';
+
+    return 'User';
   }
 
   getUserEmail() {
-    if (window.DualMindAuth && window.DualMindAuth.getUserEmail) {
-      return window.DualMindAuth.getUserEmail();
-    }
-    if (window.DualMindAuth && window.DualMindAuth.getUser) {
-      const user = window.DualMindAuth.getUser();
-      if (user && user.email) {
-        return user.email;
-      }
-    }
-    return 'guest@dualmind.ai';
+    if (!window.DualMindAuth) return 'Loading...';
+
+    const user = window.DualMindAuth.getUser();
+    return user?.email || 'guest@dualmind.ai';
   }
 
   handleSidebarToggle({ isOpen, isMobile }) {

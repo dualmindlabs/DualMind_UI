@@ -2,7 +2,7 @@ window.DUALMIND_CONFIG = window.DUALMIND_CONFIG || {};
 
 // ========== BACKEND URL CONFIGURATION ==========
 // ⚡ SINGLE SOURCE OF TRUTH - CHANGE THIS ONE LINE ONLY ⚡
-const BACKEND_URL = 'https://api.dualmindlab.tech';
+const BACKEND_URL = 'http://localhost:5079';
 
 // Single API base URL used by UI for all fetch calls
 window.DUALMIND_CONFIG.apiBaseUrl = BACKEND_URL;

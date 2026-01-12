@@ -11,7 +11,7 @@ export class ChatInput {
     this.value = '';
     this.isLoading = false;
     this.attachments = [];
-    
+
     this.init();
   }
 
@@ -26,12 +26,6 @@ export class ChatInput {
     this.container.innerHTML = `
       <div id="chat-input-wrapper" class="chat-input-wrapper">
         <div class="chat-input-container">
-          <div id="floating-voting" class="floating-voting" hidden>
-            <button class="vote-btn-light" data-vote="left">Left is better</button>
-            <button class="vote-btn-light" data-vote="tie">It's a tie</button>
-            <button class="vote-btn-light" data-vote="both-bad">Both are bad</button>
-            <button class="vote-btn-light" data-vote="right">Right is better</button>
-          </div>
           <!-- Attachments Preview -->
           <div id="attachments-preview" class="attachments-preview ${this.attachments.length ? 'has-items' : ''}">
             ${this.renderAttachments()}
@@ -52,19 +46,9 @@ export class ChatInput {
           <!-- Action Buttons Row -->
           <div class="action-buttons">
             <div class="left-actions">
-              <!-- Add Attachment -->
-              <button class="action-btn" id="add-btn" title="Add attachment">
-                ${Icons.add('white', 16)}
-              </button>
-
               <!-- Web Search -->
               <button class="action-btn" id="web-btn" title="Search the web">
                 ${Icons.globe('white', 18)}
-              </button>
-
-              <!-- Add Image -->
-              <button class="action-btn" id="image-btn" title="Add image">
-                ${Icons.image('white', 18)}
               </button>
 
               <!-- Code Mode -->
@@ -100,7 +84,7 @@ export class ChatInput {
 
   renderAttachments() {
     if (!this.attachments.length) return '';
-    
+
     return this.attachments.map((att, index) => `
       <div class="attachment-item" data-index="${index}">
         ${att.type === 'image' ? `
@@ -193,20 +177,12 @@ export class ChatInput {
 
   setLoading(loading) {
     this.isLoading = loading;
-    
-    // Update DOM directly instead of full re-render to prevent color flash
-    const textarea = this.container.querySelector('#chat-input');
-    const submitBtn = this.container.querySelector('#submit-btn');
-    
-    if (textarea) {
-      textarea.disabled = loading;
-    }
-    
-    if (submitBtn) {
-      submitBtn.disabled = loading;
-      submitBtn.classList.toggle('loading', loading);
-      submitBtn.innerHTML = loading ? this.renderLoader() : Icons.arrowUp('white', 15);
-    }
+    this.render();
+    this.attachEventListeners();
+
+    // Restore toggle states after re-render
+    if (this._webActive) this.container.querySelector('#web-btn')?.classList.add('active');
+    if (this._codeActive) this.container.querySelector('#code-btn')?.classList.add('active');
   }
 
   handleAdd() {
@@ -215,11 +191,11 @@ export class ChatInput {
     fileInput.type = 'file';
     fileInput.multiple = true;
     fileInput.accept = '*/*';
-    
+
     fileInput.addEventListener('change', (e) => {
       this.processFiles(e.target.files);
     });
-    
+
     fileInput.click();
   }
 
@@ -228,18 +204,18 @@ export class ChatInput {
     fileInput.type = 'file';
     fileInput.multiple = true;
     fileInput.accept = 'image/*';
-    
+
     fileInput.addEventListener('change', (e) => {
       this.processFiles(e.target.files);
     });
-    
+
     fileInput.click();
   }
 
   processFiles(files) {
     Array.from(files).forEach(file => {
       const isImage = file.type.startsWith('image/');
-      
+
       if (isImage) {
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -276,7 +252,7 @@ export class ChatInput {
     if (preview) {
       preview.innerHTML = this.renderAttachments();
       preview.classList.toggle('has-items', this.attachments.length > 0);
-      
+
       // Re-attach remove listeners
       this.container.querySelectorAll('.attachment-remove').forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -288,20 +264,23 @@ export class ChatInput {
   }
 
   handleWebSearch() {
+    this._webActive = !this._webActive;
     const btn = this.container.querySelector('#web-btn');
-    btn?.classList.toggle('active');
-    
+    btn?.classList.toggle('active', this._webActive);
+
+    // Provide visual feedback/toast if needed, or just rely on button state
     document.dispatchEvent(new CustomEvent('toggle-web-search', {
-      detail: { active: btn?.classList.contains('active') }
+      detail: { active: this._webActive }
     }));
   }
 
   handleCodeMode() {
+    this._codeActive = !this._codeActive;
     const btn = this.container.querySelector('#code-btn');
-    btn?.classList.toggle('active');
-    
+    btn?.classList.toggle('active', this._codeActive);
+
     document.dispatchEvent(new CustomEvent('toggle-code-mode', {
-      detail: { active: btn?.classList.contains('active') }
+      detail: { active: this._codeActive }
     }));
   }
 

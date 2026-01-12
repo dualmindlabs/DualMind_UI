@@ -38,16 +38,16 @@ window.DualMindAuthReady = new Promise((resolve) => {
   if (config.auth.mode === 'supabase' && config.auth.autoInitialize) {
     import('./supabase-auth.js').then(module => {
       const { initializeSupabaseAuth } = module;
-      
+
       try {
         const auth = initializeSupabaseAuth(config.supabase.url, config.supabase.anonKey);
-        
+
         // Expose globally
         window._DUALMIND_AUTH = auth;
-        
+
         // Log status
         console.log('✅ Supabase Auth initialized successfully');
-        
+
         // Check if user is logged in
         if (auth.isAuthenticated()) {
           const user = auth.getUser();
@@ -58,7 +58,7 @@ window.DualMindAuthReady = new Promise((resolve) => {
 
         // Setup global auth reference
         window.getAuth = () => auth;
-        
+
         // Resolve the ready promise
         window._resolveDualMindAuthReady?.();
       } catch (error) {
@@ -79,7 +79,17 @@ window.DualMindAuthReady = new Promise((resolve) => {
 (function setupFetchInterceptor() {
   const originalFetch = window.fetch;
 
-  window.fetch = async function(resource, config = {}) {
+  window.fetch = async function (resource, config = {}) {
+    // CRITICAL: Skip interceptor for Supabase API calls to prevent infinite recursion during token refresh
+    const url = typeof resource === 'string' ? resource : resource.url || '';
+    const supabaseConfig = window.DUALMIND_CONFIG?.supabase;
+    const isSupabaseUrl = supabaseConfig && url.includes(supabaseConfig.url.replace('https://', '').replace('http://', ''));
+
+    if (isSupabaseUrl) {
+      // Skip auth injection for Supabase calls to prevent recursion
+      return originalFetch.apply(this, [resource, config]);
+    }
+
     // Add auth header if user is logged in
     try {
       const auth = window._DUALMIND_AUTH || window.getAuth?.();
@@ -168,7 +178,7 @@ window.DualMindAuth = {
   async fetchWithAuth(url, options = {}) {
     const token = await this.getAccessToken();
     const headers = options.headers || {};
-    
+
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
