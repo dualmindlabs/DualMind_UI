@@ -5,14 +5,14 @@
 #floating-voting {
   position: fixed;
   bottom: 140px;
-  left: 50%;
+  left: calc(var(--sidebar-width) + (100% - var(--sidebar-width)) / 2);
   transform: translateX(-50%);
   width: 100%;
   max-width: var(--input-width);
   padding: 0 20px;
   z-index: 150;
   pointer-events: none;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 #floating-voting:not([hidden]) {
@@ -122,10 +122,22 @@
   font-size: 18px;
 }
 
+/* Desktop: Handle collapsed sidebar */
+@media (min-width: 1025px) {
+  #floating-voting {
+    left: calc(var(--sidebar-width) + (100% - var(--sidebar-width)) / 2);
+  }
+
+  #main-content.collapsed ~ #floating-voting {
+    left: calc(var(--sidebar-collapsed-width) + (100% - var(--sidebar-collapsed-width)) / 2);
+  }
+}
+
 /* Responsive Adjustments */
 @media (max-width: 1024px) {
   #floating-voting {
     bottom: 120px;
+    left: 50%;
     max-width: 100%;
     padding: 0 16px;
   }

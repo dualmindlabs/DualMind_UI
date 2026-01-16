@@ -144,15 +144,30 @@ export class ChatView {
     this.render();
   }
 
-  render() {
+  render(preserveScroll = false) {
     if (!this.container) return;
     const { mode } = this.state;
+
+    // Save scroll position if requested
+    let scrollPosition = 0;
+    const scrollContainer = this.container.parentElement;
+    if (preserveScroll && scrollContainer) {
+      scrollPosition = scrollContainer.scrollTop;
+    }
 
     this.container.innerHTML = `
       <div class="chat-area">
         ${mode === 'direct' ? this.renderDirect() : this.renderArena()}
       </div>
     `;
+
+    // Restore scroll position if requested
+    if (preserveScroll && scrollContainer && scrollPosition > 0) {
+      // Use requestAnimationFrame to ensure DOM is updated
+      requestAnimationFrame(() => {
+        scrollContainer.scrollTop = scrollPosition;
+      });
+    }
   }
 
   renderEmptyArena() {
@@ -246,11 +261,20 @@ export class ChatView {
     const left = turn.left ?? {};
     const right = turn.right ?? {};
     const voteChoice = turn.voteChoice || null;
-    const voted = turn.voteStatus === 'submitted';
+    const voteStatus = turn.voteStatus || 'idle';
+    const voted = voteStatus === 'submitted';
+    const voteDelay = voteStatus === 'vote-delay';
 
-    // Smart display logic: show only voted response unless tie/both-bad
-    const showLeft = !voted || voteChoice === 'left' || voteChoice === 'tie' || voteChoice === 'both-bad';
-    const showRight = !voted || voteChoice === 'right' || voteChoice === 'tie' || voteChoice === 'both-bad';
+    // During vote-delay (10s after voting), show both responses
+    // After that, show only voted response unless tie/both-bad
+    // Allow manual toggle via _showHidden flag
+    const showBothByDefault = !voted || voteChoice === 'tie' || voteChoice === 'both-bad';
+    const showLeft = showBothByDefault || voteChoice === 'left' || turn._showHidden;
+    const showRight = showBothByDefault || voteChoice === 'right' || turn._showHidden;
+
+    // Track if we need a toggle button (voted but not showing one side)
+    const needsToggle = voted && voteChoice && voteChoice !== 'tie' && voteChoice !== 'both-bad';
+    const hiddenSide = needsToggle ? (voteChoice === 'left' ? 'right' : 'left') : null;
 
     return `
       <section class="chat-turn" data-turn-id="${turn.id}">
@@ -270,6 +294,7 @@ export class ChatView {
           ${showRight ? this.renderResponseCard(turn, 'right', right) : ''}
         </div>
 
+        ${needsToggle ? this.renderToggleButton(turn.id, hiddenSide) : ''}
         ${this.renderVoteBar(turn)}
       </section>
     `;
@@ -357,8 +382,26 @@ export class ChatView {
     `;
   }
 
+  renderToggleButton(turnId, hiddenSide) {
+    const sideLabel = hiddenSide === 'left' ? 'Left (Model A)' : 'Right (Model B)';
+    return `
+      <div class="toggle-response-container" style="text-align: center; margin: 16px 0;">
+        <button 
+          class="toggle-response-btn secondary-btn" 
+          data-action="toggle-response" 
+          data-turn-id="${turnId}" 
+          data-side="${hiddenSide}"
+          style="padding: 12px 24px; border-radius: 12px; background: rgba(74, 171, 194, 0.15); border: 1px solid rgba(74, 171, 194, 0.3); color: #4AABC2; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+          👁️ See Other Response (${sideLabel})
+        </button>
+      </div>
+    `;
+  }
+
   renderVoteBar(turn) {
-    // Voting disabled - return empty
+    if (turn.voteStatus === 'submitted') {
+      return '';
+    }
     return '';
   }
 
@@ -431,6 +474,19 @@ export class ChatView {
       if (expandBtn) {
         const card = expandBtn.closest?.('.response-card');
         card?.classList.toggle('is-expanded');
+        return;
+      }
+
+      const toggleBtn = e.target.closest?.('button[data-action="toggle-response"]');
+      if (toggleBtn) {
+        const turnId = toggleBtn.getAttribute('data-turn-id');
+        const hiddenSide = toggleBtn.getAttribute('data-side');
+        const turn = (this.state.turns || []).find((t) => t.id === turnId);
+        if (turn) {
+          // Toggle the hidden response visibility
+          turn._showHidden = !turn._showHidden;
+          this.render();
+        }
         return;
       }
 

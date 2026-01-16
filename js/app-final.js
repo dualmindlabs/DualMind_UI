@@ -115,13 +115,28 @@ class App {
     console.log('🔍 Supabase auth available:', !!window._DUALMIND_AUTH);
     console.log('🔍 Current user:', window.DualMindAuth ? window.DualMindAuth.getUser() : null);
 
-    if (!isLoggedIn) {
+    // Check if we're already on the login page to prevent redirect loop
+    const isOnLoginPage = window.location.pathname.includes('/login');
+    
+    if (!isLoggedIn && !isOnLoginPage) {
       // No guest mode - require authentication
       const currentPath = window.location.pathname;
       console.log('🔄 User not authenticated. Redirecting to login:', currentPath);
+      
+      // Prevent infinite redirect loop
+      if (sessionStorage.getItem('auth_redirect_attempted')) {
+        console.error('❌ Auth redirect loop detected. Stopping.');
+        sessionStorage.removeItem('auth_redirect_attempted');
+        return;
+      }
+      
+      sessionStorage.setItem('auth_redirect_attempted', 'true');
       window.location.href = `login/index.html?redirect=${encodeURIComponent(currentPath)}`;
       return;
     }
+    
+    // Clear redirect flag if we're logged in
+    sessionStorage.removeItem('auth_redirect_attempted');
 
     // Set user info
     this.state.user = window.DualMindAuth ? window.DualMindAuth.getUser() : null;
@@ -643,14 +658,28 @@ class App {
     this.runArenaDemo(data.message, false, temp);
   }
 
-  renderChat() {
+  renderChat(preserveScroll = false) {
     const mode = this.state.currentMode;
-    this.components.chatView.setState({
-      mode,
-      turns: this.state.turns,
-      direct: this.state.direct,
-      apiEnabled: this.state.apiEnabled,
-    });
+    
+    if (preserveScroll) {
+      // Direct render call to preserve scroll position
+      this.components.chatView.state = {
+        ...this.components.chatView.state,
+        mode,
+        turns: this.state.turns,
+        direct: this.state.direct,
+        apiEnabled: this.state.apiEnabled,
+      };
+      this.components.chatView.render(true);
+    } else {
+      // Normal setState which may trigger full re-render
+      this.components.chatView.setState({
+        mode,
+        turns: this.state.turns,
+        direct: this.state.direct,
+        apiEnabled: this.state.apiEnabled,
+      });
+    }
   }
 
   cancelStreams() {
@@ -1069,7 +1098,7 @@ class App {
     try {
       turn.voteStatus = 'submitting';
       turn.voteChoice = voteChoice;
-      this.renderChat();
+      this.renderChat(true);
 
       // 🚨 CORRECTED: Send voteChoice enum, NOT model names
       await this.api.submitVote({
@@ -1078,11 +1107,19 @@ class App {
         userId: this.state.user?.id
       });
 
-      turn.voteStatus = 'submitted';
+      // Keep both responses visible for 10 seconds after voting
+      turn.voteStatus = 'vote-delay';
       this.hideFloatingVoting();
-      this.renderChat();
+      this.renderChat(true);
 
-      console.log('✅ Vote submitted:', voteChoice);
+      console.log('✅ Vote submitted:', voteChoice, '- keeping both visible for 10s');
+
+      // After 10 seconds, transition to showing only voted response
+      setTimeout(() => {
+        turn.voteStatus = 'submitted';
+        this.renderChat(true);
+        console.log('✅ Vote transition complete - showing voted response only');
+      }, 10000);
 
       // Refresh leaderboard if open
       if (this.leaderboard?.isOpen?.()) {
@@ -1334,6 +1371,8 @@ class App {
 
     const headerContainer = document.getElementById('header-container');
     const chatContainer = document.getElementById('chat-input-container');
+    const votingContainer = document.getElementById('floating-voting');
+    const mainContent = document.getElementById('main-content');
 
     if (!state.isMobile) {
       const offset = state.isCollapsed
@@ -1352,6 +1391,15 @@ class App {
             : (state.isOpen ? 'calc(var(--sidebar-width) / 2)' : '0');
         }
       }
+
+      // Update main content class for CSS selectors
+      if (mainContent) {
+        if (state.isCollapsed) {
+          mainContent.classList.add('collapsed');
+        } else {
+          mainContent.classList.remove('collapsed');
+        }
+      }
     } else {
       if (headerContainer) {
         headerContainer.style.left = '0';
@@ -1362,6 +1410,10 @@ class App {
         if (wrapper) {
           wrapper.style.marginLeft = '0';
         }
+      }
+
+      if (mainContent) {
+        mainContent.classList.remove('collapsed');
       }
     }
   }
@@ -1661,7 +1713,7 @@ class App {
     // CRITICAL: Re-render to reveal model names
     // After voting, voteStatus = 'submitted' which triggers ChatView to show real names
     console.log('🔄 Re-rendering chat to reveal model names...');
-    this.renderChat();
+    this.renderChat(true);
   }
 
   // Public API

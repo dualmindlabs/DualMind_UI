@@ -11,9 +11,8 @@
   align-items: center;
   flex-direction: column;
   position: relative;
-  width: 90%;
-  min-width: 20em;
-  max-width: 40em;
+  width: 100%;
+  margin: 0 auto;
   user-select: none;
   z-index: -3;
 }
@@ -118,59 +117,69 @@
 }
 
 .chat-marquee {
-  --gap: 1em;
-  display: flex;
-  gap: var(--gap);
-  margin-bottom: 1rem;
-  width: 100%;
+  --gap: 10px;
+  --chip-w: 140px;
+  --chip-h: 34px;
+  --chip-count: 7;
+
+  /* Exactly 4 chips visible */
+  width: min(calc((var(--chip-w) * 4) + (var(--gap) * 3)), 100%);
+  max-width: 600px;
+  margin: 0 auto 10px;
+  overflow: hidden;
   mask-image: linear-gradient(
     to right,
     rgba(0, 0, 0, 0),
-    rgba(0, 0, 0, 1) 20%,
-    rgba(0, 0, 0, 1) 80%,
+    rgba(0, 0, 0, 1) 12%,
+    rgba(0, 0, 0, 1) 88%,
     rgba(0, 0, 0, 0)
   );
-  overflow: hidden;
-  transition: all 0.2s ease-in-out;
 }
 
-.chat-marquee > ul {
+.chat-marquee-track {
   display: flex;
   gap: var(--gap);
-  flex-shrink: 0;
-  justify-content: space-around;
-  list-style: none;
-  animation: scroll-marquee-left 30s linear infinite;
+  width: max-content;
+  animation: dm-chat-marquee 22s linear infinite;
 }
 
-.chat-marquee > ul > li {
-  padding: 0.5rem 1rem;
-  background-color: var(--primary-color);
-  border: 2px solid var(--primary-color);
+.chat-marquee:hover .chat-marquee-track {
+  animation-play-state: paused;
+}
+
+.chat-chip {
+  width: var(--chip-w);
+  height: var(--chip-h);
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
   border-radius: 10px;
-  color: var(--neutral-color);
-  font-weight: 700;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(15, 17, 25, 0.55);
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
   cursor: pointer;
-  transition: all 0.2s ease-in-out, transform 0.1s ease-in-out;
+  transition: transform 0.12s ease, background 0.2s ease, border-color 0.2s ease;
 }
 
-.chat-marquee > ul > li:hover {
-  background-color: var(--neutral-color);
-  color: var(--primary-color);
+.chat-chip:hover {
+  background: rgba(15, 17, 25, 0.75);
+  border-color: rgba(255, 255, 255, 0.18);
 }
 
-.chat-marquee > ul > li:active {
-  transform: scale(0.9);
+.chat-chip:active {
+  transform: scale(0.98);
 }
-
-.chat-marquee:hover > ul {
-  animation-play-state: paused !important;
-}
-
 .chat-container {
   position: relative;
   top: 0;
   width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
   background: var(--primary-color);
   border: 0.2rem solid rgba(255, 255, 255, 0.3);
   border-radius: 1rem;
@@ -405,9 +414,12 @@
   }
 }
 
-@keyframes scroll-marquee-left {
+@keyframes dm-chat-marquee {
+  from {
+    transform: translateX(0);
+  }
   to {
-    transform: translateX(calc(-100% - var(--gap)));
+    transform: translateX(calc(-1 * (var(--chip-count) * var(--chip-w) + ((var(--chip-count) - 1) * var(--gap)))));
   }
 }
 

@@ -11,6 +11,7 @@ export class ChatInput {
     this.value = '';
     this.isLoading = false;
     this.attachments = [];
+    this._toastTimer = null;
 
     this.init();
   }
@@ -73,25 +74,24 @@ export class ChatInput {
             ></path>
           </svg>
         </label>
-        <div class="chat-marquee">
-          <ul>
-            <li>Create an image</li>
-            <li>Give me ideas</li>
-            <li>Write a text</li>
-            <li>Create a chart</li>
-            <li>Plan a trip</li>
-            <li>Help me pick</li>
-            <li>Write a Python script</li>
-          </ul>
-          <ul>
-            <li>Create an image</li>
-            <li>Give me ideas</li>
-            <li>Write a text</li>
-            <li>Create a chart</li>
-            <li>Plan a trip</li>
-            <li>Help me pick</li>
-            <li>Write a Python script</li>
-          </ul>
+        <div class="chat-marquee" aria-hidden="true">
+          <div class="chat-marquee-track">
+            <button type="button" class="chat-chip" data-coming-soon="true">Create an image</button>
+            <button type="button" class="chat-chip" data-coming-soon="true">Give me ideas</button>
+            <button type="button" class="chat-chip" data-coming-soon="true">Write a text</button>
+            <button type="button" class="chat-chip" data-coming-soon="true">Create a chart</button>
+            <button type="button" class="chat-chip" data-coming-soon="true">Plan a trip</button>
+            <button type="button" class="chat-chip" data-coming-soon="true">Help me pick</button>
+            <button type="button" class="chat-chip" data-coming-soon="true">Write a Python script</button>
+
+            <button type="button" class="chat-chip" data-coming-soon="true">Create an image</button>
+            <button type="button" class="chat-chip" data-coming-soon="true">Give me ideas</button>
+            <button type="button" class="chat-chip" data-coming-soon="true">Write a text</button>
+            <button type="button" class="chat-chip" data-coming-soon="true">Create a chart</button>
+            <button type="button" class="chat-chip" data-coming-soon="true">Plan a trip</button>
+            <button type="button" class="chat-chip" data-coming-soon="true">Help me pick</button>
+            <button type="button" class="chat-chip" data-coming-soon="true">Write a Python script</button>
+          </div>
         </div>
         <div class="chat-container">
           <label for="chat-input" class="chat-wrapper">
@@ -293,13 +293,12 @@ export class ChatInput {
     // Search toggle
     this.container.querySelector('#search')?.addEventListener('change', (e) => this.handleSearchToggle(e));
 
-    // Marquee clicks
-    this.container.querySelectorAll('.chat-marquee li').forEach(item => {
-      item.addEventListener('click', () => {
-        input.value = item.textContent;
-        this.value = item.textContent;
-        this.autoResize(input);
-        input.focus();
+    // Coming soon feature clicks
+    this.container.querySelectorAll('.chat-chip[data-coming-soon="true"]').forEach(el => {
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.showToast('Coming soon — great idea to try that');
       });
     });
 
@@ -321,6 +320,46 @@ export class ChatInput {
     document.addEventListener('sidebar-toggle', (e) => {
       this.handleSidebarToggle(e.detail);
     });
+  }
+
+  showToast(message) {
+    const existing = document.getElementById('dm-toast');
+    if (existing) {
+      existing.remove();
+    }
+
+    const toast = document.createElement('div');
+    toast.id = 'dm-toast';
+    toast.setAttribute('role', 'status');
+    toast.setAttribute('aria-live', 'polite');
+    toast.textContent = message;
+
+    Object.assign(toast.style, {
+      position: 'fixed',
+      left: '50%',
+      bottom: '110px',
+      transform: 'translateX(-50%)',
+      background: 'rgba(15, 17, 25, 0.92)',
+      border: '1px solid rgba(255,255,255,0.12)',
+      color: 'rgba(255,255,255,0.92)',
+      padding: '10px 14px',
+      borderRadius: '12px',
+      fontSize: '13px',
+      fontWeight: '500',
+      boxShadow: '0 10px 30px rgba(0,0,0,0.45)',
+      backdropFilter: 'blur(16px) saturate(1.2)',
+      WebkitBackdropFilter: 'blur(16px) saturate(1.2)',
+      zIndex: '9999',
+      maxWidth: 'calc(100vw - 24px)',
+      textAlign: 'center'
+    });
+
+    document.body.appendChild(toast);
+
+    clearTimeout(this._toastTimer);
+    this._toastTimer = setTimeout(() => {
+      toast.remove();
+    }, 2200);
   }
 
   submit() {
@@ -554,7 +593,9 @@ export class ChatInput {
   handleSearchToggle(e) {
     const isActive = e.target.checked;
     console.log('Search toggle:', isActive);
-    // TODO: Implement search functionality
+    document.dispatchEvent(new CustomEvent('toggle-web-search', {
+      detail: { active: isActive }
+    }));
   }
 
   startVoiceRecognition() {

@@ -2107,18 +2107,28 @@ textarea {
 #chat-input-container {
   position: fixed;
   bottom: calc(24px + env(safe-area-inset-bottom, 0px));
-  left: 50%;
+  left: calc(var(--sidebar-width) + (100% - var(--sidebar-width)) / 2);
   transform: translateX(-50%);
   width: 100%;
   max-width: var(--input-width);
   padding: 0 20px;
   z-index: var(--z-base);
-  transition: margin-left var(--transition-normal);
+  transition: left var(--transition-slow), transform var(--transition-slow);
+}
+
+@media (min-width: 1025px) {
+  #chat-input-container {
+    left: calc(var(--sidebar-width) + (100% - var(--sidebar-width)) / 2);
+  }
+
+  #main-content.collapsed ~ #chat-input-container {
+    left: calc(var(--sidebar-collapsed-width) + (100% - var(--sidebar-collapsed-width)) / 2);
+  }
 }
 
 .chat-input-wrapper {
   width: 100%;
-  margin-left: calc(var(--sidebar-width) / 2);
+  margin-left: 0;
   transition: margin-left var(--transition-normal);
 }
 
@@ -2479,7 +2489,7 @@ textarea {
   :root {
     --sidebar-width: 100%;
     --header-height: 56px;
-    --input-width: 100%;
+    --input-width: 100vw;
     --border-radius: 14px;
   }
 
@@ -2564,7 +2574,13 @@ textarea {
   }
 
   #chat-input-container {
+    position: fixed;
     bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 100%;
+    padding: 0 16px;
   }
 
   .api-text {
