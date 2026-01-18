@@ -8,7 +8,7 @@ import { Header } from '../components/Header.js';
 import { ChatInput } from '../components/ChatInput.js';
 import { ChatView } from '../components/chat/ChatView.js';
 import { pickModelPair, buildMockReply, streamText } from './mockArena.js';
-import { DualMindApiClient, getApiBaseUrl } from './apiClient.js';
+import { api } from './apiInstance.js';
 import { LeaderboardModal } from './leaderboardModal.js';
 
 class App {
@@ -57,10 +57,7 @@ class App {
 
     this._backendHealthFailures = 0;
     this._activeStreams = [];
-    this.api = new DualMindApiClient({
-      baseUrl: getApiBaseUrl(),
-      getAuthToken: () => this.getAuthToken()
-    });
+    this.api = api;
     // Expose API globally for Sidebar to fetch threads
     window._DUALMIND_API = this.api;
     this.leaderboard = null;
@@ -82,24 +79,7 @@ class App {
     return !!window.DualMindAuth;
   }
 
-  /**
-   * Get auth token from Supabase auth
-   */
-  async getAuthToken() {
-    try {
-      // Try to get from Supabase auth first
-      if (window.DualMindAuth && window.DualMindAuth.isLoggedIn()) {
-        return await window.DualMindAuth.getAccessToken();
-      }
 
-      // Fallback to stored token
-      const storedToken = localStorage.getItem('dualmind.auth.token');
-      return storedToken;
-    } catch (error) {
-      console.warn('Could not get auth token:', error);
-      return null;
-    }
-  }
 
   async init() {
     // 🚨 CRITICAL: Wait for Supabase auth to fully initialize
@@ -108,33 +88,46 @@ class App {
       console.log('✅ Auth initialization complete');
     }
 
+    // 🚨 CRITICAL: Add small delay to ensure session is fully restored
+    // This prevents race condition where API calls happen before token is available
+    await new Promise(resolve => setTimeout(resolve, 500));
+
     // Check authentication with Supabase
     const isLoggedIn = window.DualMindAuth ? window.DualMindAuth.isLoggedIn() : false;
     console.log('🔍 Auth check - isLoggedIn:', isLoggedIn);
     console.log('🔍 Auth object available:', !!window.DualMindAuth);
     console.log('🔍 Supabase auth available:', !!window._DUALMIND_AUTH);
     console.log('🔍 Current user:', window.DualMindAuth ? window.DualMindAuth.getUser() : null);
+    
+    // 🚨 CRITICAL: Verify token is available before proceeding
+    if (isLoggedIn && window._DUALMIND_AUTH) {
+      const token = await window._DUALMIND_AUTH.getAccessToken();
+      console.log('🔍 Token available:', !!token);
+      if (token) {
+        console.log('🔍 Token length:', token.length);
+      }
+    }
 
     // Check if we're already on the login page to prevent redirect loop
     const isOnLoginPage = window.location.pathname.includes('/login');
-    
+
     if (!isLoggedIn && !isOnLoginPage) {
       // No guest mode - require authentication
       const currentPath = window.location.pathname;
       console.log('🔄 User not authenticated. Redirecting to login:', currentPath);
-      
+
       // Prevent infinite redirect loop
       if (sessionStorage.getItem('auth_redirect_attempted')) {
         console.error('❌ Auth redirect loop detected. Stopping.');
         sessionStorage.removeItem('auth_redirect_attempted');
         return;
       }
-      
+
       sessionStorage.setItem('auth_redirect_attempted', 'true');
       window.location.href = `login/index.html?redirect=${encodeURIComponent(currentPath)}`;
       return;
     }
-    
+
     // Clear redirect flag if we're logged in
     sessionStorage.removeItem('auth_redirect_attempted');
 
@@ -168,9 +161,10 @@ class App {
       this.setup();
     }
 
-    // Check if backend is available (non-blocking)
-    this.checkBackendAvailability().then(() => {
-      console.log('Backend check completed');
+    // Check if backend is available (non-blocking) - but we will wait for it in setup() for final logs
+    this._backendCheckPromise = this.checkBackendAvailability();
+    this._backendCheckPromise.then(() => {
+      // console.log('Backend check completed');
     }).catch(err => {
       console.warn('Backend check failed:', err);
     });
@@ -186,49 +180,44 @@ class App {
     // Skip backend check if offline mode is preferred
     if (window.DUALMIND_CONFIG?.offline?.enabled === false) {
       try {
-        const baseUrl = getApiBaseUrl();
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-        let ok = false;
-        try {
-          const res = await fetch(`${baseUrl}/api/arena/ping`, { method: 'GET', signal: controller.signal });
-          ok = res.ok;
-        } catch {
-          ok = false;
-        }
-
-        if (!ok) {
-          try {
-            const res = await fetch(`${baseUrl}/api/arena/ping`, { method: 'GET', signal: controller.signal });
-            ok = res.ok;
-          } catch {
-            ok = false;
-          }
-        }
-
-        clearTimeout(timeoutId);
+        const ok = await this.api.healthCheck();
 
         if (ok) {
           this._backendHealthFailures = 0;
+          const wasAvailable = this.state.backendAvailable;
           this.state.backendAvailable = true;
           console.log('✅ Backend available');
           this.hideBackendUnavailableBanner();
+
+          // Notify listeners (Sidebar, etc.) that backend is ready
+          if (!wasAvailable) {
+            document.dispatchEvent(new CustomEvent('backend-available', { detail: { available: true } }));
+          }
           return;
         }
 
         this._backendHealthFailures += 1;
         if (this._backendHealthFailures >= 2) {
+          const wasAvailable = this.state.backendAvailable;
           this.state.backendAvailable = false;
           console.log('⚠️ Backend health check failed (consecutive), some features may be unavailable');
           this.showBackendUnavailableBanner();
+
+          if (wasAvailable) {
+            document.dispatchEvent(new CustomEvent('backend-available', { detail: { available: false } }));
+          }
         }
       } catch (error) {
         this._backendHealthFailures += 1;
         if (this._backendHealthFailures >= 2) {
+          const wasAvailable = this.state.backendAvailable;
           this.state.backendAvailable = false;
           console.log('⚠️ Backend not available (consecutive), some features may be unavailable');
           this.showBackendUnavailableBanner();
+
+          if (wasAvailable) {
+            document.dispatchEvent(new CustomEvent('backend-available', { detail: { available: false } }));
+          }
         }
       }
     } else {
@@ -293,7 +282,7 @@ class App {
    */
   async fetchModels() {
     try {
-      const response = await this.api.getModels();
+      const response = await this.api.models.getModels();
       window._DUALMIND_MODELS = response.items || response || [];
       console.log('✅ Loaded models:', window._DUALMIND_MODELS.length);
     } catch (error) {
@@ -324,9 +313,14 @@ class App {
     return model?.modelId || null;
   }
 
-  setup() {
+  async setup() {
     // Expose app globally for components
     window._APP = this;
+
+    // WAIT for backend check to complete if it's still running
+    if (this._backendCheckPromise) {
+      await this._backendCheckPromise;
+    }
 
     // Initialize components
     this.components.sidebar = new Sidebar('sidebar-container');
@@ -660,7 +654,7 @@ class App {
 
   renderChat(preserveScroll = false) {
     const mode = this.state.currentMode;
-    
+
     if (preserveScroll) {
       // Direct render call to preserve scroll position
       this.components.chatView.state = {
@@ -854,7 +848,7 @@ class App {
 
     try {
       const userId = this.state.user?.id || null;
-      const resp = await this.api.dualChat(prompt, {
+      const resp = await this.api.arena.dualChat(prompt, {
         model1: model1, // Send UUID or null
         model2: model2, // Send UUID or null
         threadId: this.state.currentThreadId,
@@ -1002,7 +996,7 @@ class App {
 
     try {
       const authUserId = this.state.user?.id || null;
-      const resp = await this.api.chat(prompt, {
+      const resp = await this.api.arena.chat(prompt, {
         model: selectedModelId,
         threadId: this.state.currentThreadId,
         userId: authUserId
@@ -1101,7 +1095,7 @@ class App {
       this.renderChat(true);
 
       // 🚨 CORRECTED: Send voteChoice enum, NOT model names
-      await this.api.submitVote({
+      await this.api.arena.submitVote({
         comparisonId: turn.comparisonId,
         voteChoice: voteChoice, // 'left' | 'right' | 'tie' | 'both-bad'
         userId: this.state.user?.id
@@ -1153,7 +1147,7 @@ class App {
 
     try {
       // Get audio blob from TTS API
-      const audioBlob = await this.api.textToSpeech(text.trim());
+      const audioBlob = await this.api.arena.textToSpeech(text.trim());
 
       // Create audio URL and play
       const audioUrl = URL.createObjectURL(audioBlob);
@@ -1209,21 +1203,21 @@ class App {
 
     try {
       console.log('🔄 Syncing user with backend...');
-      
+
       // Prepare user data for backend
       const userData = {
         id: this.state.user.id,
         email: this.state.user.email,
         phone: this.state.user.phone || null,
-        name: this.state.user.user_metadata?.name || 
-               this.state.user.user_metadata?.full_name || 
-               this.state.user.email?.split('@')[0] || 'User',
+        name: this.state.user.user_metadata?.name ||
+          this.state.user.user_metadata?.full_name ||
+          this.state.user.email?.split('@')[0] || 'User',
         avatar_url: this.state.user.user_metadata?.avatar_url || null,
         provider: this.state.user.app_metadata?.provider || 'email'
       };
 
       // Call backend to sync/create user
-      await this.api.syncUser(userData);
+      await this.api.users.syncUser(userData);
       console.log('✅ User synced with backend:', userData.email);
     } catch (error) {
       console.warn('⚠️ Failed to sync user with backend:', error);
@@ -1234,12 +1228,13 @@ class App {
   async createThread(firstMessage) {
     if (!this.state.backendAvailable) return;
 
+    const title = firstMessage.length > 40
+      ? firstMessage.substring(0, 40) + '...'
+      : firstMessage;
+
     try {
-      const title = firstMessage.length > 40
-        ? firstMessage.substring(0, 40) + '...'
-        : firstMessage;
       const userId = this.state.user?.id || null;
-      const result = await this.api.createThread(title, userId);
+      const result = await this.api.threads.createThread(title, userId);
       this.state.currentThreadId = result?.threadId || result?.id || null;
       console.log('✅ Thread created:', this.state.currentThreadId);
 
@@ -1249,25 +1244,34 @@ class App {
           id: this.state.currentThreadId,
           title: title
         });
+
+        // Let Sidebar (and others) refresh from source-of-truth
+        document.dispatchEvent(new CustomEvent('threads-changed', {
+          detail: { reason: 'thread-created', threadId: this.state.currentThreadId }
+        }));
       }
     } catch (error) {
       // If user doesn't exist in database, try to sync and retry once
       if (error.message?.includes('user_id') && error.message?.includes('not present in table')) {
         console.log('🔄 User not in database, syncing and retrying...');
         await this.syncUserWithBackend();
-        
+
         // Retry thread creation
         try {
           const userId = this.state.user?.id || null;
-          const result = await this.api.createThread(title, userId);
+          const result = await this.api.threads.createThread(title, userId);
           this.state.currentThreadId = result?.threadId || result?.id || null;
           console.log('✅ Thread created on retry:', this.state.currentThreadId);
-          
+
           if (this.state.currentThreadId) {
             this.components.sidebar.addRecentChat({
               id: this.state.currentThreadId,
               title: title
             });
+
+            document.dispatchEvent(new CustomEvent('threads-changed', {
+              detail: { reason: 'thread-created', threadId: this.state.currentThreadId }
+            }));
           }
         } catch (retryError) {
           console.warn('❌ Thread creation failed even after retry:', retryError);
@@ -1286,7 +1290,7 @@ class App {
 
     try {
       this.components.chatInput.setLoading(true);
-      const result = await this.api.getThreadMessages(threadId);
+      const result = await this.api.threads.getThreadMessages(threadId);
       const messages = result?.items || result || [];
 
       // Clear current chat
@@ -1454,84 +1458,6 @@ class App {
       localStorage.removeItem('dualmind.auth.token');
       window.location.href = './login/';
     }
-  }
-
-  showFloatingVoting(turnId) {
-    const votingContainer = document.getElementById('floating-voting');
-    console.log('🗳️ showFloatingVoting called, turnId:', turnId);
-
-    if (!votingContainer) {
-      console.error('❌ Floating voting container not found!');
-      return;
-    }
-
-    // Create voting bar with NO inline handlers (will attach after)
-    votingContainer.innerHTML = `
-      <div class="floating-vote-bar animate-pop-in" style="display: flex; gap: 10px; background: rgba(31, 41, 55, 0.95); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); padding: 16px 20px; border-radius: 16px; box-shadow: 0 20px 60px -15px rgba(0, 0, 0, 0.6), 0 10px 20px -10px rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.15); position: fixed; bottom: 140px; left: 50%; transform: translateX(-50%); z-index: 99999; pointer-events: auto; user-select: none;">
-        <button id="vote-left-btn" class="vote-btn-light" data-vote="left" style="background: linear-gradient(135deg, #4aabc2 0%, #3a8ea0 100%); color: white; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s; pointer-events: auto; box-shadow: 0 4px 12px rgba(74, 171, 194, 0.3);">
-          ← 👈 Left
-        </button>
-        <button id="vote-tie-btn" class="vote-btn-light" data-vote="tie" style="background: linear-gradient(135deg, #fdf4cd 0%, #f0e5a0 100%); color: #1a1a2e; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s; pointer-events: auto; box-shadow: 0 4px 12px rgba(253, 244, 205, 0.3);">
-          🤝 Tie
-        </button>
-        <button id="vote-bad-btn" class="vote-btn-light" data-vote="both-bad" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s; pointer-events: auto; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);">
-          ❌ Both Bad
-        </button>
-        <button id="vote-right-btn" class="vote-btn-light" data-vote="right" style="background: linear-gradient(135deg, #cb9275 0%, #b87d5f 100%); color: white; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s; pointer-events: auto; box-shadow: 0 4px 12px rgba(203, 146, 117, 0.3);">
-          Right 👉 →
-        </button>
-      </div>
-    `;
-
-    votingContainer.hidden = false;
-    votingContainer.setAttribute('data-turn-id', turnId);
-
-    // CRITICAL: Attach event listeners AFTER HTML is inserted
-    const attachVoteListener = (buttonId, voteChoice) => {
-      const btn = document.getElementById(buttonId);
-      if (btn) {
-        // Remove any existing listeners first
-        const clone = btn.cloneNode(true);
-        btn.parentNode.replaceChild(clone, btn);
-
-        clone.addEventListener('click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          console.log(`🎯 Vote button clicked: ${voteChoice}, turnId: ${turnId}`);
-          this.handleFloatingVote(voteChoice, turnId);
-          this.applyVoteSelection(voteChoice, turnId);
-        });
-
-        // Hover effect
-        clone.addEventListener('mouseenter', () => {
-          clone.style.transform = 'scale(1.05)';
-          clone.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.4)';
-        });
-        clone.addEventListener('mouseleave', () => {
-          clone.style.transform = 'scale(1)';
-          clone.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
-        });
-
-        console.log(`✅ Listener attached to ${buttonId}`);
-      } else {
-        console.error(`❌ Button ${buttonId} not found!`);
-      }
-    };
-
-    // Attach all listeners
-    attachVoteListener('vote-left-btn', 'left');
-    attachVoteListener('vote-tie-btn', 'tie');
-    attachVoteListener('vote-bad-btn', 'both-bad');
-    attachVoteListener('vote-right-btn', 'right');
-
-    console.log('✅ Voting container shown and listeners attached');
-  }
-
-  hideFloatingVoting() {
-    const votingContainer = document.getElementById('floating-voting');
-    if (!votingContainer) return;
-
-    votingContainer.hidden = true;
   }
 
   /**
@@ -1723,26 +1649,6 @@ class App {
 
   getComponent(name) {
     return this.components[name];
-  }
-
-  handleLogout() {
-    console.log('🚪 Logging out...');
-
-    // Clear Supabase session if exists & wired
-    if (window.supabase) {
-      window.supabase.auth.signOut().catch(console.error);
-    }
-
-    // Clear local storage tokens
-    localStorage.removeItem('dualmind.auth.token');
-    localStorage.removeItem('supabase.auth.token');
-    localStorage.removeItem('sb-access-token');
-
-    // Clear user state
-    this.state.user = null;
-
-    // Redirect to login
-    window.location.href = '/login/index.html';
   }
 }
 

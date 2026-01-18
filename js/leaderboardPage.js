@@ -1,53 +1,11 @@
-import { DualMindApiClient, getApiBaseUrl } from './apiClient.js';
+import { api } from './apiInstance.js';
+import { isAuthenticated } from './api/utils/authProvider.js';
 
 function escapeHtml(str) {
   return String(str)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
-}
-
-async function getAuthToken() {
-  try {
-    if (window.DualMindAuthReady) {
-      try {
-        await window.DualMindAuthReady;
-      } catch {
-        // ignore
-      }
-    }
-
-    if (window.DualMindAuth && window.DualMindAuth.isLoggedIn?.()) {
-      const token = await window.DualMindAuth.getAccessToken();
-      return token || null;
-    }
-
-    const stored = localStorage.getItem('dualmind.auth.token');
-    if (stored && stored.startsWith('eyJ')) return stored;
-
-    // Supabase-js persists sessions under keys like: sb-<project-ref>-auth-token
-    try {
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i);
-        if (!k || !k.startsWith('sb-') || !k.endsWith('-auth-token')) continue;
-        const raw = localStorage.getItem(k);
-        if (!raw) continue;
-        const parsed = JSON.parse(raw);
-        const token =
-          parsed?.access_token ||
-          parsed?.currentSession?.access_token ||
-          parsed?.session?.access_token ||
-          parsed?.data?.session?.access_token;
-        if (typeof token === 'string' && token.trim()) return token.trim();
-      }
-    } catch {
-      // ignore
-    }
-
-    return null;
-  } catch {
-    return null;
-  }
 }
 
 function renderSkeleton(root) {
@@ -150,14 +108,14 @@ function renderData(root, items) {
           </thead>
           <tbody>
             ${sorted.map((item, i) => {
-              const rank = i + 1;
-              const modelName = item.model_name || item.modelName || 'Unknown';
-              const provider = item.provider || item.providerName || '';
-              const winRate = Number(item.win_rate || item.winRate || 0);
-              const wins = Number(item.wins || item.totalWins || 0);
-              const responses = Number(item.times_compared || item.totalResponses || 0);
-              const medal = rank <= 3 ? ` rank-${rank}` : '';
-              return `
+    const rank = i + 1;
+    const modelName = item.model_name || item.modelName || 'Unknown';
+    const provider = item.provider || item.providerName || '';
+    const winRate = Number(item.win_rate || item.winRate || 0);
+    const wins = Number(item.wins || item.totalWins || 0);
+    const responses = Number(item.times_compared || item.totalResponses || 0);
+    const medal = rank <= 3 ? ` rank-${rank}` : '';
+    return `
                 <tr class="dm-lb-row">
                   <td class="dm-lb-rank${medal}"><span class="dm-lb-rank-pill">#${rank}</span></td>
                   <td>
@@ -171,7 +129,7 @@ function renderData(root, items) {
                   <td class="dm-lb-num">${escapeHtml(String(responses))}</td>
                 </tr>
               `;
-            }).join('')}
+  }).join('')}
           </tbody>
         </table>
       </div>
@@ -185,23 +143,18 @@ async function init() {
 
   const refreshBtn = document.getElementById('leaderboard-refresh');
 
-  const api = new DualMindApiClient({
-    baseUrl: getApiBaseUrl(),
-    getAuthToken,
-  });
-
   const load = async () => {
     renderSkeleton(root);
     try {
-      const token = await getAuthToken();
-      if (!token) {
+      const loggedIn = await isAuthenticated();
+      if (!loggedIn) {
         renderState(root, {
           title: 'Login required',
           subtitle: 'Please login in the main app first, then refresh this page.'
         });
         return;
       }
-      const data = await api.getLeaderboard();
+      const data = await api.arena.getLeaderboard();
       const items = normalizeItems(data);
       renderData(root, items);
     } catch (e) {

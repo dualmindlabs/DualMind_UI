@@ -1,14 +1,18 @@
 window.DUALMIND_CONFIG = window.DUALMIND_CONFIG || {};
 
 // ========== BACKEND URL CONFIGURATION ==========
-// ⚡ SINGLE SOURCE OF TRUTH - CHANGE THIS ONE LINE ONLY ⚡
-const BACKEND_URL = 'http://localhost:5079';
+const isLocalhost =
+  window.location.hostname === 'localhost' ||
+  window.location.hostname === '127.0.0.1' ||
+  window.location.hostname === '::1';
 
-// Set it globally so all code can access it
+const BACKEND_URL = isLocalhost ? 'http://localhost:5079' : '';
+
+window.DUALMIND_CONFIG.apiBaseUrl = BACKEND_URL;
 window.DUALMIND_CONFIG.backendUrl = BACKEND_URL;
 
 // Legacy support for old config structure
-const BACKEND_MODE = 'production';
+const BACKEND_MODE = isLocalhost ? 'localhost' : 'production';
 const BACKEND_URLS = {
   localhost: 'http://localhost:65476',
   production: BACKEND_URL

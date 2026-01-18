@@ -235,7 +235,7 @@ export class APIError extends Error {
  */
 export function createAPIClient(baseUrl) {
   if (!baseUrl) {
-    baseUrl = window.DUALMIND_CONFIG?.serverUrl || 'http://localhost:65476';
+    baseUrl = window.DUALMIND_CONFIG?.serverUrl || 'http://localhost:5079';
   }
   return new APIClient(baseUrl);
 }
@@ -245,7 +245,7 @@ let apiClient = null;
 
 export function getAPIClient() {
   if (!apiClient) {
-    const baseUrl = window.DUALMIND_CONFIG?.serverUrl || 'http://localhost:65476';
+    const baseUrl = window.DUALMIND_CONFIG?.serverUrl || 'http://localhost:5079';
     apiClient = createAPIClient(baseUrl);
   }
   return apiClient;

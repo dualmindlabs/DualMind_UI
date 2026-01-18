@@ -74,7 +74,7 @@ export class ChatInput {
             ></path>
           </svg>
         </label>
-        <div class="chat-marquee" aria-hidden="true">
+        <div class="chat-marquee">
           <div class="chat-marquee-track">
             <button type="button" class="chat-chip" data-coming-soon="true">Create an image</button>
             <button type="button" class="chat-chip" data-coming-soon="true">Give me ideas</button>
@@ -603,17 +603,17 @@ export class ChatInput {
       console.warn('Speech recognition not supported');
       return;
     }
-    
+
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     this.recognition = new SpeechRecognition();
     this.recognition.continuous = true;
     this.recognition.interimResults = true;
-    
+
     this.recognition.onresult = (event) => {
       const transcript = Array.from(event.results)
         .map(result => result[0].transcript)
         .join('');
-      
+
       const input = this.container.querySelector('#chat-input');
       if (input) {
         input.value = transcript;
@@ -621,12 +621,12 @@ export class ChatInput {
         this.autoResize(input);
       }
     };
-    
+
     this.recognition.onerror = (event) => {
       console.error('Speech recognition error:', event.error);
       this.stopVoiceRecognition();
     };
-    
+
     this.recognition.start();
   }
 

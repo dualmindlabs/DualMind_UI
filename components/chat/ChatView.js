@@ -481,7 +481,7 @@ export class ChatView {
       if (toggleBtn) {
         const turnId = toggleBtn.getAttribute('data-turn-id');
         const hiddenSide = toggleBtn.getAttribute('data-side');
-        const turn = (this.state.turns || []).find((t) => t.id === turnId);
+        const turn = (this.state.turns || []).find((t) => String(t.id) === String(turnId));
         if (turn) {
           // Toggle the hidden response visibility
           turn._showHidden = !turn._showHidden;

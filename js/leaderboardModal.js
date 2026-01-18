@@ -204,15 +204,15 @@ export class LeaderboardModal {
             </thead>
             <tbody>
               ${items.map((item, i) => {
-                const rank = i + 1;
-                const modelName = item.model_name || item.modelName || 'Unknown';
-                const provider = item.provider || item.providerName || '';
-                const winRate = Number(item.win_rate || item.winRate || 0);
-                const wins = Number(item.wins || item.totalWins || 0);
-                const responses = Number(item.times_compared || item.totalResponses || 0);
+      const rank = i + 1;
+      const modelName = item.model_name || item.modelName || 'Unknown';
+      const provider = item.provider || item.providerName || '';
+      const winRate = Number(item.win_rate || item.winRate || 0);
+      const wins = Number(item.wins || item.totalWins || 0);
+      const responses = Number(item.times_compared || item.totalResponses || 0);
 
-                const medal = rank <= 3 ? ` rank-${rank}` : '';
-                return `
+      const medal = rank <= 3 ? ` rank-${rank}` : '';
+      return `
                   <tr class="dm-lb-row">
                     <td class="dm-lb-rank${medal}"><span class="dm-lb-rank-pill">#${rank}</span></td>
                     <td>
@@ -226,7 +226,7 @@ export class LeaderboardModal {
                     <td class="dm-lb-num">${escapeHtml(String(responses))}</td>
                   </tr>
                 `;
-              }).join('')}
+    }).join('')}
             </tbody>
           </table>
         </div>
@@ -245,7 +245,7 @@ export class LeaderboardModal {
       return;
     }
 
-    if (!this.api?.getLeaderboard) {
+    if (!this.api?.arena?.getLeaderboard) {
       this.renderState({
         title: 'Leaderboard unavailable',
         subtitle: 'Missing API client. Please refresh the page.',
@@ -263,7 +263,7 @@ export class LeaderboardModal {
     this.renderSkeleton();
 
     try {
-      const data = await this.api.getLeaderboard();
+      const data = await this.api.arena.getLeaderboard();
       const items = data?.items || data || [];
       this.renderData(items);
       if (Array.isArray(items) && items.length) setCached(items);

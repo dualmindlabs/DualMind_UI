@@ -328,7 +328,8 @@
 
           <div class="form-group">
             <label class="form-label" for="password">Password</label>
-            <input type="password" id="password" class="form-input" placeholder="••••••••" autocomplete="current-password">
+            <input type="password" id="password" class="form-input" placeholder="••••••••"
+              autocomplete="current-password">
           </div>
 
           <div class="forgot-password" id="forgotPasswordLink">
@@ -340,7 +341,8 @@
         <div id="phoneFields" style="display: none;">
           <div class="form-group">
             <label class="form-label" for="phone">Phone Number</label>
-            <input type="tel" id="phone" class="form-input" placeholder="Enter 10-digit mobile number" autocomplete="tel">
+            <input type="tel" id="phone" class="form-input" placeholder="Enter 10-digit mobile number"
+              autocomplete="tel">
           </div>
 
           <div class="form-group" id="otpField" style="display: none;">
@@ -370,7 +372,7 @@
   </div>
 
   <!-- Supabase JS client -->
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
 
   <script src="auth-complete.js"></script>
 
@@ -378,7 +380,7 @@
     // Config
     const SUPABASE_URL = window.DUALMIND_CONFIG?.supabase?.url || 'https://calqfzajyidkdzbaswjp.supabase.co';
     const SUPABASE_ANON_KEY = window.DUALMIND_CONFIG?.supabase?.anonKey || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhbHFmemFqeWlka2R6YmFzd2pwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyNzMwODMsImV4cCI6MjA3OTg0OTA4M30.ptXyUNCcAhGi9u2kVDHOxSBvQv0W72S5HHqkIFXQS08';
-    const SERVER_URL = window.DUALMIND_CONFIG?.serverUrl || 'http://localhost:65476';
+    const SERVER_URL = window.DUALMIND_CONFIG?.serverUrl || 'http://localhost:5079';
     const SITE_URL = window.DUALMIND_CONFIG?.siteUrl || window.location.origin;
 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);

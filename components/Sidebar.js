@@ -17,6 +17,7 @@ export class Sidebar {
     this._escapeHandler = null;
     this._scrollY = 0;
     this._threadActionsClickHandler = null;
+    this._refreshTimer = null;
 
     this.init();
   }
@@ -28,6 +29,15 @@ export class Sidebar {
 
     // Load threads if user is authenticated
     this.loadThreads();
+  }
+
+  scheduleLoadThreads(delayMs = 250) {
+    if (this._refreshTimer) {
+      clearTimeout(this._refreshTimer);
+    }
+    this._refreshTimer = setTimeout(() => {
+      this.loadThreads();
+    }, delayMs);
   }
 
   async loadThreads() {
@@ -45,8 +55,10 @@ export class Sidebar {
         return;
       }
 
-      const result = await api.getThreads(20);
-      const threads = result?.items || [];
+      const result = await api.threads.getThreads(20);
+      const threads = Array.isArray(result)
+        ? result
+        : (result?.items || []);
 
       // Map to expected format
       this.recentChats = threads.map(thread => ({
@@ -251,6 +263,17 @@ export class Sidebar {
 
     // Resize handler
     window.addEventListener('resize', () => this.handleResize());
+
+    // Re-fetch threads when backend/auth state changes
+    document.addEventListener('backend-available', (e) => {
+      if (e?.detail?.available) {
+        this.scheduleLoadThreads(0);
+      }
+    });
+
+    document.addEventListener('threads-changed', () => {
+      this.scheduleLoadThreads(100);
+    });
   }
 
   attachActionHandlers() {
@@ -299,7 +322,7 @@ export class Sidebar {
         return;
       }
 
-      await api.updateThread(threadId, newTitle.trim());
+      await api.threads.updateThread(threadId, newTitle.trim());
 
       // Update local state
       thread.title = newTitle.trim();
@@ -325,7 +348,7 @@ export class Sidebar {
         return;
       }
 
-      await api.deleteThread(threadId);
+      await api.threads.deleteThread(threadId);
 
       // Remove from local state
       this.recentChats = this.recentChats.filter(t => t.id !== threadId);

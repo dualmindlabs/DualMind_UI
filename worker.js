@@ -7,7 +7,7 @@ export default {
     const corsHeaders = {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-User-ID',
       'Access-Control-Max-Age': '86400',
     };
 
@@ -23,7 +23,7 @@ export default {
     if (pathname.startsWith('/api/')) {
       console.log('Worker proxy: intercepting', pathname);
 
-      const backendUrl = 'https://api.dualmindlab.tech';
+      const backendUrl = env?.BACKEND_URL || 'https://api.dualmindlab.tech';
       
       // Map frontend /api/health to backend /health
       let backendPath = pathname;

@@ -32,7 +32,7 @@ export class AuthService {
   }
 
   getApiUrl() {
-    return window.DUALMIND_CONFIG?.serverUrl || 'http://localhost:65476';
+    return window.DUALMIND_CONFIG?.serverUrl || 'http://localhost:5079';
   }
 
   async login(email, password) {

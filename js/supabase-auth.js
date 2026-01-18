@@ -574,8 +574,13 @@ export class SupabaseAuthService {
         session: this.session,
       })
     );
-    // Also set for API client
-    window.DUALMIND_AUTH_TOKEN = this.session?.access_token;
+    // Also set for API client - CRITICAL for HttpClient
+    if (this.session?.access_token) {
+      window.DUALMIND_AUTH_TOKEN = this.session.access_token;
+      console.log('[SupabaseAuth] Token saved to window.DUALMIND_AUTH_TOKEN');
+    } else {
+      console.warn('[SupabaseAuth] No access token in session to save');
+    }
   }
 
   /**

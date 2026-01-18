@@ -13,4 +13,3 @@ OneDrive
 .vscode
 package.json
 wrangler.jsonc
-worker.js
