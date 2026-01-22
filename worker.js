@@ -24,14 +24,14 @@ export default {
       console.log('Worker proxy: intercepting', pathname);
 
       const backendUrl = env?.BACKEND_URL || 'https://api.dualmindlab.tech';
-      
+
       // Map frontend /api/health to backend /health
       let backendPath = pathname;
       if (pathname === '/api/health') {
         backendPath = '/health';
         console.log('Worker proxy: mapping /api/health -> /health');
       }
-      
+
       const backendRequestUrl = new URL(backendPath + url.search, backendUrl);
       console.log('Worker proxy: forwarding to', backendRequestUrl.toString());
 
@@ -69,13 +69,32 @@ export default {
       }
     }
 
+    // Handle /share/* routes explicitly for thread sharing
+    if (pathname.startsWith('/share')) {
+      if (env?.ASSETS?.fetch) {
+        const shareUrl = new URL(request.url);
+        shareUrl.pathname = '/share/index.html';
+        const assetResponse = await env.ASSETS.fetch(new Request(shareUrl, request));
+
+        if (assetResponse && assetResponse.status !== 404) {
+          const response = new Response(assetResponse.body, assetResponse);
+          response.headers.set('X-Content-Type-Options', 'nosniff');
+          response.headers.set('X-Frame-Options', 'DENY');
+          response.headers.set('X-XSS-Protection', '1; mode=block');
+          response.headers.set('cache-control', 'no-store, no-cache, must-revalidate, max-age=0');
+          return response;
+        }
+      }
+    }
+
     // robots.txt
     if (pathname === '/robots.txt') {
+      const domain = url.hostname;
       return new Response(`User-agent: *
 Allow: /
 
-Sitemap: https://arena.dualmindlab.tech/sitemap.xml`, {
-        headers: { 
+Sitemap: https://${domain}/sitemap.xml`, {
+        headers: {
           'content-type': 'text/plain; charset=utf-8',
           'cache-control': 'public, max-age=86400'
         },
@@ -84,52 +103,77 @@ Sitemap: https://arena.dualmindlab.tech/sitemap.xml`, {
 
     // sitemap.xml
     if (pathname === '/sitemap.xml') {
+      const domain = url.hostname;
       return new Response(`<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://arena.dualmindlab.tech/</loc>
-    <lastmod>2026-01-01</lastmod>
+    <loc>https://${domain}/</loc>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://arena.dualmindlab.tech/about/</loc>
-    <lastmod>2026-01-01</lastmod>
+    <loc>https://${domain}/about/</loc>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://arena.dualmindlab.tech/how-it-works/</loc>
-    <lastmod>2026-01-01</lastmod>
+    <loc>https://${domain}/how-it-works/</loc>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://arena.dualmindlab.tech/leaderboard/</loc>
-    <lastmod>2026-01-01</lastmod>
+    <loc>https://${domain}/leaderboard/</loc>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://arena.dualmindlab.tech/models/</loc>
-    <lastmod>2026-01-01</lastmod>
+    <loc>https://${domain}/models/</loc>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://arena.dualmindlab.tech/faq/</loc>
-    <lastmod>2026-01-01</lastmod>
+    <loc>https://${domain}/faq/</loc>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://arena.dualmindlab.tech/careers/</loc>
-    <lastmod>2026-01-01</lastmod>
+    <loc>https://${domain}/careers/</loc>
+    <lastmod>2026-01-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+  <url>
+    <loc>https://${domain}/privacy/</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://${domain}/terms/</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://${domain}/cookies/</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc>https://${domain}/login/</loc>
+    <lastmod>2026-01-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
 </urlset>`, {
-        headers: { 
+        headers: {
           'content-type': 'application/xml; charset=utf-8',
           'cache-control': 'public, max-age=86400'
         },
@@ -141,7 +185,7 @@ Sitemap: https://arena.dualmindlab.tech/sitemap.xml`, {
       const minimalPngBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
       const minimalPng = Uint8Array.from(atob(minimalPngBase64), c => c.charCodeAt(0));
       return new Response(minimalPng, {
-        headers: { 
+        headers: {
           'content-type': 'image/png',
           'cache-control': 'public, max-age=86400'
         },
@@ -151,7 +195,7 @@ Sitemap: https://arena.dualmindlab.tech/sitemap.xml`, {
     // Serve static assets from ASSETS binding
     if (env?.ASSETS?.fetch) {
       let assetResponse = await env.ASSETS.fetch(request);
-      
+
       // If asset found, add security headers and return
       if (assetResponse && assetResponse.status !== 404) {
         const response = new Response(assetResponse.body, assetResponse);
@@ -187,6 +231,7 @@ Sitemap: https://arena.dualmindlab.tech/sitemap.xml`, {
           response.headers.set('X-Content-Type-Options', 'nosniff');
           response.headers.set('X-Frame-Options', 'DENY');
           response.headers.set('X-XSS-Protection', '1; mode=block');
+          response.headers.set('cache-control', 'no-store, no-cache, must-revalidate, max-age=0');
           return response;
         }
       }
