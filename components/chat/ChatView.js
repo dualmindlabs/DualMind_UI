@@ -38,7 +38,7 @@ export class ChatView {
   constructor(containerId) {
     this.container = document.getElementById(containerId);
     this._onClick = null;
-    this._shouldAutoScroll = true;
+    this._shouldAutoScroll = true; // Always auto-scroll by default
     this._isUserScrolling = false;
     this.state = {
       mode: 'battle',
@@ -124,8 +124,10 @@ export class ChatView {
     // Re-attach listeners for the new section only
     this.attachListenersTo(newSection);
 
-    // Auto-scroll to new message
-    this.scrollToBottom();
+    // CRITICAL: Force auto-scroll to bottom for new message (instant, not smooth)
+    requestAnimationFrame(() => {
+      this.scrollToBottom(true); // Force scroll to bottom
+    });
   }
 
   attachListenersTo(root = this.container) {
@@ -167,7 +169,17 @@ export class ChatView {
       requestAnimationFrame(() => {
         scrollContainer.scrollTop = scrollPosition;
       });
+    } else if (!preserveScroll) {
+      // If not preserving scroll, auto-scroll to bottom for new content
+      requestAnimationFrame(() => {
+        this.scrollToBottom(true); // Force scroll to bottom
+      });
     }
+
+    // Reattach model selector listeners if rendering empty state
+    requestAnimationFrame(() => {
+      this.attachModelSelectorListeners();
+    });
   }
 
   renderEmptyArena() {
@@ -421,14 +433,14 @@ export class ChatView {
             <select id="model-select-direct" class="model-select">
               <option value="">🎲 Random Model</option>
               ${models.map(m => {
-                const id = String(m.modelId ?? m.model_id ?? '');
-                const name = m.modelName ?? m.model_name ?? '';
-                return `
+        const id = String(m.modelId ?? m.model_id ?? '');
+        const name = m.modelName ?? m.model_name ?? '';
+        return `
                 <option value="${id}" ${id && savedModel === id ? 'selected' : ''}>
                   ${window._APP ? window._APP.prettifyModelName(name) : name}
                 </option>
               `;
-              }).join('')}
+      }).join('')}
             </select>
           </div>
           
@@ -630,19 +642,28 @@ export class ChatView {
         // Check if user is near bottom - if yes, resume auto-scroll
         const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
         const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
-        // More generous threshold (150px) for better UX
+        // If within 150px of bottom, enable auto-scroll
         this._shouldAutoScroll = distanceFromBottom < 150;
       }, 150);
     });
   }
 
   scrollToBottom(force = false) {
-    // ChatGPT-style scroll behavior: respect user scroll position
-    if (!force && !this._shouldAutoScroll) return;
-    if (this._isUserScrolling && !force) return;
-
     const scrollContainer = this.container.parentElement;
     if (!scrollContainer) return;
+
+    // Force scroll if explicitly requested (new message)
+    if (force) {
+      // Use instant scroll for new messages to prevent jump
+      requestAnimationFrame(() => {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      });
+      return;
+    }
+
+    // ChatGPT-style scroll behavior: respect user scroll position
+    if (!this._shouldAutoScroll) return;
+    if (this._isUserScrolling) return;
 
     // Use scroll sentinel as anchor point (positioned above vote buttons)
     const sentinel = document.getElementById('chat-scroll-sentinel');

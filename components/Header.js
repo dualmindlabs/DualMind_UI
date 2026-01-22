@@ -81,6 +81,11 @@ export class Header {
 
         <!-- Right Controls -->
         <div class="header-controls">
+          <!-- Share Button -->
+          <button id="share-thread-btn" class="header-icon-btn" aria-label="Share thread" title="Share this thread">
+            ${Icons.share('white', 18)}
+          </button>
+
           <!-- User Menu -->
           <div class="user-menu">
             <button id="user-btn" class="user-btn" aria-label="User menu">
@@ -135,6 +140,12 @@ export class Header {
     // Logout button
     const logoutBtn = this.container.querySelector('#logout-btn');
     logoutBtn?.addEventListener('click', () => this.handleLogout());
+
+    // Share button
+    const shareBtn = this.container.querySelector('#share-thread-btn');
+    shareBtn?.addEventListener('click', () => {
+      document.dispatchEvent(new CustomEvent('open-share-modal'));
+    });
 
     // Close dropdown on outside click
     if (this._onDocumentClick) document.removeEventListener('click', this._onDocumentClick);

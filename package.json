@@ -6,7 +6,6 @@
   "scripts": {
     "dev": "npx serve . -p 8000",
     "start": "npm run dev",
-    "dev:3000": "npx serve . -p 3000",
     "lint": "eslint *.js **/*.js --ignore-pattern node_modules --ignore-pattern old-html-backup --ignore-pattern mock-api-server.js --ignore-pattern admin-email-system/**",
     "lint:fix": "npm run lint -- --fix",
     "test": "echo 'Tests to be implemented' && exit 0",

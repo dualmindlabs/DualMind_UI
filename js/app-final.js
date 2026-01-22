@@ -10,6 +10,7 @@ import { ChatView } from '../components/chat/ChatView.js';
 import { pickModelPair, buildMockReply, streamText } from './mockArena.js';
 import { api } from './apiInstance.js';
 import { LeaderboardModal } from './leaderboardModal.js';
+import { shareModal } from '../components/ShareModal.js';
 
 class App {
   constructor() {
@@ -25,6 +26,7 @@ class App {
       user: null,
       backendAvailable: false, // Track if backend is available
       currentThreadId: null, // Track current conversation thread
+      currentThreadVisibility: 'private', // Track current thread's visibility for sharing
       chatSettings: {
         codeMode: false,
         webSearch: false
@@ -98,7 +100,7 @@ class App {
     console.log('🔍 Auth object available:', !!window.DualMindAuth);
     console.log('🔍 Supabase auth available:', !!window._DUALMIND_AUTH);
     console.log('🔍 Current user:', window.DualMindAuth ? window.DualMindAuth.getUser() : null);
-    
+
     // 🚨 CRITICAL: Verify token is available before proceeding
     if (isLoggedIn && window._DUALMIND_AUTH) {
       const token = await window._DUALMIND_AUTH.getAccessToken();
@@ -599,6 +601,23 @@ class App {
     document.addEventListener('keydown', (e) => {
       this.handleKeyboard(e);
     });
+
+    // Share modal - open when share button is clicked in header
+    document.addEventListener('open-share-modal', () => {
+      const threadId = this.state.currentThreadId;
+
+      if (!threadId) {
+        console.warn('No active thread to share. Start a conversation first.');
+        // Could show a toast here
+        return;
+      }
+
+      // Get current thread visibility (default to private if unknown)
+      // The visibility might be stored in the thread data or fetched from API
+      const visibility = this.state.currentThreadVisibility || 'private';
+
+      shareModal.open(threadId, visibility);
+    });
   }
 
   handleNavigation(action) {
@@ -1041,19 +1060,36 @@ class App {
       return;
     }
 
+    // Position the voting UI above the chat input to avoid overlap
+    try {
+      const chatInput = document.getElementById('chat-input-container');
+      if (chatInput) {
+        const rect = chatInput.getBoundingClientRect();
+        const bottomOffset = Math.max(24, Math.round(window.innerHeight - rect.top + 12));
+        container.style.bottom = `${bottomOffset}px`;
+      }
+    } catch {
+      // If positioning fails, keep CSS default
+    }
+
     container.innerHTML = `
-      <button class="vote-btn-light" data-action="vote" data-turn-id="${turnId}" data-vote="left">
-        👈 Left is Better
-      </button>
-      <button class="vote-btn-light" data-action="vote" data-turn-id="${turnId}" data-vote="tie">
-        🤝 It's a Tie
-      </button>
-      <button class="vote-btn-light" data-action="vote" data-turn-id="${turnId}" data-vote="both-bad">
-        👎 Both are Bad
-      </button>
-      <button class="vote-btn-light" data-action="vote" data-turn-id="${turnId}" data-vote="right">
-        👉 Right is Better
-      </button>
+      <div class="floating-voting-container" role="group" aria-label="Vote which response is better">
+        <div class="vote-prompt">Which response was better?</div>
+        <div class="vote-buttons">
+          <button class="vote-btn-light" type="button" data-action="vote" data-turn-id="${turnId}" data-vote="left">
+            👈 Left is Better
+          </button>
+          <button class="vote-btn-light" type="button" data-action="vote" data-turn-id="${turnId}" data-vote="tie">
+            🤝 It's a Tie
+          </button>
+          <button class="vote-btn-light" type="button" data-action="vote" data-turn-id="${turnId}" data-vote="both-bad">
+            👎 Both are Bad
+          </button>
+          <button class="vote-btn-light" type="button" data-action="vote" data-turn-id="${turnId}" data-vote="right">
+            👉 Right is Better
+          </button>
+        </div>
+      </div>
     `;
 
     container.hidden = false;
@@ -1068,6 +1104,7 @@ class App {
     if (container) {
       container.hidden = true;
       container.innerHTML = '';
+      container.style.bottom = '';
     }
   }
 
@@ -1106,14 +1143,14 @@ class App {
       this.hideFloatingVoting();
       this.renderChat(true);
 
-      console.log('✅ Vote submitted:', voteChoice, '- keeping both visible for 10s');
+      console.log('✅ Vote submitted:', voteChoice, '- keeping both visible for 2s');
 
       // After 10 seconds, transition to showing only voted response
       setTimeout(() => {
         turn.voteStatus = 'submitted';
         this.renderChat(true);
         console.log('✅ Vote transition complete - showing voted response only');
-      }, 10000);
+      }, 2000);
 
       // Refresh leaderboard if open
       if (this.leaderboard?.isOpen?.()) {
@@ -1298,6 +1335,15 @@ class App {
       this.state.turns = [];
       this.state.direct = [];
       this.state.currentThreadId = threadId;
+
+      // Try to fetch thread visibility for sharing
+      try {
+        const threadData = await this.api.fetchThread(threadId);
+        this.state.currentThreadVisibility = threadData?.visibility || 'private';
+      } catch (e) {
+        // If fetchThread doesn't exist or fails, default to private
+        this.state.currentThreadVisibility = 'private';
+      }
 
       if (messages.length === 0) {
         this.renderChat();

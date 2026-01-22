@@ -8,7 +8,7 @@ import { Header } from '../components/Header.js';
 import { ChatInput } from '../components/ChatInput.js';
 import { ChatView } from '../components/chat/ChatView.js';
 import { pickModelPair, buildMockReply, streamText } from './mockArena.js';
-import { api } from './apiInstance.js';
+import { DualMindApiClient, getApiBaseUrl } from './apiClient.js';
 import { LeaderboardModal } from './leaderboardModal.js';
 // import authService from './auth.js'; // OLD - Remove this
 
@@ -27,9 +27,13 @@ class App {
       backendAvailable: false // Track if backend is available
     };
     this._activeStreams = [];
-    this.api = api;
+    // this.auth = authService; // OLD - Remove this
+    this.api = new DualMindApiClient({ 
+      baseUrl: getApiBaseUrl(),
+      getAuthToken: () => this.getAuthToken()
+    });
     this.leaderboard = null;
-
+    
     this.init();
   }
 
@@ -42,7 +46,7 @@ class App {
       if (window.DualMindAuth && window.DualMindAuth.isLoggedIn()) {
         return await window.DualMindAuth.getAccessToken();
       }
-
+      
       // Fallback to stored token
       const storedToken = localStorage.getItem('dualmind.auth.token');
       return storedToken;
@@ -55,7 +59,7 @@ class App {
   async init() {
     // Check authentication with Supabase
     const isLoggedIn = window.DualMindAuth ? window.DualMindAuth.isLoggedIn() : false;
-
+    
     if (!isLoggedIn) {
       // Check if guest mode
       const isGuest = localStorage.getItem('dualmind.guest') === 'true';
@@ -67,10 +71,10 @@ class App {
 
     // Set user info
     this.state.user = window.DualMindAuth ? window.DualMindAuth.getUser() : null;
-
+    
     // Check if backend is available
     await this.checkBackendAvailability();
-
+    
     // Wait for DOM
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => this.setup());
@@ -101,7 +105,7 @@ class App {
       this.state.backendAvailable = false;
       console.log('📱 Running in offline mode (no backend check)');
     }
-
+    
     // Always enable API for mock responses in offline mode
     if (!this.state.backendAvailable) {
       this.state.apiEnabled = true; // Enable for mock responses
@@ -124,13 +128,13 @@ class App {
     } else {
       console.log('📱 Leaderboard disabled - backend not available');
     }
-
+    
     // Set up global event listeners
     this.attachGlobalListeners();
-
+    
     // Initial layout adjustment
     this.adjustLayout();
-
+    
     console.log('🚀 DualMind App Initialized');
     console.log('📊 Backend available:', this.state.backendAvailable ? '✅' : '❌ (Offline mode)');
 
@@ -246,7 +250,7 @@ class App {
 
   handleNavigation(action) {
     console.log('Navigation:', action);
-
+    
     switch (action) {
       case 'new-chat':
         this.startNewChat();
@@ -411,7 +415,7 @@ class App {
     } catch (err) {
       const msg = err?.message || 'API request failed';
       console.warn('API request failed, falling back to mock responses:', msg);
-
+      
       // Fall back to mock responses
       this.state.turns = this.state.turns.filter(t => t.id !== turnId); // Remove failed turn
       return this.runArenaDemo(prompt);
@@ -479,7 +483,7 @@ class App {
     } catch (err) {
       const msg = err?.message || 'API request failed';
       console.warn('API request failed, falling back to mock responses:', msg);
-
+      
       // Fall back to mock responses
       this.state.direct = this.state.direct.slice(0, -2); // Remove the failed messages
       return this.runDirectDemo(prompt);
@@ -527,8 +531,8 @@ class App {
 
     const winnerModelName =
       choice === 'left' ? (turn.left?.voteModelName || turn.left?.modelName) :
-        choice === 'right' ? (turn.right?.voteModelName || turn.right?.modelName) :
-          null;
+      choice === 'right' ? (turn.right?.voteModelName || turn.right?.modelName) :
+      null;
 
     if (!winnerModelName) {
       turn.voteStatus = 'error';
@@ -577,17 +581,17 @@ class App {
 
   adjustLayout(sidebarState = null) {
     const state = sidebarState || this.components.sidebar?.getState() || { isOpen: true, isMobile: false };
-
+    
     const headerContainer = document.getElementById('header-container');
     const chatContainer = document.getElementById('chat-input-container');
-
+    
     if (!state.isMobile) {
       const offset = state.isOpen ? 'var(--sidebar-width)' : '0';
-
+      
       if (headerContainer) {
         headerContainer.style.left = offset;
       }
-
+      
       if (chatContainer) {
         const wrapper = chatContainer.querySelector('.chat-input-wrapper');
         if (wrapper) {
@@ -598,7 +602,7 @@ class App {
       if (headerContainer) {
         headerContainer.style.left = '0';
       }
-
+      
       if (chatContainer) {
         const wrapper = chatContainer.querySelector('.chat-input-wrapper');
         if (wrapper) {
@@ -618,13 +622,13 @@ class App {
       e.preventDefault();
       this.components.chatInput.focus();
     }
-
+    
     // Ctrl/Cmd + B - Toggle sidebar
     if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
       e.preventDefault();
       this.components.sidebar.toggle();
     }
-
+    
     // Escape - Close sidebar on mobile
     if (e.key === 'Escape') {
       const state = this.components.sidebar.getState();

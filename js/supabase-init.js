@@ -41,9 +41,9 @@ window.DualMindAuthReady = new Promise((resolve) => {
 
       try {
         const auth = initializeSupabaseAuth(config.supabase.url, config.supabase.anonKey);
-        
+
         // Wait for auth to fully initialize
-        await auth.waitForInit();
+        await auth.init();
 
         // Expose globally
         window._DUALMIND_AUTH = auth;

@@ -18,20 +18,8 @@ export class SupabaseAuthService {
     this.user = null;
     this.session = null;
     this.supabase = createClient(supabaseUrl, supabaseKey);
-    this.initialized = false;
-    this._initPromise = null;
 
-    this._initPromise = this.init();
-  }
-  
-  /**
-   * Wait for initialization to complete
-   */
-  async waitForInit() {
-    if (this._initPromise) {
-      await this._initPromise;
-    }
-    return this.initialized;
+    this.init();
   }
 
   /**
@@ -39,48 +27,34 @@ export class SupabaseAuthService {
    */
   async init() {
     try {
-      // First, check for existing Supabase session
-      const { data: { session }, error } = await this.supabase.auth.getSession();
-      
-      if (!error && session) {
-        // Valid session from Supabase
-        this.session = session;
-        this.user = session.user;
-        this._saveSession();
-        console.log('✅ Session restored from Supabase:', this.user?.email);
-      } else {
-        // Try to restore from localStorage
-        const stored = localStorage.getItem(this.storageKey);
-        if (stored) {
-          const data = JSON.parse(stored);
-          this.session = data.session;
-          this.user = data.user;
+      // Try to restore session from localStorage
+      const stored = localStorage.getItem(this.storageKey);
+      if (stored) {
+        const data = JSON.parse(stored);
+        this.session = data.session;
+        this.user = data.user;
 
-          // Validate session and refresh if needed
-          if (this.session && this.session.access_token) {
-            try {
-              const { data: refreshData, error: refreshError } = await this.supabase.auth.refreshSession();
-              if (!refreshError && refreshData.session) {
-                this.session = refreshData.session;
-                this.user = refreshData.user;
-                this._saveSession();
-                console.log('✅ Session refreshed from localStorage:', this.user?.email);
-              } else {
-                // Session invalid, clear it
-                console.log('❌ Session invalid, clearing');
-                this.logout();
-              }
-            } catch (e) {
-              console.warn('Session refresh failed:', e);
+        // Validate session and refresh if needed
+        if (this.session && this.session.access_token) {
+          try {
+            const { data, error } = await this.supabase.auth.refreshSession();
+            if (!error && data.session) {
+              this.session = data.session;
+              this.user = data.user;
+              this._saveSession();
+            } else {
+              // Session invalid, clear it
               this.logout();
             }
+          } catch (e) {
+            console.warn('Session refresh failed:', e);
+            this.logout();
           }
         }
       }
 
       // Set up auth state listener
       this.supabase.auth.onAuthStateChange((event, session) => {
-        console.log('🔄 Auth state changed:', event);
         this.session = session;
         this.user = session?.user || null;
         if (session) {
@@ -89,12 +63,8 @@ export class SupabaseAuthService {
           this._clearSession();
         }
       });
-      
-      this.initialized = true;
-      console.log('✅ Auth initialization complete');
     } catch (error) {
       console.error('Auth initialization failed:', error);
-      this.initialized = true;
       this.logout();
     }
   }
@@ -574,13 +544,8 @@ export class SupabaseAuthService {
         session: this.session,
       })
     );
-    // Also set for API client - CRITICAL for HttpClient
-    if (this.session?.access_token) {
-      window.DUALMIND_AUTH_TOKEN = this.session.access_token;
-      console.log('[SupabaseAuth] Token saved to window.DUALMIND_AUTH_TOKEN');
-    } else {
-      console.warn('[SupabaseAuth] No access token in session to save');
-    }
+    // Also set for API client
+    window.DUALMIND_AUTH_TOKEN = this.session?.access_token;
   }
 
   /**
