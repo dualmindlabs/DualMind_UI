@@ -13,12 +13,19 @@
   padding: 60px 40px;
   max-width: 700px;
   margin: 80px auto;
-  background: rgba(20, 22, 35, 0.8);
+  background: var(--card-bg, rgba(18, 19, 26, 0.95));
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 20px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--card-border, rgba(255, 255, 255, 0.08));
+  border-radius: var(--radius-xl, 24px);
+  box-shadow: var(--shadow-card, 0 8px 32px rgba(0, 0, 0, 0.3));
+  animation: fadeInScale 0.4s ease-out forwards;
+  transition: border-color var(--transition-normal, 0.2s), box-shadow var(--transition-normal, 0.2s);
+}
+
+.chat-empty:hover {
+  border-color: var(--card-border-hover, rgba(255, 255, 255, 0.12));
+  box-shadow: var(--shadow-card-hover, 0 12px 40px rgba(0, 0, 0, 0.4));
 }
 
 .chat-empty-icon {
@@ -48,11 +55,20 @@
   gap: 24px;
   margin: 32px 0;
   padding: 24px;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
+  background: var(--bg-3, rgba(26, 27, 36, 0.8));
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+  border-radius: var(--radius-lg, 16px);
   width: 100%;
   max-width: 500px;
+  animation: fadeInUp 0.5s ease-out forwards;
+  animation-delay: 0.2s;
+  opacity: 0;
+  transition: transform var(--transition-normal, 0.2s), box-shadow var(--transition-normal, 0.2s);
+}
+
+.random-battle-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
 .random-model {
@@ -61,27 +77,39 @@
   align-items: center;
   gap: 12px;
   flex: 1;
+  transition: transform var(--transition-fast, 0.15s);
+}
+
+.random-model:hover {
+  transform: scale(1.05);
 }
 
 .random-icon {
   font-size: 32px;
   opacity: 0.8;
+  transition: opacity var(--transition-fast, 0.15s), transform var(--transition-fast, 0.15s);
+}
+
+.random-model:hover .random-icon {
+  opacity: 1;
+  transform: scale(1.1);
 }
 
 .random-label {
   font-size: 15px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--text-primary, rgba(255, 255, 255, 0.9));
 }
 
 .vs-badge {
   font-size: 18px;
   font-weight: 700;
-  color: #4AABC2;
+  color: var(--color-terra, #CB9275);
   padding: 8px 16px;
-  background: rgba(74, 171, 194, 0.1);
-  border: 1px solid rgba(74, 171, 194, 0.3);
-  border-radius: 12px;
+  background: var(--prefer-btn-bg, rgba(203, 146, 117, 0.1));
+  border: 1px solid var(--prefer-btn-border, rgba(203, 146, 117, 0.3));
+  border-radius: var(--radius-md, 12px);
+  animation: pulse 2s ease-in-out infinite;
 }
 
 .model-selector-hint {
