@@ -12,14 +12,14 @@
    App Visibility & Base Animations
    ======================================== */
 
-/* Ensure app is visible once loaded */
+/* App container - JS controls visibility via inline styles */
 #app {
-  display: block !important;
   opacity: 1;
 }
 
+/* Auth loading overlay - controlled by JS, shown until auth resolves */
 #auth-loading-overlay {
-  display: none !important;
+  /* JS will set display: none when ready */
 }
 
 /* Smooth fade-in animation for elements */
@@ -525,7 +525,7 @@ textarea {
 
 /* Main Wrapper - Contains header + content + input */
 .main-wrapper {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: var(--sidebar-width);
   right: 0;
@@ -533,7 +533,7 @@ textarea {
   display: flex;
   flex-direction: column;
   transition: left var(--transition-slow);
-  animation: fadeIn 0.3s ease-out forwards;
+  z-index: 1;
 }
 
 .sidebar.collapsed ~ .main-wrapper {
@@ -542,22 +542,10 @@ textarea {
 
 /* Main Content */
 .main-content {
-  position: absolute;
-  top: var(--header-height);
-  left: var(--sidebar-width);
-  right: 0;
-  bottom: 0;
+  flex: 1;
   overflow-y: auto;
-  transition: left var(--transition-slow);
   padding: var(--space-6);
-  /* prevent composer overlap + account for safe area + extra gap above vote buttons */
-  padding-bottom: calc(260px + env(safe-area-inset-bottom, 0px));
-  scroll-padding-bottom: 290px;
-  animation: fadeIn 0.4s ease-out forwards;
-}
-
-.main-content.collapsed {
-  left: var(--sidebar-collapsed-width);
+  padding-bottom: var(--space-8);
 }
 
 /* ========================================
@@ -2233,13 +2221,8 @@ textarea {
    Header Component
    ======================================== */
 #header-container {
-  position: fixed;
-  top: 0;
-  left: var(--sidebar-width);
-  right: 0;
   height: var(--header-height);
-  z-index: var(--z-header);
-  transition: left var(--transition-slow);
+  flex-shrink: 0;
 }
 
 .sidebar.collapsed~#header-container {
@@ -2738,25 +2721,12 @@ textarea {
    Chat Input Component
    ======================================== */
 #chat-input-container {
-  position: fixed;
-  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
-  left: calc(var(--sidebar-width) + (100% - var(--sidebar-width)) / 2);
-  transform: translateX(-50%);
   width: 100%;
   max-width: var(--input-width);
-  padding: 0 20px;
-  z-index: var(--z-base);
-  transition: left var(--transition-slow), transform var(--transition-slow);
-}
-
-@media (min-width: 1025px) {
-  #chat-input-container {
-    left: calc(var(--sidebar-width) + (100% - var(--sidebar-width)) / 2);
-  }
-
-  #main-content.collapsed~#chat-input-container {
-    left: calc(var(--sidebar-collapsed-width) + (100% - var(--sidebar-collapsed-width)) / 2);
-  }
+  padding: var(--space-4) var(--space-6);
+  padding-bottom: calc(var(--space-6) + env(safe-area-inset-bottom, 0px));
+  margin: 0 auto;
+  flex-shrink: 0;
 }
 
 .chat-input-wrapper {
@@ -3212,15 +3182,7 @@ textarea {
     --sidebar-width: 280px;
   }
 
-  #header-container {
-    left: 0;
-  }
-
-  .main-content {
-    left: 0;
-  }
-
-  .main-content.collapsed {
+  .main-wrapper {
     left: 0;
   }
 
@@ -3242,7 +3204,7 @@ textarea {
 
   #chat-input-container {
     max-width: 100%;
-    padding: 0 16px;
+    padding: var(--space-4) var(--space-4);
   }
 
   /* Premium Shadow adjustments for Tablet */
@@ -3341,13 +3303,9 @@ textarea {
   }
 
   #chat-input-container {
-    position: fixed;
-    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100%;
+    padding: var(--space-3) var(--space-4);
+    padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
     max-width: 100%;
-    padding: 0 16px;
   }
 
   .api-text {
@@ -3362,11 +3320,11 @@ textarea {
 /* Short height screens (demo killer prevention) */
 @media (max-height: 700px) {
   .main-content {
-    padding-bottom: calc(220px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: var(--space-6);
   }
 
   .chat-input-container {
-    padding: var(--space-4);
+    padding: var(--space-3);
   }
 }
 
