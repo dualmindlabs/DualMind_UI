@@ -7,6 +7,16 @@
    CSS Variables / Design Tokens
    Yupp.ai/QuickTake Inspired Design System
    ======================================== */
+
+/* Force app visibility for testing */
+#app {
+  display: block !important;
+}
+
+#auth-loading-overlay {
+  display: none !important;
+}
+
 :root {
   /* Font Family */
   --font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
@@ -3814,9 +3824,4 @@ textarea {
   transform: translate(-50%, -50%);
   pointer-events: none;
   z-index: 0;
-}
-
-body {
-  background: var(--bg-0);
-  /* Override black with branded dark */
 }
