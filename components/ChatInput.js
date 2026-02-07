@@ -81,7 +81,9 @@ export class ChatInput {
     return String(str)
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 
   renderLoader() {
@@ -98,11 +100,11 @@ export class ChatInput {
     return this.attachments.map((att, index) => `
       <div class="attachment-item" data-index="${index}">
         ${att.type === 'image' ? `
-          <img src="${att.preview}" alt="${att.name}" class="attachment-preview" />
+          <img src="${att.preview}" alt="${this.escapeHtml(att.name)}" class="attachment-preview" />
         ` : `
           <div class="attachment-file">
             <span class="attachment-icon">📎</span>
-            <span class="attachment-name">${att.name}</span>
+            <span class="attachment-name">${this.escapeHtml(att.name)}</span>
           </div>
         `}
         <button class="attachment-remove" data-index="${index}">

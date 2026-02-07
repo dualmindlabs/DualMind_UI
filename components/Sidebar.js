@@ -358,6 +358,7 @@ export class Sidebar {
       if (window._APP && window._APP.state.currentThreadId === threadId) {
         window._APP.state.currentThreadId = null;
         window._APP.state.turns = [];
+        window._APP.hideFloatingVoting(); // Hide voting panel when thread deleted
         window._APP.renderChat();
       }
 

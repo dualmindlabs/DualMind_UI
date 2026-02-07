@@ -40,6 +40,12 @@ export class ChatView {
     this._onClick = null;
     this._shouldAutoScroll = true; // Always auto-scroll by default
     this._isUserScrolling = false;
+    this._responseModalState = {
+      open: false,
+      turnId: null,
+      side: null
+    };
+    this._responseModalBound = false;
     this.state = {
       mode: 'battle',
       turns: [],
@@ -72,10 +78,14 @@ export class ChatView {
     if (!text) return '';
     if (window.marked) {
       try {
-        return window.marked.parse(text);
+        const html = window.marked.parse(text);
+        if (window.DOMPurify) {
+          return window.DOMPurify.sanitize(html, { USE_PROFILES: { html: true } });
+        }
+        return html;
       } catch (e) {
         console.error('Markdown parse error:', e);
-        return text;
+        return escapeHtml(text);
       }
     }
     // Fallback if marked not loaded
@@ -315,7 +325,8 @@ export class ChatView {
   renderResponseCard(turn, side, data) {
     const turnId = turn.id;
     const bodyId = `resp-${turnId}-${side}`;
-    const text = escapeHtml(data.text || '');
+    // Use renderMarkdown instead of escapeHtml to properly render markdown
+    const text = data.text || '';
     const streaming = !!data.streaming;
     const assistantLabel = side === 'left' ? 'A' : 'B';
 
@@ -334,11 +345,13 @@ export class ChatView {
       safeModelName = anonymousLabel;
     }
 
-    // CRITICAL: Strip description from model name 
+    // CRITICAL: Strip description from model name AND provider prefix
     let cleanModelName = safeModelName;
     if (safeModelName && safeModelName !== anonymousLabel) {
       // Strip everything after em-dash (–) or hyphen with space ( - )
       cleanModelName = safeModelName.split('–')[0].split(' - ')[0].trim();
+      // Strip provider prefix (e.g., "groq/", "openai/", etc.)
+      cleanModelName = cleanModelName.replace(/^[^/]+\//, '');
     }
 
     // VISIBILITY LOGIC:
@@ -389,9 +402,116 @@ export class ChatView {
           </div>
         </div>
 
-        <div class="response-body" id="${bodyId}" aria-live="${streaming ? 'polite' : 'off'}">${text}${streaming ? '<span class="stream-caret" aria-hidden="true"></span>' : ''}</div>
+        <div class="response-body markdown-body" id="${bodyId}" aria-live="${streaming ? 'polite' : 'off'}">${this.renderMarkdown(text)}${streaming ? '<span class="stream-caret" aria-hidden="true"></span>' : ''}</div>
       </article>
     `;
+  }
+
+  ensureResponseModal() {
+    let modal = document.getElementById('response-modal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'response-modal';
+      modal.className = 'response-modal';
+      modal.setAttribute('aria-hidden', 'true');
+      modal.innerHTML = `
+        <div class="response-modal-scrim" data-action="close-response-modal"></div>
+        <div class="response-modal-card" role="dialog" aria-modal="true" aria-labelledby="response-modal-title">
+          <div class="response-modal-header">
+            <div class="response-modal-heading">
+              <span class="response-modal-tag" id="response-modal-tag">A</span>
+              <div class="response-modal-meta">
+                <div class="response-modal-title" id="response-modal-title">Model A</div>
+                <div class="response-modal-subtitle" id="response-modal-subtitle">Full response</div>
+              </div>
+            </div>
+            <button class="response-modal-close icon-btn" type="button" data-action="close-response-modal" aria-label="Close">
+              ${Icons.close('white', 18)}
+            </button>
+          </div>
+          <div class="response-modal-body markdown-body" id="response-modal-body"></div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    if (!this._responseModalBound) {
+      this._responseModalBound = true;
+      modal.addEventListener('click', (e) => {
+        if (e.target.closest('[data-action="close-response-modal"]')) {
+          this.closeResponseModal();
+        }
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && this._responseModalState.open) {
+          this.closeResponseModal();
+        }
+      });
+    }
+
+    return modal;
+  }
+
+  openResponseModal(turnId, side) {
+    if (!turnId || !side) return;
+    const turn = (this.state.turns || []).find((t) => String(t.id) === String(turnId));
+    if (!turn) return;
+
+    const data = turn[side] || {};
+    const isBattle = this.state.mode === 'battle';
+    const voteStatus = turn.voteStatus || 'idle';
+    const voted = voteStatus === 'submitted';
+    const anonymousLabel = side === 'left' ? 'Model A' : 'Model B';
+    const realModelName = data.modelName;
+
+    let safeModelName = realModelName;
+    if (!safeModelName || safeModelName === 'undefined' || safeModelName === 'null') {
+      safeModelName = anonymousLabel;
+    }
+
+    let cleanModelName = safeModelName;
+    if (safeModelName && safeModelName !== anonymousLabel) {
+      cleanModelName = safeModelName.split('–')[0].split(' - ')[0].trim();
+    }
+
+    const displayName = (!isBattle || voted) ? cleanModelName : anonymousLabel;
+
+    const modal = this.ensureResponseModal();
+    modal.setAttribute('data-side', side);
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+
+    const tag = modal.querySelector('#response-modal-tag');
+    const title = modal.querySelector('#response-modal-title');
+    const subtitle = modal.querySelector('#response-modal-subtitle');
+    const body = modal.querySelector('#response-modal-body');
+
+    if (tag) tag.textContent = side === 'left' ? 'A' : 'B';
+    if (title) title.textContent = displayName;
+    if (subtitle) subtitle.textContent = data.streaming ? 'Streaming response' : 'Full response';
+
+    if (body) {
+      body.innerHTML = this.renderMarkdown(data.text || '') + (data.streaming ? '<span class="stream-caret" aria-hidden="true"></span>' : '');
+      body.scrollTop = 0;
+      if (window.hljs) {
+        body.querySelectorAll('pre code').forEach((block) => {
+          window.hljs.highlightElement(block);
+        });
+      }
+    }
+
+    this._responseModalState = { open: true, turnId, side };
+    document.body.style.overflow = 'hidden';
+  }
+
+  closeResponseModal() {
+    const modal = document.getElementById('response-modal');
+    if (!modal) return;
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    this._responseModalState = { open: false, turnId: null, side: null };
   }
 
   renderToggleButton(turnId, hiddenSide) {
@@ -473,8 +593,8 @@ export class ChatView {
     this._onClick = async (e) => {
       const refreshBtn = e.target.closest?.('button[data-action="refresh"]');
       if (refreshBtn) {
-        const turnId = Number(refreshBtn.getAttribute('data-turn-id'));
-        const turn = (this.state.turns || []).find((t) => Number(t.id) === turnId);
+        const turnId = refreshBtn.getAttribute('data-turn-id');
+        const turn = (this.state.turns || []).find((t) => String(t.id) === String(turnId));
         const prompt = turn?.prompt || '';
         if (prompt.trim()) {
           document.dispatchEvent(new CustomEvent('chat-submit', { detail: { message: prompt.trim(), attachments: [] } }));
@@ -484,8 +604,9 @@ export class ChatView {
 
       const expandBtn = e.target.closest?.('button[data-action="expand"]');
       if (expandBtn) {
-        const card = expandBtn.closest?.('.response-card');
-        card?.classList.toggle('is-expanded');
+        const turnId = expandBtn.getAttribute('data-turn-id');
+        const side = expandBtn.getAttribute('data-side');
+        this.openResponseModal(turnId, side);
         return;
       }
 
@@ -604,6 +725,21 @@ export class ChatView {
 
     // Auto-scroll
     this.scrollToBottom();
+
+    if (this._responseModalState.open &&
+      String(this._responseModalState.turnId) === String(turnId) &&
+      this._responseModalState.side === side) {
+      const modal = document.getElementById('response-modal');
+      const modalBody = modal?.querySelector('#response-modal-body');
+      if (modalBody) {
+        modalBody.innerHTML = this.renderMarkdown(fullText) + (streaming ? '<span class="stream-caret" aria-hidden="true"></span>' : '');
+        if (window.hljs) {
+          modalBody.querySelectorAll('pre code').forEach((block) => {
+            window.hljs.highlightElement(block);
+          });
+        }
+      }
+    }
   }
 
   finishResponse(turnId, side) {
@@ -617,6 +753,21 @@ export class ChatView {
     // Remove is-streaming class from response card
     const card = document.querySelector(`.response-card[data-turn-id="${turnId}"][data-side="${side}"]`);
     card?.classList.remove('is-streaming');
+
+    if (this._responseModalState.open &&
+      String(this._responseModalState.turnId) === String(turnId) &&
+      this._responseModalState.side === side) {
+      const modal = document.getElementById('response-modal');
+      const modalBody = modal?.querySelector('#response-modal-body');
+      const modalSubtitle = modal?.querySelector('#response-modal-subtitle');
+      if (modalBody) {
+        const caret = modalBody.querySelector('.stream-caret');
+        caret?.remove();
+      }
+      if (modalSubtitle) {
+        modalSubtitle.textContent = 'Full response';
+      }
+    }
 
     // Syntax highlight specifically if needed (though marked already handles it via callback)
     if (window.hljs) {

@@ -156,6 +156,9 @@
     overflow-y: auto;
     padding-bottom: 100px;
     /* Space for fork button */
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
 }
 
 /* Empty State */
@@ -302,6 +305,10 @@
     color: rgba(255, 255, 255, 0.85);
     font-size: 15px;
     line-height: 1.6;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
 .shared-response-body p {

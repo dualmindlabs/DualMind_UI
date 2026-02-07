@@ -29,9 +29,21 @@ export class SharedThreadView {
         // Extract threadId from URL: /share/:threadId
         const path = window.location.pathname;
         const match = path.match(/^\/share\/([a-f0-9-]+)/i);
+        const params = new URLSearchParams(window.location.search);
+        const paramId = params.get('threadId') || params.get('thread') || params.get('id');
+        const parts = path.split('/').filter(Boolean);
+        let resolvedId = null;
 
         if (match) {
-            this.threadId = match[1];
+            resolvedId = match[1];
+        } else if (parts[0] === 'share' && parts[1] && parts[1] !== 'index.html') {
+            resolvedId = parts[1];
+        } else if (paramId) {
+            resolvedId = paramId;
+        }
+
+        if (resolvedId) {
+            this.threadId = resolvedId;
             await this.loadThread();
         } else {
             this.error = 'Invalid share link';
@@ -83,7 +95,10 @@ export class SharedThreadView {
     }
 
     getBaseUrl() {
-        return window.DUALMIND_CONFIG?.api?.baseUrl || 'https://api.dualmind.ai';
+        return window.DUALMIND_CONFIG?.backendUrl ||
+            window.DUALMIND_CONFIG?.apiBaseUrl ||
+            window.DUALMIND_CONFIG?.api?.baseUrl ||
+            'https://api.dualmind.ai';
     }
 
     render() {
@@ -272,7 +287,11 @@ export class SharedThreadView {
         if (!text) return '';
         if (window.marked) {
             try {
-                return window.marked.parse(text);
+                const html = window.marked.parse(text);
+                if (window.DOMPurify) {
+                    return window.DOMPurify.sanitize(html, { USE_PROFILES: { html: true } });
+                }
+                return html;
             } catch (e) {
                 console.error('Markdown parse error:', e);
                 return escapeHtml(text);
