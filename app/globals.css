@@ -1,0 +1,136 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+    --card: 0 0% 5%;
+    --card-foreground: 0 0% 100%;
+    --primary: 191 53% 53%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 60%;
+    --accent: 191 53% 53%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 191 53% 53%;
+    --radius: 0.75rem;
+    --success: 160 84% 39%;
+    --warning: 38 92% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+}
+
+/* Glass effect utilities */
+.glass-panel {
+  @apply bg-card/60 border border-border/50 backdrop-blur-xl;
+}
+
+.glass-panel-strong {
+  @apply bg-card/80 border border-border/60 backdrop-blur-2xl;
+}
+
+/* Custom scrollbar */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted));
+  border-radius: 3px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground));
+}
+
+/* Stream caret for typing indicator */
+.stream-caret {
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  background: hsl(var(--primary));
+  margin-left: 2px;
+  animation: stream-caret 1s ease-in-out infinite;
+  vertical-align: text-bottom;
+}
+
+@keyframes stream-caret {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Skeleton animation */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton-line {
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    hsl(var(--muted)) 25%,
+    hsl(var(--muted) / 0.5) 50%,
+    hsl(var(--muted)) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* Markdown prose overrides for dark theme */
+.prose-dark {
+  --tw-prose-body: hsl(0 0% 85%);
+  --tw-prose-headings: hsl(0 0% 100%);
+  --tw-prose-links: hsl(var(--primary));
+  --tw-prose-code: hsl(var(--primary));
+  --tw-prose-pre-bg: hsl(0 0% 8%);
+  --tw-prose-pre-code: hsl(0 0% 85%);
+}
+
+/* Code block styling */
+.prose pre {
+  @apply rounded-lg border border-border/50 bg-black/50 p-4;
+}
+
+.prose code {
+  @apply rounded px-1.5 py-0.5 bg-muted text-primary text-sm font-mono;
+}
+
+.prose pre code {
+  @apply bg-transparent p-0 text-inherit;
+}
+
+/* Vote highlight classes */
+.vote-highlight-green {
+  box-shadow: 0 0 0 2px hsl(var(--success) / 0.5), 0 0 20px hsl(var(--success) / 0.15);
+}
+
+.vote-highlight-red {
+  box-shadow: 0 0 0 2px hsl(var(--destructive) / 0.5), 0 0 20px hsl(var(--destructive) / 0.15);
+}
+
+.vote-selected-green {
+  box-shadow: 0 0 0 2px hsl(var(--success) / 0.7), 0 0 24px hsl(var(--success) / 0.2);
+}
+
+.vote-selected-red {
+  box-shadow: 0 0 0 2px hsl(var(--destructive) / 0.7), 0 0 24px hsl(var(--destructive) / 0.2);
+}

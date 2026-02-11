@@ -1,33 +1,37 @@
 {
   "name": "dualmind-ui",
-  "version": "1.0.0",
+  "version": "2.0.0",
+  "private": true,
   "description": "DualMind Arena - AI Model Battle & LLM Leaderboard Platform",
-  "main": "index.html",
   "scripts": {
-    "dev": "npx serve . -p 8000",
-    "start": "npm run dev",
-    "lint": "eslint *.js **/*.js --ignore-pattern node_modules --ignore-pattern old-html-backup --ignore-pattern mock-api-server.js --ignore-pattern admin-email-system/**",
-    "lint:fix": "npm run lint -- --fix",
-    "test": "echo 'Tests to be implemented' && exit 0",
-    "validate": "npm run lint && npm run test"
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/yourusername/dualmind-ui.git"
+  "dependencies": {
+    "@supabase/ssr": "^0.5.2",
+    "@supabase/supabase-js": "^2.49.1",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "dompurify": "^3.1.6",
+    "lucide-react": "^0.468.0",
+    "marked": "^15.0.0",
+    "next": "^15.3.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "swr": "^2.3.0",
+    "tailwind-merge": "^2.6.0",
+    "tailwindcss-animate": "^1.0.7"
   },
-  "keywords": [
-    "ai",
-    "llm",
-    "arena",
-    "chat",
-    "comparison",
-    "leaderboard"
-  ],
-  "author": "DualMind Team",
-  "license": "MIT",
   "devDependencies": {
-    "eslint": "^8.56.0",
-    "http-server": "^14.1.1",
-    "serve": "^14.2.1"
+    "@tailwindcss/typography": "^0.5.15",
+    "@types/dompurify": "^3.0.5",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.0"
   }
 }
