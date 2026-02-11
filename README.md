@@ -1,228 +1,139 @@
-# DualMind Arena - AI Battle Platform
+# DualMind Lab - Next.js App
 
-A premium, SaaS-level web application for comparing AI language models through interactive battles. Compare responses from multiple AI models side-by-side, vote on your preferences, and contribute to community-driven leaderboards.
-
-## Quick Start
-
-### Prerequisites
-- Node.js 14+ installed
-- Modern web browser (Chrome, Firefox, Safari, Edge)
-- Supabase account (credentials configured in config.js)
-- Optional: Backend API server
-
-### Installation & Run
-
-```bash
-# Install dependencies
-npm install
-
-# Start the development server
-npm run dev
-```
-
-Open `http://localhost:8000` in your browser.
+A modern AI model comparison platform built with Next.js 15, allowing users to compare responses from different AI models in real-time.
 
 ## Features
 
-### Battle Mode
-Compare two AI models side-by-side with anonymous testing, real-time streaming responses, and community voting.
+- **Arena Mode**: Compare two anonymous AI models and vote on the best response
+- **Direct Chat**: Chat directly with a specific AI model
+- **Side-by-Side**: Compare two specific models simultaneously
+- **Leaderboard**: View ELO rankings of all available AI models
+- **Thread History**: Save and revisit your conversation threads
+- **Share Threads**: Share interesting conversations with others
+- **Real-time Streaming**: Watch AI responses stream in real-time via Server-Sent Events (SSE)
 
-### Side-by-Side Mode
-Choose specific models to compare and analyze their responses directly.
+## Tech Stack
 
-### Direct Chat Mode
-Chat with a single AI model with full conversation history maintained.
+- **Framework**: Next.js 15 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **UI Components**: Radix UI + shadcn/ui
+- **Authentication**: Supabase Auth
+- **Data Fetching**: SWR
+- **Markdown**: react-markdown + remark-gfm
+- **Icons**: Lucide React
 
-### Leaderboard
-Live model rankings based on community votes, win rates, and performance statistics.
+## Getting Started
 
-### Authentication
-Secure Supabase-powered authentication with email/password login and session management.
+### Prerequisites
 
-### Responsive Design
-Fully responsive interface optimized for desktop, tablet, and mobile devices.
+- Node.js 18+ or Bun
+- A Supabase account
+- Access to DualMind Lab API
 
-## 📁 Project Structure
+### Installation
 
-```
-DualMind_UI/
-├── index.html              # Main app entry
-├── config.js               # Global configuration
-├── components/             # UI components
-│   ├── Header.js          # Top navigation
-│   ├── Sidebar.js         # Side navigation
-│   └── chat/              # Chat components
-├── css/                   # Stylesheets
-│   ├── styles.css         # Main styles
-│   └── auth-styles.css    # Auth page styles
-├── js/                    # JavaScript modules
-│   ├── app.js             # Main app logic
-│   ├── apiClient.js       # API client
-│   ├── supabase-auth.js   # Auth service
-│   ├── supabase-init.js   # Auth initialization
-│   └── leaderboardModal.js # Leaderboard component
-├── login/                 # Login/signup page
-│   └── index.html
-└── package.json           # Dependencies
-
+1. Clone the repository:
+```bash
+git clone https://github.com/dualmindlabs/DualMind_UI.git
+cd DualMind_UI
 ```
 
-## Configuration
-
-### Backend URL
-Edit `config.js` to configure your backend API:
-
-```javascript
-// Automatically detects localhost vs production
-const BACKEND_URL = isLocalhost 
-  ? 'http://localhost:5079' 
-  : 'https://api.dualmindlab.tech';
+2. Install dependencies:
+```bash
+npm install
+# or
+bun install
 ```
 
-### Supabase Credentials
-Configure your Supabase project in `config.js`:
-
-```javascript
-window.DUALMIND_CONFIG.supabase = {
-  url: 'YOUR_SUPABASE_URL',
-  anonKey: 'YOUR_SUPABASE_ANON_KEY'
-};
+3. Set up environment variables:
+```bash
+cp .env.example .env.local
 ```
 
-## Customization
+Edit `.env.local` with your actual values:
+- `NEXT_PUBLIC_SUPABASE_URL`: Your Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Your Supabase anonymous key
+- `NEXT_PUBLIC_API_BASE_URL`: DualMind Lab API endpoint
 
-### Design Tokens
-The app uses a modern design system with CSS custom properties. Edit `css/styles.css` to customize:
-
-```css
-:root {
-  /* Brand Colors */
-  --color-primary: #6366f1;
-  --color-accent: #22d3ee;
-  
-  /* Background Colors */
-  --bg-0: #000000;
-  --bg-1: #0a0a0a;
-  
-  /* Typography */
-  --font-family-base: 'Inter', sans-serif;
-  --text-base: 15px;
-  
-  /* Border Radius */
-  --radius-md: 16px;
-}
+4. Run the development server:
+```bash
+npm run dev
+# or
+bun dev
 ```
 
-### Background Image
-Replace `./assets/background.png` with your custom background image for a personalized look.
+5. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## Project Structure
+
+```
+├── app/                      # Next.js App Router pages
+│   ├── about/               # About page
+│   ├── auth/                # Authentication pages
+│   ├── faq/                 # FAQ page
+│   ├── leaderboard/         # Leaderboard page
+│   ├── models/              # Models info page
+│   ├── shared/              # Shared thread viewer
+│   ├── layout.tsx           # Root layout
+│   ├── page.tsx             # Home/Arena page
+│   └── globals.css          # Global styles
+├── src/components/          # React components
+│   ├── arena-shell.tsx      # Main arena orchestrator
+│   ├── header.tsx           # App header
+│   ├── sidebar.tsx          # Thread history sidebar
+│   ├── chat-input.tsx       # Message input component
+│   ├── chat-view.tsx        # Chat message display
+│   ├── response-card.tsx    # AI response card
+│   ├── floating-voting.tsx  # Voting UI
+│   └── share-modal.tsx      # Share thread modal
+├── lib/                     # Utilities and libraries
+│   ├── api-client.ts        # DualMind API client
+│   ├── types.ts             # TypeScript types
+│   ├── utils.ts             # Utility functions
+│   ├── hooks/               # Custom React hooks
+│   │   ├── use-auth.ts      # Authentication hook
+│   │   └── use-arena.ts     # Arena state management
+│   └── supabase/            # Supabase client setup
+│       ├── client.ts        # Browser client
+│       ├── server.ts        # Server client
+│       └── middleware.ts    # Auth middleware
+└── middleware.ts            # Next.js middleware
+```
 
 ## API Integration
 
-The app works with an optional backend API or can run in offline mode with mock responses.
+The app integrates with the DualMind Lab API for:
+- Starting arena battles
+- Streaming AI responses via SSE
+- Submitting votes
+- Managing threads
+- Fetching leaderboard data
+- Sharing threads
 
-### Key Endpoints
-- `POST /api/arena/chat` - Single model chat
-- `POST /api/arena/dualchat` - Battle mode (two models)
-- `POST /api/arena/model-vote` - Submit vote
-- `GET /api/arena/model-stats` - Leaderboard data
-- `GET /api/health` - Backend health check
+All API calls are handled through the `apiClient` in `lib/api-client.ts`.
 
-All authenticated endpoints require `Authorization: Bearer <JWT_TOKEN>` header.
+## Authentication
 
-## 🧪 Testing
-
-### Test Authentication
-1. Navigate to login page
-2. Create account or login
-3. Verify redirect to main app
-4. Check user info in header/sidebar
-
-### Test Battle Mode
-1. Enter a prompt
-2. Wait for 2 model responses
-3. Vote for preferred response
-4. Check leaderboard updates
-
-### Test Direct Chat
-1. Switch to Direct Chat mode
-2. Send messages
-3. Verify conversation flow
-
-## Troubleshooting
-
-### Backend Connection Issues
-The app automatically falls back to offline mode with mock responses if the backend is unavailable. To resolve:
-- Verify backend is running on the correct port
-- Check CORS settings on your backend server
-- Ensure API URL is correctly configured in `config.js`
-
-### Authentication Problems
-- Clear browser cache and localStorage
-- Verify Supabase credentials in `config.js`
-- Check browser console for detailed error messages
-- Ensure email confirmation is properly configured in Supabase
-
-### Common Issues
-- **Blank screen**: Check browser console for JavaScript errors
-- **Slow loading**: Enable caching in `config.js`
-- **Mobile issues**: Clear mobile browser cache and reload
-
-## Responsive Design
-
-Fully responsive interface with optimized layouts:
-- **Desktop** (1024px+): Full sidebar with all features
-- **Tablet** (768px-1024px): Collapsible sidebar
-- **Mobile** (<768px): Drawer sidebar with touch-optimized controls
-
-## Security
-
-- JWT-based authentication with Supabase
-- Secure session storage and token management
-- HTTPS recommended for production deployments
-- CORS protection and XSS prevention
-- Input sanitization and validation
+Authentication is handled via Supabase Auth:
+- Email/password sign up and login
+- Session management via HTTP-only cookies
+- Protected routes via Next.js middleware
+- User metadata stored in Supabase
 
 ## Deployment
 
-### Production Checklist
-- Configure production backend URL in `config.js`
-- Enable HTTPS for secure connections
-- Set up CDN for static assets (optional)
-- Configure Supabase production environment
-- Test all features thoroughly
-- Enable performance monitoring
+The easiest way to deploy is via Vercel:
 
-## Performance
+1. Push your code to GitHub
+2. Import the project in Vercel
+3. Add environment variables in Vercel dashboard
+4. Deploy
 
-- Optimized CSS with modern design tokens
-- Efficient event handling with delegation
-- Lazy loading for optimal bundle size
-- GPU-accelerated animations
-- Request caching for API calls
+## Contributing
 
-## Browser Support
-
-- Chrome 90+
-- Firefox 88+
-- Safari 14+
-- Edge 90+
-
-## Keyboard Shortcuts
-
-- `Ctrl/Cmd + K` - Focus chat input
-- `Ctrl/Cmd + B` - Toggle sidebar
-- `Escape` - Close modals and menus
-
-## Support
-
-For issues, questions, or feature requests:
-- GitHub Issues: [github.com/dualmindlabs/DualMind_UI](https://github.com/dualmindlabs/DualMind_UI/issues)
-- Email: support@dualmindlab.tech
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-MIT License - see LICENSE file for details
-
-## Acknowledgments
-
-Built with modern web standards and inspired by leading AI platforms including ChatGPT, Claude, and Vercel.
+This project is licensed under the MIT License.
