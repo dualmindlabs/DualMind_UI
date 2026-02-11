@@ -192,6 +192,61 @@ export class ChatView {
     });
   }
 
+  attachModelSelectorListeners() {
+    const leftSelect = document.getElementById('model-select-left');
+    const rightSelect = document.getElementById('model-select-right');
+    const swapBtn = document.getElementById('swap-models-btn');
+    const randomPairBtn = document.getElementById('random-pair-btn');
+    const directSelect = document.getElementById('model-select-direct');
+
+    if (leftSelect) {
+      leftSelect.addEventListener('change', (e) => {
+        localStorage.setItem('battle.model.left', e.target.value);
+      });
+    }
+
+    if (rightSelect) {
+      rightSelect.addEventListener('change', (e) => {
+        localStorage.setItem('battle.model.right', e.target.value);
+      });
+    }
+
+    if (swapBtn) {
+      swapBtn.addEventListener('click', () => {
+        if (leftSelect && rightSelect) {
+          const temp = leftSelect.value;
+          leftSelect.value = rightSelect.value;
+          rightSelect.value = temp;
+          localStorage.setItem('battle.model.left', leftSelect.value);
+          localStorage.setItem('battle.model.right', rightSelect.value);
+        }
+      });
+    }
+
+    if (randomPairBtn) {
+      randomPairBtn.addEventListener('click', () => {
+        const models = window._DUALMIND_MODELS || [];
+        if (models.length >= 2) {
+          const shuffled = models.sort(() => Math.random() - 0.5);
+          const left = shuffled[0].modelId;
+          const right = shuffled[1].modelId;
+          
+          if (leftSelect) leftSelect.value = left;
+          if (rightSelect) rightSelect.value = right;
+          
+          localStorage.setItem('battle.model.left', left);
+          localStorage.setItem('battle.model.right', right);
+        }
+      });
+    }
+
+    if (directSelect) {
+      directSelect.addEventListener('change', (e) => {
+        localStorage.setItem('direct.model', e.target.value);
+      });
+    }
+  }
+
   renderEmptyArena() {
     const models = window._DUALMIND_MODELS || [];
     const savedLeft = localStorage.getItem('battle.model.left') || '';
@@ -546,10 +601,11 @@ export class ChatView {
       return `
         <div class="chat-empty glass-panel">
           <div class="chat-empty-icon">${Icons.chat('white', 32)}</div>
-          <div class="chat-empty-title">Direct Chat Mode</div>
+          <div class="chat-empty-title">Direct Chat</div>
+          <p class="chat-empty-subtitle">Have a conversation with an AI model</p>
           
           <div class="direct-model-selector">
-            <label class="model-label">Choose Your Model</label>
+            <label class="model-label">Choose AI Model</label>
             <select id="model-select-direct" class="model-select">
               <option value="">🎲 Random Model</option>
               ${models.map(m => {
@@ -564,24 +620,34 @@ export class ChatView {
             </select>
           </div>
           
-          <p class="model-selector-hint">Select a model above, then start chatting</p>
+          <p class="model-selector-hint">Choose a model and start your conversation below</p>
         </div>
       `;
     }
 
     return `
       <div class="direct-thread">
-        ${msgs.map((m) => {
+        ${msgs.map((m, index) => {
       const role = m.role === 'user' ? 'user' : 'assistant';
+      const streaming = !!m.streaming;
       return `
-            <div class="direct-msg ${role}">
+            <div class="direct-msg ${role} ${streaming ? 'streaming' : ''}">
               <div class="direct-bubble glass-panel">
-                <div class="direct-meta">${role === 'user' ? 'You' : escapeHtml(m.modelName || 'Assistant')}</div>
-                <div class="direct-text markdown-body">${role === 'user' ? escapeHtml(m.text || '') : this.renderMarkdown(m.text || '')}</div>
+                <div class="direct-meta">
+                  ${role === 'user' 
+                    ? '<span class="direct-avatar">You</span>' 
+                    : `<span class="direct-avatar assistant-avatar">${escapeHtml(m.modelName || 'AI')}</span>`
+                  }
+                </div>
+                <div class="direct-text markdown-body">
+                  ${role === 'user' ? escapeHtml(m.text || '') : this.renderMarkdown(m.text || '')}
+                  ${streaming ? '<span class="stream-caret" aria-hidden="true"></span>' : ''}
+                </div>
               </div>
             </div>
           `;
     }).join('')}
+        <div id="chat-scroll-sentinel" class="scroll-sentinel" aria-hidden="true"></div>
       </div>
     `;
   }
@@ -663,54 +729,7 @@ export class ChatView {
     this.attachModelSelectorListeners();
   }
 
-  attachModelSelectorListeners() {
-    if (!this.container) return;
 
-    // Model Selectors
-    const leftSelect = this.container.querySelector('#model-select-left');
-    const rightSelect = this.container.querySelector('#model-select-right');
-
-    const handleModelChange = () => {
-      const leftVal = leftSelect?.value || '';
-      const rightVal = rightSelect?.value || '';
-
-      localStorage.setItem('battle.model.left', leftVal);
-      localStorage.setItem('battle.model.right', rightVal);
-      console.log('Saved model selection:', { left: leftVal, right: rightVal });
-    };
-
-    leftSelect?.addEventListener('change', handleModelChange);
-    rightSelect?.addEventListener('change', handleModelChange);
-
-    // Swap Button
-    const swapBtn = this.container.querySelector('#swap-models-btn');
-    swapBtn?.addEventListener('click', () => {
-      if (leftSelect && rightSelect) {
-        const temp = leftSelect.value;
-        leftSelect.value = rightSelect.value;
-        rightSelect.value = temp;
-        handleModelChange();
-      }
-    });
-
-    // Random Pair Button
-    const randomBtn = this.container.querySelector('#random-pair-btn');
-    randomBtn?.addEventListener('click', () => {
-      if (leftSelect && rightSelect) {
-        const optionsLeft = Array.from(leftSelect.options).filter(o => o.value);
-        const optionsRight = Array.from(rightSelect.options).filter(o => o.value);
-
-        if (optionsLeft.length > 0 && optionsRight.length > 0) {
-          const randLeft = optionsLeft[Math.floor(Math.random() * optionsLeft.length)].value;
-          const randRight = optionsRight[Math.floor(Math.random() * optionsRight.length)].value;
-
-          leftSelect.value = randLeft;
-          rightSelect.value = randRight;
-          handleModelChange();
-        }
-      }
-    });
-  }
 
   /**
    * Updates the response content with full text (re-renders Markdown).

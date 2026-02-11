@@ -59,10 +59,16 @@ export class LeaderboardModal {
       <div class="dm-modal-overlay" data-role="overlay" hidden></div>
       <div class="dm-modal" role="dialog" aria-modal="true" aria-label="Leaderboard" hidden>
         <div class="dm-modal-head">
-          <div class="dm-modal-title">Model Leaderboard</div>
+          <div class="dm-modal-title-row">
+            <span class="dm-modal-icon">🏆</span>
+            <h2 class="dm-modal-title">Model Leaderboard</h2>
+          </div>
           <div class="dm-modal-actions">
-            <button class="dm-modal-btn" type="button" data-action="refresh">Refresh</button>
-            <button class="dm-modal-close" type="button" data-action="close" aria-label="Close">×</button>
+            <button class="dm-modal-btn" type="button" data-action="refresh" title="Refresh leaderboard">
+              <span class="refresh-icon">↻</span>
+              <span>Refresh</span>
+            </button>
+            <button class="dm-modal-close" type="button" data-action="close" aria-label="Close" title="Close">×</button>
           </div>
         </div>
         <div class="dm-modal-body" data-role="content"></div>
@@ -184,10 +190,18 @@ export class LeaderboardModal {
 
     this._els.content.innerHTML = `
       <div class="dm-lb-shell">
-        <div class="dm-lb-top">
-          <div>
-            <div class="dm-lb-title">Model Leaderboard</div>
-            <div class="dm-lb-subtitle">${escapeHtml(String(items.length))} models · ${escapeHtml(String(totals.wins))} wins · ${escapeHtml(String(totals.responses))} responses</div>
+        <div class="dm-lb-stats-bar">
+          <div class="dm-lb-stat">
+            <span class="stat-value">${escapeHtml(String(items.length))}</span>
+            <span class="stat-label">Models</span>
+          </div>
+          <div class="dm-lb-stat">
+            <span class="stat-value">${escapeHtml(String(totals.wins))}</span>
+            <span class="stat-label">Total Wins</span>
+          </div>
+          <div class="dm-lb-stat">
+            <span class="stat-value">${escapeHtml(String(totals.responses))}</span>
+            <span class="stat-label">Responses</span>
           </div>
         </div>
 
@@ -195,11 +209,11 @@ export class LeaderboardModal {
           <table class="dm-lb-table">
             <thead>
               <tr>
-                <th>Rank</th>
-                <th>Model</th>
-                <th>Win rate</th>
-                <th>Wins</th>
-                <th>Responses</th>
+                <th class="th-rank">Rank</th>
+                <th class="th-model">Model</th>
+                <th class="th-winrate">Win Rate</th>
+                <th class="th-wins">Wins</th>
+                <th class="th-responses">Battles</th>
               </tr>
             </thead>
             <tbody>
@@ -212,16 +226,27 @@ export class LeaderboardModal {
       const responses = Number(item.times_compared || item.totalResponses || 0);
 
       const medal = rank <= 3 ? ` rank-${rank}` : '';
+      const medalEmoji = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '';
+      
       return `
-                  <tr class="dm-lb-row">
-                    <td class="dm-lb-rank${medal}"><span class="dm-lb-rank-pill">#${rank}</span></td>
-                    <td>
+                  <tr class="dm-lb-row${medal}">
+                    <td class="dm-lb-rank">
+                      <span class="dm-lb-rank-pill">${medalEmoji || `#${rank}`}</span>
+                    </td>
+                    <td class="dm-lb-model-cell">
                       <div class="dm-lb-model">
                         <div class="dm-lb-model-name">${escapeHtml(modelName)}</div>
                         ${provider ? `<div class="dm-lb-model-provider">${escapeHtml(provider)}</div>` : ''}
                       </div>
                     </td>
-                    <td><span class="dm-lb-win-pill">${escapeHtml(winRate.toFixed(1))}%</span></td>
+                    <td class="dm-lb-winrate">
+                      <div class="winrate-container">
+                        <span class="dm-lb-win-pill">${escapeHtml(winRate.toFixed(1))}%</span>
+                        <div class="winrate-bar">
+                          <div class="winrate-fill" style="width: ${winRate}%"></div>
+                        </div>
+                      </div>
+                    </td>
                     <td class="dm-lb-num">${escapeHtml(String(wins))}</td>
                     <td class="dm-lb-num">${escapeHtml(String(responses))}</td>
                   </tr>
