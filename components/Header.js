@@ -31,9 +31,9 @@ export class Header {
     const currentModeData = this.modes.find(m => m.id === this.currentMode);
 
     this.container.innerHTML = `
-      <header id="main-header" class="main-header">
+      <header id="main-header" class="main-header" role="banner">
         <!-- Mobile Menu Toggle -->
-        <button id="mobile-menu-btn" class="mobile-menu-btn lg:hidden" aria-label="Open sidebar">
+        <button id="mobile-menu-btn" class="mobile-menu-btn lg:hidden" aria-label="Open sidebar" title="Open menu">
           ${Icons.hamburger('white', 24)}
         </button>
 
@@ -45,7 +45,8 @@ export class Header {
             aria-haspopup="menu"
             aria-expanded="${this.isDropdownOpen ? 'true' : 'false'}"
             aria-controls="mode-dropdown"
-            aria-label="Select mode (current: ${currentModeData.name})"
+            aria-label="Select chat mode"
+            title="Select chat mode (current: ${currentModeData.name})"
           >
             <span class="mode-icon">${currentModeData.icon('white')}</span>
             <span class="mode-text">${currentModeData.name}</span>
@@ -65,6 +66,7 @@ export class Header {
                 data-mode="${mode.id}"
                 role="menuitemradio"
                 aria-checked="${mode.id === this.currentMode ? 'true' : 'false'}"
+                title="${mode.subtitle}"
               >
                 <div class="mode-option-content">
                   <div class="mode-option-text">
@@ -82,18 +84,18 @@ export class Header {
         <!-- Right Controls -->
         <div class="header-controls">
           <!-- Share Button -->
-          <button id="share-thread-btn" class="header-icon-btn" aria-label="Share thread" title="Share this thread">
+          <button id="share-thread-btn" class="header-icon-btn" aria-label="Share thread" title="Share this conversation">
             ${Icons.share('white', 18)}
           </button>
 
           <!-- User Menu -->
           <div class="user-menu">
-            <button id="user-btn" class="user-btn" aria-label="User menu">
+            <button id="user-btn" class="user-btn" aria-label="User menu" aria-haspopup="true" aria-expanded="${this.isUserMenuOpen ? 'true' : 'false'}" title="Account settings">
               <span class="user-avatar">${this.getUserInitials()}</span>
             </button>
             
             <!-- User Dropdown -->
-            <div id="user-dropdown" class="user-dropdown ${this.isUserMenuOpen ? 'open' : ''}">
+            <div id="user-dropdown" class="user-dropdown ${this.isUserMenuOpen ? 'open' : ''}" role="menu">
               <div class="user-info">
                 <div class="user-avatar-large">${this.getUserInitials()}</div>
                 <div class="user-details">
@@ -102,7 +104,7 @@ export class Header {
                 </div>
               </div>
               <div class="user-actions">
-                <button id="logout-btn" class="user-action-btn">
+                <button id="logout-btn" class="user-action-btn" role="menuitem">
                   <span class="user-action-icon">${Icons.logout('white')}</span>
                   <span class="user-action-text">Logout</span>
                 </button>
