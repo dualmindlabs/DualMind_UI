@@ -52,11 +52,13 @@ export class ChatView {
       direct: [],
       apiEnabled: true,
     };
+    this._listenersBound = false;
 
     this.setupMarkdown();
     this.render();
     this.attach();
     this.attachScrollListener();
+    this.attachModelSelectorListeners();
   }
 
   setupMarkdown() {
@@ -186,33 +188,35 @@ export class ChatView {
       });
     }
 
-    // Reattach model selector listeners if rendering empty state
-    requestAnimationFrame(() => {
-      this.attachModelSelectorListeners();
-    });
+    // Re-attach model selector listeners after DOM is updated
+    this.attachModelSelectorListeners();
   }
 
   attachModelSelectorListeners() {
-    const leftSelect = document.getElementById('model-select-left');
-    const rightSelect = document.getElementById('model-select-right');
-    const swapBtn = document.getElementById('swap-models-btn');
-    const randomPairBtn = document.getElementById('random-pair-btn');
-    const directSelect = document.getElementById('model-select-direct');
+    if (!this.container) return;
 
-    if (leftSelect) {
-      leftSelect.addEventListener('change', (e) => {
+    // Use event delegation with the container instead of individual elements
+    this.container.addEventListener('change', (e) => {
+      if (e.target.id === 'model-select-left') {
+        console.log('[v0] Left model changed to:', e.target.value);
         localStorage.setItem('battle.model.left', e.target.value);
-      });
-    }
-
-    if (rightSelect) {
-      rightSelect.addEventListener('change', (e) => {
+      }
+      if (e.target.id === 'model-select-right') {
+        console.log('[v0] Right model changed to:', e.target.value);
         localStorage.setItem('battle.model.right', e.target.value);
-      });
-    }
+      }
+      if (e.target.id === 'model-select-direct') {
+        console.log('[v0] Direct model changed to:', e.target.value);
+        localStorage.setItem('direct.model', e.target.value);
+      }
+    }, false);
 
-    if (swapBtn) {
-      swapBtn.addEventListener('click', () => {
+    this.container.addEventListener('click', (e) => {
+      if (e.target.id === 'swap-models-btn') {
+        console.log('[v0] Swap button clicked');
+        const leftSelect = this.container.querySelector('#model-select-left');
+        const rightSelect = this.container.querySelector('#model-select-right');
+        
         if (leftSelect && rightSelect) {
           const temp = leftSelect.value;
           leftSelect.value = rightSelect.value;
@@ -220,31 +224,29 @@ export class ChatView {
           localStorage.setItem('battle.model.left', leftSelect.value);
           localStorage.setItem('battle.model.right', rightSelect.value);
         }
-      });
-    }
+      }
 
-    if (randomPairBtn) {
-      randomPairBtn.addEventListener('click', () => {
+      if (e.target.id === 'random-pair-btn' || e.target.closest('#random-pair-btn')) {
+        console.log('[v0] Random pair button clicked');
+        const leftSelect = this.container.querySelector('#model-select-left');
+        const rightSelect = this.container.querySelector('#model-select-right');
         const models = window._DUALMIND_MODELS || [];
-        if (models.length >= 2) {
-          const shuffled = models.sort(() => Math.random() - 0.5);
+
+        if (models.length >= 2 && leftSelect && rightSelect) {
+          const shuffled = [...models].sort(() => Math.random() - 0.5);
           const left = shuffled[0].modelId;
           const right = shuffled[1].modelId;
           
-          if (leftSelect) leftSelect.value = left;
-          if (rightSelect) rightSelect.value = right;
+          leftSelect.value = left;
+          rightSelect.value = right;
           
           localStorage.setItem('battle.model.left', left);
           localStorage.setItem('battle.model.right', right);
+          
+          console.log('[v0] Random pair selected:', left, right);
         }
-      });
-    }
-
-    if (directSelect) {
-      directSelect.addEventListener('change', (e) => {
-        localStorage.setItem('direct.model', e.target.value);
-      });
-    }
+      }
+    }, false);
   }
 
   renderEmptyArena() {
