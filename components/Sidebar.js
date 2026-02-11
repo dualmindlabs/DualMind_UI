@@ -84,36 +84,38 @@ export class Sidebar {
       </button>
       
       <!-- Sidebar -->
-      <aside id="sidebar" class="sidebar ${this.isCollapsed ? 'collapsed' : 'open'}" aria-label="Sidebar">
+      <aside id="sidebar" class="sidebar ${this.isCollapsed ? 'collapsed' : 'open'}" aria-label="Sidebar" role="navigation">
         <!-- Header Section -->
         <div class="sidebar-header">
           <!-- Logo -->
-          <button id="logo-btn" class="logo-btn" aria-label="DualMind">
+          <button id="logo-btn" class="logo-btn" aria-label="DualMind Home">
             <span class="logo-icon">${Icons.logo(21)}</span>
             <span class="logo-text">DualMind</span>
           </button>
           
           <!-- Toggle Button (Desktop) -->
-          <button id="sidebar-toggle" class="sidebar-toggle" aria-label="Toggle Sidebar">
+          <button id="sidebar-toggle" class="sidebar-toggle" aria-label="Toggle Sidebar" title="Toggle sidebar">
             ${Icons.menu('white')}
           </button>
         </div>
 
         <!-- Navigation -->
         <nav class="sidebar-nav" aria-label="Primary navigation">
-          <a href="#" class="nav-item active" data-action="new-chat" title="New Chat">
+          <button class="nav-item active" data-action="new-chat" title="Start new conversation">
             <span class="nav-icon">${Icons.newChat('white', 18)}</span>
             <span class="nav-text">New Chat</span>
-          </a>
-          <a href="#" class="nav-item" data-action="leaderboard" title="Leaderboard">
+          </button>
+          <button class="nav-item" data-action="leaderboard" title="View model leaderboard">
             <span class="nav-icon">${Icons.leaderboard('white', 0.5)}</span>
             <span class="nav-text">Leaderboard</span>
-          </a>
+          </button>
         </nav>
 
         <!-- Recent Chats Section -->
         <div class="recent-chats-section">
-          <h3 class="section-title">Recent Chat</h3>
+          <div class="section-header">
+            <h3 class="section-title">Recent Chats</h3>
+          </div>
           <div id="recent-chats-list" class="recent-chats-list">
             ${this.renderRecentChats()}
           </div>
@@ -121,12 +123,15 @@ export class Sidebar {
 
         <!-- Footer -->
         <footer class="sidebar-footer">
-          <a href="./terms/" class="footer-link">Terms of use</a>
-          <a href="./privacy/" class="footer-link">Privacy Policy</a>
-          <div class="footer-row">
-            <a href="#" class="footer-link logout-btn" id="logout-btn">Log Out</a>
-            <a href="./cookies/" class="footer-link">Cookies</a>
+          <div class="footer-links">
+            <a href="./terms/" class="footer-link" title="Terms of Service">Terms</a>
+            <span class="footer-separator">•</span>
+            <a href="./privacy/" class="footer-link" title="Privacy Policy">Privacy</a>
           </div>
+          <button class="footer-logout" id="logout-btn" title="Log out">
+            <span class="logout-icon">${Icons.logout('white', 16)}</span>
+            <span class="logout-text">Log Out</span>
+          </button>
         </footer>
       </aside>
     `;
@@ -243,8 +248,7 @@ export class Sidebar {
     // Navigation items
     const navItems = this.container.querySelectorAll('.nav-item');
     navItems.forEach(item => {
-      item.addEventListener('click', (e) => {
-        e.preventDefault();
+      item.addEventListener('click', () => {
         this.handleNavClick(item.dataset.action);
       });
     });

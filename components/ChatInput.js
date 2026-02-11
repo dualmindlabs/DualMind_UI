@@ -27,7 +27,7 @@ export class ChatInput {
       <div id="chat-input-wrapper" class="chat-input-wrapper">
         <div class="chat-input-container">
           <!-- Attachments Preview -->
-          <div id="attachments-preview" class="attachments-preview ${this.attachments.length ? 'has-items' : ''}">
+          <div id="attachments-preview" class="attachments-preview ${this.attachments.length ? 'has-items' : ''}" role="list" aria-label="Attachments">
             ${this.renderAttachments()}
           </div>
           
@@ -36,10 +36,10 @@ export class ChatInput {
             <textarea
               id="chat-input"
               class="chat-input"
-              placeholder="Ask anything.."
+              placeholder="Message DualMind..."
               rows="1"
-              aria-label="Chat message"
-              ${this.isLoading ? 'disabled' : ''}
+              aria-label="Enter your message"
+              ${this.isLoading ? 'disabled aria-disabled="true"' : ''}
             >${this.escapeHtml(this.value)}</textarea>
           </div>
 
@@ -47,28 +47,34 @@ export class ChatInput {
           <div class="action-buttons">
             <div class="left-actions">
               <!-- Add Attachment -->
-              <button class="action-btn" id="add-btn" title="Add attachment">
+              <button class="action-btn" id="add-btn" title="Attach file" aria-label="Attach file" ${this.isLoading ? 'disabled' : ''}>
                 ${Icons.add('white', 16)}
               </button>
 
               <!-- Web Search -->
-              <button class="action-btn" id="web-btn" title="Search the web">
+              <button class="action-btn" id="web-btn" title="Enable web search" aria-label="Enable web search" ${this.isLoading ? 'disabled' : ''}>
                 ${Icons.globe('white', 18)}
               </button>
 
               <!-- Add Image -->
-              <button class="action-btn" id="image-btn" title="Add image">
+              <button class="action-btn" id="image-btn" title="Add image" aria-label="Add image" ${this.isLoading ? 'disabled' : ''}>
                 ${Icons.image('white', 18)}
               </button>
 
               <!-- Code Mode -->
-              <button class="action-btn" id="code-btn" title="Code mode">
+              <button class="action-btn" id="code-btn" title="Enable code mode" aria-label="Enable code mode" ${this.isLoading ? 'disabled' : ''}>
                 ${Icons.code('white', 20)}
               </button>
             </div>
 
             <!-- Submit Button -->
-            <button class="submit-btn ${this.isLoading ? 'loading' : ''}" id="submit-btn" ${this.isLoading ? 'disabled' : ''}>
+            <button 
+              class="submit-btn ${this.isLoading ? 'loading' : ''}" 
+              id="submit-btn" 
+              ${this.isLoading || (!this.value.trim() && !this.attachments.length) ? 'disabled' : ''}
+              aria-label="${this.isLoading ? 'Sending message...' : 'Send message'}"
+              title="${this.isLoading ? 'Sending...' : 'Send message'}"
+            >
               ${this.isLoading ? this.renderLoader() : Icons.arrowUp('white', 15)}
             </button>
           </div>

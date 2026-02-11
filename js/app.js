@@ -57,11 +57,9 @@ class App {
   }
 
   async init() {
-    // Check authentication with Supabase
-    const isLoggedIn = window.DualMindAuth ? window.DualMindAuth.isLoggedIn() : false;
+    const isLoggedIn = window.DualMindAuth?.isLoggedIn() ?? false;
     
     if (!isLoggedIn) {
-      // Check if guest mode
       const isGuest = localStorage.getItem('dualmind.guest') === 'true';
       if (!isGuest) {
         window.location.href = 'login.html';
@@ -69,13 +67,9 @@ class App {
       }
     }
 
-    // Set user info
-    this.state.user = window.DualMindAuth ? window.DualMindAuth.getUser() : null;
-    
-    // Check if backend is available
+    this.state.user = window.DualMindAuth?.getUser() ?? null;
     await this.checkBackendAvailability();
     
-    // Wait for DOM
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => this.setup());
     } else {
@@ -83,73 +77,57 @@ class App {
     }
   }
 
-  /**
-   * Check if backend server is available
-   */
   async checkBackendAvailability() {
-    // Skip backend check if offline mode is preferred
     if (window.DUALMIND_CONFIG?.offline?.enabled === false) {
       try {
         const response = await fetch(`${getApiBaseUrl()}/api/health`, {
           method: 'GET',
-          signal: AbortSignal.timeout(2000) // 2 second timeout
+          signal: AbortSignal.timeout(2000)
         });
         this.state.backendAvailable = response.ok;
-        console.log('✅ Backend available:', this.state.backendAvailable);
+        console.log('Backend available:', this.state.backendAvailable);
       } catch (error) {
         this.state.backendAvailable = false;
-        console.log('⚠️ Backend not available, running in offline mode');
+        console.log('Backend not available, running in offline mode');
       }
     } else {
-      // Offline mode preferred - don't check backend
       this.state.backendAvailable = false;
-      console.log('📱 Running in offline mode (no backend check)');
+      console.log('Running in offline mode (no backend check)');
     }
     
-    // Always enable API for mock responses in offline mode
     if (!this.state.backendAvailable) {
-      this.state.apiEnabled = true; // Enable for mock responses
+      this.state.apiEnabled = true;
     }
   }
 
   setup() {
-    // Initialize components
     this.components.sidebar = new Sidebar('sidebar-container');
     this.components.header = new Header('header-container');
     this.components.chatInput = new ChatInput('chat-input-container');
     this.components.chatView = new ChatView('main-content');
 
-    // Leaderboard modal (only if backend is available)
     if (this.state.backendAvailable) {
       this.leaderboard = new LeaderboardModal({
         api: this.api,
         isApiEnabled: () => !!this.state.apiEnabled,
       });
     } else {
-      console.log('📱 Leaderboard disabled - backend not available');
+      console.log('Leaderboard disabled - backend not available');
     }
     
-    // Set up global event listeners
     this.attachGlobalListeners();
-    
-    // Initial layout adjustment
     this.adjustLayout();
     
-    console.log('🚀 DualMind App Initialized');
-    console.log('📊 Backend available:', this.state.backendAvailable ? '✅' : '❌ (Offline mode)');
+    console.log('DualMind App Initialized');
+    console.log('Backend available:', this.state.backendAvailable ? 'Yes' : 'No (Offline mode)');
 
-    // Show offline indicator if needed
     if (!this.state.backendAvailable && window.DUALMIND_CONFIG?.offline?.showOfflineIndicator) {
       this.showOfflineIndicator();
     }
 
-    // Initial render
     this.renderChat();
   }
 
-  /**
-   * Show offline mode indicator
-   */
   showOfflineIndicator() {
     const indicator = document.createElement('div');
     indicator.id = 'offline-indicator';
@@ -168,16 +146,13 @@ class App {
         box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         cursor: pointer;
       " onclick="this.remove()">
-        ⚠️ OFFLINE MODE - Using demo responses
+        OFFLINE MODE - Using demo responses
       </div>
     `;
     document.body.appendChild(indicator);
 
-    // Auto-remove after 10 seconds
     setTimeout(() => {
-      if (indicator.parentNode) {
-        indicator.remove();
-      }
+      indicator.parentNode?.removeChild?.(indicator);
     }, 10000);
   }
 

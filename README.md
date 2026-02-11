@@ -1,17 +1,18 @@
 # DualMind Arena - AI Battle Platform
 
-**The ultimate AI model comparison platform with real-time battles and leaderboards.**
+A premium, SaaS-level web application for comparing AI language models through interactive battles. Compare responses from multiple AI models side-by-side, vote on your preferences, and contribute to community-driven leaderboards.
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
-- Node.js installed
-- Backend server running on `http://localhost:65476`
-- Supabase account (credentials already configured)
+- Node.js 14+ installed
+- Modern web browser (Chrome, Firefox, Safari, Edge)
+- Supabase account (credentials configured in config.js)
+- Optional: Backend API server
 
 ### Installation & Run
 
-```powershell
+```bash
 # Install dependencies
 npm install
 
@@ -19,33 +20,27 @@ npm install
 npm run dev
 ```
 
-Open **http://localhost:8000** in your browser.
+Open `http://localhost:8000` in your browser.
 
-## ✨ Features
+## Features
 
-### 🎯 Battle Mode
-- Compare two AI models side-by-side
-- Random model selection for blind testing
-- Vote for the better response
-- Real-time streaming responses
+### Battle Mode
+Compare two AI models side-by-side with anonymous testing, real-time streaming responses, and community voting.
 
-### 💬 Direct Chat Mode
-- Chat with a single AI model
-- Conversation history maintained
-- Multiple model options
+### Side-by-Side Mode
+Choose specific models to compare and analyze their responses directly.
 
-### 🏆 Leaderboard
-- Live model rankings
-- Win rates and statistics
-- Response time metrics
-- Cached for performance
+### Direct Chat Mode
+Chat with a single AI model with full conversation history maintained.
 
-### 🔐 Authentication
-- Supabase-powered auth
-- Email/password login
-- Google OAuth support
-- Admin role detection
-- Secure session management
+### Leaderboard
+Live model rankings based on community votes, win rates, and performance statistics.
+
+### Authentication
+Secure Supabase-powered authentication with email/password login and session management.
+
+### Responsive Design
+Fully responsive interface optimized for desktop, tablet, and mobile devices.
 
 ## 📁 Project Structure
 
@@ -72,65 +67,67 @@ DualMind_UI/
 
 ```
 
-## 🔧 Configuration
+## Configuration
 
 ### Backend URL
-Edit `config.js` to switch between local and production:
+Edit `config.js` to configure your backend API:
 
 ```javascript
-const BACKEND_MODE = 'localhost'; // or 'production'
-
-const BACKEND_URLS = {
-  localhost: 'http://localhost:65476',
-  production: 'https://api.dualmindlab.tech'
-};
+// Automatically detects localhost vs production
+const BACKEND_URL = isLocalhost 
+  ? 'http://localhost:5079' 
+  : 'https://api.dualmindlab.tech';
 ```
 
 ### Supabase Credentials
-Already configured in `config.js`:
-- URL: `https://calqfzajyidkdzbaswjp.supabase.co`
-- Anon Key: (configured)
+Configure your Supabase project in `config.js`:
 
-## 🎨 Customization
-
-### Change Background Image
-Edit `index.html` line 35:
-```html
-<img 
-  src="YOUR_IMAGE_URL_HERE" 
-  alt="" 
-  class="app-background"
-  loading="eager"
-/>
+```javascript
+window.DUALMIND_CONFIG.supabase = {
+  url: 'YOUR_SUPABASE_URL',
+  anonKey: 'YOUR_SUPABASE_ANON_KEY'
+};
 ```
 
-### Modify Colors
-Edit CSS variables in `css/styles.css`:
+## Customization
+
+### Design Tokens
+The app uses a modern design system with CSS custom properties. Edit `css/styles.css` to customize:
+
 ```css
 :root {
-  --color-teal: #577B87;
-  --color-cyan: #4AABC2;
-  --color-terra: #CB9275;
-  --color-cream: #FDF4CD;
+  /* Brand Colors */
+  --color-primary: #6366f1;
+  --color-accent: #22d3ee;
+  
+  /* Background Colors */
+  --bg-0: #000000;
+  --bg-1: #0a0a0a;
+  
+  /* Typography */
+  --font-family-base: 'Inter', sans-serif;
+  --text-base: 15px;
+  
+  /* Border Radius */
+  --radius-md: 16px;
 }
 ```
 
-## 📡 API Endpoints
+### Background Image
+Replace `./assets/background.png` with your custom background image for a personalized look.
 
-All endpoints require `Authorization: Bearer <JWT_TOKEN>` header.
+## API Integration
 
-### Arena
+The app works with an optional backend API or can run in offline mode with mock responses.
+
+### Key Endpoints
 - `POST /api/arena/chat` - Single model chat
-- `POST /api/arena/chat/stream` - Streaming chat
-- `POST /api/arena/dualchat` - Battle mode (2 models)
+- `POST /api/arena/dualchat` - Battle mode (two models)
 - `POST /api/arena/model-vote` - Submit vote
 - `GET /api/arena/model-stats` - Leaderboard data
+- `GET /api/health` - Backend health check
 
-### Admin
-- `GET /api/admin/check` - Check admin status
-
-### Health
-- `GET /health` - Backend health check
+All authenticated endpoints require `Authorization: Bearer <JWT_TOKEN>` header.
 
 ## 🧪 Testing
 
@@ -151,71 +148,81 @@ All endpoints require `Authorization: Bearer <JWT_TOKEN>` header.
 2. Send messages
 3. Verify conversation flow
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
-### Backend Not Available
-- App falls back to offline mode with mock responses
-- Check backend is running on correct port
-- Verify CORS settings on backend
+### Backend Connection Issues
+The app automatically falls back to offline mode with mock responses if the backend is unavailable. To resolve:
+- Verify backend is running on the correct port
+- Check CORS settings on your backend server
+- Ensure API URL is correctly configured in `config.js`
 
-### Login Issues
+### Authentication Problems
 - Clear browser cache and localStorage
-- Check Supabase credentials in config.js
-- Verify email confirmation settings
+- Verify Supabase credentials in `config.js`
+- Check browser console for detailed error messages
+- Ensure email confirmation is properly configured in Supabase
 
-### API Errors
-- Check browser console for details
-- Verify backend URL in config.js
-- Ensure auth token is valid
+### Common Issues
+- **Blank screen**: Check browser console for JavaScript errors
+- **Slow loading**: Enable caching in `config.js`
+- **Mobile issues**: Clear mobile browser cache and reload
 
-## 📱 Responsive Design
+## Responsive Design
 
-Fully responsive with breakpoints:
-- **Desktop**: Full sidebar, all features
-- **Tablet**: Collapsible sidebar
-- **Mobile**: Drawer sidebar, optimized layout
+Fully responsive interface with optimized layouts:
+- **Desktop** (1024px+): Full sidebar with all features
+- **Tablet** (768px-1024px): Collapsible sidebar
+- **Mobile** (<768px): Drawer sidebar with touch-optimized controls
 
-## 🔒 Security
+## Security
 
-- JWT-based authentication
-- Secure session storage
-- HTTPS recommended for production
-- CORS protection
-- XSS prevention
+- JWT-based authentication with Supabase
+- Secure session storage and token management
+- HTTPS recommended for production deployments
+- CORS protection and XSS prevention
+- Input sanitization and validation
 
-## 📚 Documentation
-
-- `SETUP_COMPLETE.md` - Detailed setup guide
-- `API_ENDPOINTS_VERIFIED.md` - API documentation
-
-## 🚀 Deployment
+## Deployment
 
 ### Production Checklist
-- [ ] Update `BACKEND_MODE` to 'production'
-- [ ] Configure production backend URL
-- [ ] Enable HTTPS
-- [ ] Set up CDN for static assets
-- [ ] Configure Supabase production settings
-- [ ] Test all features in production
+- Configure production backend URL in `config.js`
+- Enable HTTPS for secure connections
+- Set up CDN for static assets (optional)
+- Configure Supabase production environment
+- Test all features thoroughly
+- Enable performance monitoring
 
-## 💡 Tips
+## Performance
 
-- Use **Ctrl/Cmd + K** to focus chat input
-- Press **Escape** to close modals/sidebar
-- Click **Leaderboard** to see model rankings
-- Vote after each battle to improve rankings
+- Optimized CSS with modern design tokens
+- Efficient event handling with delegation
+- Lazy loading for optimal bundle size
+- GPU-accelerated animations
+- Request caching for API calls
 
-## 🤝 Support
+## Browser Support
 
-For issues or questions:
-1. Check troubleshooting section
-2. Review API documentation
-3. Check browser console for errors
+- Chrome 90+
+- Firefox 88+
+- Safari 14+
+- Edge 90+
 
-## 📄 License
+## Keyboard Shortcuts
 
-Proprietary - DualMind Arena
+- `Ctrl/Cmd + K` - Focus chat input
+- `Ctrl/Cmd + B` - Toggle sidebar
+- `Escape` - Close modals and menus
 
----
+## Support
 
-**Built with ❤️ for AI enthusiasts**
+For issues, questions, or feature requests:
+- GitHub Issues: [github.com/dualmindlabs/DualMind_UI](https://github.com/dualmindlabs/DualMind_UI/issues)
+- Email: support@dualmindlab.tech
+
+## License
+
+MIT License - see LICENSE file for details
+
+## Acknowledgments
+
+Built with modern web standards and inspired by leading AI platforms including ChatGPT, Claude, and Vercel.
