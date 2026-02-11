@@ -1,6 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactCompiler: true,
   redirects: async () => [
     // Redirect any direct legacy page accesses to their Next.js equivalents
     {
@@ -22,3 +21,4 @@ const nextConfig = {
 }
 
 export default nextConfig
+
