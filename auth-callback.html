@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Email Confirmation - DualMind</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Inria+Sans:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Inria+Sans:wght@400;700&display=swap"
+    rel="stylesheet">
   <style>
     * {
       margin: 0;
@@ -66,7 +68,9 @@
     }
 
     @keyframes spin {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     .message {
@@ -101,20 +105,16 @@
   </style>
   <script src="./config.js"></script>
 </head>
+
 <body>
   <div class="container">
     <div class="logo">
-      <svg class="logo-icon" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M0 1C0 0.447715 0.447715 0 1 0H8C8.55228 0 9 0.447715 9 1V8C9 8.55228 8.55228 9 8 9H1C0.447715 9 0 8.55228 0 8V1Z" fill="#577B87"/>
-        <path d="M12 1C12 0.447715 12.4477 0 13 0H20C20.5523 0 21 0.447715 21 1V8C21 8.55228 20.5523 9 20 9H13C12.4477 9 12 8.55228 12 8V1Z" fill="#4AABC2"/>
-        <path d="M12 13C12 12.4477 12.4477 12 13 12H20C20.5523 12 21 12.4477 21 13V20C21 20.5523 20.5523 21 20 21H13C12.4477 21 12 20.5523 12 20V13Z" fill="#CB9275"/>
-        <path d="M0 13C0 12.4477 0.447715 12 1 12H8C8.55228 12 9 12.4477 9 13V20C9 20.5523 8.55228 21 8 21H1C0.447715 21 0 20.5523 0 20V13Z" fill="#FDF4CD"/>
-      </svg>
+      <img src="./assets/logo.png" alt="DualMind Logo" class="logo-icon" style="width: 60px; height: auto;">
     </div>
 
     <h1 id="title">Confirming Email...</h1>
     <p id="message">Please wait while we confirm your email address.</p>
-    
+
     <div class="spinner" id="spinner"></div>
 
     <div id="status" style="display: none;">
@@ -130,7 +130,7 @@
     import { initializeSupabaseAuth } from './js/supabase-auth.js';
 
     const supabaseConfig = window.DUALMIND_CONFIG.supabase;
-    
+
     if (!supabaseConfig.url || supabaseConfig.url.includes('your-project')) {
       document.getElementById('title').textContent = 'Configuration Error';
       document.getElementById('message').innerHTML = 'Supabase not configured. <a class="link" href="./login.html">Back to login</a>';
@@ -144,12 +144,12 @@
     const message = document.getElementById('message');
     const status = document.getElementById('status');
     const countdown = document.getElementById('countdown');
-    
+
     let countdownValue = 5;
 
     // Check hash for email confirmation token
     const hash = window.location.hash;
-    
+
     if (hash && hash.includes('type=recovery')) {
       // Password reset flow
       handlePasswordReset();
@@ -177,10 +177,15 @@
         const redirectInterval = setInterval(() => {
           countdownValue--;
           countdown.textContent = countdownValue;
-          
+
           if (countdownValue <= 0) {
             clearInterval(redirectInterval);
-            window.location.href = './index.html';
+            // FORCE LOCALHOST PORT 8000
+            if (window.location.hostname === 'localhost') {
+              window.location.href = 'http://localhost:8000/index.html';
+            } else {
+              window.location.href = './index.html';
+            }
           }
         }, 1000);
       }, 1500);
@@ -195,7 +200,7 @@
       if (accessToken && type === 'recovery') {
         // Store the reset token and redirect to password reset page
         sessionStorage.setItem('resetToken', accessToken);
-        
+
         spinner.style.display = 'none';
         title.textContent = '🔐 Reset Your Password';
         message.textContent = 'You can now set a new password for your account.';
@@ -212,7 +217,7 @@
           </div>
         `;
 
-        window.resetPassword = async function() {
+        window.resetPassword = async function () {
           const newPassword = document.getElementById('newPassword').value;
           const confirmPassword = document.getElementById('confirmPassword').value;
 
@@ -253,4 +258,5 @@
     }
   </script>
 </body>
+
 </html>

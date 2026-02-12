@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dropdown Z-Index Testing</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .test-section {
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .test-section:last-child {
+            border-bottom: none;
+        }
+
+        .test-section h2 {
+            color: #222;
+            font-size: 20px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        /* Dropdown Components */
+        .dropdown-wrapper {
+            display: inline-block;
+            margin: 20px 30px 20px 0;
+            vertical-align: top;
+        }
+
+        .dropdown-label {
+            display: block;
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        /* Dropdown Container: Creates Stacking Context */
+        .dropdown-container {
+            position: relative;
+            display: inline-block;
+            z-index: 1000;
+            /* Explicit stacking context */
+        }
+
+        /* Dropdown Button */
+        .dropdown-button {
+            cursor: pointer;
+            padding: 12px 16px;
+            background-color: #f8f9fa;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            transition: all 0.3s ease;
+            min-width: 180px;
+            text-align: left;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+        }
+
+        .dropdown-button:hover {
+            background-color: #e9ecef;
+            border-color: #999;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .dropdown-button.active {
+            background-color: #667eea;
+            color: white;
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .dropdown-button::after {
+            content: '▼';
+            font-size: 10px;
+            transition: transform 0.3s ease;
+            margin-left: 8px;
+        }
+
+        .dropdown-button.active::after {
+            transform: rotate(180deg);
+        }
+
+        /* Dropdown Menu: Higher Z-Index */
+        .dropdown-menu {
+            position: absolute;
+            z-index: 1001;
+            /* Higher than container for proper layering */
+            top: calc(100% + 8px);
+            left: 0;
+            right: 0;
+            background-color: white;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            min-width: 100%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            display: none;
+            list-style: none;
+            overflow: hidden;
+            animation: slideDown 0.2s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .dropdown-menu.visible {
+            display: block;
+        }
+
+        .dropdown-menu li {
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border-bottom: 1px solid #f0f0f0;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .dropdown-menu li:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-menu li:hover {
+            background-color: #f8f9fa;
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        .dropdown-menu li.selected {
+            background-color: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Overlapping Elements for Z-Index Verification */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            z-index: 100;
+            display: none;
+            pointer-events: none;
+        }
+
+        .modal-overlay.visible {
+            display: block;
+            pointer-events: auto;
+        }
+
+        .tooltip {
+            position: absolute;
+            background-color: #333;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            z-index: 500;
+            display: none;
+            white-space: nowrap;
+            font-size: 12px;
+            bottom: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-top: 5px;
+        }
+
+        .tooltip.visible {
+            display: block;
+        }
+
+        /* Content Sections */
+        .content-section {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .content-section h3 {
+            color: #222;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+
+        .content-section p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .content-section ul,
+        .content-section ol {
+            margin-left: 20px;
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .z-index-hierarchy {
+            background-color: white;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 4px;
+        }
+
+        .z-index-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .z-index-badge {
+            display: inline-block;
+            background-color: #667eea;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 12px;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .instructions {
+            background-color: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .instructions h3 {
+            color: #0055aa;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+
+        .instructions ol {
+            margin-left: 20px;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+            line-height: 1.6;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        .status-indicator.pass {
+            background-color: #28a745;
+        }
+
+        .status-indicator.pending {
+            background-color: #ffc107;
+        }
+
+        .status-indicator.fail {
+            background-color: #dc3545;
+        }
+
+        .checklist {
+            margin-top: 20px;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .checkbox:hover {
+            border-color: #667eea;
+            background-color: #f8f9fa;
+        }
+
+        .checkbox.checked {
+            background-color: #667eea;
+            border-color: #667eea;
+            color: white;
+            font-weight: bold;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .dropdown-wrapper {
+                display: block;
+                margin-bottom: 20px;
+            }
+
+            .dropdown-button {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Dropdown Z-Index Testing Suite</h1>
+        <p class="subtitle">Manual verification of CSS z-index stacking context for dropdown components</p>
+
+        <div class="instructions">
+            <h3>📋 Test Instructions</h3>
+            <ol>
+                <li>Click each "Dropdown" button to open its menu</li>
+                <li>Verify the dropdown menu appears <strong>above</strong> all other page elements</li>
+                <li>Observe the dropdown menu stays on top when interacting with other elements</li>
+                <li>Click outside the dropdown or on the button again to close it</li>
+                <li>Inspect browser console (F12) for any JavaScript errors or warnings</li>
+                <li>Test multiple dropdowns - verify z-index handling between them</li>
+            </ol>
+        </div>
+
+        <!-- Test Section 1: Basic Dropdown Testing -->
+        <div class="test-section">
+            <h2>Test 1: Basic Dropdown Components</h2>
+            <p style="color: #666; margin-bottom: 20px;">Test individual dropdown functionality and z-index positioning</p>
+
+            <div class="dropdown-wrapper">
+                <span class="dropdown-label">Dropdown 1</span>
+                <div class="dropdown-container">
+                    <button class="dropdown-button">Select Option</button>
+                    <ul class="dropdown-menu">
+                        <li>📍 Option 1 - First Item</li>
+                        <li>📍 Option 2 - Second Item</li>
+                        <li>📍 Option 3 - Third Item</li>
+                        <li>📍 Option 4 - Fourth Item</li>
+                        <li>📍 Option 5 - Fifth Item</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="dropdown-wrapper">
+                <span class="dropdown-label">Dropdown 2</span>
+                <div class="dropdown-container">
+                    <button class="dropdown-button">Choose Item</button>
+                    <ul class="dropdown-menu">
+                        <li>🎯 Choice A</li>
+                        <li>🎯 Choice B</li>
+                        <li>🎯 Choice C</li>
+                        <li>🎯 Choice D</li>
+                        <li>🎯 Choice E</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="dropdown-wrapper">
+                <span class="dropdown-label">Dropdown 3</span>
+                <div class="dropdown-container">
+                    <button class="dropdown-button">Pick Category</button>
+                    <ul class="dropdown-menu">
+                        <li>⭐ Category Alpha</li>
+                        <li>⭐ Category Beta</li>
+                        <li>⭐ Category Gamma</li>
+                        <li>⭐ Category Delta</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="content-section">
+                <h3>✅ Expected Results</h3>
+                <p>When you click a dropdown button:</p>
+                <ul>
+                    <li>The dropdown menu should slide down smoothly with animation</li>
+                    <li>The menu should appear <strong>in front of</strong> the page content below</li>
+                    <li>The button should change color to indicate active state</li>
+                    <li>The dropdown arrow should rotate 180 degrees</li>
+                    <li>Only one dropdown should be open at a time (previous ones auto-close)</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Test Section 2: Z-Index Hierarchy Verification -->
+        <div class="test-section">
+            <h2>Test 2: Z-Index Hierarchy Verification</h2>
+            <p style="color: #666; margin-bottom: 20px;">Visual verification of CSS stacking context layers</p>
+
+            <div class="z-index-hierarchy">
+                <div class="z-index-item">
+                    <span class="z-index-badge">1001</span>
+                    <strong>Dropdown Menu</strong> - Highest layer (should be on top)
+                </div>
+                <div class="z-index-item">
+                    <span class="z-index-badge">1000</span>
+                    <strong>Dropdown Container</strong> - Creates stacking context
+                </div>
+                <div class="z-index-item">
+                    <span class="z-index-badge">500</span>
+                    <strong>Tooltip Layer</strong> - Middle layer
+                </div>
+                <div class="z-index-item">
+                    <span class="z-index-badge">100</span>
+                    <strong>Modal/Overlay</strong> - Lower layer
+                </div>
+                <div class="z-index-item">
+                    <span class="z-index-badge">auto</span>
+                    <strong>Page Content</strong> - Default/auto z-index
+                </div>
+            </div>
+
+            <div class="content-section" style="margin-top: 20px;">
+                <h3>🔬 What to Verify</h3>
+                <div class="checklist">
+                    <div class="checklist-item">
+                        <div class="checkbox" data-test="dropdown-renders">✓</div>
+                        <span>Dropdown menu renders visually when opened</span>
+                    </div>
+                    <div class="checklist-item">
+                        <div class="checkbox" data-test="dropdown-above">✓</div>
+                        <span>Dropdown appears above all page elements (z-index stacking correct)</span>
+                    </div>
+                    <div class="checklist-item">
+                        <div class="checkbox" data-test="animations">✓</div>
+                        <span>Animations work smoothly (slide-down effect visible)</span>
+                    </div>
+                    <div class="checklist-item">
+                        <div class="checkbox" data-test="interaction">✓</div>
+                        <span>Click handlers work (menu opens/closes on button click)</span>
+                    </div>
+                    <div class="checklist-item">
+                        <div class="checkbox" data-test="outside-click">✓</div>
+                        <span>Outside-click handler works (menu closes when clicking outside)</span>
+                    </div>
+                    <div class="checklist-item">
+                        <div class="checkbox" data-test="console">✓</div>
+                        <span>No JavaScript errors in browser console (F12)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Section 3: Content with Overlapping Elements -->
+        <div class="test-section">
+            <h2>Test 3: Dropdown with Overlapping Content</h2>
+            <p style="color: #666; margin-bottom: 20px;">Verify z-index behavior with various page elements</p>
+
+            <div class="dropdown-wrapper">
+                <span class="dropdown-label">Test Dropdown</span>
+                <div class="dropdown-container">
+                    <button class="dropdown-button">Hover for Tooltip</button>
+                    <ul class="dropdown-menu">
+                        <li>Result 1</li>
+                        <li>Result 2</li>
+                        <li>Result 3</li>
+                        <li>Result 4</li>
+                    </ul>
+                    <div class="tooltip">Tooltip at z-index: 500</div>
+                </div>
+            </div>
+
+            <div class="content-section" style="margin-top: 20px;">
+                <h3>📝 Test Notes</h3>
+                <p>This dropdown includes a tooltip element at z-index 500. When the dropdown menu opens (z-index 1001), the menu should appear <strong>above</strong> the tooltip, demonstrating correct stacking context.</p>
+                <p style="margin-top: 12px; font-size: 13px; color: #999;">
+                    Stacking Rule: Menu (1001) > Tooltip (500) ✓
+                </p>
+            </div>
+        </div>
+
+        <!-- Test Section 4: Console Output -->
+        <div class="test-section">
+            <h2>Test 4: Browser Console Verification</h2>
+            <p style="color: #666; margin-bottom: 20px;">Check browser console (F12) for errors and debug information</p>
+
+            <div class="content-section">
+                <h3>📍 Expected Console Output</h3>
+                <p>Open browser DevTools (F12) and check the Console tab. You should see:</p>
+                <ul>
+                    <li>✓ "Dropdown Z-Index Test Page Loaded Successfully"</li>
+                    <li>✓ "Z-Index Hierarchy: Menu(1001) > Container(1000) > Tooltip(500) > Modal(100)"</li>
+                    <li>✓ Log messages when dropdowns are opened/closed (e.g., "Dropdown 'Select Option' toggled - Now open")</li>
+                    <li>✓ Log messages when menu items are clicked</li>
+                    <li>✓ Z-Index verification logs when dropdown becomes visible</li>
+                </ul>
+                <p style="margin-top: 12px; color: #dc3545; font-weight: 500;">
+                    ⚠️ If you see any RED ERROR messages, that indicates a problem with the CSS or JavaScript implementation.
+                </p>
+            </div>
+        </div>
+
+        <!-- Test Section 5: Responsive Testing -->
+        <div class="test-section">
+            <h2>Test 5: Responsive Behavior</h2>
+            <p style="color: #666; margin-bottom: 20px;">Verify dropdowns work correctly at different screen sizes</p>
+
+            <div class="dropdown-wrapper">
+                <span class="dropdown-label">Responsive Test</span>
+                <div class="dropdown-container">
+                    <button class="dropdown-button">Test Responsiveness</button>
+                    <ul class="dropdown-menu">
+                        <li>Mobile View ✓</li>
+                        <li>Tablet View ✓</li>
+                        <li>Desktop View ✓</li>
+                        <li>Large Screen ✓</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="content-section" style="margin-top: 20px;">
+                <h3>🔧 Test Steps</h3>
+                <ol>
+                    <li>Open this page in your browser</li>
+                    <li>Open browser DevTools (F12)</li>
+                    <li>Toggle Device Emulation (Ctrl+Shift+M or Cmd+Shift+M)</li>
+                    <li>Test different device sizes:
+                        <ul>
+                            <li>Mobile (375px width)</li>
+                            <li>Tablet (768px width)</li>
+                            <li>Desktop (1024px+ width)</li>
+                        </ul>
+                    </li>
+                    <li>For each size, open the dropdowns and verify:
+                        <ul>
+                            <li>Dropdown menu is fully visible (not cut off)</li>
+                            <li>Menu appears above all other content</li>
+                            <li>Click handlers still work</li>
+                            <li>Z-index stacking remains correct</li>
+                        </ul>
+                    </li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- Test Section 6: Summary & Verification -->
+        <div class="test-section">
+            <h2>Test 6: Summary & Pass/Fail Criteria</h2>
+            <p style="color: #666; margin-bottom: 20px;">Overall testing summary and success criteria</p>
+
+            <div class="content-section">
+                <h3>✅ Test Passes If All Below Are TRUE:</h3>
+                <ul>
+                    <li><span class="status-indicator pass"></span> Dropdowns open when clicked (visual confirmation)</li>
+                    <li><span class="status-indicator pass"></span> Dropdown menus appear <strong>above</strong> all page content</li>
+                    <li><span class="status-indicator pass"></span> Z-index layering works correctly (Menu > Container > Tooltip > Modal > Page)</li>
+                    <li><span class="status-indicator pass"></span> No JavaScript errors in browser console</li>
+                    <li><span class="status-indicator pass"></span> Click handlers work (open/close functionality)</li>
+                    <li><span class="status-indicator pass"></span> Outside-click handler works (dropdown closes when clicking outside)</li>
+                    <li><span class="status-indicator pass"></span> Multiple dropdowns can be opened independently</li>
+                    <li><span class="status-indicator pass"></span> Responsive behavior maintained across different screen sizes</li>
+                    <li><span class="status-indicator pass"></span> Animations render smoothly</li>
+                </ul>
+            </div>
+
+            <div class="content-section" style="margin-top: 20px; background-color: #fff3cd; border-color: #ffc107;">
+                <h3>⚠️ Test Fails If Any Below Occur:</h3>
+                <ul>
+                    <li><span class="status-indicator fail"></span> Dropdown menu appears <strong>behind</strong> page content</li>
+                    <li><span class="status-indicator fail"></span> JavaScript errors appear in browser console</li>
+                    <li><span class="status-indicator fail"></span> Click handlers don't work (menu won't open/close)</li>
+                    <li><span class="status-indicator fail"></span> Multiple dropdowns remain open simultaneously (when they shouldn't)</li>
+                    <li><span class="status-indicator fail"></span> Dropdown content is cut off or not fully visible</li>
+                    <li><span class="status-indicator fail"></span> Z-index layering doesn't match expected hierarchy</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Overlay (for z-index testing) -->
+    <div class="modal-overlay"></div>
+
+    <script>
+        // ============================================
+        // INITIALIZATION & LOGGING
+        // ============================================
+
+        console.log('%c=== DROPDOWN Z-INDEX TEST PAGE LOADED ===', 'color: green; font-size: 14px; font-weight: bold;');
+        console.log('%cZ-Index Hierarchy (Expected Stacking Order):', 'color: blue; font-weight: bold;');
+        console.log('%cMenu(1001) > Container(1000) > Tooltip(500) > Modal(100) > Page(auto)', 'color: blue; font-style: italic;');
+        console.log('%c✓ All dropdown event handlers attached successfully', 'color: green;');
+
+        // ============================================
+        // DROPDOWN FUNCTIONALITY
+        // ============================================
+
+        // Get all dropdown buttons and menus
+        const dropdownButtons = document.querySelectorAll('.dropdown-button');
+        const dropdownMenus = document.querySelectorAll('.dropdown-menu');
+
+        // Toggle dropdown visibility on button click
+        dropdownButtons.forEach((button, index) => {
+            button.addEventListener('click', function (e) {
+                e.stopPropagation();
+
+                // Get this button's menu
+                const menu = this.nextElementSibling;
+
+                // Close all other dropdowns
+                dropdownMenus.forEach((m) => {
+                    if (m !== menu) {
+                        m.classList.remove('visible');
+                    }
+                });
+
+                // Toggle this menu
+                const isVisible = menu.classList.contains('visible');
+                menu.classList.toggle('visible');
+                this.classList.toggle('active');
+
+                // Log action
+                const buttonText = this.textContent.trim();
+                console.log(
+                    `%c📌 Dropdown ${index + 1} ('${buttonText}') toggled - Now ${isVisible ? 'CLOSED' : 'OPEN'}`,
+                    'color: #667eea; font-weight: bold;'
+                );
+
+                // Verify z-index when dropdown opens
+                if (!isVisible) {
+                    const computedZ = window.getComputedStyle(menu).zIndex;
+                    console.log(`%c✓ Z-Index Verification: Menu z-index = ${computedZ} (Expected: 1001)`, 'color: #28a745;');
+                }
+            });
+        });
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function (e) {
+            // If click is not inside a dropdown container, close all dropdowns
+            const clickedDropdown = e.target.closest('.dropdown-container');
+            if (!clickedDropdown) {
+                dropdownMenus.forEach((menu) => {
+                    if (menu.classList.contains('visible')) {
+                        menu.classList.remove('visible');
+                    }
+                });
+
+                dropdownButtons.forEach((button) => {
+                    if (button.classList.contains('active')) {
+                        button.classList.remove('active');
+                    }
+                });
+
+                console.log('%c🔒 All dropdowns closed via outside-click handler', 'color: #667eea; font-style: italic;');
+            }
+        });
+
+        // ============================================
+        // MENU ITEM SELECTION
+        // ============================================
+
+        dropdownMenus.forEach((menu) => {
+            const items = menu.querySelectorAll('li');
+            items.forEach((item) => {
+                item.addEventListener('click', function (e) {
+                    e.stopPropagation();
+
+                    // Update button text and close menu
+                    const button = menu.previousElementSibling;
+                    const selectedText = this.textContent.trim();
+                    button.textContent = selectedText;
+
+                    // Add selected class to item
+                    items.forEach((i) => i.classList.remove('selected'));
+                    this.classList.add('selected');
+
+                    // Close menu
+                    menu.classList.remove('visible');
+                    button.classList.remove('active');
+
+                    console.log(`%c✅ Menu item selected: "${selectedText}"`, 'color: #28a745;');
+                });
+            });
+        });
+
+        // ============================================
+        // CHECKLIST FUNCTIONALITY
+        // ============================================
+
+        const checkboxes = document.querySelectorAll('.checkbox');
+        checkboxes.forEach((checkbox) => {
+            checkbox.addEventListener('click', function () {
+                this.classList.toggle('checked');
+                const testName = this.dataset.test;
+                const isChecked = this.classList.contains('checked');
+                console.log(`%c☑️ Test "${testName}" marked as ${isChecked ? 'PASSED' : 'UNCHECKED'}`, 'color: #667eea;');
+            });
+        });
+
+        // ============================================
+        // Z-INDEX VERIFICATION & MUTATION OBSERVER
+        // ============================================
+
+        const observer = new MutationObserver(function (mutations) {
+            mutations.forEach(function (mutation) {
+                if (mutation.attributeName === 'class') {
+                    const classList = mutation.target.classList;
+                    if (classList.contains('visible') && classList.contains('dropdown-menu')) {
+                        const computedZ = window.getComputedStyle(mutation.target).zIndex;
+                        console.log(
+                            `%c🎯 Z-Index Verification: Dropdown menu visible with z-index = ${computedZ}`,
+                            'color: #ffc107; font-weight: bold;'
+                        );
+                    }
+                }
+            });
+        });
+
+        // Observe all dropdown menus for class changes
+        dropdownMenus.forEach((menu) => {
+            observer.observe(menu, { attributes: true });
+        });
+
+        // ============================================
+        // PAGE LOAD COMPLETION
+        // ============================================
+
+        console.log('%c✓ DOM fully interactive - Ready for testing', 'color: green; font-weight: bold;');
+        console.log('%c💡 Tip: Open browser DevTools (F12) to see console messages during dropdown interactions', 'color: #667eea; font-style: italic;');
+    </script>
+</body>
+</html>

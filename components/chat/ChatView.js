@@ -38,7 +38,7 @@ export class ChatView {
   constructor(containerId) {
     this.container = document.getElementById(containerId);
     this._onClick = null;
-    this._shouldAutoScroll = true;
+    this._shouldAutoScroll = true; // Always auto-scroll by default
     this._isUserScrolling = false;
     this._responseModalState = {
       open: false,
@@ -160,6 +160,7 @@ export class ChatView {
     if (!this.container) return;
     const { mode } = this.state;
 
+    // Save scroll position if requested
     let scrollPosition = 0;
     const scrollContainer = this.container.parentElement;
     if (preserveScroll && scrollContainer) {
@@ -172,18 +173,24 @@ export class ChatView {
       </div>
     `;
 
+    // Restore scroll position if requested
     if (preserveScroll && scrollContainer && scrollPosition > 0) {
+      // Use requestAnimationFrame to ensure DOM is updated
       requestAnimationFrame(() => {
         scrollContainer.scrollTop = scrollPosition;
       });
     } else if (!preserveScroll) {
+      // If not preserving scroll, auto-scroll to bottom for new content
       requestAnimationFrame(() => {
-        this.scrollToBottom(true);
+        this.scrollToBottom(true); // Force scroll to bottom
       });
     }
+
+    // Reattach model selector listeners if rendering empty state
+    requestAnimationFrame(() => {
+      this.attachModelSelectorListeners();
+    });
   }
-
-
 
   renderEmptyArena() {
     const models = window._DUALMIND_MODELS || [];
@@ -218,14 +225,14 @@ export class ChatView {
 
     // ARENA/SIDE-BY-SIDE MODE: Model Selection
     return `
-      <div class="chat-empty glass-panel">
+      <div class="chat-empty glass-panel" style="pointer-events: auto;">
         <div class="chat-empty-icon">${Icons.splitRectangle ? Icons.splitRectangle('white', 32) : '◫'}</div>
         <div class="chat-empty-title">Side-by-Side Comparison</div>
         
-        <div class="model-selector-grid">
-          <div class="model-selector-column">
+        <div class="model-selector-grid" style="pointer-events: auto;">
+          <div class="model-selector-column" style="pointer-events: auto;">
             <label class="model-label">Left Model</label>
-            <select id="model-select-left" class="model-select">
+            <select id="model-select-left" class="model-select" style="width: 100%; padding: 12px 16px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; color: rgba(255,255,255,0.95); font-size: 14px; font-weight: 500; cursor: pointer; color-scheme: dark;">
               <option value="">🎲 Random</option>
               ${models.map(m => `
                 <option value="${m.modelId}" ${savedLeft === m.modelId ? 'selected' : ''}>
@@ -240,9 +247,9 @@ export class ChatView {
             <button id="random-pair-btn" class="secondary-btn">🎲 Random Pair</button>
           </div>
           
-          <div class="model-selector-column">
+          <div class="model-selector-column" style="pointer-events: auto;">
             <label class="model-label">Right Model</label>
-            <select id="model-select-right" class="model-select">
+            <select id="model-select-right" class="model-select" style="width: 100%; padding: 12px 16px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; color: rgba(255,255,255,0.95); font-size: 14px; font-weight: 500; cursor: pointer; color-scheme: dark;">
               <option value="">🎲 Random</option>
               ${models.map(m => `
                 <option value="${m.modelId}" ${savedRight === m.modelId ? 'selected' : ''}>
@@ -537,14 +544,13 @@ export class ChatView {
       const savedModel = localStorage.getItem('direct.model') || '';
 
       return `
-        <div class="chat-empty glass-panel">
+        <div class="chat-empty glass-panel" style="pointer-events: auto;">
           <div class="chat-empty-icon">${Icons.chat('white', 32)}</div>
-          <div class="chat-empty-title">Direct Chat</div>
-          <p class="chat-empty-subtitle">Have a conversation with an AI model</p>
+          <div class="chat-empty-title">Direct Chat Mode</div>
           
-          <div class="direct-model-selector">
-            <label class="model-label">Choose AI Model</label>
-            <select id="model-select-direct" class="model-select">
+          <div class="direct-model-selector" style="pointer-events: auto;">
+            <label class="model-label">Choose Your Model</label>
+            <select id="model-select-direct" class="model-select" style="width: 100%; padding: 12px 16px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; color: rgba(255,255,255,0.95); font-size: 14px; font-weight: 500; cursor: pointer; color-scheme: dark;">
               <option value="">🎲 Random Model</option>
               ${models.map(m => {
         const id = String(m.modelId ?? m.model_id ?? '');
@@ -558,34 +564,24 @@ export class ChatView {
             </select>
           </div>
           
-          <p class="model-selector-hint">Choose a model and start your conversation below</p>
+          <p class="model-selector-hint">Select a model above, then start chatting</p>
         </div>
       `;
     }
 
     return `
       <div class="direct-thread">
-        ${msgs.map((m, index) => {
+        ${msgs.map((m) => {
       const role = m.role === 'user' ? 'user' : 'assistant';
-      const streaming = !!m.streaming;
       return `
-            <div class="direct-msg ${role} ${streaming ? 'streaming' : ''}">
+            <div class="direct-msg ${role}">
               <div class="direct-bubble glass-panel">
-                <div class="direct-meta">
-                  ${role === 'user' 
-                    ? '<span class="direct-avatar">You</span>' 
-                    : `<span class="direct-avatar assistant-avatar">${escapeHtml(m.modelName || 'AI')}</span>`
-                  }
-                </div>
-                <div class="direct-text markdown-body">
-                  ${role === 'user' ? escapeHtml(m.text || '') : this.renderMarkdown(m.text || '')}
-                  ${streaming ? '<span class="stream-caret" aria-hidden="true"></span>' : ''}
-                </div>
+                <div class="direct-meta">${role === 'user' ? 'You' : escapeHtml(m.modelName || 'Assistant')}</div>
+                <div class="direct-text markdown-body">${role === 'user' ? escapeHtml(m.text || '') : this.renderMarkdown(m.text || '')}</div>
               </div>
             </div>
           `;
     }).join('')}
-        <div id="chat-scroll-sentinel" class="scroll-sentinel" aria-hidden="true"></div>
       </div>
     `;
   }
@@ -620,6 +616,7 @@ export class ChatView {
         const hiddenSide = toggleBtn.getAttribute('data-side');
         const turn = (this.state.turns || []).find((t) => String(t.id) === String(turnId));
         if (turn) {
+          // Toggle the hidden response visibility
           turn._showHidden = !turn._showHidden;
           this.render();
         }
@@ -632,46 +629,6 @@ export class ChatView {
         const choice = voteBtn.getAttribute('data-vote');
         if (!voteBtn.disabled && turnId && choice) {
           document.dispatchEvent(new CustomEvent('vote-submit', { detail: { turnId, choice } }));
-        }
-        return;
-      }
-
-      // SWAP BUTTON
-      if (e.target.id === 'swap-models-btn' || e.target.closest('#swap-models-btn')) {
-        console.log('[v0] Swap button clicked');
-        const leftSelect = this.container.querySelector('#model-select-left');
-        const rightSelect = this.container.querySelector('#model-select-right');
-        
-        if (leftSelect && rightSelect) {
-          const temp = leftSelect.value;
-          leftSelect.value = rightSelect.value;
-          rightSelect.value = temp;
-          localStorage.setItem('battle.model.left', leftSelect.value);
-          localStorage.setItem('battle.model.right', rightSelect.value);
-          console.log('[v0] Models swapped:', leftSelect.value, rightSelect.value);
-        }
-        return;
-      }
-
-      // RANDOM PAIR BUTTON
-      if (e.target.id === 'random-pair-btn' || e.target.closest('#random-pair-btn')) {
-        console.log('[v0] Random pair button clicked');
-        const leftSelect = this.container.querySelector('#model-select-left');
-        const rightSelect = this.container.querySelector('#model-select-right');
-        const models = window._DUALMIND_MODELS || [];
-
-        if (models.length >= 2 && leftSelect && rightSelect) {
-          const shuffled = [...models].sort(() => Math.random() - 0.5);
-          const left = shuffled[0].modelId;
-          const right = shuffled[1].modelId;
-          
-          leftSelect.value = left;
-          rightSelect.value = right;
-          
-          localStorage.setItem('battle.model.left', left);
-          localStorage.setItem('battle.model.right', right);
-          
-          console.log('[v0] Random pair selected:', left, right);
         }
         return;
       }
@@ -689,6 +646,7 @@ export class ChatView {
         btn.classList.add('copied');
         window.setTimeout(() => btn.classList.remove('copied'), 900);
       } catch {
+        // fallback
         const ta = document.createElement('textarea');
         ta.value = text;
         document.body.appendChild(ta);
@@ -701,28 +659,89 @@ export class ChatView {
     // Event delegation for clicks
     this.container.addEventListener('click', this._onClick);
 
-    // Add change listener for model selectors
-    if (this._onChange) this.container.removeEventListener('change', this._onChange);
-    
-    this._onChange = (e) => {
-      if (e.target.id === 'model-select-left') {
-        console.log('[v0] Left model changed to:', e.target.value);
-        localStorage.setItem('battle.model.left', e.target.value);
-      }
-      if (e.target.id === 'model-select-right') {
-        console.log('[v0] Right model changed to:', e.target.value);
-        localStorage.setItem('battle.model.right', e.target.value);
-      }
-      if (e.target.id === 'model-select-direct') {
-        console.log('[v0] Direct model changed to:', e.target.value);
-        localStorage.setItem('direct.model', e.target.value);
-      }
-    };
-
-    this.container.addEventListener('change', this._onChange);
+    // Initial attachment for model selectors (since they are rendered immediately in empty state)
+    this.attachModelSelectorListeners();
   }
 
+  attachModelSelectorListeners() {
+    if (!this.container) return;
 
+    // Model Selectors
+    const leftSelect = this.container.querySelector('#model-select-left');
+    const rightSelect = this.container.querySelector('#model-select-right');
+    const directSelect = this.container.querySelector('#model-select-direct');
+
+    // Force dropdown to open on click - critical fix
+    [leftSelect, rightSelect, directSelect].forEach(select => {
+      if (!select) return;
+      
+      // Remove any existing handlers first
+      const newSelect = select.cloneNode(true);
+      select.parentNode.replaceChild(newSelect, select);
+      
+      // Add fresh click handler to force open
+      newSelect.addEventListener('click', (e) => {
+        console.log('Select clicked:', e.target.id);
+        // Ensure the select is focused
+        e.target.focus();
+      });
+      
+      // Ensure mousedown doesn't get prevented
+      newSelect.addEventListener('mousedown', (e) => {
+        e.stopPropagation();
+      });
+    });
+
+    // Re-query after replacement
+    const freshLeftSelect = this.container.querySelector('#model-select-left');
+    const freshRightSelect = this.container.querySelector('#model-select-right');
+    const freshDirectSelect = this.container.querySelector('#model-select-direct');
+
+    const handleModelChange = () => {
+      const leftVal = freshLeftSelect?.value || '';
+      const rightVal = freshRightSelect?.value || '';
+
+      localStorage.setItem('battle.model.left', leftVal);
+      localStorage.setItem('battle.model.right', rightVal);
+      console.log('Saved model selection:', { left: leftVal, right: rightVal });
+    };
+
+    freshLeftSelect?.addEventListener('change', handleModelChange);
+    freshRightSelect?.addEventListener('change', handleModelChange);
+    freshDirectSelect?.addEventListener('change', (e) => {
+      localStorage.setItem('direct.model', e.target.value);
+      console.log('Saved direct model:', e.target.value);
+    });
+
+    // Swap Button
+    const swapBtn = this.container.querySelector('#swap-models-btn');
+    swapBtn?.addEventListener('click', () => {
+      if (freshLeftSelect && freshRightSelect) {
+        const temp = freshLeftSelect.value;
+        freshLeftSelect.value = freshRightSelect.value;
+        freshRightSelect.value = temp;
+        handleModelChange();
+      }
+    });
+
+    // Random Pair Button
+    const randomBtn = this.container.querySelector('#random-pair-btn');
+    randomBtn?.addEventListener('click', () => {
+      if (freshLeftSelect && freshRightSelect) {
+        const optionsLeft = Array.from(freshLeftSelect.options).filter(o => o.value);
+        const optionsRight = Array.from(freshRightSelect.options).filter(o => o.value);
+
+        if (optionsLeft.length > 0 && optionsRight.length > 0) {
+          const randLeft = optionsLeft[Math.floor(Math.random() * optionsLeft.length)].value;
+          const randRight = optionsRight[Math.floor(Math.random() * optionsRight.length)].value;
+
+          freshLeftSelect.value = randLeft;
+          freshRightSelect.value = randRight;
+          handleModelChange();
+        }
+      }
+    });
+  }
 
   /**
    * Updates the response content with full text (re-renders Markdown).

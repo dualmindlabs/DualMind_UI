@@ -6,7 +6,7 @@ const isLocalhost =
   window.location.hostname === '127.0.0.1' ||
   window.location.hostname === '::1';
 
-const BACKEND_URL = isLocalhost ? 'http://localhost:5079' : 'https://api.dualmindlab.tech';
+const BACKEND_URL = isLocalhost ? 'http://localhost:5079' : 'https://dualmind-arena-cgh0cvdfhkbgatba.uaenorth-01.azurewebsites.net';
 
 // Single API base URL used by UI for all fetch calls
 window.DUALMIND_CONFIG.apiBaseUrl = BACKEND_URL;

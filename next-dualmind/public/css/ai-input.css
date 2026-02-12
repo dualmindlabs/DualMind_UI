@@ -1,0 +1,462 @@
+/* ========================================
+   Advanced AI Input Component
+   Converted from SCSS to regular CSS
+   ======================================== */
+
+.AI-Input {
+  --primary-color: #2e2e2e;
+  --neutral-color: #d3d3d3;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  position: relative;
+  width: 100%;
+  margin: 0 auto;
+  user-select: none;
+  z-index: -3;
+}
+
+#voice {
+  display: none;
+}
+
+#voice + label {
+  margin-right: 5rem;
+  transition: all 0.2s ease-in-out;
+  position: absolute;
+  bottom: 0;
+  padding: 1rem;
+  background-color: var(--primary-color);
+  border-radius: 50%;
+  opacity: 0;
+  cursor: pointer;
+  pointer-events: none;
+  transform: translateY(100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#voice:checked + label {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: all;
+  transition: all 0.2s 0.2s ease-in-out;
+}
+
+#voice:checked ~ .chat-marquee {
+  opacity: 0;
+  transform: translateY(-300%) scale(0.9);
+}
+
+#voice:checked ~ .chat-container {
+  width: 10rem;
+  height: 10rem;
+  top: -6em;
+  border-radius: 30% 45% 30% 40%;
+  animation: rotate 10s 0.2s linear infinite;
+}
+
+#voice:checked ~ .chat-container > .chat-wrapper {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#voice:checked ~ .chat-container:active {
+  scale: 0.9;
+}
+
+#mic {
+  display: none;
+}
+
+#mic + label {
+  margin-left: 5rem;
+  width: 62px;
+  aspect-ratio: 1 / 1;
+  transition: all 0.2s ease-in-out;
+  position: absolute;
+  bottom: 0;
+  padding: 1rem;
+  background-color: var(--primary-color);
+  border-radius: 50%;
+  opacity: 0;
+  cursor: pointer;
+  pointer-events: none;
+  transform: translateY(100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#mic + label svg {
+  position: absolute;
+  transition: all 0.2s ease-in-out;
+}
+
+#mic + label svg:first-of-type {
+  opacity: 1;
+}
+
+#mic + label svg:last-of-type {
+  opacity: 0;
+  fill: rgba(255, 0, 0, 0.5);
+}
+
+#mic:checked + label {
+  background-color: rgba(255, 0, 0, 0.1);
+}
+
+#mic:checked + label svg:first-of-type {
+  opacity: 0;
+}
+
+#mic:checked + label svg:last-of-type {
+  opacity: 1;
+}
+
+.chat-marquee {
+  --gap: 10px;
+  --chip-w: 140px;
+  --chip-h: 34px;
+  --chip-count: 7;
+
+  /* Exactly 4 chips visible */
+  width: min(calc((var(--chip-w) * 4) + (var(--gap) * 3)), 100%);
+  max-width: 600px;
+  margin: 0 auto 10px;
+  overflow: hidden;
+  mask-image: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 0),
+    rgba(0, 0, 0, 1) 12%,
+    rgba(0, 0, 0, 1) 88%,
+    rgba(0, 0, 0, 0)
+  );
+}
+
+.chat-marquee-track {
+  display: flex;
+  gap: var(--gap);
+  width: max-content;
+  animation: dm-chat-marquee 22s linear infinite;
+}
+
+.chat-marquee:hover .chat-marquee-track {
+  animation-play-state: paused;
+}
+
+.chat-chip {
+  width: var(--chip-w);
+  height: var(--chip-h);
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(15, 17, 25, 0.55);
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform 0.12s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.chat-chip:hover {
+  background: rgba(15, 17, 25, 0.75);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.chat-chip:active {
+  transform: scale(0.98);
+}
+.chat-container {
+  position: relative;
+  top: 0;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  background: var(--primary-color);
+  border: 0.2rem solid rgba(255, 255, 255, 0.3);
+  border-radius: 1rem;
+  overflow: hidden;
+  transition: all 0.5s cubic-bezier(0.3, 1.5, 0.6, 1);
+  z-index: -2;
+}
+
+.chat-container::before {
+  content: "";
+  position: absolute;
+  top: -9rem;
+  left: -6rem;
+  width: 15rem;
+  height: 15rem;
+  background: radial-gradient(
+    circle,
+    #fff 10%,
+    rgba(255, 255, 255, 0.1) 20%,
+    var(--primary-color) 100%
+  );
+  filter: blur(10px);
+  border-radius: 50%;
+  z-index: -1;
+  transition: all 1s cubic-bezier(0.3, 1.5, 0.6, 1);
+}
+
+.chat-container:focus-within::before {
+  top: -6rem;
+  left: 50%;
+  filter: blur(50px);
+}
+
+.chat-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  padding: 1rem;
+  z-index: 200;
+  transition: all 0.2s ease-in-out;
+}
+
+.AI-Input #chat-input {
+  padding: 0.6rem;
+  width: 100%;
+  min-height: 3rem;
+  max-height: 10rem;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 16px;
+  line-height: 1.5;
+  outline: none;
+  resize: none;
+  animation: typing-effect 3s steps(30, end) infinite alternate;
+}
+
+.AI-Input #chat-input::placeholder {
+  color: var(--neutral-color);
+}
+
+.AI-Input #chat-input::-webkit-scrollbar {
+  width: 0.7rem;
+  border-radius: 9999px;
+}
+
+.AI-Input #chat-input::-webkit-scrollbar-thumb {
+  background-color: var(--primary-color);
+  border: 0.2rem solid var(--neutral-color);
+  border-radius: 9999px;
+}
+
+.AI-Input #chat-input::-webkit-scrollbar-track {
+  background-color: var(--neutral-color);
+  border-radius: 9999px;
+}
+
+.button-bar {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.5rem;
+  width: 100%;
+}
+
+.left-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.left-buttons > label {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 0.2rem solid rgba(255, 255, 255, 0.05);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out, transform 0.1s ease-in-out;
+}
+
+.left-buttons > label:hover {
+  box-shadow: 0.2rem 0.2rem 0.5rem 0.2rem rgba(0, 0, 0, 0.2);
+}
+
+.left-buttons > label:active {
+  transform: scale(0.9);
+}
+
+#appendix,
+#camera,
+#photos,
+#files {
+  display: none;
+}
+
+#appendix:checked ~ #appendix-bar {
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
+  pointer-events: all;
+  transition: all 0.2s ease-in-out;
+}
+
+#appendix:checked ~ #appendix-bar > label,
+#appendix:checked ~ #appendix-bar > button {
+  opacity: 1;
+  transform: translate(0);
+}
+
+#appendix-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 1rem;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 100;
+  transition: all 0.2s 0.4s ease-in-out;
+}
+
+#appendix-bar > label {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  background-color: var(--neutral-color);
+  border-radius: 50%;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.2s ease-in-out;
+  transform: translate(-50%, 200%);
+}
+
+#appendix-bar > :nth-child(1) {
+  transition-delay: 0.1s;
+}
+
+#appendix-bar > :nth-child(2) {
+  transition-delay: 0.2s;
+}
+
+#appendix-bar > :nth-child(3) {
+  transition-delay: 0.3s;
+}
+
+#appendix-bar > :nth-child(4) {
+  transition-delay: 0.4s;
+}
+
+#search {
+  display: none;
+}
+
+#search:checked + label {
+  border: 2px solid lightskyblue;
+}
+
+#search:checked + label > svg {
+  fill: lightskyblue;
+}
+
+.right-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.right-buttons > label,
+.right-buttons > button {
+  position: relative;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.right-buttons > label:hover,
+.right-buttons > button:hover {
+  transform: translateY(-10%) scale(1.1);
+}
+
+.right-buttons > label {
+  top: 0.5rem;
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(0);
+    border-radius: 30% 45% 30% 40%;
+  }
+  25% {
+    transform: rotate(90deg);
+    border-radius: 40% 30% 45% 30%;
+  }
+  50% {
+    transform: rotate(180deg);
+    border-radius: 45% 30% 40% 30%;
+  }
+  75% {
+    transform: rotate(270deg);
+    border-radius: 30% 40% 30% 45%;
+  }
+  100% {
+    transform: rotate(360deg);
+    border-radius: 30% 45% 30% 40%;
+  }
+}
+
+@keyframes dm-chat-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-1 * (var(--chip-count) * var(--chip-w) + ((var(--chip-count) - 1) * var(--gap)))));
+  }
+}
+
+@keyframes typing-effect {
+  from {
+    opacity: 0.7;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Integration with existing app styles */
+.AI-Input {
+  position: relative;
+  z-index: 10;
+}
+
+.chat-container {
+  z-index: 10;
+}
+
+.chat-wrapper {
+  z-index: 11;
+}
+
+/* Voice/Mic button animations */
+#voice:checked ~ label:first-of-type,
+#mic:checked + label {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: all;
+}
+
+#voice:checked ~ label:last-of-type {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: all;
+  transition: all 0.2s 0.1s ease-in-out;
+}

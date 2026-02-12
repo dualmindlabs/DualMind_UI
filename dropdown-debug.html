@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dropdown Debug - DualMind</title>
+    <style>
+        body { background: #0b0c15; color: white; font-family: sans-serif; padding: 20px; }
+        .debug-info { background: rgba(0,0,0,0.7); padding: 15px; margin: 10px 0; border-radius: 8px; }
+        .select-container { margin: 20px 0; padding: 20px; border: 2px dashed #4AABC2; }
+        select { 
+            width: 100%; 
+            padding: 12px; 
+            font-size: 16px;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            color-scheme: dark;
+        }
+        .fix-btn {
+            background: #4AABC2;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .log { 
+            font-family: monospace; 
+            font-size: 12px; 
+            background: rgba(0,0,0,0.5); 
+            padding: 10px; 
+            margin: 5px 0;
+            border-left: 3px solid #4AABC2;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .success { border-left-color: #4ade80; }
+        .error { border-left-color: #ef4444; }
+    </style>
+</head>
+<body>
+    <h1>🔧 DualMind Dropdown Debugger</h1>
+    
+    <div class="debug-info">
+        <h3>Test Select - Try clicking this:</h3>
+        <div class="select-container">
+            <select id="debug-select">
+                <option value="">🎲 Select an option</option>
+                <option value="1">Option 1 - GPT-4</option>
+                <option value="2">Option 2 - Claude 3</option>
+                <option value="3">Option 3 - Gemini</option>
+            </select>
+        </div>
+        <div id="select-log" class="log"></div>
+    </div>
+
+    <div class="debug-info">
+        <h3>Quick Fixes:</h3>
+        <button class="fix-btn" onclick="applyForceFix()">🔧 Force Fix Styles</button>
+        <button class="fix-btn" onclick="checkOverlay()">🔍 Check for Overlays</button>
+        <button class="fix-btn" onclick="logComputedStyles()">📋 Log Computed Styles</button>
+        <button class="fix-btn" onclick="testNativeClick()">🧪 Test Native Click</button>
+        <button class="fix-btn" onclick="createFloatingSelect()">✨ Create Floating Select</button>
+    </div>
+
+    <div class="debug-info">
+        <h3>Debug Log:</h3>
+        <div id="main-log" class="log"></div>
+    </div>
+
+    <script>
+        const mainLog = document.getElementById('main-log');
+        const selectLog = document.getElementById('select-log');
+        const select = document.getElementById('debug-select');
+
+        function log(msg, type = 'info', target = 'main') {
+            const el = target === 'select' ? selectLog : mainLog;
+            const div = document.createElement('div');
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            div.className = type;
+            el.appendChild(div);
+            console.log(msg);
+        }
+
+        // Monitor select interactions
+        select.addEventListener('click', (e) => {
+            log('Select CLICKED', 'success', 'select');
+        });
+
+        select.addEventListener('mousedown', (e) => {
+            log('Select MOUSEDOWN', 'info', 'select');
+        });
+
+        select.addEventListener('focus', () => {
+            log('Select FOCUSED', 'success', 'select');
+        });
+
+        select.addEventListener('change', (e) => {
+            log(`Select CHANGED to: ${e.target.value}`, 'success', 'select');
+        });
+
+        // Force fix function
+        function applyForceFix() {
+            log('Applying force fix...');
+            
+            select.style.cssText = `
+                width: 100% !important;
+                padding: 15px !important;
+                background: rgba(0,0,0,0.9) !important;
+                border: 3px solid #4AABC2 !important;
+                border-radius: 8px !important;
+                color: white !important;
+                font-size: 18px !important;
+                cursor: pointer !important;
+                color-scheme: dark !important;
+                pointer-events: auto !important;
+                position: relative !important;
+                z-index: 999999 !important;
+                opacity: 1 !important;
+                display: block !important;
+                visibility: visible !important;
+                min-height: 50px !important;
+            `;
+            
+            // Fix all parent containers
+            let parent = select.parentElement;
+            while (parent) {
+                parent.style.pointerEvents = 'auto';
+                parent.style.overflow = 'visible';
+                parent = parent.parentElement;
+            }
+            
+            log('Force fix applied! Try clicking the select now.', 'success');
+        }
+
+        // Check for overlay elements
+        function checkOverlay() {
+            log('Checking for overlay elements...');
+            
+            const selectRect = select.getBoundingClientRect();
+            const centerX = selectRect.left + selectRect.width / 2;
+            const centerY = selectRect.top + selectRect.height / 2;
+            
+            // Get element at the center of the select
+            const elementAtPoint = document.elementFromPoint(centerX, centerY);
+            
+            if (elementAtPoint === select) {
+                log('✅ No overlay blocking - select is clickable', 'success');
+            } else {
+                log(`❌ Overlay detected: ${elementAtPoint.tagName}#${elementAtPoint.id}.${elementAtPoint.className}`, 'error');
+                log('The element above is blocking clicks to the select', 'error');
+                
+                // Highlight the blocking element
+                elementAtPoint.style.outline = '3px solid red';
+                setTimeout(() => {
+                    elementAtPoint.style.outline = '';
+                }, 3000);
+            }
+        }
+
+        // Log computed styles
+        function logComputedStyles() {
+            log('Logging computed styles for select...');
+            const styles = window.getComputedStyle(select);
+            
+            const relevantProps = [
+                'pointer-events', 'display', 'visibility', 'opacity', 'z-index',
+                'position', 'overflow', 'clip', 'clip-path', 'transform',
+                'filter', 'backdrop-filter', 'mix-blend-mode'
+            ];
+            
+            relevantProps.forEach(prop => {
+                const value = styles.getPropertyValue(prop);
+                if (value && value !== 'none' && value !== 'auto' && value !== 'normal') {
+                    log(`  ${prop}: ${value}`);
+                }
+            });
+            
+            log('Computed styles logged.', 'success');
+        }
+
+        // Test native click
+        function testNativeClick() {
+            log('Testing native click...');
+            
+            // Create a new select element
+            const testSelect = document.createElement('select');
+            testSelect.innerHTML = `
+                <option>Test Option 1</option>
+                <option>Test Option 2</option>
+            `;
+            testSelect.style.cssText = 'margin: 10px 0; padding: 10px; font-size: 16px;';
+            
+            document.querySelector('.select-container').appendChild(testSelect);
+            
+            // Simulate click
+            setTimeout(() => {
+                const event = new MouseEvent('mousedown', {
+                    view: window,
+                    bubbles: true,
+                    cancelable: true
+                });
+                testSelect.dispatchEvent(event);
+                
+                const clickEvent = new MouseEvent('click', {
+                    view: window,
+                    bubbles: true,
+                    cancelable: true
+                });
+                testSelect.dispatchEvent(clickEvent);
+                
+                testSelect.focus();
+                
+                log('Native click events dispatched on test select', 'success');
+            }, 100);
+        }
+
+        // Create floating select that bypasses all parents
+        function createFloatingSelect() {
+            log('Creating floating select...');
+            
+            // Remove any existing floating select
+            const existing = document.getElementById('floating-debug-select');
+            if (existing) existing.remove();
+            
+            // Create new floating select
+            const floatingSelect = document.createElement('div');
+            floatingSelect.id = 'floating-debug-select';
+            floatingSelect.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(20, 22, 35, 0.95);
+                border: 2px solid #4AABC2;
+                border-radius: 12px;
+                padding: 20px;
+                z-index: 999999;
+                box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            `;
+            
+            floatingSelect.innerHTML = `
+                <h3 style="margin: 0 0 15px 0;">🎯 Floating Select (Bypasses All CSS)</h3>
+                <select id="floating-select" style="
+                    width: 300px;
+                    padding: 15px;
+                    font-size: 16px;
+                    background: rgba(0,0,0,0.7);
+                    color: white;
+                    border: 1px solid rgba(255,255,255,0.2);
+                    border-radius: 8px;
+                    color-scheme: dark;
+                    cursor: pointer;
+                ">
+                    <option value="">🎲 Select Model</option>
+                    <option value="gpt-4">GPT-4</option>
+                    <option value="claude">Claude 3</option>
+                    <option value="gemini">Gemini Pro</option>
+                </select>
+                <button onclick="this.parentElement.remove()" style="
+                    display: block;
+                    margin-top: 15px;
+                    width: 100%;
+                    padding: 10px;
+                    background: #ef4444;
+                    color: white;
+                    border: none;
+                    border-radius: 6px;
+                    cursor: pointer;
+                ">Close</button>
+            `;
+            
+            document.body.appendChild(floatingSelect);
+            
+            const fs = document.getElementById('floating-select');
+            fs.addEventListener('change', (e) => {
+                log(`Floating select changed: ${e.target.value}`, 'success');
+            });
+            fs.addEventListener('click', () => {
+                log('Floating select CLICKED', 'success');
+            });
+            
+            log('Floating select created. Try clicking it!', 'success');
+        }
+
+        // Initial log
+        log('Debug page loaded. Click the buttons above to diagnose the issue.');
+        log(`Select element found: ${select ? 'YES' : 'NO'}`);
+        
+        // Auto-check for overlay on load
+        setTimeout(checkOverlay, 500);
+    </script>
+</body>
+</html>

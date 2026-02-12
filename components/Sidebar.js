@@ -4,6 +4,7 @@
  */
 
 import { Icons } from '../js/icons.js';
+import { customModal } from './CustomModal.js';
 
 export class Sidebar {
   constructor(containerId) {
@@ -84,38 +85,36 @@ export class Sidebar {
       </button>
       
       <!-- Sidebar -->
-      <aside id="sidebar" class="sidebar ${this.isCollapsed ? 'collapsed' : 'open'}" aria-label="Sidebar" role="navigation">
+      <aside id="sidebar" class="sidebar ${this.isCollapsed ? 'collapsed' : 'open'}" aria-label="Sidebar">
         <!-- Header Section -->
         <div class="sidebar-header">
           <!-- Logo -->
-          <button id="logo-btn" class="logo-btn" aria-label="DualMind Home">
-            <span class="logo-icon">${Icons.logo(21)}</span>
+          <button id="logo-btn" class="logo-btn" aria-label="DualMind">
+            <span class="logo-icon">${Icons.logo(24)}</span>
             <span class="logo-text">DualMind</span>
           </button>
           
           <!-- Toggle Button (Desktop) -->
-          <button id="sidebar-toggle" class="sidebar-toggle" aria-label="Toggle Sidebar" title="Toggle sidebar">
+          <button id="sidebar-toggle" class="sidebar-toggle" aria-label="Toggle Sidebar">
             ${Icons.menu('white')}
           </button>
         </div>
 
         <!-- Navigation -->
         <nav class="sidebar-nav" aria-label="Primary navigation">
-          <button class="nav-item active" data-action="new-chat" title="Start new conversation">
+          <a href="#" class="nav-item active" data-action="new-chat" title="New Chat">
             <span class="nav-icon">${Icons.newChat('white', 18)}</span>
             <span class="nav-text">New Chat</span>
-          </button>
-          <button class="nav-item" data-action="leaderboard" title="View model leaderboard">
+          </a>
+          <a href="#" class="nav-item" data-action="leaderboard" title="Leaderboard">
             <span class="nav-icon">${Icons.leaderboard('white', 0.5)}</span>
             <span class="nav-text">Leaderboard</span>
-          </button>
+          </a>
         </nav>
 
         <!-- Recent Chats Section -->
         <div class="recent-chats-section">
-          <div class="section-header">
-            <h3 class="section-title">Recent Chats</h3>
-          </div>
+          <h3 class="section-title">Recent Chat</h3>
           <div id="recent-chats-list" class="recent-chats-list">
             ${this.renderRecentChats()}
           </div>
@@ -123,15 +122,12 @@ export class Sidebar {
 
         <!-- Footer -->
         <footer class="sidebar-footer">
-          <div class="footer-links">
-            <a href="./terms/" class="footer-link" title="Terms of Service">Terms</a>
-            <span class="footer-separator">•</span>
-            <a href="./privacy/" class="footer-link" title="Privacy Policy">Privacy</a>
+          <a href="./terms/" class="footer-link">Terms of use</a>
+          <a href="./privacy/" class="footer-link">Privacy Policy</a>
+          <div class="footer-row">
+            <a href="#" class="footer-link logout-btn" id="logout-btn">Log Out</a>
+            <a href="./cookies/" class="footer-link">Cookies</a>
           </div>
-          <button class="footer-logout" id="logout-btn" title="Log out">
-            <span class="logout-icon">${Icons.logout('white', 16)}</span>
-            <span class="logout-text">Log Out</span>
-          </button>
         </footer>
       </aside>
     `;
@@ -248,7 +244,8 @@ export class Sidebar {
     // Navigation items
     const navItems = this.container.querySelectorAll('.nav-item');
     navItems.forEach(item => {
-      item.addEventListener('click', () => {
+      item.addEventListener('click', (e) => {
+        e.preventDefault();
         this.handleNavClick(item.dataset.action);
       });
     });
@@ -316,61 +313,71 @@ export class Sidebar {
     const thread = this.recentChats.find(t => t.id === threadId);
     if (!thread) return;
 
-    const newTitle = prompt('Enter new thread name:', thread.title);
-    if (!newTitle || newTitle.trim() === '' || newTitle === thread.title) return;
+    customModal.editThread({
+      currentTitle: thread.title,
+      onSave: async (newTitle) => {
+        if (!newTitle || newTitle.trim() === '' || newTitle === thread.title) return;
 
-    try {
-      const api = window._DUALMIND_API;
-      if (!api) {
-        alert('API not available');
-        return;
+        try {
+          const api = window._DUALMIND_API;
+          if (!api) {
+            customModal.toast('API not available', 'error');
+            return;
+          }
+
+          await api.threads.updateThread(threadId, newTitle.trim());
+
+          // Update local state
+          thread.title = newTitle.trim();
+          this.updateRecentChats();
+
+          customModal.toast('Thread renamed successfully', 'success');
+          console.log('✅ Thread renamed successfully');
+        } catch (error) {
+          console.error('Failed to rename thread:', error);
+          customModal.toast('Failed to rename thread: ' + error.message, 'error');
+        }
       }
-
-      await api.threads.updateThread(threadId, newTitle.trim());
-
-      // Update local state
-      thread.title = newTitle.trim();
-      this.updateRecentChats();
-
-      console.log('✅ Thread renamed successfully');
-    } catch (error) {
-      console.error('Failed to rename thread:', error);
-      alert('Failed to rename thread: ' + error.message);
-    }
+    });
   }
 
   async handleDeleteThread(threadId) {
     const thread = this.recentChats.find(t => t.id === threadId);
     if (!thread) return;
 
-    if (!confirm(`Delete "${thread.title}"?\n\nThis cannot be undone.`)) return;
+    customModal.confirmDelete({
+      title: 'Delete Thread?',
+      itemName: thread.title,
+      onConfirm: async () => {
+        try {
+          const api = window._DUALMIND_API;
+          if (!api) {
+            customModal.toast('API not available', 'error');
+            return;
+          }
 
-    try {
-      const api = window._DUALMIND_API;
-      if (!api) {
-        alert('API not available');
-        return;
+          await api.threads.deleteThread(threadId);
+
+          // Remove from local state
+          this.recentChats = this.recentChats.filter(t => t.id !== threadId);
+          this.updateRecentChats();
+
+          // If this was the active thread, clear it
+          if (window._APP && window._APP.state.currentThreadId === threadId) {
+            window._APP.state.currentThreadId = null;
+            window._APP.state.turns = [];
+            window._APP.hideFloatingVoting();
+            window._APP.renderChat();
+          }
+
+          customModal.toast('Thread deleted successfully', 'success');
+          console.log('✅ Thread deleted successfully');
+        } catch (error) {
+          console.error('Failed to delete thread:', error);
+          customModal.toast('Failed to delete thread: ' + error.message, 'error');
+        }
       }
-
-      await api.threads.deleteThread(threadId);
-
-      // Remove from local state
-      this.recentChats = this.recentChats.filter(t => t.id !== threadId);
-      this.updateRecentChats();
-
-      // If this was the active thread, clear it
-      if (window._APP && window._APP.state.currentThreadId === threadId) {
-        window._APP.state.currentThreadId = null;
-        window._APP.state.turns = [];
-        window._APP.hideFloatingVoting(); // Hide voting panel when thread deleted
-        window._APP.renderChat();
-      }
-
-      console.log('✅ Thread deleted successfully');
-    } catch (error) {
-      console.error('Failed to delete thread:', error);
-      alert('Failed to delete thread: ' + error.message);
-    }
+    });
   }
 
   handleResize() {

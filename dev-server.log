@@ -1,0 +1,335 @@
+
+> dualmind-ui@1.0.0 dev
+> npx serve . -p 8000
+
+ INFO  Accepting connections at http://localhost:8000
+ HTTP  13/2/2026 12:57:52 am ::1 HEAD /
+ HTTP  13/2/2026 12:57:52 am ::1 Returned 200 in 44 ms
+ HTTP  13/2/2026 12:58:23 am ::1 GET /
+ HTTP  13/2/2026 12:58:23 am ::1 Returned 200 in 6 ms
+ HTTP  13/2/2026 1:56:02 am ::1 GET /
+ HTTP  13/2/2026 1:56:02 am ::1 Returned 304 in 5 ms
+ HTTP  13/2/2026 1:56:02 am ::1 GET /css/styles.css
+ HTTP  13/2/2026 1:56:02 am ::1 GET /css/model-selector.css
+ HTTP  13/2/2026 1:56:02 am ::1 GET /css/auth-styles.css
+ HTTP  13/2/2026 1:56:02 am ::1 GET /css/sidebar-actions.css
+ HTTP  13/2/2026 1:56:02 am ::1 GET /css/leaderboard-page.css
+ HTTP  13/2/2026 1:56:02 am ::1 GET /css/ui-improvements.css
+ HTTP  13/2/2026 1:56:02 am ::1 Returned 304 in 26 ms
+ HTTP  13/2/2026 1:56:02 am ::1 Returned 304 in 32 ms
+ HTTP  13/2/2026 1:56:02 am ::1 Returned 304 in 28 ms
+ HTTP  13/2/2026 1:56:02 am ::1 GET /css/voting-ui.css
+ HTTP  13/2/2026 1:56:02 am ::1 GET /css/ai-input.css
+ HTTP  13/2/2026 1:56:02 am ::1 Returned 304 in 43 ms
+ HTTP  13/2/2026 1:56:02 am ::1 Returned 304 in 33 ms
+ HTTP  13/2/2026 1:56:02 am ::1 GET /css/share-modal.css
+ HTTP  13/2/2026 1:56:02 am ::1 Returned 200 in 30 ms
+ HTTP  13/2/2026 1:56:02 am ::1 GET /css/shared-thread.css
+ HTTP  13/2/2026 1:56:02 am ::1 GET /config.js
+ HTTP  13/2/2026 1:56:02 am ::1 Returned 304 in 19 ms
+ HTTP  13/2/2026 1:56:02 am ::1 Returned 200 in 20 ms
+ HTTP  13/2/2026 1:56:02 am ::1 GET /js/supabase-init.js
+ HTTP  13/2/2026 1:56:02 am ::1 Returned 304 in 19 ms
+ HTTP  13/2/2026 1:56:02 am ::1 GET /js/app-final.js
+ HTTP  13/2/2026 1:56:02 am ::1 Returned 304 in 17 ms
+ HTTP  13/2/2026 1:56:02 am ::1 Returned 304 in 17 ms
+ HTTP  13/2/2026 1:56:02 am ::1 GET /assets/background.png
+ HTTP  13/2/2026 1:56:02 am ::1 Returned 304 in 24 ms
+ HTTP  13/2/2026 1:56:02 am ::1 Returned 304 in 18 ms
+ HTTP  13/2/2026 1:56:02 am ::1 Returned 304 in 35 ms
+ HTTP  13/2/2026 1:56:02 am ::1 GET /js/supabase-auth.js
+ HTTP  13/2/2026 1:56:02 am ::1 Returned 304 in 9 ms
+ HTTP  13/2/2026 1:56:02 am ::1 GET /components/Sidebar.js
+ HTTP  13/2/2026 1:56:02 am ::1 GET /components/Header.js
+ HTTP  13/2/2026 1:56:02 am ::1 GET /components/ChatInput.js
+ HTTP  13/2/2026 1:56:02 am ::1 GET /components/chat/ChatView.js
+ HTTP  13/2/2026 1:56:02 am ::1 GET /js/mockArena.js
+ HTTP  13/2/2026 1:56:02 am ::1 GET /js/apiInstance.js
+ HTTP  13/2/2026 1:56:02 am ::1 Returned 304 in 9 ms
+ HTTP  13/2/2026 1:56:02 am ::1 Returned 304 in 10 ms
+ HTTP  13/2/2026 1:56:02 am ::1 Returned 304 in 10 ms
+ HTTP  13/2/2026 1:56:02 am ::1 GET /js/leaderboardModal.js
+ HTTP  13/2/2026 1:56:02 am ::1 Returned 304 in 11 ms
+ HTTP  13/2/2026 1:56:02 am ::1 GET /components/ShareModal.js
+ HTTP  13/2/2026 1:56:02 am ::1 GET /js/icons.js
+ HTTP  13/2/2026 1:56:02 am ::1 Returned 304 in 21 ms
+ HTTP  13/2/2026 1:56:02 am ::1 Returned 304 in 15 ms
+ HTTP  13/2/2026 1:56:02 am ::1 Returned 304 in 22 ms
+ HTTP  13/2/2026 1:56:02 am ::1 Returned 304 in 14 ms
+ HTTP  13/2/2026 1:56:02 am ::1 Returned 304 in 16 ms
+ HTTP  13/2/2026 1:56:02 am ::1 GET /js/api/DualMindApi.js
+ HTTP  13/2/2026 1:56:02 am ::1 Returned 304 in 5 ms
+ HTTP  13/2/2026 1:56:02 am ::1 GET /js/api/config/ApiConfig.js
+ HTTP  13/2/2026 1:56:02 am ::1 GET /js/api/core/HttpClient.js
+ HTTP  13/2/2026 1:56:02 am ::1 GET /js/api/services/ArenaService.js
+ HTTP  13/2/2026 1:56:02 am ::1 GET /js/api/services/ThreadService.js
+ HTTP  13/2/2026 1:56:02 am ::1 GET /js/api/services/ModelService.js
+ HTTP  13/2/2026 1:56:02 am ::1 GET /js/api/services/UserService.js
+ HTTP  13/2/2026 1:56:02 am ::1 Returned 304 in 6 ms
+ HTTP  13/2/2026 1:56:02 am ::1 Returned 304 in 7 ms
+ HTTP  13/2/2026 1:56:02 am ::1 Returned 304 in 6 ms
+ HTTP  13/2/2026 1:56:02 am ::1 Returned 304 in 7 ms
+ HTTP  13/2/2026 1:56:02 am ::1 Returned 304 in 7 ms
+ HTTP  13/2/2026 1:56:02 am ::1 Returned 304 in 8 ms
+ HTTP  13/2/2026 1:56:02 am ::1 GET /js/api/utils/authProvider.js
+ HTTP  13/2/2026 1:56:02 am ::1 GET /js/api/utils/errors.js
+ HTTP  13/2/2026 1:56:02 am ::1 GET /js/api/utils/extractors.js
+ HTTP  13/2/2026 1:56:02 am ::1 Returned 304 in 17 ms
+ HTTP  13/2/2026 1:56:02 am ::1 Returned 304 in 16 ms
+ HTTP  13/2/2026 1:56:02 am ::1 Returned 304 in 18 ms
+ HTTP  13/2/2026 1:56:15 am ::1 GET /
+ HTTP  13/2/2026 1:56:15 am ::1 Returned 304 in 2 ms
+ HTTP  13/2/2026 1:56:15 am ::1 GET /css/styles.css
+ HTTP  13/2/2026 1:56:15 am ::1 GET /css/auth-styles.css
+ HTTP  13/2/2026 1:56:15 am ::1 Returned 304 in 3 ms
+ HTTP  13/2/2026 1:56:15 am ::1 GET /css/model-selector.css
+ HTTP  13/2/2026 1:56:15 am ::1 Returned 304 in 5 ms
+ HTTP  13/2/2026 1:56:15 am ::1 GET /css/sidebar-actions.css
+ HTTP  13/2/2026 1:56:15 am ::1 GET /css/leaderboard-page.css
+ HTTP  13/2/2026 1:56:15 am ::1 GET /css/voting-ui.css
+ HTTP  13/2/2026 1:56:15 am ::1 GET /css/ui-improvements.css
+ HTTP  13/2/2026 1:56:15 am ::1 Returned 304 in 7 ms
+ HTTP  13/2/2026 1:56:15 am ::1 Returned 304 in 5 ms
+ HTTP  13/2/2026 1:56:15 am ::1 Returned 304 in 8 ms
+ HTTP  13/2/2026 1:56:15 am ::1 Returned 304 in 9 ms
+ HTTP  13/2/2026 1:56:15 am ::1 GET /css/ai-input.css
+ HTTP  13/2/2026 1:56:15 am ::1 Returned 304 in 11 ms
+ HTTP  13/2/2026 1:56:15 am ::1 GET /css/share-modal.css
+ HTTP  13/2/2026 1:56:15 am ::1 GET /css/shared-thread.css
+ HTTP  13/2/2026 1:56:15 am ::1 GET /config.js
+ HTTP  13/2/2026 1:56:15 am ::1 GET /js/supabase-init.js
+ HTTP  13/2/2026 1:56:15 am ::1 Returned 304 in 7 ms
+ HTTP  13/2/2026 1:56:15 am ::1 Returned 304 in 6 ms
+ HTTP  13/2/2026 1:56:15 am ::1 Returned 304 in 6 ms
+ HTTP  13/2/2026 1:56:15 am ::1 Returned 304 in 6 ms
+ HTTP  13/2/2026 1:56:15 am ::1 GET /js/app-final.js
+ HTTP  13/2/2026 1:56:15 am ::1 Returned 304 in 7 ms
+ HTTP  13/2/2026 1:56:15 am ::1 GET /assets/background.png
+ HTTP  13/2/2026 1:56:15 am ::1 Returned 304 in 5 ms
+ HTTP  13/2/2026 1:56:15 am ::1 Returned 304 in 3 ms
+ HTTP  13/2/2026 1:56:15 am ::1 GET /js/supabase-auth.js
+ HTTP  13/2/2026 1:56:15 am ::1 Returned 304 in 2 ms
+ HTTP  13/2/2026 1:56:15 am ::1 GET /components/Sidebar.js
+ HTTP  13/2/2026 1:56:15 am ::1 GET /components/Header.js
+ HTTP  13/2/2026 1:56:15 am ::1 Returned 304 in 2 ms
+ HTTP  13/2/2026 1:56:15 am ::1 GET /components/ChatInput.js
+ HTTP  13/2/2026 1:56:15 am ::1 GET /components/chat/ChatView.js
+ HTTP  13/2/2026 1:56:15 am ::1 GET /js/mockArena.js
+ HTTP  13/2/2026 1:56:15 am ::1 Returned 304 in 3 ms
+ HTTP  13/2/2026 1:56:15 am ::1 Returned 304 in 3 ms
+ HTTP  13/2/2026 1:56:15 am ::1 Returned 304 in 3 ms
+ HTTP  13/2/2026 1:56:15 am ::1 GET /js/apiInstance.js
+ HTTP  13/2/2026 1:56:15 am ::1 GET /js/leaderboardModal.js
+ HTTP  13/2/2026 1:56:15 am ::1 Returned 304 in 4 ms
+ HTTP  13/2/2026 1:56:15 am ::1 Returned 304 in 2 ms
+ HTTP  13/2/2026 1:56:15 am ::1 GET /components/ShareModal.js
+ HTTP  13/2/2026 1:56:15 am ::1 Returned 304 in 2 ms
+ HTTP  13/2/2026 1:56:15 am ::1 Returned 304 in 2 ms
+ HTTP  13/2/2026 1:56:15 am ::1 GET /js/icons.js
+ HTTP  13/2/2026 1:56:15 am ::1 Returned 304 in 1 ms
+ HTTP  13/2/2026 1:56:15 am ::1 GET /js/api/DualMindApi.js
+ HTTP  13/2/2026 1:56:15 am ::1 Returned 304 in 2 ms
+ HTTP  13/2/2026 1:56:15 am ::1 GET /js/api/config/ApiConfig.js
+ HTTP  13/2/2026 1:56:15 am ::1 GET /js/api/core/HttpClient.js
+ HTTP  13/2/2026 1:56:15 am ::1 GET /js/api/services/ArenaService.js
+ HTTP  13/2/2026 1:56:15 am ::1 GET /js/api/services/ThreadService.js
+ HTTP  13/2/2026 1:56:15 am ::1 GET /js/api/services/ModelService.js
+ HTTP  13/2/2026 1:56:15 am ::1 GET /js/api/services/UserService.js
+ HTTP  13/2/2026 1:56:15 am ::1 Returned 304 in 4 ms
+ HTTP  13/2/2026 1:56:15 am ::1 Returned 304 in 4 ms
+ HTTP  13/2/2026 1:56:15 am ::1 Returned 304 in 4 ms
+ HTTP  13/2/2026 1:56:15 am ::1 Returned 304 in 4 ms
+ HTTP  13/2/2026 1:56:15 am ::1 Returned 304 in 4 ms
+ HTTP  13/2/2026 1:56:15 am ::1 Returned 304 in 4 ms
+ HTTP  13/2/2026 1:56:15 am ::1 GET /js/api/utils/authProvider.js
+ HTTP  13/2/2026 1:56:15 am ::1 GET /js/api/utils/errors.js
+ HTTP  13/2/2026 1:56:15 am ::1 GET /js/api/utils/extractors.js
+ HTTP  13/2/2026 1:56:15 am ::1 Returned 304 in 2 ms
+ HTTP  13/2/2026 1:56:15 am ::1 Returned 304 in 2 ms
+ HTTP  13/2/2026 1:56:15 am ::1 Returned 304 in 2 ms
+ HTTP  13/2/2026 2:06:54 am ::1 GET /
+ HTTP  13/2/2026 2:06:54 am ::1 Returned 200 in 4 ms
+ HTTP  13/2/2026 2:12:11 am ::1 GET /
+ HTTP  13/2/2026 2:12:11 am ::1 Returned 200 in 3 ms
+ HTTP  13/2/2026 2:12:11 am ::1 GET /css/styles.css
+ HTTP  13/2/2026 2:12:11 am ::1 Returned 200 in 4 ms
+ HTTP  13/2/2026 2:12:11 am ::1 GET /css/auth-styles.css
+ HTTP  13/2/2026 2:12:11 am ::1 Returned 200 in 2 ms
+ HTTP  13/2/2026 2:12:11 am ::1 GET /css/model-selector.css
+ HTTP  13/2/2026 2:12:11 am ::1 GET /css/sidebar-actions.css
+ HTTP  13/2/2026 2:12:11 am ::1 Returned 200 in 2 ms
+ HTTP  13/2/2026 2:12:11 am ::1 GET /css/leaderboard-page.css
+ HTTP  13/2/2026 2:12:11 am ::1 Returned 200 in 3 ms
+ HTTP  13/2/2026 2:12:11 am ::1 GET /css/ui-improvements.css
+ HTTP  13/2/2026 2:12:11 am ::1 Returned 200 in 3 ms
+ HTTP  13/2/2026 2:12:11 am ::1 Returned 200 in 3 ms
+ HTTP  13/2/2026 2:12:11 am ::1 GET /css/voting-ui.css
+ HTTP  13/2/2026 2:12:11 am ::1 GET /css/ai-input.css
+ HTTP  13/2/2026 2:12:11 am ::1 Returned 200 in 6 ms
+ HTTP  13/2/2026 2:12:11 am ::1 GET /css/share-modal.css
+ HTTP  13/2/2026 2:12:11 am ::1 GET /css/shared-thread.css
+ HTTP  13/2/2026 2:12:11 am ::1 Returned 200 in 3 ms
+ HTTP  13/2/2026 2:12:11 am ::1 Returned 200 in 3 ms
+ HTTP  13/2/2026 2:12:11 am ::1 Returned 200 in 4 ms
+ HTTP  13/2/2026 2:12:11 am ::1 GET /config.js
+ HTTP  13/2/2026 2:12:11 am ::1 GET /js/supabase-init.js
+ HTTP  13/2/2026 2:12:11 am ::1 GET /js/app-final.js
+ HTTP  13/2/2026 2:12:11 am ::1 Returned 200 in 2 ms
+ HTTP  13/2/2026 2:12:11 am ::1 Returned 200 in 2 ms
+ HTTP  13/2/2026 2:12:11 am ::1 Returned 200 in 1 ms
+ HTTP  13/2/2026 2:12:12 am ::1 GET /assets/background.png
+ HTTP  13/2/2026 2:12:12 am ::1 Returned 200 in 1 ms
+ HTTP  13/2/2026 2:12:13 am ::1 GET /js/supabase-auth.js
+ HTTP  13/2/2026 2:12:13 am ::1 Returned 200 in 1 ms
+ HTTP  13/2/2026 2:12:13 am ::1 GET /components/Sidebar.js
+ HTTP  13/2/2026 2:12:13 am ::1 GET /components/Header.js
+ HTTP  13/2/2026 2:12:13 am ::1 GET /components/ChatInput.js
+ HTTP  13/2/2026 2:12:13 am ::1 Returned 200 in 5 ms
+ HTTP  13/2/2026 2:12:13 am ::1 Returned 200 in 3 ms
+ HTTP  13/2/2026 2:12:13 am ::1 GET /components/chat/ChatView.js
+ HTTP  13/2/2026 2:12:13 am ::1 GET /js/mockArena.js
+ HTTP  13/2/2026 2:12:13 am ::1 GET /js/apiInstance.js
+ HTTP  13/2/2026 2:12:13 am ::1 Returned 200 in 5 ms
+ HTTP  13/2/2026 2:12:13 am ::1 Returned 200 in 3 ms
+ HTTP  13/2/2026 2:12:13 am ::1 Returned 200 in 3 ms
+ HTTP  13/2/2026 2:12:13 am ::1 Returned 200 in 3 ms
+ HTTP  13/2/2026 2:12:13 am ::1 GET /js/leaderboardModal.js
+ HTTP  13/2/2026 2:12:13 am ::1 GET /components/ShareModal.js
+ HTTP  13/2/2026 2:12:13 am ::1 Returned 200 in 4 ms
+ HTTP  13/2/2026 2:12:13 am ::1 GET /js/api/DualMindApi.js
+ HTTP  13/2/2026 2:12:13 am ::1 GET /js/icons.js
+ HTTP  13/2/2026 2:12:13 am ::1 Returned 200 in 5 ms
+ HTTP  13/2/2026 2:12:13 am ::1 Returned 200 in 4 ms
+ HTTP  13/2/2026 2:12:13 am ::1 Returned 200 in 4 ms
+ HTTP  13/2/2026 2:12:13 am ::1 GET /js/api/config/ApiConfig.js
+ HTTP  13/2/2026 2:12:13 am ::1 GET /js/api/core/HttpClient.js
+ HTTP  13/2/2026 2:12:13 am ::1 GET /js/api/services/ArenaService.js
+ HTTP  13/2/2026 2:12:13 am ::1 Returned 200 in 6 ms
+ HTTP  13/2/2026 2:12:13 am ::1 Returned 200 in 4 ms
+ HTTP  13/2/2026 2:12:13 am ::1 GET /js/api/services/ThreadService.js
+ HTTP  13/2/2026 2:12:13 am ::1 GET /js/api/services/ModelService.js
+ HTTP  13/2/2026 2:12:13 am ::1 GET /js/api/services/UserService.js
+ HTTP  13/2/2026 2:12:13 am ::1 Returned 200 in 9 ms
+ HTTP  13/2/2026 2:12:13 am ::1 Returned 200 in 8 ms
+ HTTP  13/2/2026 2:12:13 am ::1 Returned 200 in 8 ms
+ HTTP  13/2/2026 2:12:13 am ::1 Returned 200 in 8 ms
+ HTTP  13/2/2026 2:12:13 am ::1 GET /js/api/utils/authProvider.js
+ HTTP  13/2/2026 2:12:13 am ::1 GET /js/api/utils/errors.js
+ HTTP  13/2/2026 2:12:13 am ::1 Returned 200 in 7 ms
+ HTTP  13/2/2026 2:12:13 am ::1 Returned 200 in 6 ms
+ HTTP  13/2/2026 2:12:13 am ::1 GET /js/api/utils/extractors.js
+ HTTP  13/2/2026 2:12:13 am ::1 Returned 200 in 1 ms
+ HTTP  13/2/2026 2:12:14 am ::1 GET /login/index.html?redirect=%2F
+ HTTP  13/2/2026 2:12:14 am ::1 Returned 301 in 1 ms
+ HTTP  13/2/2026 2:12:14 am ::1 GET /login/index
+ HTTP  13/2/2026 2:12:14 am ::1 Returned 301 in 1 ms
+ HTTP  13/2/2026 2:12:14 am ::1 GET /login
+ HTTP  13/2/2026 2:12:14 am ::1 Returned 200 in 5 ms
+ HTTP  13/2/2026 2:12:14 am ::1 GET /css/styles.css
+ HTTP  13/2/2026 2:12:14 am ::1 GET /css/auth-styles.css
+ HTTP  13/2/2026 2:12:14 am ::1 GET /config.js
+ HTTP  13/2/2026 2:12:14 am ::1 GET /theme.js
+ HTTP  13/2/2026 2:12:14 am ::1 Returned 304 in 6 ms
+ HTTP  13/2/2026 2:12:14 am ::1 Returned 304 in 5 ms
+ HTTP  13/2/2026 2:12:14 am ::1 Returned 304 in 7 ms
+ HTTP  13/2/2026 2:12:14 am ::1 GET /auth-complete.js
+ HTTP  13/2/2026 2:12:14 am ::1 Returned 200 in 13 ms
+ HTTP  13/2/2026 2:12:14 am ::1 Returned 404 in 11 ms
+ HTTP  13/2/2026 2:12:15 am ::1 GET /favicon.ico
+ HTTP  13/2/2026 2:12:15 am ::1 Returned 404 in 1 ms
+ HTTP  13/2/2026 2:12:57 am ::1 GET /index.html
+ HTTP  13/2/2026 2:12:57 am ::1 Returned 301 in 1 ms
+ HTTP  13/2/2026 2:12:57 am ::1 GET /index
+ HTTP  13/2/2026 2:12:57 am ::1 Returned 301 in 1 ms
+ HTTP  13/2/2026 2:12:57 am ::1 GET /
+ HTTP  13/2/2026 2:12:57 am ::1 Returned 304 in 3 ms
+ HTTP  13/2/2026 2:12:57 am ::1 GET /css/styles.css
+ HTTP  13/2/2026 2:12:57 am ::1 Returned 304 in 6 ms
+ HTTP  13/2/2026 2:12:57 am ::1 GET /css/auth-styles.css
+ HTTP  13/2/2026 2:12:57 am ::1 GET /css/model-selector.css
+ HTTP  13/2/2026 2:12:57 am ::1 Returned 304 in 8 ms
+ HTTP  13/2/2026 2:12:57 am ::1 GET /css/sidebar-actions.css
+ HTTP  13/2/2026 2:12:57 am ::1 GET /css/leaderboard-page.css
+ HTTP  13/2/2026 2:12:57 am ::1 Returned 304 in 14 ms
+ HTTP  13/2/2026 2:12:57 am ::1 Returned 304 in 10 ms
+ HTTP  13/2/2026 2:12:57 am ::1 GET /css/voting-ui.css
+ HTTP  13/2/2026 2:12:57 am ::1 GET /css/ui-improvements.css
+ HTTP  13/2/2026 2:12:57 am ::1 GET /css/ai-input.css
+ HTTP  13/2/2026 2:12:57 am ::1 Returned 304 in 26 ms
+ HTTP  13/2/2026 2:12:57 am ::1 Returned 304 in 17 ms
+ HTTP  13/2/2026 2:12:57 am ::1 Returned 304 in 12 ms
+ HTTP  13/2/2026 2:12:57 am ::1 GET /css/share-modal.css
+ HTTP  13/2/2026 2:12:57 am ::1 GET /css/shared-thread.css
+ HTTP  13/2/2026 2:12:57 am ::1 Returned 304 in 16 ms
+ HTTP  13/2/2026 2:12:57 am ::1 Returned 304 in 12 ms
+ HTTP  13/2/2026 2:12:57 am ::1 GET /config.js
+ HTTP  13/2/2026 2:12:57 am ::1 GET /js/supabase-init.js
+ HTTP  13/2/2026 2:12:57 am ::1 GET /js/app-final.js
+ HTTP  13/2/2026 2:12:57 am ::1 Returned 304 in 16 ms
+ HTTP  13/2/2026 2:12:57 am ::1 Returned 304 in 6 ms
+ HTTP  13/2/2026 2:12:57 am ::1 Returned 304 in 7 ms
+ HTTP  13/2/2026 2:12:57 am ::1 GET /assets/background.png
+ HTTP  13/2/2026 2:12:57 am ::1 Returned 304 in 12 ms
+ HTTP  13/2/2026 2:12:57 am ::1 Returned 304 in 7 ms
+ HTTP  13/2/2026 2:12:57 am ::1 GET /js/supabase-auth.js
+ HTTP  13/2/2026 2:12:57 am ::1 Returned 304 in 13 ms
+ HTTP  13/2/2026 2:12:57 am ::1 GET /components/Sidebar.js
+ HTTP  13/2/2026 2:12:57 am ::1 GET /components/Header.js
+ HTTP  13/2/2026 2:12:57 am ::1 GET /components/ChatInput.js
+ HTTP  13/2/2026 2:12:57 am ::1 GET /components/chat/ChatView.js
+ HTTP  13/2/2026 2:12:57 am ::1 GET /js/mockArena.js
+ HTTP  13/2/2026 2:12:57 am ::1 GET /js/apiInstance.js
+ HTTP  13/2/2026 2:12:57 am ::1 Returned 304 in 15 ms
+ HTTP  13/2/2026 2:12:57 am ::1 Returned 304 in 15 ms
+ HTTP  13/2/2026 2:12:57 am ::1 Returned 304 in 14 ms
+ HTTP  13/2/2026 2:12:57 am ::1 Returned 304 in 15 ms
+ HTTP  13/2/2026 2:12:57 am ::1 Returned 304 in 16 ms
+ HTTP  13/2/2026 2:12:57 am ::1 Returned 304 in 17 ms
+ HTTP  13/2/2026 2:12:57 am ::1 GET /js/leaderboardModal.js
+ HTTP  13/2/2026 2:12:57 am ::1 GET /components/ShareModal.js
+ HTTP  13/2/2026 2:12:57 am ::1 Returned 304 in 7 ms
+ HTTP  13/2/2026 2:12:57 am ::1 Returned 304 in 8 ms
+ HTTP  13/2/2026 2:12:57 am ::1 GET /js/icons.js
+ HTTP  13/2/2026 2:12:57 am ::1 GET /js/api/DualMindApi.js
+ HTTP  13/2/2026 2:12:57 am ::1 Returned 304 in 8 ms
+ HTTP  13/2/2026 2:12:57 am ::1 Returned 304 in 12 ms
+ HTTP  13/2/2026 2:12:57 am ::1 GET /js/api/config/ApiConfig.js
+ HTTP  13/2/2026 2:12:57 am ::1 GET /js/api/core/HttpClient.js
+ HTTP  13/2/2026 2:12:57 am ::1 GET /js/api/services/ArenaService.js
+ HTTP  13/2/2026 2:12:57 am ::1 GET /js/api/services/ThreadService.js
+ HTTP  13/2/2026 2:12:57 am ::1 GET /js/api/services/ModelService.js
+ HTTP  13/2/2026 2:12:57 am ::1 Returned 304 in 4 ms
+ HTTP  13/2/2026 2:12:57 am ::1 Returned 304 in 4 ms
+ HTTP  13/2/2026 2:12:57 am ::1 Returned 304 in 7 ms
+ HTTP  13/2/2026 2:12:57 am ::1 Returned 304 in 8 ms
+ HTTP  13/2/2026 2:12:57 am ::1 GET /js/api/services/UserService.js
+ HTTP  13/2/2026 2:12:57 am ::1 Returned 304 in 8 ms
+ HTTP  13/2/2026 2:12:57 am ::1 Returned 304 in 2 ms
+ HTTP  13/2/2026 2:12:57 am ::1 GET /js/api/utils/authProvider.js
+ HTTP  13/2/2026 2:12:57 am ::1 GET /js/api/utils/errors.js
+ HTTP  13/2/2026 2:12:57 am ::1 Returned 304 in 2 ms
+ HTTP  13/2/2026 2:12:57 am ::1 Returned 304 in 2 ms
+ HTTP  13/2/2026 2:12:57 am ::1 GET /js/api/utils/extractors.js
+ HTTP  13/2/2026 2:12:57 am ::1 Returned 304 in 1 ms
+ HTTP  13/2/2026 2:13:12 am ::1 GET /css/styles.css
+ HTTP  13/2/2026 2:13:12 am ::1 Returned 304 in 3 ms
+ HTTP  13/2/2026 2:13:12 am ::1 GET /css/auth-styles.css
+ HTTP  13/2/2026 2:13:12 am ::1 GET /css/model-selector.css
+ HTTP  13/2/2026 2:13:12 am ::1 GET /css/ui-improvements.css
+ HTTP  13/2/2026 2:13:12 am ::1 GET /css/sidebar-actions.css
+ HTTP  13/2/2026 2:13:12 am ::1 GET /css/leaderboard-page.css
+ HTTP  13/2/2026 2:13:12 am ::1 GET /css/voting-ui.css
+ HTTP  13/2/2026 2:13:12 am ::1 Returned 304 in 11 ms
+ HTTP  13/2/2026 2:13:12 am ::1 Returned 304 in 14 ms
+ HTTP  13/2/2026 2:13:12 am ::1 Returned 304 in 15 ms
+ HTTP  13/2/2026 2:13:12 am ::1 Returned 304 in 14 ms
+ HTTP  13/2/2026 2:13:12 am ::1 Returned 304 in 14 ms
+ HTTP  13/2/2026 2:13:12 am ::1 Returned 304 in 16 ms
+ HTTP  13/2/2026 2:13:12 am ::1 GET /css/ai-input.css
+ HTTP  13/2/2026 2:13:12 am ::1 GET /css/share-modal.css
+ HTTP  13/2/2026 2:13:12 am ::1 GET /css/shared-thread.css
+ HTTP  13/2/2026 2:13:12 am ::1 Returned 304 in 3 ms
+ HTTP  13/2/2026 2:13:12 am ::1 Returned 304 in 4 ms
+ HTTP  13/2/2026 2:13:12 am ::1 Returned 304 in 5 ms
+ HTTP  13/2/2026 2:13:12 am ::1 GET /.well-known/appspecific/com.chrome.devtools.json
+ HTTP  13/2/2026 2:13:12 am ::1 Returned 404 in 4 ms

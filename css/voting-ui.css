@@ -209,7 +209,36 @@
 
 @media (max-width: 768px) {
   .vote-buttons {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+  
+  .vote-btn-light {
+    padding: 12px 8px;
+    font-size: 0;
+    min-height: 48px;
+  }
+  
+  .vote-btn-light::before {
+    font-size: 20px;
+    content: attr(data-icon);
+  }
+  
+  /* Add icons for each vote type */
+  .vote-btn-light[data-vote="left"]::before {
+    content: "👈";
+  }
+  
+  .vote-btn-light[data-vote="right"]::before {
+    content: "👉";
+  }
+  
+  .vote-btn-light[data-vote="tie"]::before {
+    content: "🤝";
+  }
+  
+  .vote-btn-light[data-vote="both-bad"]::before {
+    content: "👎";
   }
 }
 
@@ -225,11 +254,22 @@
   }
 
   .vote-buttons {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
   }
 
   .vote-btn-light {
-    min-height: 48px;
-    font-size: 14px;
+    min-height: 44px;
+    padding: 10px 4px;
+    font-size: 0;
+    border-radius: 10px;
+  }
+  
+  .vote-btn-light::before {
+    font-size: 18px;
+  }
+  
+  .vote-prompt {
+    font-size: 13px;
   }
 }

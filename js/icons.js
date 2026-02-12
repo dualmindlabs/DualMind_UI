@@ -6,12 +6,7 @@
 export const Icons = {
   // Logo Grid Icon
   logo: (size = 21) => `
-    <svg width="${size}" height="${size}" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M0 1C0 0.447715 0.447715 0 1 0H8C8.55228 0 9 0.447715 9 1V8C9 8.55228 8.55228 9 8 9H1C0.447715 9 0 8.55228 0 8V1Z" fill="#577B87"/>
-      <path d="M12 1C12 0.447715 12.4477 0 13 0H20C20.5523 0 21 0.447715 21 1V8C21 8.55228 20.5523 9 20 9H13C12.4477 9 12 8.55228 12 8V1Z" fill="#4AABC2"/>
-      <path d="M12 13C12 12.4477 12.4477 12 13 12H20C20.5523 12 21 12.4477 21 13V20C21 20.5523 20.5523 21 20 21H13C12.4477 21 12 20.5523 12 20V13Z" fill="#CB9275"/>
-      <path d="M0 13C0 12.4477 0.447715 12 1 12H8C8.55228 12 9 12.4477 9 13V20C9 20.5523 8.55228 21 8 21H1C0.447715 21 0 20.5523 0 20V13Z" fill="#FDF4CD"/>
-    </svg>
+    <img src="assets/logo.png" alt="DualMind Logo" style="width: ${size}px; height: auto;">
   `,
 
   // Chevron Down

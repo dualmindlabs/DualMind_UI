@@ -133,7 +133,7 @@ class App {
       }
 
       sessionStorage.setItem('auth_redirect_attempted', 'true');
-      window.location.href = `login/index.html?redirect=${encodeURIComponent(currentPath)}`;
+      window.location.href = `login-modern.html?redirect=${encodeURIComponent(currentPath)}`;
       return;
     }
 
@@ -1150,7 +1150,7 @@ class App {
         // Check if turn still exists (user might have navigated away)
         const currentTurn = this.state.turns.find(t => String(t.id) === String(turnId));
         if (!currentTurn) return;
-        
+
         currentTurn.voteStatus = 'submitted';
         // Update only this turn's DOM instead of full re-render to avoid duplication flicker
         this.updateTurnVisibilityAfterVote(turnId);
@@ -1205,7 +1205,7 @@ class App {
     // Update model names to reveal actual names (not Model A/B)
     const leftModelName = leftCard.querySelector('.model-name');
     const rightModelName = rightCard.querySelector('.model-name');
-    
+
     if (leftModelName && turn.left?.modelName) {
       let cleanName = this.cleanModelName(turn.left.modelName);
       leftModelName.textContent = cleanName;
@@ -1436,7 +1436,15 @@ class App {
       await this.api.users.syncUser(userData);
       console.log('✅ User synced with backend:', userData.email);
     } catch (error) {
-      console.warn('⚠️ Failed to sync user with backend:', error);
+      // 🚨 Robust handling: If sync fails (e.g. race condition or DB error), 
+      // check if it's just a duplicate or non-critical DB error.
+      const msg = error?.message || error?.toString() || '';
+
+      if (msg.includes('Database error') || msg.includes('duplicate')) {
+        console.warn('⚠️ Backend sync warning (likely harmless):', msg);
+      } else {
+        console.warn('⚠️ Failed to sync user with backend:', error);
+      }
       // Don't block the app, just continue
     }
   }
@@ -1506,10 +1514,10 @@ class App {
 
     try {
       this.components.chatInput.setLoading(true);
-      
+
       // Hide voting panel FIRST when switching threads
       this.hideFloatingVoting();
-      
+
       const result = await this.api.threads.getThreadMessages(threadId);
       const messages = result?.items || result || [];
 
@@ -1835,7 +1843,7 @@ class App {
 const app = new App();
 
 // Expose to window for debugging and component access
-window.LMArena = app;
+window.DualMindArena = app;
 window._APP = app;
 
 export default app;

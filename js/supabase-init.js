@@ -161,7 +161,7 @@ window.DualMindAuth = {
     const auth = window._DUALMIND_AUTH || window.getAuth?.();
     if (auth) {
       await auth.logout();
-      window.location.href = './login/';
+      window.location.href = './login-modern.html';
     }
   },
 
@@ -171,7 +171,7 @@ window.DualMindAuth = {
   requireLogin() {
     if (!this.isLoggedIn()) {
       const currentPath = window.location.pathname;
-      window.location.href = './login/?redirect=' + encodeURIComponent(currentPath);
+      window.location.href = './login-modern.html?redirect=' + encodeURIComponent(currentPath);
     }
   },
 

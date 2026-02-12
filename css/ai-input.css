@@ -4,17 +4,9 @@
    ======================================== */
 
 .AI-Input {
-  --primary-color: #2e2e2e;
-  --neutral-color: #d3d3d3;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  position: relative;
-  width: 100%;
   margin: 0 auto;
   user-select: none;
-  z-index: -3;
+  z-index: auto;
 }
 
 #voice {
@@ -175,17 +167,12 @@
   transform: scale(0.98);
 }
 .chat-container {
-  position: relative;
-  top: 0;
-  width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
   background: var(--primary-color);
   border: 0.2rem solid rgba(255, 255, 255, 0.3);
   border-radius: 1rem;
   overflow: hidden;
   transition: all 0.5s cubic-bezier(0.3, 1.5, 0.6, 1);
-  z-index: -2;
+  z-index: 10;
 }
 
 .chat-container::before {

@@ -632,7 +632,7 @@ class App {
 const app = new App();
 
 // Expose to window for debugging
-window.LMArena = app;
+window.DualMindArena = app;
 
 export default app;
 

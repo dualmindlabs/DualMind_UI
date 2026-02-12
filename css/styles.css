@@ -2882,6 +2882,13 @@ textarea {
   overflow: hidden;
 }
 
+.dm-modal[hidden],
+.dm-modal-overlay[hidden] {
+  display: none !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+}
+
 .dm-modal.open {
   animation: scaleIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }

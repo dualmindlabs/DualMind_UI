@@ -5,11 +5,20 @@
     align-items: center;
     gap: 4px;
     padding-right: 64px;
+    transition: background 0.2s ease;
+}
+
+.chat-item-wrapper:hover {
+    background: rgba(255, 255, 255, 0.03);
 }
 
 .chat-item-wrapper:hover .chat-actions {
     opacity: 1;
     pointer-events: all;
+}
+
+.chat-item-wrapper .chat-item {
+    transition: padding-right 0.2s ease;
 }
 
 .chat-actions {
@@ -35,24 +44,51 @@
 }
 
 .chat-action-btn {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.08);
     border: none;
-    border-radius: 6px;
-    width: 28px;
-    height: 28px;
+    border-radius: 8px;
+    width: 32px;
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     font-size: 14px;
-    transition: all 0.2s ease;
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 }
 
 .chat-action-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: scale(1.1);
+    background: rgba(255, 255, 255, 0.15);
+    transform: scale(1.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.chat-action-btn:active {
+    transform: scale(0.95);
+}
+
+.chat-action-btn[data-action="rename"]:hover {
+    background: rgba(74, 171, 194, 0.25);
+    color: #4AABC2;
 }
 
 .chat-action-btn[data-action="delete"]:hover {
-    background: rgba(239, 68, 68, 0.3);
+    background: rgba(239, 68, 68, 0.25);
+    color: #ef4444;
+}
+
+/* Mobile: always show action buttons */
+@media (max-width: 768px) {
+    .chat-actions {
+        opacity: 1;
+        pointer-events: all;
+    }
+    
+    .chat-action-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+    }
 }
