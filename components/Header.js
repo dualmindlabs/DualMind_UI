@@ -83,6 +83,11 @@ export class Header {
 
         <!-- Right Controls -->
         <div class="header-controls">
+          <!-- Upgrade Button -->
+          <button id="upgrade-btn" class="upgrade-btn" style="display:none">
+            ⭐ Upgrade
+          </button>
+
           <!-- Energy Display -->
           <div id="energy-display" class="energy-display" title="Your Energy" aria-label="Energy Balance" style="display:none">
             <span class="energy-icon">💎</span>
@@ -121,6 +126,17 @@ export class Header {
         this.selectMode(option.dataset.mode);
       });
     });
+
+    // Upgrade Button
+    const upgradeBtn = this.container.querySelector('#upgrade-btn');
+    if (upgradeBtn) {
+      upgradeBtn.addEventListener('click', () => {
+        // We import dynamically to avoid circular dependencies
+        import('./PricingModal.js').then(module => {
+          module.pricingModal.open();
+        }).catch(err => console.error('Failed to load PricingModal', err));
+      });
+    }
 
     // Share button
     const shareBtn = this.container.querySelector('#share-thread-btn');

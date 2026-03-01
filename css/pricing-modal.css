@@ -1,0 +1,244 @@
+/* ========================================
+   Pricing & Store Modal Styles
+   ======================================== */
+
+.pricing-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(10, 12, 16, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.pricing-modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.pricing-modal-content {
+  background: var(--surface-1, #1A1D27);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  width: 90%;
+  max-width: 800px;
+  padding: 40px;
+  position: relative;
+  transform: translateY(20px) scale(0.95);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
+}
+
+.pricing-modal-overlay.active .pricing-modal-content {
+  transform: translateY(0) scale(1);
+}
+
+.pricing-close-btn {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  background: rgba(255, 255, 255, 0.05);
+  border: none;
+  color: #fff;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pricing-close-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: rotate(90deg);
+}
+
+.pricing-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.pricing-header h2 {
+  font-size: 32px;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, #fff, #a5b4fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.pricing-header p {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 16px;
+}
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.pricing-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.pricing-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-4px);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.pricing-card.featured {
+  border-color: var(--color-cyan, #4AABC2);
+  background: rgba(74, 171, 194, 0.05);
+}
+
+.pricing-card.featured::before {
+  content: 'BEST VALUE';
+  position: absolute;
+  top: 12px;
+  right: -32px;
+  background: var(--color-cyan, #4AABC2);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 32px;
+  transform: rotate(45deg);
+  letter-spacing: 1px;
+}
+
+.pricing-icon {
+  font-size: 40px;
+  margin-bottom: 16px;
+}
+
+.pricing-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.pricing-price {
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.pricing-price span {
+  font-size: 14px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.pricing-features {
+  list-style: none;
+  margin-bottom: 32px;
+  flex-grow: 1;
+}
+
+.pricing-features li {
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.pricing-features li::before {
+  content: '✓';
+  color: var(--color-cyan, #4AABC2);
+  font-weight: bold;
+}
+
+.pricing-card.featured .pricing-features li::before {
+  color: #a5b4fc;
+}
+
+.pricing-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.pricing-btn-outline {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.pricing-btn-outline:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.pricing-btn-primary {
+  background: var(--color-cyan, #4AABC2);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(74, 171, 194, 0.3);
+}
+
+.pricing-btn-primary:hover {
+  background: #3b8fa3;
+  box-shadow: 0 6px 16px rgba(74, 171, 194, 0.4);
+}
+
+/* Header Upgrade Button */
+.upgrade-btn {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.2));
+  border: 1px solid rgba(251, 191, 36, 0.5);
+  color: #fbbf24;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: 12px;
+}
+
+.upgrade-btn:hover {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.3), rgba(245, 158, 11, 0.3));
+  transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+  .pricing-modal-content {
+    padding: 24px;
+    width: 95%;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .pricing-grid {
+    grid-template-columns: 1fr;
+  }
+}

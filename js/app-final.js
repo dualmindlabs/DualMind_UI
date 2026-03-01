@@ -1455,11 +1455,12 @@ class App {
         </div>
         <h3 class="custom-modal-title">Out of Energy!</h3>
         <p class="custom-modal-message">
-          You need at least 3 energy to send a prompt. Come back tomorrow, or watch a quick demo video to get +5 energy right now!
+          You need at least 3 energy to send a prompt. Refill your energy, or watch a quick demo video to get +5 energy right now!
         </p>
-        <div class="custom-modal-actions">
-          <button class="custom-modal-btn secondary" data-action="cancel">Maybe Later</button>
-          <button class="custom-modal-btn primary" data-action="watch-video">Watch Demo Video for +5 Energy</button>
+        <div class="custom-modal-actions" style="flex-direction: column; gap: 12px;">
+          <button class="custom-modal-btn primary" data-action="buy-energy" style="width: 100%; background: linear-gradient(135deg, rgba(251, 191, 36, 0.9), rgba(245, 158, 11, 0.9)); border-color: #f59e0b; color: #fff;">⭐ Get DualMind Pro</button>
+          <button class="custom-modal-btn" data-action="watch-video" style="width: 100%; background: rgba(74, 171, 194, 0.2); border-color: rgba(74, 171, 194, 0.4); color: var(--color-cyan);">🎥 Watch Video for +5 Energy</button>
+          <button class="custom-modal-btn secondary" data-action="cancel" style="width: 100%;">Maybe Later</button>
         </div>
       </div>
 
@@ -1511,6 +1512,18 @@ class App {
             modal.close();
             await this.claimEnergyVideo();
           });
+        });
+      }
+
+      const buyBtn = document.querySelector('#custom-modal-content [data-action="buy-energy"]');
+      if (buyBtn) {
+        buyBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          modal.close();
+          // We import dynamically to avoid circular dependencies
+          import('../components/PricingModal.js').then(module => {
+            module.pricingModal.open();
+          }).catch(err => console.error('Failed to load PricingModal', err));
         });
       }
     }, 50);
