@@ -17,29 +17,23 @@ function renderSkeleton(root) {
           <div class="dm-lb-subtitle">Loading stats…</div>
         </div>
       </div>
-      <div class="dm-lb-table-wrap">
-        <table class="dm-lb-table">
-          <thead>
-            <tr>
-              <th>Rank</th>
-              <th>Model</th>
-              <th>Win rate</th>
-              <th>Wins</th>
-              <th>Responses</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${Array.from({ length: 10 }).map(() => `
-              <tr class="dm-lb-row-skel">
-                <td><div class="dm-skel w-30"></div></td>
-                <td><div class="dm-skel w-70"></div></td>
-                <td><div class="dm-skel w-40"></div></td>
-                <td><div class="dm-skel w-30"></div></td>
-                <td><div class="dm-skel w-40"></div></td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
+      <div class="dm-lb-grid-wrap">
+        <div class="dm-lb-grid-header">
+          <div>Rank</div>
+          <div>Model</div>
+          <div>Elo Rating</div>
+          <div>Win Rate</div>
+          <div>Responses</div>
+        </div>
+        ${Array.from({ length: 10 }).map(() => `
+          <div class="dm-lb-grid-skel">
+            <div class="dm-skel w-30"></div>
+            <div class="dm-skel w-70"></div>
+            <div class="dm-skel w-40"></div>
+            <div class="dm-skel w-70"></div>
+            <div class="dm-skel w-40"></div>
+          </div>
+        `).join('')}
       </div>
     </div>
   `;
@@ -72,66 +66,67 @@ function renderData(root, items) {
   }
 
   const sorted = [...items].sort((a, b) => {
-    const ar = Number(a.win_rate ?? a.winRate ?? 0);
-    const br = Number(b.win_rate ?? b.winRate ?? 0);
-    if (br !== ar) return br - ar;
-    const aw = Number(a.wins ?? a.totalWins ?? 0);
-    const bw = Number(b.wins ?? b.totalWins ?? 0);
-    return bw - aw;
+    const aElo = Number(a.eloScore ?? a.elo_score ?? 0);
+    const bElo = Number(b.eloScore ?? b.elo_score ?? 0);
+    if (bElo !== aElo) return bElo - aElo;
+
+    const aWinRate = Number(a.winRate ?? a.win_rate ?? 0);
+    const bWinRate = Number(b.winRate ?? b.win_rate ?? 0);
+    return bWinRate - aWinRate;
   });
 
   const totals = sorted.reduce((acc, it) => {
-    acc.wins += Number(it.wins || it.totalWins || 0);
-    acc.responses += Number(it.times_compared || it.totalResponses || 0);
+    acc.responses += Number(it.totalResponses || it.total_responses || 0);
     return acc;
-  }, { wins: 0, responses: 0 });
+  }, { responses: 0 });
 
   root.innerHTML = `
     <div class="dm-lb-shell">
       <div class="dm-lb-top">
         <div>
-          <div class="dm-lb-title">Model Leaderboard</div>
-          <div class="dm-lb-subtitle">${escapeHtml(String(sorted.length))} models · ${escapeHtml(String(totals.wins))} wins · ${escapeHtml(String(totals.responses))} responses</div>
+          <div class="dm-lb-title" style="color: #ffffff;">Model Leaderboard</div>
+          <div class="dm-lb-subtitle" style="color: rgba(255,255,255,0.7);">${escapeHtml(String(sorted.length))} models · ${escapeHtml(String(totals.responses))} total matches</div>
         </div>
       </div>
 
-      <div class="dm-lb-table-wrap">
-        <table class="dm-lb-table">
-          <thead>
-            <tr>
-              <th>Rank</th>
-              <th>Model</th>
-              <th>Win rate</th>
-              <th>Wins</th>
-              <th>Responses</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${sorted.map((item, i) => {
-    const rank = i + 1;
-    const modelName = item.model_name || item.modelName || 'Unknown';
-    const provider = item.provider || item.providerName || '';
-    const winRate = Number(item.win_rate || item.winRate || 0);
-    const wins = Number(item.wins || item.totalWins || 0);
-    const responses = Number(item.times_compared || item.totalResponses || 0);
-    const medal = rank <= 3 ? ` rank-${rank}` : '';
-    return `
-                <tr class="dm-lb-row">
-                  <td class="dm-lb-rank${medal}"><span class="dm-lb-rank-pill">#${rank}</span></td>
-                  <td>
-                    <div class="dm-lb-model">
-                      <div class="dm-lb-model-name">${escapeHtml(modelName)}</div>
-                      ${provider ? `<div class="dm-lb-model-provider">${escapeHtml(provider)}</div>` : ''}
-                    </div>
-                  </td>
-                  <td><span class="dm-lb-win-pill">${escapeHtml(winRate.toFixed(1))}%</span></td>
-                  <td class="dm-lb-num">${escapeHtml(String(wins))}</td>
-                  <td class="dm-lb-num">${escapeHtml(String(responses))}</td>
-                </tr>
-              `;
-  }).join('')}
-          </tbody>
-        </table>
+      <div class="dm-lb-grid-wrap">
+        <div class="dm-lb-grid-header">
+          <div>Rank</div>
+          <div>Model</div>
+          <div>Elo</div>
+          <div>Win Rate</div>
+          <div>Matches</div>
+        </div>
+        
+        ${sorted.map((item, i) => {
+          const rank = i + 1;
+          const modelName = item.displayName || item.display_name || item.modelName || item.model_name || 'Unknown';
+          const provider = item.providerName || item.provider_name || '';
+          const eloScore = Number(item.eloScore || item.elo_score || 0);
+          const winRate = Number(item.winRate || item.win_rate || 0);
+          const responses = Number(item.totalResponses || item.total_responses || 0);
+          
+          const topClass = rank <= 3 ? ' lb-row-top3' : '';
+          const barWidth = Math.min(100, winRate).toFixed(1);
+
+          return `
+            <div class="dm-lb-grid-row${topClass}">
+              <div class="lb-cell-rank">${String(rank).padStart(2, '0')}</div>
+              <div class="lb-cell-model">
+                <div class="lb-model-name" title="${escapeHtml(modelName)}">${escapeHtml(modelName)}</div>
+                ${provider ? `<div class="lb-model-provider">${escapeHtml(provider)}</div>` : ''}
+              </div>
+              <div class="lb-cell-elo">${escapeHtml(String(eloScore))}</div>
+              <div class="lb-cell-winrate">
+                <span class="lb-winrate-text">${escapeHtml(winRate.toFixed(1))}%</span>
+                <div class="lb-winrate-bar-track">
+                  <div class="lb-winrate-bar-fill" style="width: ${barWidth}%"></div>
+                </div>
+              </div>
+              <div class="lb-cell-responses">${escapeHtml(String(responses))}</div>
+            </div>
+          `;
+        }).join('')}
       </div>
     </div>
   `;
@@ -154,6 +149,7 @@ async function init() {
         });
         return;
       }
+      
       const data = await api.arena.getLeaderboard();
       const items = normalizeItems(data);
       renderData(root, items);
