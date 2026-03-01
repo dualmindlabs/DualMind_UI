@@ -17,7 +17,12 @@ export class SupabaseAuthService {
     this.storageKey = 'dualmind.auth.supabase';
     this.user = null;
     this.session = null;
-    this.supabase = createClient(supabaseUrl, supabaseKey);
+    // CRITICAL: Ensure supabase client is created safely
+    if (window.supabase) {
+      this.supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+    } else {
+      this.supabase = createClient(supabaseUrl, supabaseKey);
+    }
 
     this.init();
   }
@@ -173,7 +178,7 @@ export class SupabaseAuthService {
   async resetPassword(email) {
     try {
       const { error } = await this.supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/reset-password`,
+        redirectTo: `${window.location.origin}/update-password.html`,
       });
 
       if (error) {
@@ -544,8 +549,6 @@ export class SupabaseAuthService {
         session: this.session,
       })
     );
-    // Also set for API client
-    window.DUALMIND_AUTH_TOKEN = this.session?.access_token;
   }
 
   /**
@@ -553,7 +556,6 @@ export class SupabaseAuthService {
    */
   _clearSession() {
     localStorage.removeItem(this.storageKey);
-    delete window.DUALMIND_AUTH_TOKEN;
   }
 
   /**
@@ -597,6 +599,38 @@ export class SupabaseAuthService {
     }
 
     return message || 'An error occurred. Please try again.';
+  }
+  /**
+   * Sign in with OAuth provider (Google, GitHub)
+   */
+  async signInWithOAuth(provider, redirectTo, options = {}) {
+    try {
+      const { data, error } = await this.supabase.auth.signInWithOAuth({
+        provider: provider,
+        options: {
+          redirectTo: redirectTo || window.location.origin,
+          ...options
+        },
+      });
+
+      if (error) {
+        return {
+          success: false,
+          error: this._parseError(error),
+        };
+      }
+
+      return {
+        success: true,
+        data: data,
+      };
+    } catch (error) {
+      console.error('OAuth login error:', error);
+      return {
+        success: false,
+        error: error.message || 'OAuth login failed',
+      };
+    }
   }
 }
 

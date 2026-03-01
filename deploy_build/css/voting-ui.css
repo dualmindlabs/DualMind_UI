@@ -1,0 +1,275 @@
+/* ========================================
+   Floating Voting UI - Positioned Above Chat Input
+   ======================================== */
+
+#floating-voting {
+  position: fixed;
+  bottom: calc(150px + env(safe-area-inset-bottom, 0px));
+  left: calc(var(--sidebar-width) + (100% - var(--sidebar-width)) / 2);
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: min(820px, 100%);
+  padding: 0 20px;
+  z-index: 2000;
+  pointer-events: none;
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#floating-voting:not([hidden]) {
+  pointer-events: all;
+}
+
+#floating-voting[hidden] {
+  display: none !important;
+}
+
+.floating-voting-container {
+  background: linear-gradient(180deg, rgba(16, 18, 28, 0.98), rgba(10, 12, 18, 0.96));
+  backdrop-filter: blur(24px) saturate(1.2);
+  -webkit-backdrop-filter: blur(24px) saturate(1.2);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 18px;
+  padding: 18px 20px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  display: grid;
+  gap: 12px;
+  animation: dm-vote-rise 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes dm-vote-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.vote-prompt {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  font-family: 'Outfit', var(--font-family-base);
+}
+
+.vote-buttons {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+}
+
+.vote-btn-light {
+  --vote-accent: rgba(255, 255, 255, 0.3);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+  width: 100%;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Outfit', var(--font-family-base);
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+  white-space: nowrap;
+}
+
+.vote-btn-light::before,
+.vote-btn-light::after {
+  content: none;
+}
+
+.vote-btn-light:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(74, 171, 194, 0.4), 0 0 0 4px rgba(74, 171, 194, 0.2);
+}
+
+.vote-btn-light:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.35);
+}
+
+.vote-btn-light:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  filter: saturate(0.6);
+}
+
+.vote-btn-light.active {
+  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.12);
+}
+
+.vote-btn-light[data-vote="left"],
+.vote-btn-light.vote-left {
+  --vote-accent: #4AABC2;
+}
+
+.vote-btn-light[data-vote="right"],
+.vote-btn-light.vote-right {
+  --vote-accent: #CB9275;
+}
+
+.vote-btn-light[data-vote="tie"],
+.vote-btn-light.vote-tie {
+  --vote-accent: #FDF4CD;
+}
+
+.vote-btn-light[data-vote="both-bad"],
+.vote-btn-light.vote-both-bad {
+  --vote-accent: #EF4444;
+}
+
+.vote-btn-light[data-vote="left"]:hover:not(:disabled) {
+  background: rgba(74, 171, 194, 0.16);
+  border-color: rgba(74, 171, 194, 0.6);
+  color: #c5edf6;
+}
+
+.vote-btn-light[data-vote="right"]:hover:not(:disabled) {
+  background: rgba(203, 146, 117, 0.18);
+  border-color: rgba(203, 146, 117, 0.6);
+  color: #f0d1c2;
+}
+
+.vote-btn-light[data-vote="tie"]:hover:not(:disabled) {
+  background: rgba(253, 244, 205, 0.14);
+  border-color: rgba(253, 244, 205, 0.6);
+  color: #FDF4CD;
+}
+
+.vote-btn-light[data-vote="both-bad"]:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.16);
+  border-color: rgba(239, 68, 68, 0.6);
+  color: #fca5a5;
+}
+
+.vote-btn-light.active[data-vote="left"] {
+  background: rgba(74, 171, 194, 0.24);
+  border-color: rgba(74, 171, 194, 0.75);
+  color: #e2f6fa;
+  box-shadow: 0 0 0 2px rgba(74, 171, 194, 0.2);
+}
+
+.vote-btn-light.active[data-vote="right"] {
+  background: rgba(203, 146, 117, 0.24);
+  border-color: rgba(203, 146, 117, 0.75);
+  color: #f6e1d7;
+  box-shadow: 0 0 0 2px rgba(203, 146, 117, 0.2);
+}
+
+.vote-btn-light.active[data-vote="tie"] {
+  background: rgba(253, 244, 205, 0.2);
+  border-color: rgba(253, 244, 205, 0.8);
+  color: #FDF4CD;
+  box-shadow: 0 0 0 2px rgba(253, 244, 205, 0.18);
+}
+
+.vote-btn-light.active[data-vote="both-bad"] {
+  background: rgba(239, 68, 68, 0.22);
+  border-color: rgba(239, 68, 68, 0.75);
+  color: #fecaca;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+}
+
+@media (min-width: 1025px) {
+  #floating-voting {
+    left: calc(var(--sidebar-width) + (100% - var(--sidebar-width)) / 2);
+  }
+
+  #main-content.collapsed ~ #floating-voting {
+    left: calc(var(--sidebar-collapsed-width) + (100% - var(--sidebar-collapsed-width)) / 2);
+  }
+}
+
+@media (max-width: 1024px) {
+  #floating-voting {
+    bottom: calc(130px + env(safe-area-inset-bottom, 0px));
+    left: 50%;
+    max-width: 100%;
+    padding: 0 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .vote-buttons {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+  
+  .vote-btn-light {
+    padding: 12px 8px;
+    font-size: 0;
+    min-height: 48px;
+  }
+  
+  .vote-btn-light::before {
+    font-size: 20px;
+    content: attr(data-icon);
+  }
+  
+  /* Add icons for each vote type */
+  .vote-btn-light[data-vote="left"]::before {
+    content: "👈";
+  }
+  
+  .vote-btn-light[data-vote="right"]::before {
+    content: "👉";
+  }
+  
+  .vote-btn-light[data-vote="tie"]::before {
+    content: "🤝";
+  }
+  
+  .vote-btn-light[data-vote="both-bad"]::before {
+    content: "👎";
+  }
+}
+
+@media (max-width: 480px) {
+  #floating-voting {
+    bottom: calc(120px + env(safe-area-inset-bottom, 0px));
+    padding: 0 12px;
+  }
+
+  .floating-voting-container {
+    padding: 14px 14px;
+    border-radius: 16px;
+  }
+
+  .vote-buttons {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .vote-btn-light {
+    min-height: 44px;
+    padding: 10px 4px;
+    font-size: 0;
+    border-radius: 10px;
+  }
+  
+  .vote-btn-light::before {
+    font-size: 18px;
+  }
+  
+  .vote-prompt {
+    font-size: 13px;
+  }
+}

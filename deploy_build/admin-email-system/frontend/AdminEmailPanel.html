@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Email System - DualMind Labs</title>
+  
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .header {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .header h1 {
+      font-size: 32px;
+      color: #1a1a1a;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header h1 i {
+      color: #667eea;
+    }
+
+    .header p {
+      color: #666;
+      font-size: 16px;
+    }
+
+    .main-content {
+      display: grid;
+      grid-template-columns: 400px 1fr;
+      gap: 30px;
+    }
+
+    @media (max-width: 1024px) {
+      .main-content {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .card h2 {
+      font-size: 20px;
+      color: #1a1a1a;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card h2 i {
+      color: #667eea;
+    }
+
+    /* User List Styles */
+    .user-list-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid #e9ecef;
+    }
+
+    .select-all-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .select-all-wrapper input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    .selected-count {
+      font-size: 14px;
+      color: #667eea;
+      font-weight: 600;
+    }
+
+    .user-list {
+      max-height: 500px;
+      overflow-y: auto;
+      padding-right: 10px;
+    }
+
+    .user-list::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .user-list::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 4px;
+    }
+
+    .user-list::-webkit-scrollbar-thumb {
+      background: #667eea;
+      border-radius: 4px;
+    }
+
+    .user-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: 2px solid transparent;
+    }
+
+    .user-item:hover {
+      background: #f8f9fa;
+      border-color: #e9ecef;
+    }
+
+    .user-item.selected {
+      background: #e7f0ff;
+      border-color: #667eea;
+    }
+
+    .user-item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    .user-info {
+      flex: 1;
+    }
+
+    .user-name {
+      font-weight: 600;
+      color: #1a1a1a;
+      font-size: 14px;
+      margin-bottom: 2px;
+    }
+
+    .user-email {
+      font-size: 13px;
+      color: #666;
+    }
+
+    .loading-state, .error-state, .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #666;
+    }
+
+    .loading-state i {
+      font-size: 32px;
+      color: #667eea;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Email Composer Styles */
+    .form-group {
+      margin-bottom: 24px;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 150px;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .char-count {
+      text-align: right;
+      font-size: 12px;
+      color: #999;
+      margin-top: 4px;
+    }
+
+    .html-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .html-toggle input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    .html-toggle label {
+      font-size: 13px;
+      color: #666;
+      cursor: pointer;
+      margin: 0;
+    }
+
+    .preview-box {
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      padding: 20px;
+      background: #f8f9fa;
+      min-height: 150px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .preview-box:empty::before {
+      content: 'Email preview will appear here...';
+      color: #999;
+      font-style: italic;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 14px 24px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-secondary {
+      background: #e9ecef;
+      color: #495057;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: #dee2e6;
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn i {
+      font-size: 18px;
+    }
+
+    /* Alert Styles */
+    .alert {
+      padding: 16px 20px;
+      border-radius: 8px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .alert i {
+      font-size: 20px;
+    }
+
+    .alert-success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .alert-error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    .alert-info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+
+    .alert-content {
+      flex: 1;
+    }
+
+    .alert-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .alert-message {
+      font-size: 14px;
+    }
+
+    /* Access Denied Screen */
+    .access-denied {
+      text-align: center;
+      padding: 60px 20px;
+    }
+
+    .access-denied i {
+      font-size: 64px;
+      color: #dc3545;
+      margin-bottom: 20px;
+    }
+
+    .access-denied h2 {
+      font-size: 28px;
+      color: #1a1a1a;
+      margin-bottom: 12px;
+    }
+
+    .access-denied p {
+      color: #666;
+      font-size: 16px;
+      margin-bottom: 24px;
+    }
+
+    .access-denied .btn {
+      max-width: 200px;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="app">
+    
+    <div class="card" id="loginCard">
+  <h2 style="margin-bottom:16px;">Admin Login</h2>
+  <div class="form-group">
+    <label for="loginEmail">Email</label>
+    <input id="loginEmail" type="email" placeholder="admin@yourdomain.com" required>
+  </div>
+  <div class="form-group">
+    <label for="loginPassword">Password</label>
+    <input id="loginPassword" type="password" placeholder="Password" required>
+  </div>
+  <button class="btn btn-primary" id="loginBtn" style="width:100%;">
+    <i class="ri-login-box-line"></i> Login
+  </button>
+  <div id="loginError" style="color:#dc3545; margin-top:12px; font-size:14px;"></div>
+</div>
+    <!-- Loading State -->
+    <div class="card" id="loadingScreen" style="text-align: center; padding: 60px;">
+      <div class="loading-state">
+        <i class="ri-loader-4-line"></i>
+        <p style="margin-top: 16px;">Verifying admin access...</p>
+      </div>
+    </div>
+
+    <!-- Access Denied Screen -->
+    <div class="card access-denied" id="accessDenied" style="display: none;">
+      <i class="ri-shield-cross-line"></i>
+      <h2>Access Denied</h2>
+      <p>You do not have permission to access the Admin Email System.<br>This feature is restricted to administrators only.</p>
+      <button class="btn btn-primary" onclick="window.location.href='/'">
+        <i class="ri-home-line"></i>
+        Return to Home
+      </button>
+    </div>
+
+    <!-- Main Admin Panel -->
+    <div id="mainPanel" style="display: none;">
+      <div class="header">
+        <h1>
+          <i class="ri-mail-send-line"></i>
+          Admin Email System
+        </h1>
+        <div style="margin-top: 12px;">
+          <button class="btn btn-secondary" id="logoutBtn" style="max-width:150px;">
+            <i class="ri-logout-box-line"></i> Logout
+          </button>
+        </div>
+        <p>Send emails to selected users from the DualMind Labs admin panel</p>
+      </div>
+
+      <div class="main-content">
+        <!-- User Selection Panel -->
+        <div class="card">
+          <h2>
+            <i class="ri-user-line"></i>
+            Select Recipients
+          </h2>
+
+          <div class="user-list-header">
+            <label class="select-all-wrapper">
+              <input type="checkbox" id="selectAll">
+              <span>Select All</span>
+            </label>
+            <span class="selected-count" id="selectedCount">0 selected</span>
+          </div>
+
+          <div id="userListContainer">
+            <div class="loading-state">
+              <i class="ri-loader-4-line"></i>
+              <p style="margin-top: 16px;">Loading users...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Email Composer Panel -->
+        <div class="card">
+          <h2>
+            <i class="ri-edit-line"></i>
+            Compose Email
+          </h2>
+
+          <div id="alertContainer"></div>
+
+          <form id="emailForm">
+            <div class="form-group">
+              <label for="emailSubject">Email Subject *</label>
+              <input 
+                type="text" 
+                id="emailSubject" 
+                placeholder="Enter email subject..."
+                required
+                maxlength="200"
+              >
+              <div class="char-count" id="subjectCount">0 / 200</div>
+            </div>
+
+            <div class="form-group">
+              <label for="emailTitle">Email Title *</label>
+              <input 
+                type="text" 
+                id="emailTitle" 
+                placeholder="Enter email title (shown in header)..."
+                required
+                maxlength="100"
+              >
+              <div class="char-count" id="titleCount">0 / 100</div>
+            </div>
+
+            <div class="form-group">
+              <label for="emailBody">Email Body *</label>
+              <div class="html-toggle">
+                <input type="checkbox" id="htmlMode">
+                <label for="htmlMode">Enable HTML mode</label>
+              </div>
+              <textarea 
+                id="emailBody" 
+                placeholder="Enter your message here..."
+                required
+              ></textarea>
+              <div class="char-count" id="bodyCount">0 characters</div>
+            </div>
+
+            <div class="form-group">
+              <label>Preview</label>
+              <div class="preview-box" id="previewBox"></div>
+            </div>
+
+            <div class="button-group">
+              <button type="button" class="btn btn-secondary" id="clearBtn">
+                <i class="ri-delete-bin-line"></i>
+                Clear Form
+              </button>
+              <button type="submit" class="btn btn-primary" id="sendBtn">
+                <i class="ri-send-plane-fill"></i>
+                Send Email
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="admin-email-panel.js"></script>
+</body>
+</html>

@@ -53,10 +53,12 @@ export class ThreadService {
      * Create new thread
      * @param {string} title - Thread title
      * @param {string} [userId] - User ID (Ignored by backend)
+     * @param {string} [mode] - Thread mode (battle, arena, direct)
      * @returns {Promise<Object>} Created thread
      */
-    async createThread(title, userId) {
+    async createThread(title, userId, mode = null) {
         const body = { title };
+        if (mode) body.mode = mode;
         // UserId is handled by backend auth token
         // if (userId) body.userId = userId;
 

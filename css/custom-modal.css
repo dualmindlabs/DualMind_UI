@@ -51,7 +51,7 @@
 /* Modal Content */
 .custom-modal-content {
   background: linear-gradient(145deg, rgba(25, 25, 35, 0.98), rgba(15, 15, 25, 0.99));
-  border: 1px solid rgba(74, 171, 194, 0.2);
+  border: 1px solid rgba(74, 171, 194, 0.2); /* var(--color-cyan, #4AABC2) */
   border-radius: 20px;
   padding: 32px;
   max-width: 420px;
@@ -119,7 +119,7 @@
 .custom-modal-icon.edit {
   background: rgba(74, 171, 194, 0.1);
   border-color: rgba(74, 171, 194, 0.3);
-  color: #4AABC2;
+  color: var(--color-cyan, #4AABC2);
 }
 
 .custom-modal-icon.confirm {
@@ -229,12 +229,12 @@
 }
 
 .custom-modal-btn.primary {
-  background: linear-gradient(135deg, #4AABC2, #3A9BB2);
+  background: linear-gradient(135deg, var(--color-cyan, #4AABC2), #3A9BB2);
   color: white;
 }
 
 .custom-modal-btn.primary:hover {
-  background: linear-gradient(135deg, #5BBCD3, #4AABC2);
+  background: linear-gradient(135deg, #5BBCD3, var(--color-cyan, #4AABC2));
   transform: translateY(-1px);
   box-shadow: 0 4px 15px rgba(74, 171, 194, 0.3);
 }
@@ -321,7 +321,7 @@
 
 .custom-toast.info .custom-toast-icon {
   background: rgba(74, 171, 194, 0.2);
-  color: #4AABC2;
+  color: var(--color-cyan, #4AABC2);
 }
 
 .custom-toast-message {

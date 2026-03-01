@@ -49,14 +49,14 @@ window.DualMindAuthReady = new Promise((resolve) => {
         window._DUALMIND_AUTH = auth;
 
         // Log status
-        console.log('✅ Supabase Auth initialized successfully');
+        if (window.DUALMIND_CONFIG?.debug?.enabled) console.log('✅ Supabase Auth initialized successfully');
 
         // Check if user is logged in
         if (auth.isAuthenticated()) {
           const user = auth.getUser();
-          console.log(`✅ User logged in: ${user.email}`);
+          if (window.DUALMIND_CONFIG?.debug?.enabled) console.log(`✅ User logged in: ${user.email}`);
         } else {
-          console.log('ℹ️ No active session. Waiting for login.');
+          if (window.DUALMIND_CONFIG?.debug?.enabled) console.log('ℹ️ No active session. Waiting for login.');
         }
 
         // Setup global auth reference
@@ -194,5 +194,5 @@ window.DualMindAuth = {
 window.auth = window.DualMindAuth;
 
 // Log initialization
-console.log('✅ Supabase Auth module loaded');
-console.log('📖 Usage: DualMindAuth.isLoggedIn(), DualMindAuth.getUser(), etc.');
+if (window.DUALMIND_CONFIG?.debug?.enabled) console.log('✅ Supabase Auth module loaded');
+if (window.DUALMIND_CONFIG?.debug?.enabled) console.log('📖 Usage: DualMindAuth.isLoggedIn(), DualMindAuth.getUser(), etc.');

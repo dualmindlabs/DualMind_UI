@@ -282,7 +282,7 @@ export class ShareModal {
         }
 
         this.currentVisibility = visibility;
-        console.log('✅ Visibility updated to:', visibility);
+        if (window.DUALMIND_CONFIG?.debug?.enabled) console.log('✅ Visibility updated to:', visibility);
       }
     } catch (error) {
       console.error('Failed to update visibility:', error);

@@ -192,7 +192,7 @@
 }
 
 .share-toggle input:checked + .share-toggle-slider {
-  background: linear-gradient(135deg, #4AABC2, #6BC5D8);
+  background: linear-gradient(135deg, var(--color-cyan, #4AABC2), #6BC5D8);
 }
 
 .share-toggle input:checked + .share-toggle-slider::before {
@@ -251,7 +251,7 @@
   align-items: center;
   gap: 6px;
   padding: 12px 16px;
-  background: linear-gradient(135deg, #4AABC2, #3A9BB2);
+  background: linear-gradient(135deg, var(--color-cyan, #4AABC2), #3A9BB2);
   border: none;
   border-radius: 8px;
   color: #fff;
@@ -263,7 +263,7 @@
 }
 
 .share-copy-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #5BBCD3, #4AABC2);
+  background: linear-gradient(135deg, #5BBCD3, var(--color-cyan, #4AABC2));
   transform: translateY(-1px);
 }
 
@@ -324,7 +324,7 @@
 .visibility-option.active {
   background: rgba(74, 171, 194, 0.15);
   border-color: rgba(74, 171, 194, 0.4);
-  color: #4AABC2;
+  color: var(--color-cyan, #4AABC2);
 }
 
 .visibility-hint {
@@ -342,7 +342,7 @@
 
 .share-done-btn {
   padding: 12px 32px;
-  background: linear-gradient(135deg, #4AABC2, #3A9BB2);
+  background: linear-gradient(135deg, var(--color-cyan, #4AABC2), #3A9BB2);
   border: none;
   border-radius: 8px;
   color: #fff;
@@ -353,7 +353,7 @@
 }
 
 .share-done-btn:hover {
-  background: linear-gradient(135deg, #5BBCD3, #4AABC2);
+  background: linear-gradient(135deg, #5BBCD3, var(--color-cyan, #4AABC2));
   transform: translateY(-1px);
 }
 
@@ -372,7 +372,7 @@
   width: 32px;
   height: 32px;
   border: 3px solid rgba(255, 255, 255, 0.1);
-  border-top-color: #4AABC2;
+  border-top-color: var(--color-cyan, #4AABC2);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }

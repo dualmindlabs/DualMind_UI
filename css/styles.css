@@ -1,135 +1,10 @@
 /**
- * LMArena - Main Styles
- * Component-based responsive design with LMArena-level polish
+ * DualMind - Main Styles
+ * Layout, reset, app shell, chat area, sidebar, header.
+ *
+ * Design tokens live in tokens.css (loaded before this file).
+ * Do NOT define :root variables here.
  */
-
-/* ========================================
-   CSS Variables / Design Tokens
-   ======================================== */
-:root {
-  /* Font Family - Modern, Professional */
-  --font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
-  --font-family-heading: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-  --font-family-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
-
-  /* Modern SaaS Color Palette */
-  --bg-0: #000000;
-  --bg-1: #0a0a0a;
-  --bg-2: #111111;
-  --bg-3: #1a1a1a;
-  --bg-card: rgba(255, 255, 255, 0.03);
-  --bg-hover: rgba(255, 255, 255, 0.05);
-  
-  /* Brand Colors - Refined Palette */
-  --color-primary: #6366f1;
-  --color-primary-hover: #4f46e5;
-  --color-accent: #22d3ee;
-  --color-accent-hover: #06b6d4;
-  --color-success: #10b981;
-  --color-warning: #f59e0b;
-  --color-error: #ef4444;
-  
-  /* Text Colors - Semantic */
-  --text-primary: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.7);
-  --text-tertiary: rgba(255, 255, 255, 0.5);
-  --text-muted: rgba(255, 255, 255, 0.4);
-  
-  /* Borders - Subtle */
-  --border-primary: rgba(255, 255, 255, 0.1);
-  --border-secondary: rgba(255, 255, 255, 0.06);
-  --border-strong: rgba(255, 255, 255, 0.15);
-  --border-focus: 2px solid var(--color-primary);
-
-  /* Glass Effects - Premium Glassmorphism */
-  --glass-bg: rgba(255, 255, 255, 0.03);
-  --glass-bg-strong: rgba(255, 255, 255, 0.05);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --glass-blur: blur(24px);
-  --glass-hover: rgba(255, 255, 255, 0.08);
-  
-  /* Component-Specific Glass */
-  --glass-sidebar: rgba(10, 10, 10, 0.7);
-  --glass-header: rgba(10, 10, 10, 0.6);
-  --glass-card: rgba(255, 255, 255, 0.04);
-  --glass-input: rgba(255, 255, 255, 0.06);
-
-  /* Layout Spacing */
-  --sidebar-width: 260px;
-  --sidebar-collapsed-width: 80px;
-  --header-height: 64px;
-  --input-width: 760px;
-
-  /* Border Radius Scale - Modern, Smooth */
-  --radius-xs: 8px;
-  --radius-sm: 12px;
-  --radius-md: 16px;
-  --radius-lg: 20px;
-  --radius-xl: 24px;
-  --radius-2xl: 32px;
-  --radius-full: 9999px;
-
-  /* Spacing Scale */
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 20px;
-  --space-6: 24px;
-  --space-8: 32px;
-  --space-10: 40px;
-  --space-12: 48px;
-  --space-16: 64px;
-
-  /* Typography Scale */
-  --text-xs: 12px;
-  --text-sm: 14px;
-  --text-base: 15px;
-  --text-lg: 17px;
-  --text-xl: 20px;
-  --text-2xl: 24px;
-  --text-3xl: 30px;
-  --text-4xl: 36px;
-
-  /* Line Heights */
-  --leading-tight: 1.25;
-  --leading-normal: 1.5;
-  --leading-relaxed: 1.7;
-
-  /* Font Weights */
-  --font-normal: 400;
-  --font-medium: 500;
-  --font-semibold: 600;
-  --font-bold: 700;
-
-  /* Transitions - Smooth Premium Animations */
-  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-normal: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slow: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-smooth: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-
-  /* Shadows - Layered Depth */
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
-  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.7);
-  --shadow-glow: 0 0 24px rgba(99, 102, 241, 0.3);
-  --shadow-glow-strong: 0 0 32px rgba(99, 102, 241, 0.5);
-
-  /* Focus Ring - Accessible */
-  --focus-ring: 0 0 0 3px rgba(99, 102, 241, 0.4);
-  --focus-ring-offset: 0 0 0 5px rgba(99, 102, 241, 0.2);
-
-  /* Z-index Layers */
-  --z-base: 1;
-  --z-header: 10;
-  --z-sidebar: 20;
-  --z-overlay: 30;
-  --z-dropdown: 35;
-  --z-modal: 40;
-  --z-toast: 50;
-}
 
 /* ========================================
    Reset & Base
@@ -151,11 +26,11 @@ html {
 }
 
 body {
-  font-family: var(--font-family-base);
+  font-family: var(--font-sans);
   font-size: var(--text-base);
   font-weight: var(--font-normal);
   line-height: var(--leading-relaxed);
-  background: var(--bg-0);
+  background: var(--surface-0);
   color: var(--text-primary);
   overflow: hidden;
   min-height: 100vh;
@@ -174,7 +49,7 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: var(--font-family-heading);
+  font-family: var(--font-sans);
   font-weight: var(--font-semibold);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -192,7 +67,7 @@ button,
 input,
 textarea,
 select {
-  font-family: var(--font-family-base);
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -215,7 +90,7 @@ body.drawer-open {
   background: rgba(0, 0, 0, 0.8);
   border: var(--border-glass-strong);
   color: var(--color-white);
-  font-family: var(--font-family-base);
+  font-family: var(--font-sans);
   font-size: var(--text-sm);
   font-weight: 500;
   transform: translateY(-150%);
@@ -357,7 +232,7 @@ textarea {
 .chat-empty-subtitle {
   font-size: var(--text-sm);
   opacity: 0.65;
-  font-family: 'Inria Sans', sans-serif;
+  font-family: var(--font-sans);
 }
 
 .chat-turns {
@@ -416,7 +291,7 @@ textarea {
   letter-spacing: 0.6px;
   text-transform: uppercase;
   opacity: 0.6;
-  font-family: var(--font-family-base);
+  font-family: var(--font-sans);
   font-weight: 500;
   margin-bottom: var(--space-2);
   -webkit-font-smoothing: antialiased;
@@ -472,7 +347,7 @@ textarea {
 }
 
 .user-text {
-  font-family: 'Inria Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: var(--text-sm);
   line-height: var(--leading-relaxed);
   white-space: pre-wrap;
@@ -492,160 +367,7 @@ textarea {
 }
 
 /* Assistant comparison grid */
-.responses-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-4);
-  align-items: start;
-  width: 100%;
-  max-width: 1100px;
-  margin: 0 auto;
-}
-
-.responses-grid.single-response {
-  grid-template-columns: 1fr;
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.response-card {
-  padding: var(--space-4);
-  border: var(--border-glass-strong);
-  box-shadow: var(--shadow-md);
-  height: 100%;
-  min-height: 400px;
-  max-height: 600px;
-  display: flex;
-  flex-direction: column;
-}
-
-.response-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  margin-bottom: var(--space-3);
-}
-
-.assistant-tag {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  flex-shrink: 0;
-}
-
-.model-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-family: 'Inria Sans', sans-serif;
-  font-size: var(--text-sm);
-  opacity: 0.9;
-}
-
-.model-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  display: inline-block;
-}
-
-.model-dot.left {
-  background: var(--color-cyan);
-  box-shadow: 0 0 10px rgba(74, 171, 194, 0.4);
-}
-
-.model-dot.right {
-  background: var(--color-terra);
-  box-shadow: 0 0 10px rgba(203, 146, 117, 0.4);
-}
-
-.message-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.message-actions .icon-btn {
-  width: 34px;
-  height: 34px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.message-actions .icon-btn svg {
-  display: block;
-}
-
-.response-card.is-expanded {
-  grid-column: 1 / -1;
-  z-index: 2;
-}
-
-.copy-btn {
-  width: 34px;
-  height: 34px;
-}
-
-.copy-btn.copied {
-  border-color: rgba(74, 222, 128, 0.6);
-  box-shadow: 0 0 16px rgba(74, 222, 128, 0.25);
-}
-
-.response-body {
-  font-family: 'Inria Sans', sans-serif;
-  font-size: var(--text-sm);
-  line-height: var(--leading-relaxed);
-  white-space: pre-wrap;
-  opacity: 0.92;
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding-right: 8px;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
-}
-
-.response-body::-webkit-scrollbar {
-  width: 6px;
-}
-
-.response-body::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.response-body::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 3px;
-}
-
-.response-body::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-.response-card.is-streaming .response-body {
-  opacity: 0.95;
-}
-
-.response-card.is-winner {
-  border-color: rgba(74, 222, 128, 0.55);
-  box-shadow: 0 0 26px rgba(74, 222, 128, 0.18), var(--shadow-md);
-}
-
-.response-card.is-loser {
-  opacity: 0.7;
-  border-color: rgba(255, 255, 255, 0.16);
-}
+/* Note: .responses-grid, .response-card, and related classes moved to ui-improvements.css */
 
 .vote-row {
   display: flex;
@@ -660,7 +382,7 @@ textarea {
 }
 
 .vote-title {
-  font-family: 'Inria Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: var(--text-sm);
   opacity: 0.7;
   margin-bottom: var(--space-3);
@@ -682,7 +404,7 @@ textarea {
   color: rgba(255, 255, 255, 0.9);
   cursor: pointer;
   transition: var(--transition-normal);
-  font-family: 'Inria Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: var(--text-sm);
 }
 
@@ -708,7 +430,7 @@ textarea {
 
 .vote-hint {
   margin-top: var(--space-3);
-  font-family: 'Inria Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: var(--text-xs);
   opacity: 0.7;
   text-align: center;
@@ -755,7 +477,7 @@ textarea {
 }
 
 .dm-modal-title {
-  font-family: 'Inria Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: var(--text-lg);
   letter-spacing: 0.2px;
 }
@@ -774,7 +496,7 @@ textarea {
   color: rgba(255, 255, 255, 0.92);
   cursor: pointer;
   transition: var(--transition-normal);
-  font-family: 'Inria Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: var(--text-sm);
 }
 
@@ -816,12 +538,12 @@ textarea {
 }
 
 .dm-lb-title {
-  font-family: 'Inria Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: var(--text-lg);
 }
 
 .dm-lb-subtitle {
-  font-family: 'Inria Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: var(--text-sm);
   opacity: 0.65;
   margin-top: 2px;
@@ -835,7 +557,7 @@ textarea {
   color: rgba(255, 255, 255, 0.92);
   cursor: pointer;
   transition: var(--transition-normal);
-  font-family: 'Inria Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: var(--text-sm);
 }
 
@@ -852,7 +574,7 @@ textarea {
 .dm-lb-table {
   width: 100%;
   border-collapse: collapse;
-  font-family: 'Inria Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: var(--text-sm);
 }
 
@@ -928,13 +650,13 @@ textarea {
 }
 
 .dm-lb-state-title {
-  font-family: 'Inria Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: var(--text-lg);
   margin-bottom: 6px;
 }
 
 .dm-lb-state-subtitle {
-  font-family: 'Inria Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: var(--text-sm);
   opacity: 0.65;
 }
@@ -948,7 +670,7 @@ textarea {
   color: rgba(255, 255, 255, 0.92);
   cursor: pointer;
   transition: var(--transition-normal);
-  font-family: 'Inria Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: var(--text-sm);
 }
 
@@ -1029,12 +751,12 @@ textarea {
 .direct-meta {
   font-size: var(--text-xs);
   opacity: 0.6;
-  font-family: 'Inria Sans', sans-serif;
+  font-family: var(--font-sans);
   margin-bottom: var(--space-2);
 }
 
 .direct-text {
-  font-family: 'Inria Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: var(--text-sm);
   white-space: pre-wrap;
 }
@@ -1382,156 +1104,13 @@ textarea {
   .floating-voting::-webkit-scrollbar {
     display: none;
   }
-
-  .vote-btn-light {
-    padding: 8px 16px;
-    /* Smaller touch targets padding but keep clickable area */
-    font-size: 13px;
-    flex-shrink: 0;
-  }
 }
 
 .floating-voting[hidden] {
   display: none !important;
 }
 
-.vote-btn-light {
-  position: relative;
-  padding: 12px 24px;
-  background: rgba(40, 40, 40, 0.8);
-  border: 1.5px solid rgba(255, 255, 255, 0.15);
-  border-radius: 12px;
-  color: rgba(255, 255, 255, 0.9);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-weight: 500;
-  font-size: 14px;
-  letter-spacing: 0.01em;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  white-space: nowrap;
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-.vote-btn-light:hover {
-  background: rgba(50, 50, 50, 0.9);
-  border-color: rgba(255, 255, 255, 0.25);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-}
-
-/* Hover states with border colors */
-.vote-btn-light[data-vote="left"]:hover {
-  border-color: #10b981;
-  background: rgba(16, 185, 129, 0.15);
-  color: #10b981;
-  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3), 0 0 0 1px #10b981;
-}
-
-.vote-btn-light[data-vote="right"]:hover {
-  border-color: #10b981;
-  background: rgba(16, 185, 129, 0.15);
-  color: #10b981;
-  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3), 0 0 0 1px #10b981;
-}
-
-.vote-btn-light[data-vote="tie"]:hover {
-  border-color: #10b981;
-  background: rgba(16, 185, 129, 0.15);
-  color: #10b981;
-  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3), 0 0 0 1px #10b981;
-}
-
-.vote-btn-light[data-vote="both-bad"]:hover {
-  border-color: #ef4444;
-  background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
-  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3), 0 0 0 1px #ef4444;
-}
-
-.vote-btn-light:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-/* Active states - permanently applied after click */
-.vote-btn-light.active {
-  background: rgba(59, 130, 246, 0.2);
-  color: #60a5fa;
-  border-color: #3b82f6;
-  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4), 0 0 0 1px #3b82f6;
-}
-
-.vote-btn-light.active[data-vote="left"],
-.vote-btn-light.active[data-vote="right"],
-.vote-btn-light.active[data-vote="tie"] {
-  border-color: #10b981;
-  background: rgba(16, 185, 129, 0.2);
-  color: #34d399;
-  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.5), 0 0 0 2px #10b981;
-}
-
-.vote-btn-light.active[data-vote="both-bad"] {
-  border-color: #ef4444;
-  background: rgba(239, 68, 68, 0.2);
-  color: #f87171;
-  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.5), 0 0 0 2px #ef4444;
-}
-
-/* Add icons to buttons */
-.vote-btn-light[data-vote="left"]::before {
-  content: "←";
-  margin-right: 8px;
-  font-size: 16px;
-}
-
-.vote-btn-light[data-vote="right"]::after {
-  content: "→";
-  margin-left: 8px;
-  font-size: 16px;
-}
-
-.vote-btn-light[data-vote="tie"]::before {
-  content: "⚖";
-  margin-right: 8px;
-  font-size: 14px;
-}
-
-.vote-btn-light[data-vote="both-bad"]::before {
-  content: "⊘";
-  margin-right: 8px;
-  font-size: 14px;
-}
-
-/* Response card border highlights */
-.response-card {
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-/* Hover highlight - green for positive votes */
-.response-card.vote-highlight-green {
-  border-color: #10b981 !important;
-  box-shadow: 0 0 0 2px #10b981;
-}
-
-/* Hover highlight - red for negative votes */
-.response-card.vote-highlight-red {
-  border-color: #ef4444 !important;
-  box-shadow: 0 0 0 2px #ef4444;
-}
-
-/* Active/permanent highlight - green */
-.response-card.vote-selected-green {
-  border-color: #10b981 !important;
-  box-shadow: 0 0 0 3px #10b981;
-}
-
-/* Active/permanent highlight - red */
-.response-card.vote-selected-red {
-  border-color: #ef4444 !important;
-  box-shadow: 0 0 0 3px #ef4444;
-}
+/* Note: .vote-btn-light and related classes moved to ui-improvements.css */
 
 .recent-chats-section {
   flex: 1;
@@ -1575,7 +1154,7 @@ textarea {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   border-bottom: var(--border-glass);
-  font-family: var(--font-family-base);
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -1639,7 +1218,7 @@ textarea {
 .empty-chats p {
   font-size: var(--text-sm);
   opacity: 0.4;
-  font-family: var(--font-family-base);
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -1664,7 +1243,7 @@ textarea {
 .footer-link {
   font-size: 11px;
   color: rgba(255, 255, 255, 0.8);
-  font-family: var(--font-family-base);
+  font-family: var(--font-sans);
   font-weight: 400;
   transition: all var(--transition-fast);
   text-decoration: none;
@@ -2473,10 +2052,6 @@ textarea {
 
 /* Tablet */
 @media (max-width: 1024px) {
-  :root {
-    --sidebar-width: 280px;
-  }
-
   #header-container {
     left: 0;
   }
@@ -2518,13 +2093,6 @@ textarea {
 
 /* Mobile */
 @media (max-width: 640px) {
-  :root {
-    --sidebar-width: 100%;
-    --header-height: 56px;
-    --input-width: 100vw;
-    --border-radius: 14px;
-  }
-
   .sidebar {
     width: 88%;
     max-width: 340px;

@@ -1,0 +1,743 @@
+/**
+ * info-pages.css
+ * Shared styles for all DualMind info/legal pages:
+ * how-it-works, about, faq, privacy, terms, cookies
+ */
+
+/* ─── Reset & Base ───────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px; /* offset for sticky header */
+}
+
+body {
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+  color: #d0d4de;
+  background: linear-gradient(160deg, #0d0f1a 0%, #090b14 50%, #0a0a0f 100%);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; text-decoration: none; }
+ul, ol { padding-left: 1.5em; }
+li { margin-bottom: 6px; }
+
+/* ─── Page Shell ─────────────────────────────────────────────── */
+.ip-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ─── Header ─────────────────────────────────────────────────── */
+.ip-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  background: rgba(9, 11, 20, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.ip-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  text-decoration: none;
+  letter-spacing: -0.3px;
+}
+
+.ip-logo-icon {
+  font-size: 18px;
+}
+
+.ip-logo-name {
+  background: linear-gradient(135deg, #4AABC2 0%, #8ab4ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.ip-header-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ip-header-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.6);
+  transition: color 0.2s, background 0.2s;
+  text-decoration: none;
+}
+
+.ip-header-link:hover {
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.ip-header-link i {
+  font-size: 15px;
+}
+
+.ip-header-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #ffffff;
+  background: linear-gradient(135deg, rgba(74,171,194,0.25) 0%, rgba(74,171,194,0.1) 100%);
+  border: 1px solid rgba(74, 171, 194, 0.35);
+  text-decoration: none;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.ip-header-cta:hover {
+  border-color: rgba(74, 171, 194, 0.6);
+  background: linear-gradient(135deg, rgba(74,171,194,0.35) 0%, rgba(74,171,194,0.15) 100%);
+}
+
+/* ─── Main Layout ────────────────────────────────────────────── */
+.ip-main {
+  flex: 1;
+  width: 100%;
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 48px 28px 80px;
+}
+
+/* Wide layout for pages with sidebar TOC */
+.ip-main--wide {
+  max-width: 1060px;
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 48px;
+  align-items: start;
+  padding-top: 40px;
+}
+
+/* ─── TOC Sidebar ────────────────────────────────────────────── */
+.ip-toc {
+  position: sticky;
+  top: 80px;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 16px;
+}
+
+.ip-toc::-webkit-scrollbar { width: 4px; }
+.ip-toc::-webkit-scrollbar-track { background: transparent; }
+.ip-toc::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+.ip-toc-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.35);
+  margin-bottom: 12px;
+}
+
+.ip-toc-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ip-toc-item a {
+  display: block;
+  padding: 7px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+  text-decoration: none;
+  transition: color 0.2s, background 0.2s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ip-toc-item a:hover,
+.ip-toc-item a.active {
+  color: rgba(74, 171, 194, 1);
+  background: rgba(74, 171, 194, 0.08);
+}
+
+/* ─── Page Hero ──────────────────────────────────────────────── */
+.ip-hero {
+  margin-bottom: 40px;
+}
+
+.ip-hero-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #4AABC2;
+  background: rgba(74, 171, 194, 0.1);
+  border: 1px solid rgba(74, 171, 194, 0.2);
+  margin-bottom: 16px;
+  letter-spacing: 0.3px;
+}
+
+.ip-hero-title {
+  font-size: 36px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.5px;
+  margin-bottom: 12px;
+  line-height: 1.2;
+}
+
+.ip-hero-subtitle {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.5);
+  max-width: 520px;
+}
+
+.ip-hero-meta {
+  margin-top: 16px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+/* ─── Quick Nav Chips ────────────────────────────────────────── */
+.ip-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 36px;
+}
+
+.ip-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  text-decoration: none;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+
+.ip-chip:hover,
+.ip-chip.active {
+  color: #4AABC2;
+  border-color: rgba(74, 171, 194, 0.4);
+  background: rgba(74, 171, 194, 0.07);
+}
+
+.ip-chip i {
+  font-size: 15px;
+}
+
+/* ─── Content Sections ───────────────────────────────────────── */
+.ip-section {
+  margin-bottom: 32px;
+  padding: 28px 32px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 16px;
+  scroll-margin-top: 80px;
+}
+
+.ip-section:hover {
+  border-color: rgba(255, 255, 255, 0.1);
+  transition: border-color 0.2s;
+}
+
+.ip-section h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ip-section h2 .ip-section-num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: rgba(74, 171, 194, 0.12);
+  color: #4AABC2;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.ip-section h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 18px;
+  margin-bottom: 8px;
+}
+
+.ip-section p {
+  color: rgba(255, 255, 255, 0.55);
+  margin-bottom: 12px;
+  line-height: 1.75;
+}
+
+.ip-section p:last-child { margin-bottom: 0; }
+
+.ip-section ul,
+.ip-section ol {
+  color: rgba(255, 255, 255, 0.55);
+  margin-bottom: 12px;
+}
+
+.ip-section li {
+  margin-bottom: 6px;
+  line-height: 1.65;
+}
+
+.ip-section strong {
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 600;
+}
+
+.ip-section a {
+  color: #4AABC2;
+  text-decoration: underline;
+  text-decoration-color: rgba(74, 171, 194, 0.35);
+  transition: text-decoration-color 0.2s;
+}
+
+.ip-section a:hover {
+  text-decoration-color: rgba(74, 171, 194, 0.8);
+}
+
+/* ─── Step Cards (how-it-works) ──────────────────────────────── */
+.ip-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 32px;
+}
+
+.ip-step {
+  display: flex;
+  gap: 20px;
+  padding: 24px 28px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 0;
+  transition: background 0.2s;
+}
+
+.ip-step:first-child { border-radius: 16px 16px 0 0; }
+.ip-step:last-child  { border-radius: 0 0 16px 16px; }
+.ip-step:not(:last-child) { border-bottom-color: transparent; }
+.ip-step:hover { background: rgba(255, 255, 255, 0.04); }
+
+.ip-step-num {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(74,171,194,0.2) 0%, rgba(74,171,194,0.05) 100%);
+  border: 1px solid rgba(74, 171, 194, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #4AABC2;
+}
+
+.ip-step-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ip-step-icon i {
+  font-size: 20px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.ip-step-body h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 6px;
+}
+
+.ip-step-body p {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* ─── Mission Items (about) ──────────────────────────────────── */
+.ip-mission-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.ip-mission-card {
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 16px;
+  transition: border-color 0.2s;
+}
+
+.ip-mission-card:hover { border-color: rgba(74, 171, 194, 0.2); }
+
+.ip-mission-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(74, 171, 194, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.ip-mission-icon i {
+  font-size: 20px;
+  color: #4AABC2;
+}
+
+.ip-mission-card h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 8px;
+}
+
+.ip-mission-card p {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.65;
+}
+
+/* ─── Info Links (how-it-works / about) ─────────────────────── */
+.ip-info-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 10px;
+}
+
+.ip-info-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #4AABC2;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.ip-info-link:hover { opacity: 0.75; }
+.ip-info-link i { font-size: 14px; }
+
+/* ─── Research Links (how-it-works) ─────────────────────────── */
+.ip-research-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ip-research-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 14px;
+  color: #4AABC2;
+  text-decoration: none;
+  transition: opacity 0.2s;
+  line-height: 1.5;
+}
+
+.ip-research-link:hover { opacity: 0.75; }
+.ip-research-link i { font-size: 13px; flex-shrink: 0; }
+
+/* ─── FAQ Accordion ──────────────────────────────────────────── */
+.ip-faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 32px;
+}
+
+.ip-faq-item {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 0;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.ip-faq-item:first-child { border-radius: 16px 16px 0 0; }
+.ip-faq-item:last-child  { border-radius: 0 0 16px 16px; }
+.ip-faq-item:not(:last-child) { border-bottom-color: transparent; }
+
+.ip-faq-question {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 24px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  text-align: left;
+  transition: color 0.2s, background 0.2s;
+}
+
+.ip-faq-question:hover { color: #ffffff; background: rgba(255, 255, 255, 0.03); }
+
+.ip-faq-item.open .ip-faq-question { color: #ffffff; }
+
+.ip-faq-chevron {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.3);
+  transition: transform 0.25s, color 0.2s;
+  flex-shrink: 0;
+}
+
+.ip-faq-item.open .ip-faq-chevron {
+  transform: rotate(180deg);
+  color: #4AABC2;
+}
+
+.ip-faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.ip-faq-item.open .ip-faq-answer {
+  max-height: 600px;
+}
+
+.ip-faq-answer-inner {
+  padding: 0 24px 20px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.75;
+}
+
+.ip-faq-answer-inner ul {
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+.ip-faq-answer-inner strong {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* ─── Contact / CTA Block ────────────────────────────────────── */
+.ip-contact {
+  padding: 28px 32px;
+  background: rgba(74, 171, 194, 0.05);
+  border: 1px solid rgba(74, 171, 194, 0.15);
+  border-radius: 16px;
+  margin-bottom: 32px;
+}
+
+.ip-contact h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 10px;
+}
+
+.ip-contact p {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.65;
+  margin-bottom: 6px;
+}
+
+.ip-contact p:last-child { margin-bottom: 0; }
+
+.ip-contact strong {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.ip-contact a {
+  color: #4AABC2;
+  text-decoration: underline;
+  text-decoration-color: rgba(74, 171, 194, 0.35);
+}
+
+/* ─── Footer Nav Links ───────────────────────────────────────── */
+.ip-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 32px;
+}
+
+.ip-footer-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 18px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  text-decoration: none;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+
+.ip-footer-link:hover {
+  color: rgba(255, 255, 255, 0.85);
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.ip-footer-link i { font-size: 15px; }
+
+/* ─── Page Footer ────────────────────────────────────────────── */
+.ip-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 32px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.ip-footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.55);
+  transition: color 0.2s;
+}
+
+.ip-footer-brand:hover { color: rgba(255, 255, 255, 0.85); }
+.ip-footer-brand span:first-child { font-size: 16px; }
+
+.ip-footer-legal {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.ip-footer-legal a {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.3);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.ip-footer-legal a:hover { color: rgba(255, 255, 255, 0.6); }
+
+.ip-footer-copy {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.25);
+}
+
+/* ─── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .ip-main--wide {
+    grid-template-columns: 1fr;
+    max-width: 780px;
+  }
+
+  .ip-toc { display: none; }
+
+  .ip-mission-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+  .ip-header { padding: 0 16px; }
+
+  .ip-header-link span { display: none; }
+
+  .ip-main, .ip-main--wide { padding: 32px 16px 60px; }
+
+  .ip-hero-title { font-size: 28px; }
+
+  .ip-section { padding: 20px 18px; }
+
+  .ip-step { padding: 18px 16px; }
+
+  .ip-contact { padding: 20px 18px; }
+
+  .ip-faq-question { padding: 16px 18px; }
+
+  .ip-faq-answer-inner { padding: 0 18px 16px; }
+
+  .ip-footer { flex-direction: column; align-items: flex-start; gap: 12px; }
+
+  .ip-footer-legal { gap: 14px; }
+}
+
+/* ─── TOC active-link JS hook ────────────────────────────────── */
+.ip-toc-item a.active {
+  color: #4AABC2;
+  background: rgba(74, 171, 194, 0.08);
+  font-weight: 600;
+}

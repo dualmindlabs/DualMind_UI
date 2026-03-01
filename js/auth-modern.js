@@ -107,6 +107,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         successAlert.style.display = 'none';
     }
 
+    function getSafeRedirectTarget() {
+        const params = new URLSearchParams(window.location.search);
+        const redirect = params.get('redirect');
+
+        if (!redirect) return 'index.html';
+
+        try {
+            const target = new URL(redirect, window.location.origin);
+            if (target.origin !== window.location.origin) {
+                return 'index.html';
+            }
+            return `${target.pathname}${target.search}${target.hash}` || 'index.html';
+        } catch {
+            return 'index.html';
+        }
+    }
+
     // Form Submission
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -210,21 +227,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             const now = Date.now();
             const isNewUser = (now - createdAt) < 10 * 60 * 1000; // 10 minutes
 
-            console.log('User Status:', { hasPhone, isNewUser, createdAt: user.created_at });
+            if (window.DUALMIND_CONFIG?.debug?.enabled) console.log('User Status:', { hasPhone, isNewUser, createdAt: user.created_at });
 
             if (isNewUser && !hasPhone) {
                 // FORCE PHONE BINDING
-                console.log('⚠️ New user without phone - Enforcing binding');
+                if (window.DUALMIND_CONFIG?.debug?.enabled) console.log('⚠️ New user without phone - Enforcing binding');
                 showMessage('success', 'Security check required...');
                 setTimeout(() => {
                     showPhoneBindingUI();
                 }, 1000);
             } else {
                 // PROCEED TO APP
-                console.log('✅ User authorized - Redirecting');
+                if (window.DUALMIND_CONFIG?.debug?.enabled) console.log('✅ User authorized - Redirecting');
                 setTimeout(() => {
-                    const params = new URLSearchParams(window.location.search);
-                    let targetUrl = params.get('redirect') || 'index.html';
+                    let targetUrl = getSafeRedirectTarget();
 
                     // 🚨 FORCE PORT 8000 FOR LOCALHOST
                     if (window.location.hostname === 'localhost') {
@@ -247,12 +263,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     const phoneBindingContainer = document.getElementById('phoneBindingContainer');
     const phoneBindingForm = document.getElementById('phoneBindingForm');
     const bindSubmitBtn = document.getElementById('bindSubmitBtn');
-    const bindBtnText = bindSubmitBtn.querySelector('.btn-text');
-    const bindBtnIcon = bindSubmitBtn.querySelector('.btn-icon');
+
+    // Safety check for binding elements which might not exist on all pages
+    const bindBtnText = bindSubmitBtn ? bindSubmitBtn.querySelector('.btn-text') : null;
+    const bindBtnIcon = bindSubmitBtn ? bindSubmitBtn.querySelector('.btn-icon') : null;
 
     let bindStep = 'send'; // 'send' or 'verify'
 
     function showPhoneBindingUI() {
+        if (!mainAuthContainer || !phoneBindingContainer) {
+            if (window.DUALMIND_CONFIG?.debug?.enabled) {
+                console.warn('Phone binding UI containers not found, skipping forced binding screen');
+            }
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 500);
+            return;
+        }
+
         mainAuthContainer.style.display = 'none';
         phoneBindingContainer.style.display = 'block';
     }
@@ -277,94 +305,100 @@ document.addEventListener('DOMContentLoaded', async () => {
         other.style.display = 'none';
     }
 
-    phoneBindingForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        setBindBtnState('', true);
-        showBindMessage('success', 'Processing...'); // Reset messages
+    if (phoneBindingForm) {
+        phoneBindingForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            setBindBtnState('', true);
+            showBindMessage('success', 'Processing...'); // Reset messages
 
-        const phoneInput = document.getElementById('bindPhone');
-        let phone = phoneInput.value.replace(/[^0-9]/g, '');
+            const phoneInput = document.getElementById('bindPhone');
+            let phone = phoneInput.value.replace(/[^0-9]/g, '');
 
-        // India default
-        if (phone.length === 10) phone = '91' + phone;
-        if (!phone.startsWith('+')) phone = '+' + phone;
+            // India default
+            if (phone.length === 10) phone = '91' + phone;
+            if (!phone.startsWith('+')) phone = '+' + phone;
 
-        try {
-            if (bindStep === 'send') {
-                // Step 1: Send OTP for Phone Update
-                if (phone.length < 10) throw new Error('Invalid phone number');
+            try {
+                if (bindStep === 'send') {
+                    // Step 1: Send OTP for Phone Update
+                    if (phone.length < 10) throw new Error('Invalid phone number');
 
-                const { error } = await supabase.auth.updateUser({
-                    phone: phone
-                });
+                    const { error } = await supabase.auth.updateUser({
+                        phone: phone
+                    });
 
-                if (error) throw error;
+                    if (error) throw error;
 
-                bindStep = 'verify';
-                document.getElementById('bindOtpGroup').style.display = 'block';
-                phoneInput.disabled = true;
-                setBindBtnState('Verify & Continue');
-                showBindMessage('success', 'OTP sent to ' + phone);
+                    // Switch to verify step
+                    bindStep = 'verify';
+                    document.getElementById('bindOtpGroup').style.display = 'block';
+                    document.getElementById('bindPhone').disabled = true;
+                    setBindBtnState('Verify & Login');
+                    showBindMessage('success', 'OTP Sent! Check your SMS.');
 
-            } else {
-                // Step 2: Verify OTP
-                const token = document.getElementById('bindOtp').value.trim();
-                if (!token || token.length !== 6) throw new Error('Enter 6-digit code');
+                } else {
+                    // Step 2: Verify OTP
+                    const otp = document.getElementById('bindOtp').value;
+                    if (otp.length !== 6) throw new Error('Enter 6-digit OTP');
 
-                const { error } = await supabase.auth.verifyOtp({
-                    phone: phone,
-                    token: token,
-                    type: 'phone_change'
-                });
+                    const { error } = await supabase.auth.verifyOtp({
+                        phone: phone,
+                        token: otp,
+                        type: 'phone_change'
+                    });
 
-                if (error) throw error;
+                    if (error) throw error;
 
-                showBindMessage('success', 'Phone verified! Setting up your account...');
-
-                // Final Redirect
-                setTimeout(() => {
-                    const params = new URLSearchParams(window.location.search);
-                    window.location.href = params.get('redirect') || 'index.html';
-                }, 1500);
+                    showBindMessage('success', 'Phone verified! Redirecting...');
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1000);
+                }
+            } catch (err) {
+                console.error('Binding Error:', err);
+                setBindBtnState(bindStep === 'send' ? 'Send OTP' : 'Verify & Login');
+                showBindMessage('error', err.message);
             }
-        } catch (err) {
-            console.error('Binding Error:', err);
-            showBindMessage('error', err.message);
-            setBindBtnState(bindStep === 'send' ? 'Send Code' : 'Verify & Continue');
-        }
-    });
+        });
+    }
 
 
-    // Social Login
     if (socialGitHub) {
         socialGitHub.addEventListener('click', async () => {
-            const redirectUrl = window.location.hostname === 'localhost'
-                ? 'http://localhost:8000/login-modern.html'
-                : window.location.origin + '/login-modern.html';
+            const redirectUrl = window.location.origin + '/auth-callback.html';
 
-            const { error } = await supabase.auth.signInWithOAuth({
-                provider: 'github',
-                options: {
-                    redirectTo: redirectUrl
-                }
-            });
-            if (error) showMessage('error', error.message);
+            // Use wrapper if available to keep state consistent
+            if (window._DUALMIND_AUTH && typeof window._DUALMIND_AUTH.signInWithOAuth === 'function') {
+                const result = await window._DUALMIND_AUTH.signInWithOAuth('github', redirectUrl, { scopes: 'user:email' });
+                if (!result.success) showMessage('error', result.error);
+            } else {
+                // Fallback (shouldn't happen if init is correct)
+                const { error } = await supabase.auth.signInWithOAuth({
+                    provider: 'github',
+                    options: {
+                        redirectTo: redirectUrl,
+                        scopes: 'user:email'
+                    }
+                });
+                if (error) showMessage('error', error.message);
+            }
         });
     }
 
     if (socialGoogle) {
         socialGoogle.addEventListener('click', async () => {
-            const redirectUrl = window.location.hostname === 'localhost'
-                ? 'http://localhost:8000/login-modern.html'
-                : window.location.origin + '/login-modern.html';
+            const redirectUrl = window.location.origin + '/auth-callback.html';
 
-            const { error } = await supabase.auth.signInWithOAuth({
-                provider: 'google',
-                options: {
-                    redirectTo: redirectUrl
-                }
-            });
-            if (error) showMessage('error', error.message);
+            if (window._DUALMIND_AUTH && typeof window._DUALMIND_AUTH.signInWithOAuth === 'function') {
+                const result = await window._DUALMIND_AUTH.signInWithOAuth('google', redirectUrl);
+                if (!result.success) showMessage('error', result.error);
+            } else {
+                const { error } = await supabase.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: { redirectTo: redirectUrl }
+                });
+                if (error) showMessage('error', error.message);
+            }
         });
     }
 

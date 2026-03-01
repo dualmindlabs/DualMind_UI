@@ -60,7 +60,7 @@
         </a>
       </div>
 
-      <div class="mission-card">
+      <div class="mission-card" style="padding: 0; background: transparent; border: none; box-shadow: none;">
         <div id="leaderboard-root"></div>
       </div>
 
@@ -88,6 +88,25 @@
         </ul>
         <p>
           This multi-faceted approach ensures that rankings reflect both objective performance metrics and subjective user preferences, giving you a comprehensive view of each model's strengths and weaknesses.
+        </p>
+      </div>
+
+      <div class="mission-card">
+        <h2>Understanding the Elo Rating System</h2>
+        <p>
+          The DualMind Arena utilizes the <strong>Elo rating system</strong>—originally developed for ranking chess players—to evaluate AI models. This system is considered the gold standard for head-to-head competitive rankings because it accounts for the relative strength of opponents, not just the raw number of wins and losses.
+        </p>
+        <p>
+          Here is how Elo works in our arena:
+        </p>
+        <ul>
+          <li><strong>Dynamic Scoring:</strong> Every model starts with a baseline rating (usually 1000). Ratings go up when a model wins a battle and go down when it loses.</li>
+          <li><strong>Context Matters:</strong> Winning against a highly-rated model (an "upset") earns significantly more points than beating a low-rated model.</li>
+          <li><strong>Loss Penalties:</strong> Losing to a lower-rated model results in a larger point deduction compared to losing to a top-tier model.</li>
+          <li><strong>Ties:</strong> In the event of a tie, points are subtly shifted from the higher-rated model to the lower-rated model, indicating that the underdog performed better than expected.</li>
+        </ul>
+        <p>
+          By using Elo, our leaderboard prevents models from artificially inflating their rank by only winning easy matchups. It ensures that the models at the top have consistently proven their capability against the strongest competition available.
         </p>
       </div>
 

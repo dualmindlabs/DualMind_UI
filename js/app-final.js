@@ -41,7 +41,6 @@ class App {
         this.state.chatSettings.webSearch = false;
         document.dispatchEvent(new CustomEvent('toggle-web-search', { detail: { active: false } }));
       }
-      console.log('Chat Settings:', this.state.chatSettings);
     });
 
     document.addEventListener('toggle-web-search', (e) => {
@@ -51,7 +50,6 @@ class App {
         this.state.chatSettings.codeMode = false;
         document.dispatchEvent(new CustomEvent('toggle-code-mode', { detail: { active: false } }));
       }
-      console.log('Chat Settings:', this.state.chatSettings);
     });
 
     // Listen for Logout
@@ -94,7 +92,6 @@ class App {
     // 🚨 CRITICAL: Wait for Supabase auth to fully initialize
     if (window.DualMindAuthReady) {
       await window.DualMindAuthReady;
-      console.log('✅ Auth initialization complete');
     }
 
     // 🚨 CRITICAL: Add small delay to ensure session is fully restored
@@ -102,18 +99,20 @@ class App {
     await new Promise(resolve => setTimeout(resolve, 500));
 
     // Check authentication with Supabase
-    const isLoggedIn = window.DualMindAuth ? window.DualMindAuth.isLoggedIn() : false;
-    console.log('🔍 Auth check - isLoggedIn:', isLoggedIn);
-    console.log('🔍 Auth object available:', !!window.DualMindAuth);
-    console.log('🔍 Supabase auth available:', !!window._DUALMIND_AUTH);
-    console.log('🔍 Current user:', window.DualMindAuth ? window.DualMindAuth.getUser() : null);
+    let isLoggedIn = window.DualMindAuth ? window.DualMindAuth.isLoggedIn() : false;
 
-    // 🚨 CRITICAL: Verify token is available before proceeding
+    // Verify token is available before proceeding
     if (isLoggedIn && window._DUALMIND_AUTH) {
-      const token = await window._DUALMIND_AUTH.getAccessToken();
-      console.log('🔍 Token available:', !!token);
-      if (token) {
-        console.log('🔍 Token length:', token.length);
+      try {
+        await window._DUALMIND_AUTH.getAccessToken();
+      } catch (tokenError) {
+        console.warn('Failed to restore auth token. Clearing stale session.', tokenError);
+        try {
+          await window._DUALMIND_AUTH.logout();
+        } catch (logoutError) {
+          console.warn('Failed to clear stale session:', logoutError);
+        }
+        isLoggedIn = false;
       }
     }
 
@@ -123,11 +122,8 @@ class App {
     if (!isLoggedIn && !isOnLoginPage) {
       // No guest mode - require authentication
       const currentPath = window.location.pathname;
-      console.log('🔄 User not authenticated. Redirecting to login:', currentPath);
-
       // Prevent infinite redirect loop
       if (sessionStorage.getItem('auth_redirect_attempted')) {
-        console.error('❌ Auth redirect loop detected. Stopping.');
         sessionStorage.removeItem('auth_redirect_attempted');
         return;
       }
@@ -142,7 +138,6 @@ class App {
 
     // Set user info
     this.state.user = window.DualMindAuth ? window.DualMindAuth.getUser() : null;
-    console.log('✅ User authenticated:', this.state.user ? this.state.user.email : 'Unknown');
 
     // Sync user with backend database
     if (this.state.user) {
@@ -153,14 +148,12 @@ class App {
     const overlay = document.getElementById('auth-loading-overlay');
     if (overlay) {
       overlay.style.display = 'none';
-      console.log('✅ Loading overlay hidden');
     }
     const app = document.getElementById('app');
     if (app) {
       app.style.display = 'block';
-      console.log('✅ App displayed - display set to block');
     } else {
-      console.error('❌ App element not found!');
+      console.error('App element not found — check index.html for #app');
     }
 
     // Wait for DOM and initialize components immediately
@@ -195,7 +188,6 @@ class App {
           this._backendHealthFailures = 0;
           const wasAvailable = this.state.backendAvailable;
           this.state.backendAvailable = true;
-          console.log('✅ Backend available');
           this.hideBackendUnavailableBanner();
 
           // Notify listeners (Sidebar, etc.) that backend is ready
@@ -209,7 +201,6 @@ class App {
         if (this._backendHealthFailures >= 2) {
           const wasAvailable = this.state.backendAvailable;
           this.state.backendAvailable = false;
-          console.log('⚠️ Backend health check failed (consecutive), some features may be unavailable');
           this.showBackendUnavailableBanner();
 
           if (wasAvailable) {
@@ -221,7 +212,6 @@ class App {
         if (this._backendHealthFailures >= 2) {
           const wasAvailable = this.state.backendAvailable;
           this.state.backendAvailable = false;
-          console.log('⚠️ Backend not available (consecutive), some features may be unavailable');
           this.showBackendUnavailableBanner();
 
           if (wasAvailable) {
@@ -232,7 +222,6 @@ class App {
     } else {
       // Offline mode preferred - don't check backend
       this.state.backendAvailable = false;
-      console.log('📱 Running in offline mode (no backend check)');
     }
 
     // Always enable API for mock responses in offline mode
@@ -293,7 +282,6 @@ class App {
     try {
       const response = await this.api.models.getModels();
       window._DUALMIND_MODELS = response.items || response || [];
-      console.log('✅ Loaded models:', window._DUALMIND_MODELS.length);
     } catch (error) {
       console.warn('Failed to load models:', error);
       window._DUALMIND_MODELS = [];
@@ -301,11 +289,20 @@ class App {
   }
 
   /**
-   * Prettify model name for display (NO display_name in DB)
-   * Converts "llama-3.3-70b-versatile" -> "Llama 3.3 70B Versatile"
+   * Prettify model name for display
+   * First tries to use displayName from DB if available
    */
   prettifyModelName(modelName) {
     if (!modelName) return modelName;
+
+    // Use displayName if we have it in our cached models
+    const models = window._DUALMIND_MODELS || [];
+    const model = models.find(m => m.modelName === modelName);
+    if (model && model.displayName) {
+      return model.displayName;
+    }
+
+    // Fallback for mock/offline
     return modelName
       .replace(/-/g, ' ')
       .replace(/\b\w/g, l => l.toUpperCase())
@@ -353,9 +350,6 @@ class App {
 
     // Initial layout adjustment
     this.adjustLayout();
-
-    console.log('🚀 DualMind App Initialized');
-    console.log('📊 Backend available:', this.state.backendAvailable ? '✅' : '❌ (Offline mode)');
 
     // Show offline indicator if needed
     if (!this.state.backendAvailable && window.DUALMIND_CONFIG?.offline?.showOfflineIndicator) {
@@ -423,76 +417,16 @@ class App {
     // Mode change
     document.addEventListener('mode-change', (e) => {
       this.state.currentMode = e.detail.mode;
-      console.log('Mode changed to:', e.detail.mode);
       this.renderChat();
     });
 
     // API toggle
     document.addEventListener('api-toggle', (e) => {
       this.state.apiEnabled = !!e.detail.active;
-      console.log('API status:', this.state.apiEnabled ? 'Active' : 'Inactive');
     });
 
-    // Model selection change handlers
-    document.addEventListener('change', (e) => {
-      if (e.target.id === 'model-select-left') {
-        const value = e.target.value;
-        localStorage.setItem('battle.model.left', value);
-        // Prevent same model selection
-        const right = localStorage.getItem('battle.model.right');
-        if (value && right && value === right) {
-          alert('Please select different models for left and right');
-          e.target.value = '';
-          localStorage.removeItem('battle.model.left');
-        }
-      }
-
-      if (e.target.id === 'model-select-right') {
-        const value = e.target.value;
-        localStorage.setItem('battle.model.right', value);
-        // Prevent same model selection
-        const left = localStorage.getItem('battle.model.left');
-        if (value && left && value === left) {
-          alert('Please select different models for left and right');
-          e.target.value = '';
-          localStorage.removeItem('battle.model.right');
-        }
-      }
-
-      // Direct Chat model selection
-      if (e.target.id === 'model-select-direct') {
-        const value = e.target.value;
-        localStorage.setItem('direct.model', value);
-        console.log('✅ Direct chat model selected:', value);
-      }
-    });
-
-    // Model selector action buttons
+    // Action buttons that are part of ChatView but need global access
     document.addEventListener('click', (e) => {
-      // Swap models
-      if (e.target.closest('#swap-models-btn')) {
-        const left = localStorage.getItem('battle.model.left') || '';
-        const right = localStorage.getItem('battle.model.right') || '';
-        localStorage.setItem('battle.model.left', right);
-        localStorage.setItem('battle.model.right', left);
-        this.components.chatView.render();
-        return;
-      }
-
-      // Random pair
-      if (e.target.closest('#random-pair-btn')) {
-        const models = window._DUALMIND_MODELS || [];
-        if (models.length >= 2) {
-          const shuffled = [...models].sort(() => Math.random() - 0.5);
-          const leftId = shuffled[0].modelId ?? shuffled[0].model_id ?? '';
-          const rightId = shuffled[1].modelId ?? shuffled[1].model_id ?? '';
-          localStorage.setItem('battle.model.left', leftId);
-          localStorage.setItem('battle.model.right', rightId);
-          this.components.chatView.render();
-        }
-        return;
-      }
-
       // Text-to-Speech
       const speakBtn = e.target.closest('[data-action="speak"]');
       if (speakBtn) {
@@ -552,18 +486,6 @@ class App {
       }
     });
 
-    // Web search toggle
-    document.addEventListener('toggle-web-search', (e) => {
-      this.state.webSearchEnabled = e.detail.active;
-      console.log('Web search:', e.detail.active ? 'Enabled' : 'Disabled');
-    });
-
-    // Code mode toggle
-    document.addEventListener('toggle-code-mode', (e) => {
-      this.state.codeModeEnabled = e.detail.active;
-      console.log('Code mode:', e.detail.active ? 'Enabled' : 'Disabled');
-    });
-
     // Sidebar toggle - adjust main content
     document.addEventListener('sidebar-toggle', (e) => {
       this.adjustLayout(e.detail);
@@ -572,11 +494,6 @@ class App {
     // Thread clicked - load thread messages
     document.addEventListener('thread-clicked', (e) => {
       this.loadThread(e.detail.threadId);
-    });
-
-    // User logout
-    document.addEventListener('user-logout', () => {
-      this.handleLogout();
     });
 
     // Window resize
@@ -605,11 +522,120 @@ class App {
 
       shareModal.open(threadId, visibility);
     });
+
+    // Export menu — lazy load ChatExport and show dropdown
+    document.addEventListener('open-export-menu', async () => {
+      const turns = this.state.turns?.length || 0;
+      const direct = this.state.direct?.length || 0;
+      if (turns === 0 && direct === 0) {
+        if (window.showToast) window.showToast('Start a conversation first', 'info');
+        return;
+      }
+
+      this._openExportDropdown();
+    });
+  }
+
+  async _openExportDropdown() {
+    // Remove any existing dropdown
+    const existing = document.getElementById('dm-export-dropdown');
+    if (existing) { existing.remove(); return; }
+
+    const exportBtn = document.getElementById('export-btn');
+    if (!exportBtn) return;
+
+    const dropdown = document.createElement('div');
+    dropdown.id = 'dm-export-dropdown';
+    dropdown.setAttribute('role', 'menu');
+    dropdown.style.cssText = `
+      position: fixed;
+      background: rgba(16,18,28,0.98);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 12px;
+      padding: 6px;
+      z-index: 40000;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.5);
+      min-width: 160px;
+      backdrop-filter: blur(20px);
+      animation: dm-empty-enter 0.15s ease both;
+    `;
+
+    const formats = [
+      { id: 'md',   label: 'Markdown (.md)' },
+      { id: 'json', label: 'JSON (.json)' },
+      { id: 'csv',  label: 'CSV (.csv)' },
+      { id: 'html', label: 'HTML (.html)' },
+      { id: 'pdf',  label: 'PDF (print)' },
+    ];
+
+    formats.forEach((fmt, i) => {
+      const btn = document.createElement('button');
+      btn.setAttribute('role', 'menuitem');
+      btn.textContent = fmt.label;
+      btn.style.cssText = `
+        display: block;
+        width: 100%;
+        padding: 10px 14px;
+        background: transparent;
+        border: none;
+        border-radius: 8px;
+        color: rgba(255,255,255,0.88);
+        font-size: 13px;
+        font-weight: 500;
+        text-align: left;
+        cursor: pointer;
+        min-height: 44px;
+        transition: background 0.15s;
+        font-family: inherit;
+      `;
+      btn.addEventListener('mouseenter', () => { btn.style.background = 'rgba(74,171,194,0.12)'; });
+      btn.addEventListener('mouseleave', () => { btn.style.background = 'transparent'; });
+      btn.addEventListener('click', async () => {
+        dropdown.remove();
+        const { ChatExport } = await import('./chatExport.js');
+        const exporter = new ChatExport(this.state);
+        exporter.download(fmt.id);
+      });
+
+      // Arrow key navigation
+      btn.setAttribute('tabindex', i === 0 ? '0' : '-1');
+      btn.addEventListener('keydown', (e) => {
+        const items = [...dropdown.querySelectorAll('[role="menuitem"]')];
+        const idx = items.indexOf(e.currentTarget);
+        if (e.key === 'ArrowDown') { items[(idx + 1) % items.length].focus(); e.preventDefault(); }
+        else if (e.key === 'ArrowUp') { items[(idx - 1 + items.length) % items.length].focus(); e.preventDefault(); }
+        else if (e.key === 'Escape') { dropdown.remove(); exportBtn.focus(); }
+        else if (e.key === 'Enter') { btn.click(); }
+      });
+
+      dropdown.appendChild(btn);
+    });
+
+    document.body.appendChild(dropdown);
+
+    // Position below export button
+    const rect = exportBtn.getBoundingClientRect();
+    dropdown.style.top = `${rect.bottom + 8}px`;
+    dropdown.style.right = `${window.innerWidth - rect.right}px`;
+
+    // Focus first item
+    dropdown.querySelector('[role="menuitem"]')?.focus();
+
+    const closeOnClick = (e) => {
+      if (!document.body.contains(dropdown)) {
+        // Already removed by a button click
+        document.removeEventListener('click', closeOnClick, true);
+        return;
+      }
+      if (!dropdown.contains(e.target) && e.target !== exportBtn) {
+        dropdown.remove();
+        document.removeEventListener('click', closeOnClick, true);
+      }
+    };
+    setTimeout(() => document.addEventListener('click', closeOnClick, true), 0);
   }
 
   handleNavigation(action) {
-    console.log('Navigation:', action);
-
     switch (action) {
       case 'new-chat':
         this.startNewChat();
@@ -618,15 +644,13 @@ class App {
         this.showLeaderboard();
         break;
       default:
-        console.log('Unknown action:', action);
+        break;
     }
   }
 
   handleChatSubmit(data) {
     if (!data?.message?.trim()) return;
-    if (this.state.streaming) return; // no double-send
-
-    console.log('Chat submitted:', data);
+    if (this.state.streaming) return;
 
     // ✅ RESET VOTE STATE - New prompt = new comparison session
     this.resetVoteState();
@@ -680,6 +704,10 @@ class App {
         apiEnabled: this.state.apiEnabled,
       });
     }
+
+    // Show/hide export button based on whether there's content
+    const hasTurns = (this.state.turns?.length || 0) + (this.state.direct?.length || 0) > 0;
+    this.components.header?.setExportVisible?.(hasTurns);
   }
 
   cancelStreams() {
@@ -766,7 +794,6 @@ class App {
   async runArenaApi(prompt, temperature = 0.7) {
     // If backend is not available, fall back to mock responses
     if (!this.state.backendAvailable) {
-      console.log('📱 Backend not available, using mock responses');
       return this.runArenaDemo(prompt, true);
     }
 
@@ -785,7 +812,6 @@ class App {
     // IF IN BATTLE MODE (BLIND): FORCE RANDOM
     const currentMode = this.components.header?.getCurrentMode?.() || 'battle';
     if (currentMode === 'battle') {
-      console.log('⚔️ Battle Mode: Forcing Random Models');
       model1 = null;
       model2 = null;
     }
@@ -795,17 +821,16 @@ class App {
     // So if user picks "Llama 3" vs "Random", we must pick a random model for the empty slot here.
     if (this.state.backendAvailable && window._DUALMIND_MODELS?.length > 0) {
       if ((model1 && !model2) || (!model1 && model2)) {
-        console.log('🎲 Mixed Selection: Auto-filling random model for empty slot');
         const models = window._DUALMIND_MODELS;
 
         if (!model1) {
           const randomM = models[Math.floor(Math.random() * models.length)];
-          model1 = randomM.modelId;
+          model1 = randomM.modelName;
         }
 
         if (!model2) {
           const randomM = models[Math.floor(Math.random() * models.length)];
-          model2 = randomM.modelId;
+          model2 = randomM.modelName;
         }
       }
     }
@@ -815,13 +840,15 @@ class App {
     let rightName = 'Model B';
 
     if (model1 && window._DUALMIND_MODELS) {
-      const m1 = window._DUALMIND_MODELS.find(m => m.modelId === model1);
+      const m1 = window._DUALMIND_MODELS.find(m => m.modelName === model1);
       if (m1) leftName = m1.modelName;
+      else leftName = model1; // already a name
     }
 
     if (model2 && window._DUALMIND_MODELS) {
-      const m2 = window._DUALMIND_MODELS.find(m => m.modelId === model2);
+      const m2 = window._DUALMIND_MODELS.find(m => m.modelName === model2);
       if (m2) rightName = m2.modelName;
+      else rightName = model2; // already a name
     }
 
     const turn = {
@@ -866,7 +893,6 @@ class App {
       // ✅ CRITICAL FIX: Use the backend-generated comparisonId for voting
       // The backend ignores our battleId and creates its own comparisonId
       if (resp?.comparisonId) {
-        console.log('🔗 Updated comparisonId from backend:', resp.comparisonId);
         turn.comparisonId = resp.comparisonId;
       }
 
@@ -913,6 +939,9 @@ class App {
       turn.left.streaming = false;
       turn.right.streaming = false;
 
+      // Track when responses finished streaming to calculate vote duration
+      turn.streamingFinishedAt = Date.now();
+
       this.state.streaming = false;
       this.components.chatInput.setLoading(false);
 
@@ -935,12 +964,13 @@ class App {
     }
 
     const userId = Date.now();
+    const assistantId = userId + 1;
     const model = pickModelPair().left;
 
     this.state.direct = [
       ...this.state.direct,
       { id: userId, role: 'user', text: prompt },
-      { id: userId + 1, role: 'assistant', modelName: model.name, text: '' },
+      { id: assistantId, role: 'assistant', modelName: model.name, text: '', streaming: true },
     ];
 
     this.state.streaming = true;
@@ -949,16 +979,27 @@ class App {
 
     const reply = buildMockReply(prompt, model.name, 'balanced');
     const stream = streamText(reply, (chunk) => {
-      // Update last assistant message text incrementally by re-rendering minimal
-      const last = this.state.direct[this.state.direct.length - 1];
-      last.text += chunk;
-      // cheap render: only direct thread (small)
-      this.renderChat();
+      const assistantMessage = this.state.direct.find((m) => String(m.id) === String(assistantId));
+      if (!assistantMessage) return;
+
+      assistantMessage.text += chunk;
+      this.components.chatView.updateDirectResponse(assistantId, assistantMessage.text, true);
     }, { minDelay: 10, maxDelay: 22, minChunk: 1, maxChunk: 4 });
 
     this._activeStreams = [stream];
-    await stream.promise;
+    const result = await stream.promise;
     this._activeStreams = [];
+
+    if (result?.cancelled) {
+      return;
+    }
+
+    const assistantMessage = this.state.direct.find((m) => String(m.id) === String(assistantId));
+    if (assistantMessage) {
+      assistantMessage.streaming = false;
+      this.components.chatView.finishDirectResponse(assistantId);
+    }
+
     this.state.streaming = false;
     this.components.chatInput.setLoading(false);
     this.renderChat();
@@ -967,7 +1008,6 @@ class App {
   async runDirectApi(prompt) {
     // If backend is not available, fall back to mock responses
     if (!this.state.backendAvailable) {
-      console.log('📱 Backend not available, using mock responses');
       return this.runDirectDemo(prompt, true);
     }
 
@@ -987,15 +1027,17 @@ class App {
     }
 
     const userId = Date.now();
+    const assistantId = userId + 1;
     this.state.direct = [
       ...this.state.direct,
       { id: userId, role: 'user', text: prompt },
-      { id: userId + 1, role: 'assistant', modelName: displayModelName, text: '…' },
+      { id: assistantId, role: 'assistant', modelName: displayModelName, text: '', streaming: true },
     ];
 
     this.state.streaming = true;
     this.components.chatInput.setLoading(true);
     this.renderChat();
+    this.components.chatView.updateDirectResponse(assistantId, '', true);
 
     try {
       const authUserId = this.state.user?.id || null;
@@ -1004,18 +1046,22 @@ class App {
         threadId: this.state.currentThreadId,
         userId: authUserId
       });
-      const last = this.state.direct[this.state.direct.length - 1];
+      const last = this.state.direct.find((m) => String(m.id) === String(assistantId));
+      if (last) {
+        // Update model name if backend provides it, otherwise keep optimistic
+        if (resp?.model) {
+          last.modelName = resp.model.displayName || resp.model.name || last.modelName;
+        } else if (resp?.modelId) {
+          // If backend returns only ID, lookup name again
+          const m = window._DUALMIND_MODELS?.find(x => x.modelId === resp.modelId);
+          if (m) last.modelName = m.modelName;
+        }
 
-      // Update model name if backend provides it, otherwise keep optimistic
-      if (resp?.model) {
-        last.modelName = resp.model.displayName || resp.model.name || last.modelName;
-      } else if (resp?.modelId) {
-        // If backend returns only ID, lookup name again
-        const m = window._DUALMIND_MODELS?.find(x => x.modelId === resp.modelId);
-        if (m) last.modelName = m.modelName;
+        last.text = resp?.message || resp?.text || '';
+        last.streaming = false;
+        this.components.chatView.updateDirectResponse(assistantId, last.text, false);
+        this.components.chatView.finishDirectResponse(assistantId);
       }
-
-      last.text = resp?.message || resp?.text || '';
     } catch (err) {
       const msg = err?.message || 'API request failed';
       console.warn('API request failed, falling back to mock responses:', msg);
@@ -1024,7 +1070,6 @@ class App {
       this.state.direct = this.state.direct.slice(0, -2); // Remove the failed messages
       // If backend is not available, fall back to mock responses
       if (!this.state.backendAvailable) {
-        console.log('📱 Backend not available, using mock responses');
         return this.runDirectDemo(prompt, true);
       }
     } finally {
@@ -1083,7 +1128,6 @@ class App {
     `;
 
     container.hidden = false;
-    console.log('✅ Voting UI shown for turn:', turnId);
   }
 
   /**
@@ -1125,6 +1169,13 @@ class App {
     try {
       turn.voteStatus = 'submitting';
       turn.voteChoice = voteChoice;
+
+      // Calculate vote duration
+      let durationMs = null;
+      if (turn.streamingFinishedAt) {
+        durationMs = Date.now() - turn.streamingFinishedAt;
+      }
+
       // Don't render here - applyVoteSelection already handled visual feedback
 
       if (this.state.backendAvailable && turn.comparisonId) {
@@ -1132,7 +1183,8 @@ class App {
         await this.api.arena.submitVote({
           comparisonId: turn.comparisonId,
           voteChoice: voteChoice, // 'left' | 'right' | 'tie' | 'both-bad'
-          userId: this.state.user?.id
+          userId: this.state.user?.id,
+          voteDurationMs: durationMs
         });
       } else {
         console.warn('Skipping vote submit (offline or missing comparisonId)');
@@ -1143,7 +1195,6 @@ class App {
       this.hideFloatingVoting();
       // Don't render here - next render happens after 2s timeout
 
-      console.log('✅ Vote submitted:', voteChoice, '- keeping both visible for 2s');
 
       // After 2 seconds, transition to showing only voted response
       this._voteTransitionTimeout = setTimeout(() => {
@@ -1154,7 +1205,6 @@ class App {
         currentTurn.voteStatus = 'submitted';
         // Update only this turn's DOM instead of full re-render to avoid duplication flicker
         this.updateTurnVisibilityAfterVote(turnId);
-        console.log('✅ Vote transition complete - showing voted response only');
       }, 2000);
 
       // Refresh leaderboard if open
@@ -1418,7 +1468,6 @@ class App {
     if (!this.state.backendAvailable || !this.state.user) return;
 
     try {
-      console.log('🔄 Syncing user with backend...');
 
       // Prepare user data for backend
       const userData = {
@@ -1434,7 +1483,6 @@ class App {
 
       // Call backend to sync/create user
       await this.api.users.syncUser(userData);
-      console.log('✅ User synced with backend:', userData.email);
     } catch (error) {
       // 🚨 Robust handling: If sync fails (e.g. race condition or DB error), 
       // check if it's just a duplicate or non-critical DB error.
@@ -1458,9 +1506,9 @@ class App {
 
     try {
       const userId = this.state.user?.id || null;
-      const result = await this.api.threads.createThread(title, userId);
+      const mode = this.state.currentMode || 'battle';
+      const result = await this.api.threads.createThread(title, userId, mode);
       this.state.currentThreadId = result?.threadId || result?.id || null;
-      console.log('✅ Thread created:', this.state.currentThreadId);
 
       // Add to sidebar with real UUID
       if (this.state.currentThreadId) {
@@ -1468,6 +1516,9 @@ class App {
           id: this.state.currentThreadId,
           title: title
         });
+
+        // Show share button now that a thread exists
+        this.components.header?.setShareVisible?.(true);
 
         // Let Sidebar (and others) refresh from source-of-truth
         document.dispatchEvent(new CustomEvent('threads-changed', {
@@ -1477,21 +1528,22 @@ class App {
     } catch (error) {
       // If user doesn't exist in database, try to sync and retry once
       if (error.message?.includes('user_id') && error.message?.includes('not present in table')) {
-        console.log('🔄 User not in database, syncing and retrying...');
         await this.syncUserWithBackend();
 
         // Retry thread creation
         try {
           const userId = this.state.user?.id || null;
-          const result = await this.api.threads.createThread(title, userId);
+          const mode = this.state.currentMode || 'battle';
+          const result = await this.api.threads.createThread(title, userId, mode);
           this.state.currentThreadId = result?.threadId || result?.id || null;
-          console.log('✅ Thread created on retry:', this.state.currentThreadId);
 
           if (this.state.currentThreadId) {
             this.components.sidebar.addRecentChat({
               id: this.state.currentThreadId,
               title: title
             });
+
+            this.components.header?.setShareVisible?.(true);
 
             document.dispatchEvent(new CustomEvent('threads-changed', {
               detail: { reason: 'thread-created', threadId: this.state.currentThreadId }
@@ -1581,12 +1633,14 @@ class App {
       });
 
       this.renderChat();
-      console.log(`✅ Loaded ${messages.length} messages from thread`);
+
+      // Show share and export buttons for existing loaded thread
+      this.components.header?.setShareVisible?.(true);
+      this.components.header?.setExportVisible?.(this.state.turns.length > 0);
 
       // After rendering, show voting panel for the last turn if vote is pending
       const lastTurn = this.state.turns[this.state.turns.length - 1];
       if (lastTurn && lastTurn.comparisonId && !lastTurn.voteChoice) {
-        console.log('🗳️ Showing voting panel for pending vote on turn:', lastTurn.id);
         this.showFloatingVoting(lastTurn.id);
       }
     } catch (error) {
@@ -1602,14 +1656,14 @@ class App {
     this.state.turns = [];
     this.state.direct = [];
     this.state.currentThreadId = null; // Clear thread for new chat
+    this.components.header?.setShareVisible?.(false);
+    this.components.header?.setExportVisible?.(false);
     this.components.chatInput.clear();
     this.components.chatInput.focus();
     this.renderChat();
-    console.log('Started new chat');
   }
 
   showLeaderboard() {
-    console.log('Showing leaderboard...');
     // Dedicated leaderboard page (static route)
     // Use relative URL so it works on localhost and deployed subpaths.
     window.location.assign('./leaderboard/');
@@ -1708,7 +1762,6 @@ class App {
    * Each prompt/response pair is a new comparison session
    */
   resetVoteState() {
-    console.log('🔄 Resetting vote state for new comparison');
 
     // Hide voting buttons
     this.hideFloatingVoting();
@@ -1742,7 +1795,6 @@ class App {
       voteMessage: undefined
     }));
 
-    console.log('✅ Vote state reset complete');
   }
 
   /**

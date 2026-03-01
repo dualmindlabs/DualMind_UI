@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [  
+      "Bash(grep:*)",
+      "Bash(cd *)",
+      "Bash(tail:*)",
+      "Bash(grep : error CS:*)",
+      "Bash(grep error:*)",
+      "Bash(cat:*)",
+      "Bash(cd \"C:\\\\Users\\\\Harshu\\\\.claude\\\\skills\\\\ui-ux-pro-max\" && set PYTHONIOENCODING=utf-8 && python scripts/search.py \"SaaS admin dashboard management dark premium\" --design-system -p \"DualMind Admin\" 2>&1)"
+    ]
+  }
+}

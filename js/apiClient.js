@@ -57,8 +57,8 @@ export class DualMindApiClient {
     });
   }
 
-  async submitVote({ comparisonId, voteChoice, userId }) {
-    return this._api.arena.submitVote(comparisonId, voteChoice, userId);
+  async submitVote({ comparisonId, voteChoice, userId, voteDurationMs }) {
+    return this._api.arena.submitVote({ comparisonId, voteChoice, userId, voteDurationMs });
   }
 
   async getLeaderboard() {
@@ -68,8 +68,8 @@ export class DualMindApiClient {
 
   // ==================== Thread Methods ====================
 
-  async createThread(title, userId = null) {
-    return this._api.threads.createThread(title, userId);
+  async createThread(title, userId = null, mode = null) {
+    return this._api.threads.createThread(title, userId, mode);
   }
 
   async syncUser(userData) {

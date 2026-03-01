@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>How It Works – DualMind Arena</title>
+
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
+
+  <!-- App CSS -->
+  <link rel="stylesheet" href="../css/styles.css" />
+  <link rel="stylesheet" href="../css/auth-styles.css" />
+  <script src="../theme.js"></script>
+
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs/%3E%3Crect width='64' height='64' rx='12' fill='%230f1115'/%3E%3Cpath d='M20 18h24l-6 10 6 10H20l6-10-6-10z' fill='%238ab4ff'/%3E%3C/svg%3E">
+
+  <meta name="theme-color" content="#0f1115">
+  <meta name="description" content="How It Works – Learn how your votes power transparent AI progress.">
+
+  <style>
+    .how-page {
+      min-height: 100vh;
+      background:
+        radial-gradient(1200px 600px at 60% 40%, rgba(60,70,140,.16), transparent 70%),
+        linear-gradient(180deg, #050608 0%, #080a0f 45%, #0f1115 100%);
+      background-color: var(--bg-0);
+      transition: background-color 0.3s ease;
+    }
+
+    [data-theme="light"] .how-page {
+      background:
+        radial-gradient(1200px 600px at 60% 40%, rgba(59,92,255,.08), transparent 70%),
+        linear-gradient(180deg, #f8f8fa 0%, #ffffff 100%);
+      background-color: #ffffff;
+    }
+
+    .how-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .how-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-1);
+      font-weight: 600;
+      font-size: 14px;
+      text-decoration: none;
+    }
+
+    .how-logo i {
+      font-size: 18px;
+      color: var(--text-3);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-3);
+      font-size: 18px;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 8px;
+      transition: background var(--fast), color var(--fast);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .header-btn:hover {
+      background: var(--bg-2);
+      color: var(--text-1);
+    }
+
+    .how-content {
+      max-width: 560px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+
+    .how-title {
+      font-size: 32px;
+      font-weight: 600;
+      color: var(--text-1);
+      margin: 0 0 12px;
+      text-align: center;
+    }
+
+    .how-subtitle {
+      font-size: 15px;
+      color: var(--text-2);
+      margin: 0 0 32px;
+      text-align: center;
+    }
+
+    .nav-buttons {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 48px;
+    }
+
+    .nav-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      background: transparent;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      color: var(--text-2);
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: background var(--fast), border-color var(--fast), color var(--fast);
+    }
+
+    .nav-btn:hover {
+      background: var(--bg-2);
+      border-color: var(--text-3);
+      color: var(--text-1);
+    }
+
+    .nav-btn.active {
+      background: var(--bg-2);
+      border-color: var(--text-3);
+      color: var(--text-1);
+    }
+
+    .nav-btn i {
+      font-size: 16px;
+    }
+
+    /* Steps Section */
+    .steps-section {
+      margin-bottom: 48px;
+    }
+
+    .step-item {
+      display: flex;
+      gap: 20px;
+      padding: 24px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .step-item:first-child {
+      padding-top: 0;
+    }
+
+    .step-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--bg-1);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .step-icon i {
+      font-size: 22px;
+      color: var(--text-2);
+    }
+
+    .step-content h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-1);
+      margin: 0 0 8px;
+    }
+
+    .step-content p {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text-2);
+      margin: 0;
+    }
+
+    /* Info Sections */
+    .info-section {
+      padding: 32px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .info-section:last-of-type {
+      border-bottom: none;
+    }
+
+    .info-section h2 {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-1);
+      margin: 0 0 16px;
+    }
+
+    .info-section p {
+      font-size: 14px;
+      color: var(--text-2);
+      margin: 0 0 16px;
+      line-height: 1.7;
+    }
+
+    .info-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .info-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--brand);
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: opacity var(--fast);
+    }
+
+    .info-link:hover {
+      opacity: 0.8;
+    }
+
+    .info-link i {
+      font-size: 14px;
+    }
+
+    /* Research Links */
+    .research-links {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .research-link {
+      color: var(--brand);
+      font-size: 14px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: opacity var(--fast);
+    }
+
+    .research-link:hover {
+      opacity: 0.8;
+    }
+
+    .research-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 24px;
+    }
+
+    /* Footer */
+    .how-footer {
+      border-top: 1px solid var(--line);
+      padding: 32px 24px;
+      text-align: center;
+    }
+
+    .footer-social {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .footer-social a {
+      color: var(--text-3);
+      font-size: 20px;
+      transition: color var(--fast);
+    }
+
+    .footer-social a:hover {
+      color: var(--text-1);
+    }
+
+    .footer-legal {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+    }
+
+    .footer-legal a {
+      color: var(--text-3);
+      font-size: 12px;
+      text-decoration: none;
+      transition: color var(--fast);
+    }
+
+    .footer-legal a:hover {
+      color: var(--text-2);
+    }
+  </style>
+</head>
+<body>
+  <div class="how-page">
+    <!-- Header -->
+    <header class="how-header">
+      <a href="../index.html" class="how-logo">
+        <i class="ri-layout-grid-fill"></i>
+        <span>LMArena</span>
+      </a>
+      <div class="header-actions">
+        <a href="../index.html" class="header-btn" title="New Chat"><i class="ri-edit-line"></i></a>
+        <button class="header-btn" title="Leaderboard"><i class="ri-trophy-line"></i></button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="how-content">
+      <h1 class="how-title">How It Works</h1>
+      <p class="how-subtitle">Learn how your votes power transparent AI progress</p>
+
+      <div class="nav-buttons">
+        <a href="#" class="nav-btn">
+          <i class="ri-article-line"></i>
+          <span>View Blog</span>
+        </a>
+        <a href="../about/index.html" class="nav-btn">
+          <i class="ri-arrow-left-line"></i>
+          <span>About Us</span>
+        </a>
+        <a href="#" class="nav-btn">
+          <i class="ri-question-answer-line"></i>
+          <span>FAQ</span>
+        </a>
+      </div>
+
+      <!-- Steps -->
+      <div class="steps-section">
+        <div class="step-item">
+          <div class="step-icon">
+            <i class="ri-terminal-box-line"></i>
+          </div>
+          <div class="step-content">
+            <h3>Input your Prompt</h3>
+            <p>Type in your prompt. Make sure to select the right tool for the job; for example, if you want to generate an image, select the image icon. When you submit your prompt, it is collected to support fair, public evaluations and shape the development of AI models.</p>
+          </div>
+        </div>
+
+        <div class="step-item">
+          <div class="step-icon">
+            <i class="ri-chat-3-line"></i>
+          </div>
+          <div class="step-content">
+            <h3>Compare Answers</h3>
+            <p>In battle mode, you'll be served 2 anonymous models. Dig into the responses and decide which answer best fits your needs.</p>
+          </div>
+        </div>
+
+        <div class="step-item">
+          <div class="step-icon">
+            <i class="ri-scissors-cut-line"></i>
+          </div>
+          <div class="step-content">
+            <h3>Vote for the Best</h3>
+            <p>Choose your preferred response. Your vote helps shape the public AI leaderboards, and we share some of your feedback with model developers to help them build better models for people like you.</p>
+          </div>
+        </div>
+
+        <div class="step-item">
+          <div class="step-icon">
+            <i class="ri-refresh-line"></i>
+          </div>
+          <div class="step-content">
+            <h3>Discover and Repeat</h3>
+            <p>After voting, the model identities are revealed. You can keep chatting in the same conversation, or start a new one.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Transparency & Privacy -->
+      <div class="info-section">
+        <h2>Transparency & Privacy</h2>
+        <p>Learn more about our policies, and how the community impacts the leaderboards. Since March 2024, we've helped test proprietary and open source models from major labs and small teams. This includes pre-release models, meaning the community's feedback directly influences how new AI models are developed, refined, and released.</p>
+        <div class="info-links">
+          <a href="#" class="info-link">Terms of Use <i class="ri-arrow-right-up-line"></i></a>
+          <a href="#" class="info-link">Privacy Policy <i class="ri-arrow-right-up-line"></i></a>
+          <a href="#" class="info-link">Leaderboard Policy <i class="ri-arrow-right-up-line"></i></a>
+        </div>
+      </div>
+
+      <!-- Open Research -->
+      <div class="info-section">
+        <h2>Open Research</h2>
+        <p>Learn more about our open datasets and research papers. LMArena has open-sourced the largest repository of organic human preferences on generative models in the world. These datasets are free and open to access. We're also actively developing new research and analyses to help everyone better understand this human preference data.</p>
+        
+        <div class="research-links">
+          <a href="#" class="research-link">Original Chatbot Arena research paper (ICML 2024) <i class="ri-arrow-right-up-line"></i></a>
+          <a href="#" class="research-link">LMSYS-Chat-1M research paper <i class="ri-arrow-right-up-line"></i></a>
+          <a href="#" class="research-link">Research paper introducing LLM-as-a-judge (NeurIPS 2023) <i class="ri-arrow-right-up-line"></i></a>
+          
+          <div class="research-row">
+            <a href="#" class="research-link">Prompt-to-Leaderboard (ICML 2025) <i class="ri-arrow-right-up-line"></i></a>
+            <a href="#" class="research-link">Arena-Hard (ICML 2025) <i class="ri-arrow-right-up-line"></i></a>
+          </div>
+          
+          <div class="research-row">
+            <a href="#" class="research-link">RouteLLM (ICLR 2025) <i class="ri-arrow-right-up-line"></i></a>
+            <a href="#" class="research-link">Vision Arena dataset release (ICML 2025) <i class="ri-arrow-right-up-line"></i></a>
+          </div>
+          
+          <a href="#" class="research-link">Exploring and Mitigating Adversarial Attacks on Leaderboards (ICML 2025 oral)</a>
+          
+          <div class="research-row">
+            <a href="#" class="research-link">Search Arena (NeurIPS 2025) <i class="ri-arrow-right-up-line"></i></a>
+            <a href="#" class="research-link">Over-Refusal Benchmarking (ICML 2025) <i class="ri-arrow-right-up-line"></i></a>
+          </div>
+          
+          <div class="research-row">
+            <a href="#" class="research-link">Open datasets on HuggingFace <i class="ri-arrow-right-up-line"></i></a>
+            <a href="#" class="research-link">Style Control analysis <i class="ri-arrow-right-up-line"></i></a>
+          </div>
+          
+          <div class="research-row">
+            <a href="#" class="research-link">Sentiment Control analysis <i class="ri-arrow-right-up-line"></i></a>
+            <a href="#" class="research-link">Prompt Freshness and Benchmark <i class="ri-arrow-right-up-line"></i></a>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="how-footer">
+      <div class="footer-social">
+        <a href="#" title="Discord"><i class="ri-discord-fill"></i></a>
+        <a href="#" title="X/Twitter"><i class="ri-twitter-x-line"></i></a>
+        <a href="#" title="GitHub"><i class="ri-github-fill"></i></a>
+      </div>
+      <div class="footer-legal">
+        <a href="#">Terms of Use</a>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Cookie Policy</a>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>

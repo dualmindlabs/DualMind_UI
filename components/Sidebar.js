@@ -10,7 +10,7 @@ export class Sidebar {
   constructor(containerId) {
     this.container = document.getElementById(containerId);
     this.isMobile = window.innerWidth < 1024;
-    // Desktop opens by default; mobile starts closed (drawer)
+    // Desktop opens by default; mobile/tablet starts closed (drawer)
     this.isOpen = !this.isMobile;
     this.isCollapsed = false;
     this.recentChats = [];
@@ -18,6 +18,7 @@ export class Sidebar {
     this._escapeHandler = null;
     this._scrollY = 0;
     this._threadActionsClickHandler = null;
+    this._threadClickHandler = null;
     this._refreshTimer = null;
 
     this.init();
@@ -44,7 +45,6 @@ export class Sidebar {
   async loadThreads() {
     // Only load threads if user is logged in
     if (!window.DualMindAuth || !window.DualMindAuth.isLoggedIn()) {
-      console.log('User not logged in, skipping thread load');
       return;
     }
 
@@ -68,7 +68,6 @@ export class Sidebar {
       }));
 
       this.updateRecentChats();
-      console.log(`✅ Loaded ${this.recentChats.length} threads`);
     } catch (error) {
       console.warn('Failed to load threads:', error);
     }
@@ -85,7 +84,7 @@ export class Sidebar {
       </button>
       
       <!-- Sidebar -->
-      <aside id="sidebar" class="sidebar ${this.isCollapsed ? 'collapsed' : 'open'}" aria-label="Sidebar">
+      <aside id="sidebar" class="sidebar ${this.isCollapsed ? 'collapsed' : 'open'} ${this.isMobile ? 'mobile-drawer' : ''}" aria-label="Sidebar">
         <!-- Header Section -->
         <div class="sidebar-header">
           <!-- Logo -->
@@ -122,11 +121,33 @@ export class Sidebar {
 
         <!-- Footer -->
         <footer class="sidebar-footer">
-          <a href="./terms/" class="footer-link">Terms of use</a>
-          <a href="./privacy/" class="footer-link">Privacy Policy</a>
-          <div class="footer-row">
-            <a href="#" class="footer-link logout-btn" id="logout-btn">Log Out</a>
-            <a href="./cookies/" class="footer-link">Cookies</a>
+          <div class="footer-settings-wrapper">
+            <button class="nav-item footer-settings-btn" id="footer-settings-btn" aria-label="Settings">
+              <span class="nav-icon">${Icons.settings('white', 18)}</span>
+              <span class="nav-text">Settings</span>
+            </button>
+
+            <div class="footer-settings-popup" id="footer-settings-popup">
+              <!-- User Profile Details -->
+              <div class="footer-popup-user">
+                <div class="footer-user-avatar">${this.getUserInitials()}</div>
+                <div class="footer-user-details">
+                  <div class="footer-user-name">${this.getUserName()}</div>
+                  <div class="footer-user-email">${this.getUserEmail()}</div>
+                </div>
+              </div>
+              <div class="footer-popup-divider"></div>
+
+              <a href="./terms/" class="footer-popup-link">Terms of use</a>
+              <a href="./privacy/" class="footer-popup-link">Privacy Policy</a>
+              <a href="./cookies/" class="footer-popup-link">Cookies</a>
+              <div class="footer-popup-divider"></div>
+              <a href="#" class="footer-popup-link logout-btn" id="logout-btn">
+                <span style="display: flex; gap: 8px; align-items: center;">
+                  ${Icons.logout('currentColor')} Log Out
+                </span>
+              </a>
+            </div>
           </div>
         </footer>
       </aside>
@@ -153,11 +174,11 @@ export class Sidebar {
           <span class="chat-title">${this.escapeHtml(chat.title)}</span>
         </a>
         <div class="chat-actions">
-          <button class="chat-action-btn" data-action="rename" data-chat-id="${chat.id}" title="Rename">
-            ✏️
+          <button class="chat-action-btn" data-action="rename" data-chat-id="${chat.id}" title="Rename" aria-label="Rename thread">
+            ${Icons.rename('currentColor', 13)}
           </button>
-          <button class="chat-action-btn" data-action="delete" data-chat-id="${chat.id}" title="Delete">
-            🗑️
+          <button class="chat-action-btn" data-action="delete" data-chat-id="${chat.id}" title="Delete" aria-label="Delete thread">
+            ${Icons.trash('currentColor', 13)}
           </button>
         </div>
       </div>
@@ -171,33 +192,87 @@ export class Sidebar {
     return div.innerHTML;
   }
 
+  getUserInitials() {
+    if (!window.DualMindAuth || !window.DualMindAuth.isLoggedIn()) return 'U';
+    const user = window.DualMindAuth.getUser();
+    if (!user) return 'U';
+
+    // Try to get name from user_metadata first
+    const name = user.user_metadata?.full_name || user.user_metadata?.name || '';
+    if (name) {
+      return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+    }
+
+    // Fallback to email
+    const email = user.email || '';
+    if (email) {
+      return email.substring(0, 2).toUpperCase();
+    }
+
+    // Fallback to phone
+    const phone = user.phone || '';
+    if (phone) {
+      return '📱';
+    }
+
+    return 'U';
+  }
+
+  getUserName() {
+    if (!window.DualMindAuth || !window.DualMindAuth.isLoggedIn()) return 'User';
+    const user = window.DualMindAuth.getUser();
+    if (!user) return 'User';
+
+    return user.user_metadata?.full_name ||
+           user.user_metadata?.name ||
+           (user.email ? user.email.split('@')[0] : 'User');
+  }
+
+  getUserEmail() {
+    if (!window.DualMindAuth || !window.DualMindAuth.isLoggedIn()) return '';
+    const user = window.DualMindAuth.getUser();
+    if (!user) return '';
+
+    return user.email || user.phone || '';
+  }
+
   updateRecentChats() {
     const listContainer = this.container.querySelector('#recent-chats-list');
     if (listContainer) {
       listContainer.innerHTML = this.renderRecentChats();
-      // Re-attach thread click handlers after updating
-      this.attachThreadClickHandlers();
-      // Re-attach action handlers
+      // Action and thread-click handlers use delegation — no re-attachment needed
       this.attachActionHandlers();
     }
   }
 
   attachThreadClickHandlers() {
-    const chatItems = this.container.querySelectorAll('.chat-item');
-    chatItems.forEach(item => {
-      item.addEventListener('click', (e) => {
-        e.preventDefault();
-        const threadId = item.getAttribute('data-chat-id');
-        if (threadId) {
-          document.dispatchEvent(new CustomEvent('thread-clicked', {
-            detail: { threadId }
-          }));
-          if (this.isMobile) {
-            this.close();
-          }
+    // Use event delegation — one listener on the container, never needs re-attachment.
+    const listContainer = this.container.querySelector('#recent-chats-list');
+    if (!listContainer) return;
+
+    if (this._threadClickHandler) {
+      listContainer.removeEventListener('click', this._threadClickHandler);
+    }
+
+    this._threadClickHandler = (e) => {
+      const item = e.target.closest('.chat-item');
+      if (!item) return;
+      // Ignore if click originated from an action button inside the item
+      if (e.target.closest('.chat-action-btn')) return;
+
+      e.preventDefault();
+      const threadId = item.getAttribute('data-chat-id');
+      if (threadId) {
+        document.dispatchEvent(new CustomEvent('thread-clicked', {
+          detail: { threadId }
+        }));
+        if (this.isMobile) {
+          this.close();
         }
-      });
-    });
+      }
+    };
+
+    listContainer.addEventListener('click', this._threadClickHandler);
   }
 
   attachEventListeners() {
@@ -242,7 +317,7 @@ export class Sidebar {
     overlay?.addEventListener('click', () => this.close());
 
     // Navigation items
-    const navItems = this.container.querySelectorAll('.nav-item');
+    const navItems = this.container.querySelectorAll('.nav-item:not(.footer-settings-btn)');
     navItems.forEach(item => {
       item.addEventListener('click', (e) => {
         e.preventDefault();
@@ -250,7 +325,25 @@ export class Sidebar {
       });
     });
 
-    // Thread click handlers are attached by attachThreadClickHandlers() called from updateRecentChats()
+    // Settings popup toggle
+    const settingsBtn = this.container.querySelector('#footer-settings-btn');
+    const settingsPopup = this.container.querySelector('#footer-settings-popup');
+
+    settingsBtn?.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      settingsPopup?.classList.toggle('active');
+    });
+
+    // Close popup when clicking outside
+    document.addEventListener('click', (e) => {
+      if (settingsPopup?.classList.contains('active') && !settingsBtn.contains(e.target) && !settingsPopup.contains(e.target)) {
+        settingsPopup.classList.remove('active');
+      }
+    });
+
+    // Thread click handlers — delegated, attached once
+    this.attachThreadClickHandlers();
 
     // Initial attachment of action handlers (delegated)
     this.attachActionHandlers();
@@ -297,8 +390,6 @@ export class Sidebar {
       const action = btn.getAttribute('data-action');
       const chatId = btn.getAttribute('data-chat-id');
 
-      console.log(`Action button clicked: ${action} on ${chatId}`);
-
       if (action === 'rename') {
         await this.handleRenameThread(chatId);
       } else if (action === 'delete') {
@@ -332,7 +423,6 @@ export class Sidebar {
           this.updateRecentChats();
 
           customModal.toast('Thread renamed successfully', 'success');
-          console.log('✅ Thread renamed successfully');
         } catch (error) {
           console.error('Failed to rename thread:', error);
           customModal.toast('Failed to rename thread: ' + error.message, 'error');
@@ -371,7 +461,6 @@ export class Sidebar {
           }
 
           customModal.toast('Thread deleted successfully', 'success');
-          console.log('✅ Thread deleted successfully');
         } catch (error) {
           console.error('Failed to delete thread:', error);
           customModal.toast('Failed to delete thread: ' + error.message, 'error');
@@ -411,6 +500,9 @@ export class Sidebar {
     }
 
     if (sidebar) {
+      // Add mobile specific class
+      sidebar.classList.toggle('mobile-drawer', this.isMobile);
+
       // Mobile drawer behavior: use open/closed
       // Desktop collapse behavior: use collapsed/open
       if (this.isMobile) {
@@ -464,7 +556,6 @@ export class Sidebar {
   updateSidebarState() {
     const sidebar = this.container.querySelector('#sidebar');
     const mainContent = document.querySelector('.main-content');
-    const headerContainer = document.querySelector('#header-container');
 
     if (sidebar) {
       sidebar.classList.toggle('collapsed', this.isCollapsed);

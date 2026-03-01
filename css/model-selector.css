@@ -10,9 +10,10 @@
   max-width: 800px;
   margin: 32px auto;
   padding: 24px;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(10, 12, 20, 0.6);
+  border: 1px solid rgba(74, 171, 194, 0.2);
   border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
 .model-selector-column {
@@ -34,13 +35,17 @@
   width: 100%;
   padding: 12px 16px;
   background: rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(74, 171, 194, 0.25);
   border-radius: 12px;
   color: rgba(255, 255, 255, 0.95);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   color-scheme: dark;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .model-select:hover {
@@ -69,17 +74,18 @@
 }
 
 .model-selector-actions .icon-btn {
-  width: 44px;
-  height: 44px;
+  width: 52px;
+  height: 52px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 12px;
+  background: rgba(74, 171, 194, 0.1);
+  border: 1px solid rgba(74, 171, 194, 0.3);
+  border-radius: 14px;
   color: rgba(255, 255, 255, 0.9);
-  font-size: 20px;
+  font-size: 22px;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .model-selector-actions .icon-btn:hover {
@@ -88,19 +94,21 @@
 }
 
 .model-selector-actions .secondary-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(203, 146, 117, 0.1);
+  border: 1px solid rgba(203, 146, 117, 0.3);
   border-radius: 12px;
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(203, 146, 117, 0.9);
   padding: 10px 16px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .model-selector-actions .secondary-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(203, 146, 117, 0.2);
+  border-color: rgba(203, 146, 117, 0.5);
+  transform: translateY(-1px);
 }
 
 .model-selector-hint {

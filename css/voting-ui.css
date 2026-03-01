@@ -53,7 +53,7 @@
   font-size: 14px;
   font-weight: 600;
   letter-spacing: 0.2px;
-  font-family: 'Outfit', var(--font-family-base);
+  font-family: var(--font-sans);
 }
 
 .vote-buttons {
@@ -79,7 +79,7 @@
   color: rgba(255, 255, 255, 0.92);
   font-size: 14px;
   font-weight: 600;
-  font-family: 'Outfit', var(--font-family-base);
+  font-family: var(--font-sans);
   cursor: pointer;
   transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
   white-space: nowrap;
@@ -118,7 +118,7 @@
 
 .vote-btn-light[data-vote="left"],
 .vote-btn-light.vote-left {
-  --vote-accent: #4AABC2;
+  --vote-accent: var(--color-cyan, #4AABC2);
 }
 
 .vote-btn-light[data-vote="right"],
@@ -212,33 +212,13 @@
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 8px;
   }
-  
+
+  /* Compact text labels on mobile — no emoji, professional look */
   .vote-btn-light {
-    padding: 12px 8px;
-    font-size: 0;
-    min-height: 48px;
-  }
-  
-  .vote-btn-light::before {
-    font-size: 20px;
-    content: attr(data-icon);
-  }
-  
-  /* Add icons for each vote type */
-  .vote-btn-light[data-vote="left"]::before {
-    content: "👈";
-  }
-  
-  .vote-btn-light[data-vote="right"]::before {
-    content: "👉";
-  }
-  
-  .vote-btn-light[data-vote="tie"]::before {
-    content: "🤝";
-  }
-  
-  .vote-btn-light[data-vote="both-bad"]::before {
-    content: "👎";
+    padding: 10px 4px;
+    font-size: 11px;
+    letter-spacing: 0;
+    min-height: 46px;
   }
 }
 
@@ -261,14 +241,10 @@
   .vote-btn-light {
     min-height: 44px;
     padding: 10px 4px;
-    font-size: 0;
+    font-size: 11px;
     border-radius: 10px;
   }
-  
-  .vote-btn-light::before {
-    font-size: 18px;
-  }
-  
+
   .vote-prompt {
     font-size: 13px;
   }

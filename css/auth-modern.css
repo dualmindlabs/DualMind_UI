@@ -1,22 +1,26 @@
 /* Modern Auth Styles - Glassmorphism & Premium UI */
+/* auth-modern.css is loaded standalone (without tokens.css) on login/signup pages.
+   Local vars below match the global token values in tokens.css for consistency. */
 :root {
-  --primary: #4AABC2;
+  --primary:      #4AABC2;
   --primary-glow: rgba(74, 171, 194, 0.4);
-  --secondary: #CB9275;
-  --bg-dark: #0f111a;
-  --bg-card: rgba(30, 32, 47, 0.7);
-  --text-main: #ffffff;
-  --text-muted: #94a3b8;
-  --border-color: rgba(255, 255, 255, 0.1);
-  --success: #10b981;
-  --error: #ef4444;
+  --secondary:    #CB9275;
+  --bg-dark:      #0f111a;
+  --bg-card:      rgba(30, 32, 47, 0.7);
+  --text-main:    #ffffff;
+  --text-muted:   rgba(255, 255, 255, 0.70);
+  --border-color: rgba(255, 255, 255, 0.10);
+  --success:      #10b981;
+  --error:        #ef4444;
+  /* Typography — matches tokens.css --font-sans */
+  --font-sans:    'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 body {
   margin: 0;
   padding: 0;
-  font-family: 'Outfit', sans-serif;
-  background-color: var(--bg-dark);
+  font-family: var(--font-sans);
+  background: linear-gradient(135deg, #0d0f1a 0%, #0a0a0a 100%);
   color: var(--text-main);
   overflow-x: hidden;
   min-height: 100vh;
@@ -46,13 +50,13 @@ body {
   max-width: 1200px;
   min-height: 600px;
   margin: 20px;
-  background: var(--bg-card);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--border-color);
+  background: rgba(16, 18, 28, 0.85);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(74, 171, 194, 0.2);
   border-radius: 24px;
   overflow: hidden;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(74, 171, 194, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.05);
   animation: fadeIn 0.6s ease-out;
 }
 
@@ -157,21 +161,23 @@ body {
 .input-field {
   width: 100%;
   padding: 16px 16px 16px 48px; /* Extra left padding for icon */
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid var(--border-color);
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   color: var(--text-main);
   font-size: 16px;
   font-family: inherit;
   transition: all 0.3s ease;
   box-sizing: border-box;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .input-field:focus {
   outline: none;
   border-color: var(--primary);
-  background: rgba(0, 0, 0, 0.4);
-  box-shadow: 0 0 0 4px rgba(74, 171, 194, 0.1);
+  background: rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 0 4px rgba(74, 171, 194, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 .input-icon {
@@ -280,8 +286,8 @@ body {
 
 .btn-social {
   padding: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border-color);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   color: var(--text-main);
   font-weight: 500;
@@ -291,11 +297,16 @@ body {
   justify-content: center;
   gap: 8px;
   transition: all 0.3s ease;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font-size: 14px;
 }
 
 .btn-social:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(74, 171, 194, 0.25);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 /* Footer Links */
@@ -364,15 +375,26 @@ body {
   .auth-hero {
     display: none;
   }
-  
+
   .auth-container {
     max-width: 500px;
     height: auto;
     margin: 20px;
   }
-  
+
   .auth-form-wrapper {
     padding: 40px 30px;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-container {
+    margin: 12px;
+    border-radius: 16px;
+  }
+
+  .auth-form-wrapper {
+    padding: 32px 20px;
   }
 }
 

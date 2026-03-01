@@ -1,4 +1,7 @@
+# Wrangler Ignore
 node_modules
+/node_modules
+**node_modules**
 .git
 .wrangler
 *.log
@@ -13,3 +16,11 @@ OneDrive
 .vscode
 package.json
 wrangler.jsonc
+
+# Ignore nested next applications
+next-dualmind
+/next-dualmind
+next-dualmind/
+.next
+/.next
+dist

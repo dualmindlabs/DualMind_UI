@@ -10,10 +10,15 @@ function escapeHtml(str) {
 
 function renderSkeleton(root) {
   root.innerHTML = `
+    <div class="dm-lb-stats-bar">
+      <div class="dm-lb-stat-card"><div class="dm-skel w-40" style="margin: 0 auto 12px; height: 36px;"></div><div class="dm-skel w-70" style="margin: 0 auto; height: 12px;"></div></div>
+      <div class="dm-lb-stat-card"><div class="dm-skel w-40" style="margin: 0 auto 12px; height: 36px;"></div><div class="dm-skel w-70" style="margin: 0 auto; height: 12px;"></div></div>
+      <div class="dm-lb-stat-card"><div class="dm-skel w-40" style="margin: 0 auto 12px; height: 36px;"></div><div class="dm-skel w-70" style="margin: 0 auto; height: 12px;"></div></div>
+    </div>
     <div class="dm-lb-shell">
       <div class="dm-lb-top">
         <div>
-          <div class="dm-lb-title">Model Leaderboard</div>
+          <div class="dm-lb-title">Leaderboard</div>
           <div class="dm-lb-subtitle">Loading stats…</div>
         </div>
       </div>
@@ -81,11 +86,25 @@ function renderData(root, items) {
   }, { responses: 0 });
 
   root.innerHTML = `
+    <div class="dm-lb-stats-bar">
+      <div class="dm-lb-stat-card">
+        <div class="dm-lb-stat-value">${sorted.length}</div>
+        <div class="dm-lb-stat-label">AI Models</div>
+      </div>
+      <div class="dm-lb-stat-card">
+        <div class="dm-lb-stat-value">${escapeHtml(String(totals.responses))}</div>
+        <div class="dm-lb-stat-label">Total Matches</div>
+      </div>
+      <div class="dm-lb-stat-card">
+        <div class="dm-lb-stat-value">${escapeHtml(sorted[0]?.displayName || sorted[0]?.modelName || sorted[0]?.model_name || 'Unknown')}</div>
+        <div class="dm-lb-stat-label">Top Model</div>
+      </div>
+    </div>
     <div class="dm-lb-shell">
       <div class="dm-lb-top">
         <div>
-          <div class="dm-lb-title" style="color: #ffffff;">Model Leaderboard</div>
-          <div class="dm-lb-subtitle" style="color: rgba(255,255,255,0.7);">${escapeHtml(String(sorted.length))} models · ${escapeHtml(String(totals.responses))} total matches</div>
+          <div class="dm-lb-title" style="color: #ffffff !important;">Leaderboard</div>
+          <div class="dm-lb-subtitle" style="color: rgba(255,255,255,0.7) !important;">Real-time rankings based on arena battles</div>
         </div>
       </div>
 
@@ -120,7 +139,7 @@ function renderData(root, items) {
               <div class="lb-cell-winrate">
                 <span class="lb-winrate-text">${escapeHtml(winRate.toFixed(1))}%</span>
                 <div class="lb-winrate-bar-track">
-                  <div class="lb-winrate-bar-fill" style="width: ${barWidth}%"></div>
+                  <div class="lb-winrate-bar-fill" style="width: 0%" data-width="${barWidth}%"></div>
                 </div>
               </div>
               <div class="lb-cell-responses">${escapeHtml(String(responses))}</div>
@@ -153,6 +172,14 @@ async function init() {
       const data = await api.arena.getLeaderboard();
       const items = normalizeItems(data);
       renderData(root, items);
+
+      // Animate win rate bars after render
+      setTimeout(() => {
+        const bars = root.querySelectorAll('.lb-winrate-bar-fill');
+        bars.forEach(bar => {
+          bar.style.width = bar.getAttribute('data-width');
+        });
+      }, 50);
     } catch (e) {
       renderState(root, {
         title: 'Failed to load leaderboard',

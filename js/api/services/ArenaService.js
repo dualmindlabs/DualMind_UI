@@ -120,6 +120,9 @@ export class ArenaService {
         if (voteChoice) body.voteChoice = voteChoice;
         if (winnerModelName) body.winnerModelName = winnerModelName;
         if (uid) body.userId = uid;
+        if (typeof comparisonIdOrObj === 'object' && comparisonIdOrObj.voteDurationMs != null) {
+            body.voteDurationMs = comparisonIdOrObj.voteDurationMs;
+        }
 
         return this.http.post('/api/arena/model-vote', body);
     }

@@ -135,7 +135,9 @@
   animation: dm-chat-marquee 22s linear infinite;
 }
 
-.chat-marquee:hover .chat-marquee-track {
+.chat-marquee:hover .chat-marquee-track,
+.chat-container:focus-within .chat-marquee-track,
+.AI-Input:focus-within .chat-marquee-track {
   animation-play-state: paused;
 }
 

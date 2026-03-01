@@ -71,7 +71,7 @@
 
 .chat-action-btn[data-action="rename"]:hover {
     background: rgba(74, 171, 194, 0.25);
-    color: #4AABC2;
+    color: var(--color-cyan, #4AABC2);
 }
 
 .chat-action-btn[data-action="delete"]:hover {

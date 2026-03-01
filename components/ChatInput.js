@@ -123,9 +123,17 @@ export class ChatInput {
   attachEventListeners() {
     // Input handling
     const input = this.container.querySelector('#chat-input');
+    const submitBtn = this.container.querySelector('#submit-btn');
+
     input?.addEventListener('input', (e) => {
       this.value = e.target.value;
       this.autoResize(input);
+
+      // Update submit button state
+      if (submitBtn) {
+        const hasContent = !!this.value.trim() || this.attachments.length > 0;
+        submitBtn.disabled = this.isLoading || !hasContent;
+      }
     });
 
     input?.addEventListener('keydown', (e) => {
@@ -137,7 +145,6 @@ export class ChatInput {
     });
 
     // Submit button
-    const submitBtn = this.container.querySelector('#submit-btn');
     submitBtn?.addEventListener('click', () => this.submit());
 
     // Action buttons
