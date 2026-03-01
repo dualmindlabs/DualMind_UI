@@ -11,6 +11,7 @@ import { pickModelPair, buildMockReply, streamText } from './mockArena.js';
 import { api } from './apiInstance.js';
 import { LeaderboardModal } from './leaderboardModal.js';
 import { shareModal } from '../components/ShareModal.js';
+import { CustomModal } from '../components/CustomModal.js';
 
 class App {
   constructor() {
@@ -27,6 +28,7 @@ class App {
       backendAvailable: false, // Track if backend is available
       currentThreadId: null, // Track current conversation thread
       currentThreadVisibility: 'private', // Track current thread's visibility for sharing
+      energyBalance: null, // Track user energy
       chatSettings: {
         codeMode: false,
         webSearch: false
@@ -167,6 +169,7 @@ class App {
     this._backendCheckPromise = this.checkBackendAvailability();
     this._backendCheckPromise.then(() => {
       // console.log('Backend check completed');
+      this.updateEnergyBalance(); // Try fetching energy again now that backend check is done
     }).catch(err => {
       console.warn('Backend check failed:', err);
     });
@@ -319,6 +322,70 @@ class App {
     return model?.modelId || null;
   }
 
+  /**
+   * Fetch and update user's energy balance
+   */
+  async updateEnergyBalance() {
+    if (!this.state.apiEnabled || !this.state.backendAvailable) return;
+
+    // Give auth token logic a second to settle
+    let hasToken = false;
+    try {
+      if (window._DUALMIND_AUTH) {
+        // Fallback: Check local storage manually since getSession sometimes returns null initially
+        const authItem = localStorage.getItem('dualmind.auth.supabase');
+        if (authItem) {
+          const parsed = JSON.parse(authItem);
+          if (parsed?.session?.access_token) {
+             hasToken = true;
+          }
+        }
+
+        if (!hasToken) {
+          const session = await window._DUALMIND_AUTH.getSession();
+          hasToken = !!session.data?.session?.access_token;
+        }
+      }
+    } catch(e) {
+      console.warn('Could not verify token for energy fetch', e);
+    }
+
+    if (!hasToken) {
+      // Try falling back to auth provider in api
+      try {
+        const token = await window._DUALMIND_API?.http?.getAuthToken();
+        hasToken = !!token;
+      } catch (e) {
+        console.warn('Fallback token check failed', e);
+      }
+    }
+
+    if (!hasToken) {
+      // Third fallback: If user was injected by init()
+      if (this.state.user) {
+        hasToken = true;
+      }
+    }
+
+    if (!hasToken) {
+      console.warn('Skipping energy fetch: No auth token available');
+      return;
+    }
+
+    try {
+      console.log('Fetching energy balance from API...');
+      const response = await api.energy.getBalance();
+      console.log('Energy balance response:', response);
+
+      this.state.energyBalance = response?.balance ?? null;
+      if (this.components.header) {
+        this.components.header.updateEnergy(this.state.energyBalance);
+      }
+    } catch (error) {
+      console.error('Failed to fetch energy balance:', error);
+    }
+  }
+
   async setup() {
     // Expose app globally for components
     window._APP = this;
@@ -333,6 +400,9 @@ class App {
     this.components.header = new Header('header-container');
     this.components.chatInput = new ChatInput('chat-input-container');
     this.components.chatView = new ChatView('main-content');
+
+    // Fetch initial energy balance
+    this.updateEnergyBalance();
 
     // Update sidebar with user info after initialization
     if (this.components.sidebar && this.components.sidebar.updateUserInfo) {
@@ -648,9 +718,17 @@ class App {
     }
   }
 
-  handleChatSubmit(data) {
+  async handleChatSubmit(data) {
     if (!data?.message?.trim()) return;
     if (this.state.streaming) return;
+
+    // Check energy balance if API is enabled and backend is available
+    if (this.state.apiEnabled && this.state.backendAvailable && this.state.user) {
+      if (this.state.energyBalance !== null && this.state.energyBalance < 3) {
+        this.showOutOfEnergyModal();
+        return;
+      }
+    }
 
     // ✅ RESET VOTE STATE - New prompt = new comparison session
     this.resetVoteState();
@@ -945,10 +1023,22 @@ class App {
       this.state.streaming = false;
       this.components.chatInput.setLoading(false);
 
+      // Update energy balance after chat
+      this.updateEnergyBalance();
+
       // ChatInput re-renders when loading changes; ensure voting stays visible until user clicks
       this.showFloatingVoting(turn.id);
 
     } catch (err) {
+      if (err?.status === 402) {
+        this.state.turns = this.state.turns.filter(t => t.id !== turn.id); // Remove failed turn
+        this.state.streaming = false;
+        this.components.chatInput.setLoading(false);
+        this.renderChat();
+        this.showOutOfEnergyModal();
+        return;
+      }
+
       const msg = err?.message || 'API request failed';
       console.warn('API request failed, falling back to mock responses:', msg);
 
@@ -1062,7 +1152,19 @@ class App {
         this.components.chatView.updateDirectResponse(assistantId, last.text, false);
         this.components.chatView.finishDirectResponse(assistantId);
       }
+
+      // Update energy balance after chat
+      this.updateEnergyBalance();
     } catch (err) {
+      if (err?.status === 402) {
+        this.state.direct = this.state.direct.slice(0, -2); // Remove the failed messages
+        this.state.streaming = false;
+        this.components.chatInput.setLoading(false);
+        this.renderChat();
+        this.showOutOfEnergyModal();
+        return;
+      }
+
       const msg = err?.message || 'API request failed';
       console.warn('API request failed, falling back to mock responses:', msg);
 
@@ -1334,6 +1436,106 @@ class App {
     }
     buttonElement.removeAttribute('data-tts-state');
     buttonElement.disabled = false;
+  }
+
+  showOutOfEnergyModal() {
+    const customModal = window.customModal || (window.dualmindModal) || null;
+    if (!customModal && !document.getElementById('custom-modal-root')) {
+      alert("Out of Energy! Come back tomorrow or watch a demo video for +5 energy.");
+      this.claimEnergyVideo();
+      return;
+    }
+
+    const modal = customModal || new CustomModal();
+
+    const content = `
+      <div id="energy-modal-initial">
+        <div class="custom-modal-icon confirm" style="background: rgba(74, 171, 194, 0.1); border-color: rgba(74, 171, 194, 0.3); color: var(--color-cyan);">
+          <span style="font-size: 32px; display: flex; align-items: center; justify-content: center; height: 100%;">💎</span>
+        </div>
+        <h3 class="custom-modal-title">Out of Energy!</h3>
+        <p class="custom-modal-message">
+          You need at least 3 energy to send a prompt. Come back tomorrow, or watch a quick demo video to get +5 energy right now!
+        </p>
+        <div class="custom-modal-actions">
+          <button class="custom-modal-btn secondary" data-action="cancel">Maybe Later</button>
+          <button class="custom-modal-btn primary" data-action="watch-video">Watch Demo Video for +5 Energy</button>
+        </div>
+      </div>
+
+      <div id="energy-modal-video" style="display: none;">
+        <h3 class="custom-modal-title" style="margin-bottom: 16px;">Watch to Earn Energy</h3>
+        <div style="border-radius: 12px; overflow: hidden; background: #000; position: relative; padding-top: 56.25%;">
+          <video
+            id="energy-reward-video"
+            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
+            controls
+            preload="auto">
+            <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        <p class="custom-modal-message" style="margin-top: 16px; margin-bottom: 0;">
+          Watch the full video to claim your reward.
+        </p>
+      </div>
+    `;
+
+    modal.show(content, {
+      onCancel: () => {},
+    });
+
+    // Bind the custom video watch action
+    setTimeout(() => {
+      const watchBtn = document.querySelector('#custom-modal-content [data-action="watch-video"]');
+      const initialView = document.getElementById('energy-modal-initial');
+      const videoView = document.getElementById('energy-modal-video');
+      const videoPlayer = document.getElementById('energy-reward-video');
+
+      if (watchBtn && initialView && videoView && videoPlayer) {
+        watchBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+
+          // Switch views
+          initialView.style.display = 'none';
+          videoView.style.display = 'block';
+
+          // Start playing
+          videoPlayer.play().catch(err => {
+            console.error('Autoplay prevented:', err);
+            // Autoplay might be prevented, user has controls to start it
+          });
+
+          // Listen for video end
+          videoPlayer.addEventListener('ended', async () => {
+            modal.close();
+            await this.claimEnergyVideo();
+          });
+        });
+      }
+    }, 50);
+  }
+
+  async claimEnergyVideo() {
+    try {
+      if (window.showToast) window.showToast('Watching video...', 'info');
+      // In a real app, this would show a video player, then call API on completion.
+      // Here we just call the API directly for the demo.
+      console.log('Claiming energy video reward...');
+      const resp = await api.energy.claimVideo();
+      console.log('Claim reward response:', resp);
+
+      if (resp && resp.balance !== undefined) {
+        this.state.energyBalance = resp.balance;
+        if (this.components.header) {
+          this.components.header.updateEnergy(this.state.energyBalance);
+        }
+        if (window.showToast) window.showToast('+5 Energy Claimed!', 'success');
+      }
+    } catch (error) {
+      console.error('Failed to claim energy:', error);
+      if (window.showToast) window.showToast('Failed to claim energy.', 'error');
+    }
   }
 
   stopTextToSpeech(buttonOverride = null) {

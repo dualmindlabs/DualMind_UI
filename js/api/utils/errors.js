@@ -144,7 +144,7 @@ export function createErrorFromStatus(status, data, headers) {
     const message = data?.message || data?.error || `Request failed (${status})`;
 
     // Auth errors
-    if (status === 401 || status === 403) {
+    if (status === 401 || status === 403 || status === 402) {
         return new AuthError(message, status, data);
     }
 

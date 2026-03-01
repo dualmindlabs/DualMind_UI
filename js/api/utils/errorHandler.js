@@ -92,7 +92,7 @@ export function createErrorFromResponse(response, data) {
     const status = response.status;
 
     // Authentication errors
-    if (status === 401 || status === 403) {
+    if (status === 401 || status === 403 || status === 402) {
         return new AuthError(message, status, data);
     }
 

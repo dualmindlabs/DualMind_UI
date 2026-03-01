@@ -10,6 +10,7 @@ import { ArenaService } from './services/ArenaService.js';
 import { ThreadService } from './services/ThreadService.js';
 import { ModelService } from './services/ModelService.js';
 import { UserService } from './services/UserService.js';
+import { EnergyService } from './services/EnergyService.js';
 
 /**
  * Main DualMind API Client
@@ -50,6 +51,12 @@ export class DualMindApi {
          * @type {UserService}
          */
         this.users = new UserService(httpClient);
+
+        /**
+         * Energy service - user energy balance
+         * @type {EnergyService}
+         */
+        this.energy = new EnergyService(httpClient);
 
         /**
          * Raw HTTP client for advanced usage

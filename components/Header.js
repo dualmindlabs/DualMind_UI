@@ -83,6 +83,12 @@ export class Header {
 
         <!-- Right Controls -->
         <div class="header-controls">
+          <!-- Energy Display -->
+          <div id="energy-display" class="energy-display" title="Your Energy" aria-label="Energy Balance" style="display:none">
+            <span class="energy-icon">💎</span>
+            <span class="energy-amount">--</span>
+          </div>
+
           <!-- Share Button (hidden initially, shown when thread exists) -->
           <button id="share-thread-btn" class="header-icon-btn" aria-label="Share thread" title="Share this conversation" style="display:none">
             ${Icons.share('white', 18)}
@@ -269,6 +275,27 @@ export class Header {
   setExportVisible(visible) {
     const btn = this.container.querySelector('#export-btn');
     if (btn) btn.style.display = visible ? '' : 'none';
+  }
+
+  updateEnergy(balance) {
+    const display = this.container.querySelector('#energy-display');
+    const amount = this.container.querySelector('.energy-amount');
+
+    if (display && amount) {
+      if (balance !== null && balance !== undefined) {
+        amount.textContent = `${balance}/20`;
+        display.style.display = 'flex';
+
+        // Add low energy styling if below 3
+        if (balance < 3) {
+          display.classList.add('energy-low');
+        } else {
+          display.classList.remove('energy-low');
+        }
+      } else {
+        display.style.display = 'none';
+      }
+    }
   }
 }
 

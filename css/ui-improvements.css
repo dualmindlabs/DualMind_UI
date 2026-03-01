@@ -3,6 +3,32 @@
    Matching reference designs for clean, modern look
    ======================================== */
 
+/* Energy Display in Header */
+.energy-display {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 14px;
+  margin-right: 8px;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.energy-display.energy-low {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+}
+
+.energy-display:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
 /* Battle Mode Empty State - Centered Card */
 .chat-empty {
   display: flex;
