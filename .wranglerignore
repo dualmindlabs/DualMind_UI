@@ -1,26 +1,13 @@
-# Wrangler Ignore
-node_modules
-/node_modules
-**node_modules**
-.git
-.wrangler
+node_modules/
+.git/
+.wrangler/
+next-dualmind/
+next-dualmind/*
+.claude/
+.agent/
+.kiro/
+deploy_build/
 *.log
 package-lock.json
-*.md
-.eslintrc.json
-start.bat
-mock-api-server.js
-old-html-backup
-*.py
-OneDrive
-.vscode
 package.json
 wrangler.jsonc
-
-# Ignore nested next applications
-next-dualmind
-/next-dualmind
-next-dualmind/
-.next
-/.next
-dist
