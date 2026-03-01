@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://arena.dualmindlab.tech/sitemap.xml
