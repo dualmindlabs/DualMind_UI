@@ -20,7 +20,8 @@ const filesToCopy = [
     'sw.js',
     'terms.html',
     'theme.js',
-    'update-password.html'
+    'update-password.html',
+    'ads.txt'
 ];
 
 const foldersToCopy = [

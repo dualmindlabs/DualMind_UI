@@ -202,6 +202,16 @@ Sitemap: https://${domain}/sitemap.xml`, {
       });
     }
 
+    // Ads.txt
+    if (pathname === '/ads.txt') {
+      return new Response('google.com, pub-7046688828386115, DIRECT, f08c47fec0942fa0', {
+        headers: {
+          'content-type': 'text/plain; charset=utf-8',
+          'cache-control': 'public, max-age=86400'
+        },
+      });
+    }
+
     // Serve static assets from ASSETS binding
     if (env?.ASSETS?.fetch) {
       let assetResponse = await env.ASSETS.fetch(request);
