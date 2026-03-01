@@ -72,6 +72,7 @@ Mode changes are dispatched as `mode-change` CustomEvent and handled surgically 
 | `js/api/services/ThreadService.js` | `getThreads()`, `getThread()`, `getThreadMessages()`, `createThread()`, `updateThread()`, `deleteThread()` |
 | `js/api/services/ModelService.js` | `getModels()`, `getModelDetails()` |
 | `js/api/services/UserService.js` | `syncUser()`, `getUserProfile()` |
+| `js/api/services/EnergyService.js` | `getBalance()`, `claimVideo()` |
 | `js/api/utils/authProvider.js` | `getAuthToken()`, `isAuthenticated()`, `getUserId()` — abstracts token retrieval |
 | `js/api/utils/extractors.js` | Normalizes raw API responses: `extractChatResponse()`, `extractDualChatResponse()` |
 | `js/api/utils/errors.js` | Custom error classes: `ApiError`, `TimeoutError`, `NetworkError` |
