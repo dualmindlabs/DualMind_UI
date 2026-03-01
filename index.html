@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+  <meta name="monetag" content="b5a70184616210672492a246e2553c17">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="description" content="DualMind - AI Battle Arena for comparing language models">
@@ -9,36 +10,40 @@
 
   <title>DualMind - Battle Arena</title>
 
-  <!-- Fonts -->
+  <!-- Fonts: Outfit (UI) + JetBrains Mono (code). Only these two are loaded. -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
     rel="stylesheet">
 
-  <!-- Markdown & Syntax Highlighting -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/vs2015.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+  <!-- Syntax Highlighting CSS (non-blocking, loaded async) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/vs2015.min.css" media="print" onload="this.media='all'">
 
-  <!-- Styles -->
+  <!-- Markdown & Syntax Highlighting JS — deferred: only needed after first AI response -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js" defer></script>
+
+  <!-- Styles: tokens.css must be first (defines all CSS custom properties) -->
+  <link rel="stylesheet" href="./css/tokens.css">
   <link rel="stylesheet" href="./css/styles.css">
   <link rel="stylesheet" href="./css/auth-styles.css">
   <link rel="stylesheet" href="./css/model-selector.css">
   <link rel="stylesheet" href="./css/sidebar-actions.css">
-  <link rel="stylesheet" href="css/leaderboard-page.css" />
-  <link rel="stylesheet" href="css/ui-improvements.css" />
-  <link rel="stylesheet" href="css/voting-ui.css" />
-  <link rel="stylesheet" href="css/ai-input.css" />
-  <link rel="stylesheet" href="css/share-modal.css" />
-  <link rel="stylesheet" href="css/custom-modal.css" />
+  <link rel="stylesheet" href="css/leaderboard-page.css">
+  <link rel="stylesheet" href="css/ui-improvements.css">
+  <link rel="stylesheet" href="css/voting-ui.css">
+  <link rel="stylesheet" href="css/ai-input.css">
+  <link rel="stylesheet" href="css/share-modal.css">
+  <link rel="stylesheet" href="css/custom-modal.css">
+  <link rel="stylesheet" href="css/user-profile.css">
 
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml"
     href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 21 21'><rect width='9' height='9' rx='1' fill='%23577B87'/><rect x='12' width='9' height='9' rx='1' fill='%234AABC2'/><rect x='12' y='12' width='9' height='9' rx='1' fill='%23CB9275'/><rect y='12' width='9' height='9' rx='1' fill='%23FDF4CD'/></svg>">
 
-  <!-- Config -->
+  <!-- Config (must run synchronously before app) -->
   <script src="./config.js"></script>
 
   <!-- Global Error Handler - Prevents blank screen on JS failures -->
@@ -52,17 +57,16 @@
 
         var banner = document.createElement('div');
         banner.id = 'app-error-banner';
-        banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#1a1a2e;border-bottom:2px solid #ef4444;padding:16px 24px;z-index:99999;display:flex;align-items:center;justify-content:space-between;gap:16px;font-family:Inter,sans-serif;';
+        banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#1a1a2e;border-bottom:2px solid #ef4444;padding:16px 24px;z-index:99999;display:flex;align-items:center;justify-content:space-between;gap:16px;font-family:Outfit,sans-serif;';
         banner.innerHTML =
           '<div style="color:#fff;font-size:14px;">' +
-          '<strong style="color:#ef4444;">⚠️ App Error:</strong> ' +
+          '<strong style="color:#ef4444;">&#9888;&#65039; App Error:</strong> ' +
           '<span style="opacity:0.9;">' + message + '</span>' +
           '</div>' +
           '<button onclick="location.reload()" style="background:#4AABC2;color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-weight:600;">Retry</button>';
 
         document.body.insertBefore(banner, document.body.firstChild);
 
-        // Hide loading indicator if shown
         var loading = document.getElementById('auth-loading-overlay');
         if (loading) loading.style.display = 'none';
       }
@@ -75,7 +79,6 @@
 
       window.onunhandledrejection = function (event) {
         console.error('Unhandled rejection:', event.reason);
-        // Only show banner for critical errors
         if (event.reason && event.reason.message &&
           (event.reason.message.includes('Failed to fetch') ||
             event.reason.message.includes('NetworkError') ||
@@ -85,10 +88,8 @@
         }
       };
 
-      // App initialization flag
       window._DUALMIND_APP_READY = false;
 
-      // Timeout: if app doesn't initialize in 10 seconds, show error
       setTimeout(function () {
         if (!window._DUALMIND_APP_READY) {
           var loading = document.getElementById('auth-loading-overlay');
@@ -107,8 +108,9 @@
 <body>
   <a class="skip-link" href="#chat-input">Skip to chat input</a>
   <div class="bg-glow"></div>
-  <!-- Premium Background Image -->
+  <!-- Background Image (decorative) -->
   <img src="./assets/background.png" class="app-background" alt="" aria-hidden="true">
+
   <!-- Main App Container -->
   <div id="app" style="display:none;">
     <!-- Sidebar -->
@@ -139,7 +141,7 @@
     align-items: center;
     justify-content: center;
     z-index: 9999;
-    font-family: Inter, sans-serif;
+    font-family: Outfit, sans-serif;
   ">
     <div style="text-align: center; color: #fff;">
       <div class="spinner" style="
@@ -151,7 +153,7 @@
         animation: spin 0.8s linear infinite;
         margin: 0 auto 16px;
       "></div>
-      <p style="margin-top: 16px; opacity: 0.8; font-size: 14px;">Loading...</p>
+      <p style="margin-top: 16px; opacity: 0.8; font-size: 14px; font-family: Outfit, sans-serif;">Loading...</p>
     </div>
   </div>
 
@@ -169,7 +171,7 @@
   <!-- Fallback for browsers without module support -->
   <script nomodule>
     document.body.innerHTML = `
-      <div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#000;color:#fff;font-family:sans-serif;text-align:center;padding:20px;">
+      <div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#000;color:#fff;font-family:Outfit,sans-serif;text-align:center;padding:20px;">
         <div>
           <h1>Browser Not Supported</h1>
           <p>Please use a modern browser like Chrome, Firefox, Safari, or Edge.</p>
