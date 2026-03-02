@@ -3,10 +3,64 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>AI Model Leaderboard – DualMind Arena</title>
-  <meta name="description" content="Explore the real-time AI model leaderboard on DualMind Arena. See which AI models rank highest in battles, user votes, and performance metrics for reasoning, coding, and creativity.">
-  <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://arena.dualmindlab.tech/leaderboard/">
+  <!-- Primary SEO -->
+  <title>AI Model Leaderboard — Live Rankings | DualMind Arena</title>
+  <meta name="description" content="Explore real-time AI model rankings on DualMind Arena. Human-voted battle results determine which AI models lead — updated live across every category." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://arena.dualmindlab.tech/leaderboard" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="AI Model Leaderboard — DualMind Arena" />
+  <meta property="og:description" content="Live human-voted AI model rankings. See which models dominate on DualMind Arena." />
+  <meta property="og:url" content="https://arena.dualmindlab.tech/leaderboard" />
+  <meta property="og:site_name" content="DualMind Arena" />
+  <meta property="og:image" content="https://arena.dualmindlab.tech/assets/og/leaderboard.png" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="AI Model Leaderboard — DualMind Arena" />
+  <meta name="twitter:description" content="Live human-voted AI model rankings on DualMindArena." />
+  <meta name="twitter:image" content="https://arena.dualmindlab.tech/assets/og/leaderboard.png" />
+
+  <!-- Brand & PWA -->
+  <meta name="application-name" content="DualMind Arena" />
+  <meta name="theme-color" content="#4AABC2" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" href="/favicon.ico" />
+
+  <!-- Preconnect -->
+  <link rel="preconnect" href="https://dualmindlab.tech" />
+  <link rel="dns-prefetch" href="https://dualmindlab.tech" />
+
+  <!-- JSON-LD: BreadcrumbList -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "DualMind Arena", "item": "https://arena.dualmindlab.tech" },
+      { "@type": "ListItem", "position": 2, "name": "Leaderboard", "item": "https://arena.dualmindlab.tech/leaderboard" }
+    ]
+  }
+  </script>
+
+  <!-- JSON-LD: Dataset (Battle Rankings) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": "DualMind Arena AI Model Leaderboard",
+    "description": "Human-voted rankings of AI models based on head-to-head battle results on DualMind Arena.",
+    "url": "https://arena.dualmindlab.tech/leaderboard",
+    "creator": {
+      "@type": "Organization",
+      "name": "DualMind Arena",
+      "url": "https://dualmindlab.tech"
+    },
+    "license": "https://creativecommons.org/licenses/by/4.0/"
+  }
+  </script>
 
   <!-- Fonts & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">

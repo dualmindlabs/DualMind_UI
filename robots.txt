@@ -1,4 +1,7 @@
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /battle-session/
+Disallow: /admin/
 
 Sitemap: https://arena.dualmindlab.tech/sitemap.xml
