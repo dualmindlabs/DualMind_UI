@@ -106,6 +106,7 @@ function getHtmlTemplate(title, metaDescription, canonicalPath, jsonLd, mainCont
   <!-- App CSS -->
   <link rel="stylesheet" href="/css/tokens.css" />
   <link rel="stylesheet" href="/css/styles.css" />
+  <link rel="stylesheet" href="/css/leaderboard-page.css" />
 
   <script src="/theme.js"></script>
   <script src="/config.js"></script>
