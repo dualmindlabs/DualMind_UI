@@ -27,7 +27,10 @@ const filesToCopy = [
 const foldersToCopy = [
     'about',
     'assets',
+    'battle',
+    'blog',
     'careers',
+    'compare',
     'components',
     'cookies',
     'css',
@@ -36,6 +39,7 @@ const foldersToCopy = [
     'js',
     'leaderboard',
     'login',
+    'methodology',
     'models',
     'privacy',
     'share',
