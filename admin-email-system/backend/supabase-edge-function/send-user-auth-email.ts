@@ -1,6 +1,7 @@
 /**
  * DualMind · send-user-auth-email
  * Supabase Edge Function · Deno runtime
+ * Arena theme · v3
  */
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
@@ -13,28 +14,6 @@ const CORS: HeadersInit = {
 };
 const JSON_HDR: HeadersInit = { ...CORS, "Content-Type": "application/json" };
 
-const B = {
-  primary: "#6C47FF",
-  primaryDark: "#4F35C2",
-  primaryMid: "#8B6FFF",
-  primaryBg: "#F0ECFF",
-  success: "#059669",
-  successBg: "#ECFDF5",
-  warning: "#D97706",
-  warningBg: "#FFFBEB",
-  danger: "#DC2626",
-  dangerBg: "#FEF2F2",
-  textDark: "#111827",
-  textMid: "#374151",
-  textSoft: "#6B7280",
-  textLight: "#9CA3AF",
-  bgPage: "#F3F0FF",
-  bgCard: "#FFFFFF",
-  border: "#E5E7EB",
-  borderPurple: "#DDD6FE",
-  font: "'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif",
-} as const;
-
 type EmailType = "welcome" | "login";
 
 interface LoginInfo {
@@ -43,6 +22,7 @@ interface LoginInfo {
   device?: string;
   location?: string;
   ip?: string;
+  deviceFingerprint?: string;
 }
 
 interface ReqBody {
@@ -53,39 +33,133 @@ interface ReqBody {
   loginInfo?: LoginInfo;
 }
 
-const rl = new Map<string, number[]>();
+interface IpInfoResponse {
+  ipVersion?: number;
+  ipAddress?: string;
+  latitude?: number;
+  longitude?: number;
+  countryName?: string;
+  countryCode?: string;
+  capital?: string;
+  phoneCodes?: number[];
+  timeZones?: string[];
+  zipCode?: string;
+  cityName?: string;
+  regionName?: string;
+  regionCode?: string;
+  continent?: string;
+  continentCode?: string;
+  currencies?: string[];
+  languages?: string[];
+  asn?: string;
+  asnOrganization?: string;
+  isProxy?: boolean;
+  [k: string]: unknown;
+}
 
+interface LoginSecurityContext {
+  occurredAtIso: string;
+  ipAddress: string;
+  latitude: number | null;
+  longitude: number | null;
+  countryCode: string;
+  countryName: string;
+  regionName: string;
+  cityName: string;
+  zipCode: string;
+  continent: string;
+  capital: string;
+  currencies: string;
+  languages: string;
+  localTime: string;
+  asn: string;
+  asnOrganization: string;
+  isProxy: boolean;
+  browser: string;
+  device: string;
+  userAgent: string;
+  locationText: string;
+  deviceFingerprint: string;
+  isNewCountry: boolean;
+  isNewDevice: boolean;
+  impossibleTravel: boolean;
+  travelKm: number | null;
+  travelKmh: number | null;
+  riskScore: number;
+  riskLevel: "low" | "medium" | "high";
+  rawIpPayload: Record<string, unknown>;
+}
+
+// ─── Rate limiter ─────────────────────────────────────────────────────────────
+const rl = new Map<string, number[]>();
 function isRateLimited(userId: string): boolean {
   const windowMs = Number(Deno.env.get("RATE_LIMIT_WINDOW_MS") ?? 60_000);
-  const maxHits = Number(Deno.env.get("RATE_LIMIT_MAX_PER_WINDOW") ?? 5);
-  const now = Date.now();
-  const hits = (rl.get(userId) ?? []).filter((t) => now - t < windowMs);
+  const maxHits  = Number(Deno.env.get("RATE_LIMIT_MAX_PER_WINDOW") ?? 5);
+  const now      = Date.now();
+  const hits     = (rl.get(userId) ?? []).filter((t) => now - t < windowMs);
   if (hits.length >= maxHits) return true;
   hits.push(now);
   rl.set(userId, hits);
-  if (rl.size > 20_000) {
-    [...rl.keys()].slice(0, 10_000).forEach((k) => rl.delete(k));
-  }
+  if (rl.size > 20_000) [...rl.keys()].slice(0, 10_000).forEach((k) => rl.delete(k));
   return false;
 }
 
+// ─── Utils ────────────────────────────────────────────────────────────────────
 function x(v: string | null | undefined): string {
   return String(v ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
+    .replaceAll("&", "&amp;").replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
 }
-
+function trim(v: string | undefined): string { return (v ?? "").trim(); }
 function getIP(req: Request): string {
   const fwd = req.headers.get("x-forwarded-for");
   if (fwd) return fwd.split(",")[0].trim();
-  return req.headers.get("cf-connecting-ip")
-      || req.headers.get("x-real-ip")
-      || "—";
+  return req.headers.get("cf-connecting-ip") || req.headers.get("x-real-ip") || "—";
 }
-
+function normalizeIP(ip: string | undefined): string {
+  const raw = (ip ?? "").trim();
+  if (!raw || raw === "—" || raw.toLowerCase() === "unknown") return "";
+  return raw.startsWith("::ffff:") ? raw.slice(7) : raw;
+}
+function isPrivateIP(ip: string): boolean {
+  if (!ip) return true;
+  if (ip.includes(":")) {
+    const l = ip.toLowerCase();
+    return l === "::1" || l.startsWith("fc") || l.startsWith("fd") || l.startsWith("fe80:");
+  }
+  return ip.startsWith("10.") || ip.startsWith("127.") || ip.startsWith("192.168.")
+    || /^172\.(1[6-9]|2\d|3[0-1])\./.test(ip);
+}
+function buildLocation(i: IpInfoResponse): string {
+  return [trim(i.cityName), trim(i.regionName) || trim(i.regionCode),
+          trim(i.countryName) || trim(i.countryCode)].filter(Boolean).join(", ");
+}
+function toFloat(v: unknown): number | null {
+  if (typeof v === "number" && Number.isFinite(v)) return v;
+  if (typeof v === "string") { const n = Number(v); if (Number.isFinite(n)) return n; }
+  return null;
+}
+function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371, rad = (d: number) => (d * Math.PI) / 180;
+  const a = Math.sin(rad(lat2-lat1)/2)**2 +
+    Math.cos(rad(lat1))*Math.cos(rad(lat2))*Math.sin(rad(lon2-lon1)/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+function buildFallbackFingerprint(browser: string, device: string, ua: string, tz?: string): string {
+  return [browser, device, tz ?? "UTC", ua.slice(0, 120)].join("|");
+}
+function scoreRisk(o: { isNewCountry: boolean; isNewDevice: boolean; isProxy: boolean; impossibleTravel: boolean }) {
+  let s = 0;
+  if (o.isNewCountry) s += 35; if (o.isNewDevice) s += 25;
+  if (o.isProxy) s += 30;      if (o.impossibleTravel) s += 40;
+  if (s > 100) s = 100;
+  if (s >= 70) return { riskScore: s, riskLevel: "high" as const };
+  if (s >= 30) return { riskScore: s, riskLevel: "medium" as const };
+  return { riskScore: s, riskLevel: "low" as const };
+}
+function riskColor(level: "low" | "medium" | "high"): string {
+  return level === "high" ? "#BB0000" : level === "medium" ? "#D97706" : "#059669";
+}
 function detectBrowser(ua: string): string {
   const a = ua.toLowerCase();
   if (a.includes("edg/")) return "Microsoft Edge";
@@ -97,7 +171,6 @@ function detectBrowser(ua: string): string {
   if (a.includes("samsung")) return "Samsung Internet";
   return "Unknown browser";
 }
-
 function detectDevice(ua: string): string {
   const a = ua.toLowerCase();
   if (a.includes("iphone")) return "iPhone";
@@ -111,625 +184,476 @@ function detectDevice(ua: string): string {
   if (a.includes("cros")) return "Chromebook";
   return "Unknown device";
 }
-
 function formatDate(ts: string | undefined, tz: string | undefined): string {
   try {
-    const d = new Date(ts ?? new Date().toISOString());
     return new Intl.DateTimeFormat("en-US", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      timeZoneName: "short",
-      timeZone: tz ?? "UTC",
-    }).format(d);
-  } catch {
-    return new Date(ts ?? "").toUTCString();
-  }
+      weekday: "long", year: "numeric", month: "long", day: "numeric",
+      hour: "2-digit", minute: "2-digit", second: "2-digit",
+      timeZoneName: "short", timeZone: tz ?? "UTC",
+    }).format(new Date(ts ?? new Date().toISOString()));
+  } catch { return new Date(ts ?? "").toUTCString(); }
+}
+function getLocalTime(tz: string): string {
+  try {
+    return new Intl.DateTimeFormat("en-US", {
+      hour: "2-digit", minute: "2-digit", second: "2-digit",
+      timeZoneName: "short", timeZone: tz,
+    }).format(new Date());
+  } catch { return "—"; }
+}
+async function fetchIpInfo(ip: string): Promise<IpInfoResponse | null> {
+  const base = (Deno.env.get("IP_INFO_API_BASE_URL") ?? "https://free.freeipapi.com/api/json/").trim();
+  const ms   = Number(Deno.env.get("IP_INFO_TIMEOUT_MS") ?? 3000);
+  const ac   = new AbortController();
+  const t    = setTimeout(() => ac.abort(), ms);
+  try {
+    const res = await fetch(`${base}${encodeURIComponent(ip)}`, { signal: ac.signal });
+    return res.ok ? await res.json() as IpInfoResponse : null;
+  } catch { return null; } finally { clearTimeout(t); }
 }
 
-function getName(user: Record<string, unknown>): string {
-  const m = (user.user_metadata ?? {}) as Record<string, string>;
+// ─── User helpers ─────────────────────────────────────────────────────────────
+function getName(u: Record<string, unknown>): string {
+  const m = (u.user_metadata ?? {}) as Record<string, string>;
   return m.full_name || m.name || m.display_name
-      || String(user.email ?? "").split("@")[0]
-      || "there";
+    || String(u.email ?? "").split("@")[0] || "there";
 }
-
-function getFirstName(user: Record<string, unknown>): string {
-  const full = getName(user);
-  return full.split(/\s+/)[0];
-}
-
-function getProvider(user: Record<string, unknown>): string {
-  const a = (user.app_metadata ?? {}) as Record<string, unknown>;
+function getFirstName(u: Record<string, unknown>): string { return getName(u).split(/\s+/)[0]; }
+function getProvider(u: Record<string, unknown>): string {
+  const a = (u.app_metadata ?? {}) as Record<string, unknown>;
   const p = (a.provider as string) ?? ((a.providers as string[] | undefined)?.[0]) ?? "email";
   return p.charAt(0).toUpperCase() + p.slice(1);
 }
 
-function shell(opts: {
-  previewText: string;
-  accentColor: string;
-  content: string;
-  siteUrl: string;
-}): string {
-  const { previewText, accentColor, content, siteUrl } = opts;
-  const year = new Date().getFullYear();
-
-  return `<!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:o="urn:schemas-microsoft-com:office:office"
-      xmlns:v="urn:schemas-microsoft-com:vml">
-<head>
-  <meta charset="utf-8"/>
-  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <meta name="format-detection" content="telephone=no,date=no,address=no,email=no"/>
-  <!--[if mso]>
-  <xml>
-    <o:OfficeDocumentSettings>
-      <o:AllowPNG/>
-      <o:PixelsPerInch>96</o:PixelsPerInch>
-    </o:OfficeDocumentSettings>
-  </xml>
-  <![endif]-->
-  <style>
-    #outlook a { padding: 0; }
-    body { margin: 0 !important; padding: 0 !important; width: 100% !important;
-           -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
-    table, td { border-collapse: collapse !important;
-                mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
-    img { border: 0; height: auto; line-height: 100%; outline: none;
-          text-decoration: none; -ms-interpolation-mode: bicubic; }
-    a[x-apple-data-detectors] { color: inherit !important;
-      text-decoration: none !important; font-size: inherit !important;
-      font-family: inherit !important; font-weight: inherit !important;
-      line-height: inherit !important; }
-    @media screen and (max-width: 600px) {
-      .email-wrapper  { width: 100% !important; }
-      .email-content  { padding: 24px 20px !important; }
-      .email-header   { padding: 28px 20px !important; }
-      .hero-title     { font-size: 26px !important; }
-      .cta-table      { width: 100% !important; }
-      .cta-td         { display: block !important; text-align: center !important; }
-      .cta-btn        { display: block !important; width: 100% !important;
-                        text-align: center !important; box-sizing: border-box !important; }
-      .info-label-col { width: 36% !important; }
-      .stack          { display: block !important; width: 100% !important; }
-    }
-  </style>
-</head>
-<body style="margin:0;padding:0;background-color:${B.bgPage};font-family:${B.font};-webkit-font-smoothing:antialiased">
-<div style="display:none;font-size:1px;line-height:1px;max-height:0;max-width:0;
-            opacity:0;overflow:hidden;mso-hide:all;color:${B.bgPage}">
-  ${x(previewText)}&nbsp;&zwnj;&hairsp;&zwnj;&hairsp;&zwnj;&hairsp;&zwnj;&hairsp;
-  &zwnj;&hairsp;&zwnj;&hairsp;&zwnj;&hairsp;&zwnj;&hairsp;&zwnj;&hairsp;&zwnj;
-</div>
-<table role="presentation" border="0" cellpadding="0" cellspacing="0"
-       width="100%" style="background-color:${B.bgPage}">
-  <tr>
-    <td align="center" style="padding:40px 16px 48px">
-      <table role="presentation" border="0" cellpadding="0" cellspacing="0"
-             class="email-wrapper" width="600"
-             style="max-width:600px;width:100%">
-        <tr>
-          <td align="center" style="padding-bottom:28px">
-            <a href="${x(siteUrl)}" target="_blank"
-               style="display:inline-block;text-decoration:none">
-              <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td width="40" height="40" align="center" valign="middle"
-                      style="background-color:${B.primary};border-radius:12px;
-                             width:40px;height:40px;
-                             box-shadow:0 4px 12px rgba(108,71,255,0.35)">
-                    <span style="font-size:20px;color:#fff;line-height:40px;
-                                 font-family:serif">⬡</span>
-                  </td>
-                  <td style="padding-left:10px;white-space:nowrap">
-                    <span style="font-size:20px;font-weight:800;color:${B.textDark};
-                                 letter-spacing:-0.4px;
-                                 font-family:${B.font}">Dual</span><span
-                    style="font-size:20px;font-weight:800;color:${B.primary};
-                           letter-spacing:-0.4px;
-                           font-family:${B.font}">Mind</span>
-                  </td>
-                </tr>
-              </table>
-            </a>
-          </td>
-        </tr>
-        <tr>
-          <td style="background-color:${B.bgCard};border-radius:20px;
-                     box-shadow:0 2px 40px rgba(108,71,255,0.12),
-                                0 1px 4px rgba(0,0,0,0.04);
-                     overflow:hidden">
-            <table role="presentation" border="0" cellpadding="0" cellspacing="0"
-                   width="100%">
-              <tr>
-                <td height="5" style="background:linear-gradient(90deg,
-                    ${accentColor} 0%,${B.primaryMid} 50%,${accentColor} 100%);
-                    font-size:0;line-height:0">&nbsp;</td>
-              </tr>
-            </table>
-            ${content}
-          </td>
-        </tr>
-        <tr>
-          <td align="center" style="padding-top:28px">
-            <p style="margin:0 0 8px;font-size:12px;line-height:1.6;
-                      color:${B.textLight};font-family:${B.font}">
-              You received this because you have a DualMind account.
-            </p>
-            <p style="margin:0 0 8px;font-size:12px;line-height:1.6;
-                      color:${B.textLight};font-family:${B.font}">
-              <a href="${x(siteUrl)}/settings/notifications"
-                 style="color:${B.primary};text-decoration:underline">
-                Manage email preferences
-              </a>
-              &nbsp;·&nbsp;
-              <a href="${x(siteUrl)}/privacy"
-                 style="color:${B.primary};text-decoration:underline">
-                Privacy policy
-              </a>
-            </p>
-            <p style="margin:0;font-size:11px;color:${B.textLight};
-                      font-family:${B.font}">
-              © ${year} DualMind. All rights reserved.
-            </p>
-          </td>
-        </tr>
-      </table>
-    </td>
-  </tr>
-</table>
-</body>
-</html>`;
-}
-
-function ctaButton(href: string, label: string, bgColor = B.primary): string {
-  return `
-<table role="presentation" border="0" cellpadding="0" cellspacing="0" class="cta-table"
-       style="margin:28px 0 4px">
-  <tr>
-    <td class="cta-td" align="left">
-      <!--[if mso]>
-      <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml"
-                   xmlns:w="urn:schemas-microsoft-com:office:word"
-                   href="${x(href)}"
-                   style="height:50px;v-text-anchor:middle;width:220px;"
-                   arcsize="24%" stroke="f" fillcolor="${bgColor}">
-        <w:anchorlock/>
-        <center style="color:#ffffff;font-family:${B.font};font-size:15px;font-weight:bold">
-          ${x(label)}
-        </center>
-      </v:roundrect>
-      <![endif]-->
-      <!--[if !mso]><!-->
-      <a href="${x(href)}" target="_blank" class="cta-btn"
-         style="display:inline-block;background-color:${bgColor};
-                border-radius:12px;color:#ffffff;font-family:${B.font};
-                font-size:15px;font-weight:700;letter-spacing:0.2px;
-                line-height:1;padding:16px 36px;text-decoration:none;
-                mso-padding-alt:0px">
-        ${x(label)}
-      </a>
-      <!--<![endif]-->
-    </td>
-  </tr>
-</table>`;
-}
-
-function p(html: string): string {
-  return `<p style="margin:0 0 18px;font-size:15px;line-height:1.75;
-color:${B.textMid};font-family:${B.font}">${html}</p>`;
-}
-
-function note(html: string): string {
-  return `<p style="margin:0 0 12px;font-size:13px;line-height:1.65;
-color:${B.textSoft};font-family:${B.font}">${html}</p>`;
-}
-
-function hr(): string {
-  return `<table role="presentation" border="0" cellpadding="0" cellspacing="0"
-       width="100%" style="margin:24px 0">
-  <tr><td height="1" style="background-color:${B.border};font-size:0;line-height:0">&nbsp;</td></tr>
-</table>`;
-}
-
-function infoTable(rows: Array<{ icon: string; label: string; value: string }>): string {
-  const filteredRows = rows.filter((r) => r.value && r.value !== "—");
-  if (!filteredRows.length) return "";
-
-  const rowsHtml = filteredRows.map((r) => `
-  <tr>
-    <td style="padding:11px 14px;border-bottom:1px solid ${B.border};
-               font-size:12px;font-weight:600;color:${B.textSoft};
-               white-space:nowrap;vertical-align:top;
-               font-family:${B.font};letter-spacing:0.2px;
-               text-transform:uppercase;width:28%" class="info-label-col">
-      ${x(r.icon)}&nbsp;&nbsp;${x(r.label)}
-    </td>
-    <td style="padding:11px 14px;border-bottom:1px solid ${B.border};
-               font-size:14px;color:${B.textDark};font-weight:500;
-               font-family:${B.font};vertical-align:top">
-      ${x(r.value)}
-    </td>
-  </tr>`).join("");
-
-  return `
-<table role="presentation" border="0" cellpadding="0" cellspacing="0"
-       width="100%"
-       style="border:1px solid ${B.borderPurple};border-radius:12px;
-              overflow:hidden;margin:20px 0;background-color:${B.bgCard}">
-  <tbody>${rowsHtml}</tbody>
-</table>`;
-}
-
-function callout(html: string, kind: "info" | "warning" | "danger"): string {
-  const map = {
-    info: { bg: B.primaryBg, border: B.borderPurple, icon: "ℹ", iconColor: B.primary },
-    warning: { bg: B.warningBg, border: "#FDE68A", icon: "⚠", iconColor: B.warning },
-    danger: { bg: B.dangerBg, border: "#FECACA", icon: "⚑", iconColor: B.danger },
-  };
-  const c = map[kind];
-  return `
-<table role="presentation" border="0" cellpadding="0" cellspacing="0"
-       width="100%"
-       style="background-color:${c.bg};border:1px solid ${c.border};
-              border-radius:12px;margin:20px 0">
-  <tr>
-    <td width="20" style="padding:14px 0 14px 16px;vertical-align:top;
-                          font-size:16px;color:${c.iconColor};line-height:1">
-      ${c.icon}
-    </td>
-    <td style="padding:13px 16px 13px 10px;font-size:13px;line-height:1.65;
-               color:${B.textMid};font-family:${B.font}">
-      ${html}
-    </td>
-  </tr>
-</table>`;
-}
-
-function fallbackLink(href: string): string {
-  return `
-<p style="margin:16px 0 0;font-size:12px;line-height:1.7;
-           color:${B.textSoft};font-family:${B.font}">
-  Button not working?
-  <a href="${x(href)}" target="_blank"
-     style="color:${B.primary};text-decoration:underline;word-break:break-all">
-    ${x(href)}
-  </a>
-</p>`;
-}
-
-function buildWelcome(
-  user: Record<string, unknown>,
-  body: ReqBody,
-  siteUrl: string,
-): { subject: string; html: string } {
-  const name = getName(user);
-  const firstName = getFirstName(user);
-  const provider = getProvider(user);
-  const dashUrl = body.redirectUrl ?? `${siteUrl}/dashboard`;
-
-  const steps = [
-    { icon: "🧠", title: "Your workspace", desc: "Start a session and see DualMind work." },
-    { icon: "🔗", title: "Connect tools", desc: "Integrate your existing stack." },
-    { icon: "⚙️", title: "Set preferences", desc: "Customise your experience." },
-  ];
-
-  const stepsHtml = `
-<table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
-       style="margin:24px 0">
-  <tr>
-    ${steps.map((s) => `
-    <td class="stack" align="center" valign="top"
-        style="width:33%;padding:0 6px;vertical-align:top">
-      <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
-        <tr>
-          <td align="center"
-              style="background-color:${B.primaryBg};border:1px solid ${B.borderPurple};
-                     border-radius:12px;padding:18px 14px">
-            <div style="font-size:26px;margin-bottom:10px;line-height:1">${s.icon}</div>
-            <div style="font-size:13px;font-weight:700;color:${B.textDark};
-                        margin-bottom:6px;font-family:${B.font};line-height:1.3">
-              ${x(s.title)}
-            </div>
-            <div style="font-size:12px;color:${B.textSoft};font-family:${B.font};
-                        line-height:1.5">
-              ${x(s.desc)}
-            </div>
-          </td>
-        </tr>
-      </table>
-    </td>`).join("")}
-  </tr>
-</table>`;
-
-  const content = `
-<table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
-  <tr>
-    <td class="email-header"
-        style="padding:40px 48px 0;background:linear-gradient(160deg,
-               ${B.primaryBg} 0%,${B.bgCard} 100%)">
-      <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-        <tr>
-          <td style="background-color:${B.successBg};border:1px solid #A7F3D0;
-                     border-radius:999px;padding:5px 14px">
-            <span style="font-size:12px;font-weight:700;color:${B.success};
-                         letter-spacing:0.8px;text-transform:uppercase;
-                         font-family:${B.font}">
-              ✓&nbsp; Account created
-            </span>
-          </td>
-        </tr>
-      </table>
-      <h1 class="hero-title"
-          style="margin:18px 0 10px;font-size:32px;font-weight:800;
-                 color:${B.textDark};line-height:1.15;letter-spacing:-0.8px;
-                 font-family:${B.font}">
-        Welcome to DualMind,<br/>${x(firstName)}! 👋
-      </h1>
-      <p style="margin:0 0 32px;font-size:16px;color:${B.textSoft};
-                line-height:1.65;font-family:${B.font}">
-        Your account is ready. Here's everything you need to get started.
-      </p>
-    </td>
-  </tr>
-</table>
-<table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
-  <tr>
-    <td class="email-content" style="padding:32px 48px 40px">
-      ${p(`We're really glad you're here, <strong>${x(name)}</strong>. DualMind is built to make your workflow faster and smarter — let's get you set up.`)}
-      ${stepsHtml}
-      ${ctaButton(dashUrl, "Open Your Dashboard")}
-      ${fallbackLink(dashUrl)}
-      ${hr()}
-      <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
-             style="margin:4px 0 20px">
-        <tr>
-          <td style="font-size:12px;font-weight:700;letter-spacing:0.8px;
-                     text-transform:uppercase;color:${B.textLight};
-                     font-family:${B.font};padding-bottom:10px">
-            Your account
-          </td>
-        </tr>
-        <tr>
-          <td>
-            ${infoTable([
-              { icon: "✉", label: "Email", value: String(user.email ?? "") },
-              { icon: "🔑", label: "Sign-in", value: provider },
-            ])}
-          </td>
-        </tr>
-      </table>
-      ${provider !== "Email"
-        ? callout(
-            `You signed up with <strong>${x(provider)}</strong>. You can add a password anytime in <a href="${x(siteUrl)}/settings/security" style="color:${B.primary};font-weight:600">account settings</a>.`,
-            "info"
-          )
-        : ""}
-      ${note(`Questions? Reply to this email or visit our <a href="${x(siteUrl)}/help" style="color:${B.primary}">help centre</a>. We read every message.`)}
-    </td>
-  </tr>
-</table>`;
-
-  return {
-    subject: `Welcome to DualMind, ${firstName}! Your account is ready 🎉`,
-    html: shell({
-      previewText: `Hey ${firstName}, your DualMind account is ready — let's get started!`,
-      accentColor: B.success,
-      content,
-      siteUrl,
-    }),
-  };
-}
-
-function buildLogin(
-  user: Record<string, unknown>,
+// ─── Build security context ───────────────────────────────────────────────────
+async function buildLoginSecurityContext(
+  supabase: ReturnType<typeof createClient>,
+  userId: string,
   body: ReqBody,
   req: Request,
-  siteUrl: string,
-): { subject: string; html: string } {
-  const firstName = getFirstName(user);
-  const ua = body.userAgent ?? req.headers.get("user-agent") ?? "";
-  const info = body.loginInfo ?? {};
+): Promise<LoginSecurityContext> {
+  const ua            = body.userAgent ?? req.headers.get("user-agent") ?? "";
+  const info          = body.loginInfo ?? {};
+  const occurredAtIso = new Date(info.time ?? new Date().toISOString()).toISOString();
+  const browser       = info.browser ?? detectBrowser(ua);
+  const device        = info.device  ?? detectDevice(ua);
+  const rawIP         = normalizeIP(info.ip ?? getIP(req));
 
-  const detectedIP = info.ip ?? getIP(req);
-  const detectedBrowser = info.browser ?? detectBrowser(ua);
-  const detectedDevice = info.device ?? detectDevice(ua);
-  const detectedTime = formatDate(info.time, body.timezone);
-  const location = info.location ?? "—";
-  const securityUrl = body.redirectUrl ?? `${siteUrl}/settings/security`;
+  let ipInfo: IpInfoResponse | null = null;
+  if (rawIP && !isPrivateIP(rawIP)) ipInfo = await fetchIpInfo(rawIP);
 
-  const content = `
-<table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
-  <tr>
-    <td class="email-header"
-        style="padding:40px 48px 0;background:linear-gradient(160deg,
-               ${B.warningBg} 0%,${B.bgCard} 80%)">
-      <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-        <tr>
-          <td style="background-color:${B.warningBg};border:1px solid #FDE68A;
-                     border-radius:999px;padding:5px 14px">
-            <span style="font-size:12px;font-weight:700;color:${B.warning};
-                         letter-spacing:0.8px;text-transform:uppercase;
-                         font-family:${B.font}">
-              🔔&nbsp; Login detected
-            </span>
-          </td>
-        </tr>
-      </table>
-      <h1 class="hero-title"
-          style="margin:18px 0 10px;font-size:28px;font-weight:800;
-                 color:${B.textDark};line-height:1.2;letter-spacing:-0.6px;
-                 font-family:${B.font}">
-        New sign-in to your account
-      </h1>
-      <p style="margin:0 0 32px;font-size:15px;color:${B.textSoft};
-                line-height:1.65;font-family:${B.font}">
-        Hi <strong style="color:${B.textDark}">${x(firstName)}</strong> —
-        we noticed a new sign-in to your DualMind account.
-        If this was you, no action is needed.
-      </p>
-    </td>
-  </tr>
-</table>
-<table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
-  <tr>
-    <td class="email-content" style="padding:32px 48px 40px">
-      <div style="font-size:12px;font-weight:700;letter-spacing:0.8px;
-                  text-transform:uppercase;color:${B.textLight};
-                  font-family:${B.font};margin-bottom:10px">
-        Sign-in details
-      </div>
-      ${infoTable([
-        { icon: "✉", label: "Account", value: String(user.email ?? "") },
-        { icon: "🕐", label: "Time", value: detectedTime },
-        { icon: "🌐", label: "IP address", value: detectedIP },
-        { icon: "📍", label: "Location", value: location },
-        { icon: "🖥", label: "Device", value: detectedDevice },
-        { icon: "🔵", label: "Browser", value: detectedBrowser },
-        { icon: "🔑", label: "Sign-in via", value: getProvider(user) },
-      ])}
-      ${callout(
-        `<strong>Wasn't you?</strong> If you don't recognise this sign-in,
-        <a href="${x(siteUrl)}/settings/security"
-           style="color:${B.danger};font-weight:700;text-decoration:underline">
-          secure your account immediately →
-        </a>
-        Change your password and sign out of all devices.`,
-        "danger"
-      )}
-      ${ctaButton(securityUrl, "Review Security Settings", B.warning)}
-      ${fallbackLink(securityUrl)}
-      ${hr()}
-      ${note(`DualMind will never ask for your password by email. If you think your account has been compromised, change your password and contact <a href="mailto:support@dualmindlab.tech" style="color:${B.primary}">support@dualmindlab.tech</a> immediately.`)}
-    </td>
-  </tr>
-</table>`;
+  const ipAddress       = trim(info.ip) || trim(ipInfo?.ipAddress) || rawIP || "—";
+  const latitude        = toFloat(ipInfo?.latitude);
+  const longitude       = toFloat(ipInfo?.longitude);
+  const countryCode     = trim(ipInfo?.countryCode).toUpperCase();
+  const countryName     = trim(ipInfo?.countryName);
+  const regionName      = trim(ipInfo?.regionName) || trim(ipInfo?.regionCode);
+  const cityName        = trim(ipInfo?.cityName);
+  const zipCode         = trim(ipInfo?.zipCode);
+  const continent       = trim(ipInfo?.continent);
+  const capital         = trim(ipInfo?.capital);
+  const currencies      = (ipInfo?.currencies ?? []).join(", ");
+  const languages       = (ipInfo?.languages  ?? []).map((l) => l.toUpperCase()).join(", ");
+  const asn             = trim(ipInfo?.asn);
+  const asnOrganization = trim(ipInfo?.asnOrganization);
+  const isProxy         = Boolean(ipInfo?.isProxy);
+  const locationText    = trim(info.location) || buildLocation(ipInfo ?? {});
+  const tzList          = ipInfo?.timeZones ?? [];
+  const localTime       = tzList.length > 0 ? getLocalTime(tzList[0]) : "—";
+  const deviceFingerprint = trim(info.deviceFingerprint)
+    || buildFallbackFingerprint(browser, device, ua, body.timezone);
+
+  // DB: new device?
+  let isNewDevice = true;
+  const { data: existingDev, error: devErr } = await supabase
+    .from("user_devices").select("id")
+    .eq("user_id", userId).eq("fingerprint", deviceFingerprint).maybeSingle();
+  if (devErr && devErr.code !== "PGRST116") console.warn("[auth-email] devices lookup:", devErr.message);
+  isNewDevice = !existingDev;
+
+  // DB: previous login for travel/country check
+  let isNewCountry = false, impossibleTravel = false;
+  let travelKm: number | null = null, travelKmh: number | null = null;
+
+  const { data: prevLogin, error: prevErr } = await supabase
+    .from("login_events").select("occurred_at, latitude, longitude, country_code")
+    .eq("user_id", userId).order("occurred_at", { ascending: false }).limit(1).maybeSingle();
+  if (prevErr && prevErr.code !== "PGRST116") console.warn("[auth-email] prev login lookup:", prevErr.message);
+
+  if (prevLogin?.country_code && countryCode && prevLogin.country_code !== countryCode) isNewCountry = true;
+  const pLat = toFloat(prevLogin?.latitude), pLon = toFloat(prevLogin?.longitude);
+  if (pLat !== null && pLon !== null && latitude !== null && longitude !== null) {
+    travelKm = haversineKm(pLat, pLon, latitude, longitude);
+    const hours = (new Date(occurredAtIso).getTime() - new Date(prevLogin.occurred_at).getTime()) / 3_600_000;
+    if (hours > 0) {
+      travelKmh = travelKm / hours;
+      if (hours < 12 && travelKmh > 900) impossibleTravel = true;
+    }
+  }
+
+  const { riskScore, riskLevel } = scoreRisk({ isNewCountry, isNewDevice, isProxy, impossibleTravel });
 
   return {
-    subject: `New sign-in to your DualMind account`,
-    html: shell({
-      previewText: `New sign-in detected on your DualMind account from ${detectedDevice}.`,
-      accentColor: B.warning,
-      content,
-      siteUrl,
-    }),
+    occurredAtIso, ipAddress, latitude, longitude,
+    countryCode, countryName, regionName, cityName, zipCode,
+    continent, capital, currencies, languages, localTime,
+    asn, asnOrganization, isProxy,
+    browser, device, userAgent: ua,
+    locationText, deviceFingerprint,
+    isNewCountry, isNewDevice, impossibleTravel, travelKm, travelKmh,
+    riskScore, riskLevel,
+    rawIpPayload: (ipInfo ?? {}) as Record<string, unknown>,
   };
 }
 
+// ─── Persist ──────────────────────────────────────────────────────────────────
+async function persistLoginSecurityData(
+  supabase: ReturnType<typeof createClient>,
+  userId: string,
+  ctx: LoginSecurityContext,
+  emailSent: boolean,
+  messageId: string | null,
+): Promise<void> {
+  const now = new Date().toISOString();
+  const ip  = ctx.ipAddress !== "—" ? ctx.ipAddress : null;
+
+  const { error: d } = await supabase.from("user_devices").upsert(
+    { user_id: userId, fingerprint: ctx.deviceFingerprint,
+      first_seen_at: now, last_seen_at: now,
+      first_ip: ip, last_ip: ip,
+      first_country_code: ctx.countryCode || null,
+      last_country_code:  ctx.countryCode || null,
+      browser: ctx.browser, device: ctx.device, updated_at: now },
+    { onConflict: "user_id,fingerprint" },
+  );
+  if (d) console.warn("[auth-email] devices upsert:", d.message);
+
+  const { error: e } = await supabase.from("login_events").insert({
+    user_id: userId, occurred_at: ctx.occurredAtIso,
+    ip_address: ip, latitude: ctx.latitude, longitude: ctx.longitude,
+    country_code: ctx.countryCode || null, country_name: ctx.countryName || null,
+    region_name: ctx.regionName || null, city_name: ctx.cityName || null,
+    asn: ctx.asn || null, asn_organization: ctx.asnOrganization || null,
+    is_proxy: ctx.isProxy, browser: ctx.browser, device: ctx.device,
+    user_agent: ctx.userAgent, device_fingerprint: ctx.deviceFingerprint,
+    is_new_country: ctx.isNewCountry, is_new_device: ctx.isNewDevice,
+    impossible_travel: ctx.impossibleTravel,
+    travel_km: ctx.travelKm, travel_kmh: ctx.travelKmh,
+    risk_score: ctx.riskScore, risk_level: ctx.riskLevel,
+    email_sent: emailSent, email_message_id: messageId,
+    raw_ip_payload: ctx.rawIpPayload,
+  });
+  if (e) console.warn("[auth-email] events insert:", e.message);
+}
+
+// ─── Email shell ──────────────────────────────────────────────────────────────
+function arenaShell(preview: string, content: string, year: number, site: string): string {
+  return `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html><head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style type="text/css">
+    #outlook a{padding:0}body{-webkit-text-size-adjust:none;margin:0;padding:0;background-color:#FAFAFA;width:100%}table td{border-collapse:collapse}
+  </style>
+</head>
+<body leftmargin="0" marginwidth="0" topmargin="0" marginheight="0" offset="0"
+  style="-webkit-text-size-adjust:none;margin:0;padding:0;background-color:#FAFAFA;width:100%">
+<div style="display:none;max-height:0;overflow:hidden;font-size:1px;line-height:1px;color:#FAFAFA">${x(preview)}&nbsp;&zwnj;</div>
+<center>
+<table border="0" cellpadding="0" cellspacing="0" height="100%" style="margin:0;padding:0;background-color:#FAFAFA;height:100%;width:100%" width="100%">
+<tbody><tr><td align="center" style="border-collapse:collapse" valign="top">
+  <table border="0" cellpadding="10" cellspacing="0" style="background-color:#FAFAFA" width="600">
+  <tbody><tr><td style="border-collapse:collapse" valign="top">
+    <table border="0" cellpadding="10" cellspacing="0" width="100%"><tbody><tr>
+      <td valign="top"><div style="color:#505050;font-family:Arial;font-size:10px;line-height:10px">${x(preview)}</div></td>
+      <td valign="top" width="190"><div style="color:#505050;font-family:Arial;font-size:10px;line-height:10px">
+        Not displaying correctly?<br><a href="${site}" style="color:#336699;text-decoration:underline" target="_blank">View in browser</a>.
+      </div></td>
+    </tr></tbody></table>
+  </td></tr></tbody></table>
+  <table border="0" cellpadding="0" cellspacing="0" style="border:1px solid #DDDDDD;background-color:#FFFFFF" width="600">
+  <tbody>
+    ${content}
+    <tr><td valign="top">
+      <table align="center" bgcolor="#eaeceb" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr>
+        <td style="padding:22px 24px;font-family:Helvetica,Arial,sans-serif;font-size:10px;line-height:14px;letter-spacing:0.5px;color:#262f30">
+          You received this because you have a DualMind Arena account. Do not reply to this email.<br><br>
+          Support: <a href="mailto:support@dualmindlab.tech" style="color:#000">support@dualmindlab.tech</a><br><br>
+          &copy; ${year} DualMind Labs. All rights reserved. &nbsp;&middot;&nbsp; <a href="${site}" style="color:#000">${site}</a>
+        </td>
+      </tr></tbody></table>
+      <table align="center" bgcolor="#111111" border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr>
+        <td bgcolor="#111111" style="color:#fff;font-weight:bold;font-size:11px;line-height:17px;padding:7px 25px;font-family:Arial,Helvetica,sans-serif;letter-spacing:0.8px" valign="center">
+          <a href="${site}" style="color:#fff;text-decoration:none">DUALMIND ARENA</a> &nbsp;|&nbsp;
+          <a href="${site}/settings/security" style="color:#fff;text-decoration:none">SECURITY</a> &nbsp;|&nbsp;
+          <a href="mailto:support@dualmindlab.tech" style="color:#fff;text-decoration:none">CONTACT US</a>
+        </td>
+      </tr></tbody></table>
+    </td></tr>
+  </tbody></table>
+</td></tr></tbody></table>
+</center></body></html>`;
+}
+
+// ─── Detail row ───────────────────────────────────────────────────────────────
+function dr(label: string, value: string, last = false, mono = false): string {
+  if (!value || value === "—") return "";
+  const border = last ? "" : "border-bottom:1px solid #EEEEEE;";
+  return `<tr>
+    <td style="padding:10px 14px;background-color:#F9F9F8;width:36%;border-right:1px solid #EEEEEE;${border}vertical-align:top">
+      <span style="font-family:Arial,Helvetica,sans-serif;font-size:9px;font-weight:bold;letter-spacing:1.5px;text-transform:uppercase;color:#AAAAAA">${x(label)}</span>
+    </td>
+    <td style="padding:10px 14px;background-color:#FFFFFF;${border}vertical-align:top">
+      <span style="font-family:${mono ? "'Courier New',Courier,monospace" : "Arial,Helvetica,sans-serif"};font-size:11px;color:#222222;font-weight:600">${x(value)}</span>
+    </td>
+  </tr>`;
+}
+
+// ─── Welcome email ────────────────────────────────────────────────────────────
+function buildWelcome(u: Record<string, unknown>, body: ReqBody, siteUrl: string) {
+  const firstName = getFirstName(u);
+  const email     = x(String(u.email ?? ""));
+  const provider  = x(getProvider(u));
+  const dashUrl   = x(body.redirectUrl ?? `${siteUrl}/dashboard`);
+  const site      = x(siteUrl);
+  const year      = new Date().getFullYear();
+
+  const step = (n: string, title: string, desc: string) => `
+    <tr><td style="padding:0 100px 14px 100px">
+      <table border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr>
+        <td style="width:26px;vertical-align:top;padding-top:2px">
+          <table border="0" cellpadding="0" cellspacing="0"><tbody><tr>
+            <td style="width:22px;height:22px;background-color:#111111;border-radius:50%;text-align:center;vertical-align:middle;font-family:Arial,Helvetica,sans-serif;font-size:10px;font-weight:bold;color:#FFFFFF;line-height:22px">${n}</td>
+          </tr></tbody></table>
+        </td>
+        <td style="padding-left:12px;vertical-align:top">
+          <p style="margin:0 0 2px 0;font-family:Arial,Helvetica,sans-serif;font-size:11pt;font-weight:bold;color:#111111;line-height:16pt">${x(title)}</p>
+          <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:10pt;color:#666666;line-height:15pt">${x(desc)}</p>
+        </td>
+      </tr></tbody></table>
+    </td></tr>`;
+
+  const content = `
+    <tr><td style="background-color:#0D0D0D;padding:52px 60px 44px;text-align:center" valign="top">
+      <p style="margin:0 0 10px;font-family:Arial,Helvetica,sans-serif;font-size:9px;font-weight:bold;letter-spacing:3.5px;text-transform:uppercase;color:#666666">DualMind Labs</p>
+      <h1 style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:36pt;line-height:42pt;font-weight:normal;color:#FFFFFF">You're in.</h1>
+      <p style="margin:16px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:18px;color:#AAAAAA">Your <strong style="color:#CCAA55">DualMind Arena</strong> account is live and ready.</p>
+    </td></tr>
+    <tr><td style="background-color:#CCAA55;height:3px;font-size:0;line-height:0">&nbsp;</td></tr>
+    <tr><td style="padding:44px 100px 12px;text-align:left">
+      <span style="font-family:Arial,Helvetica,sans-serif;font-size:13pt;line-height:20pt;color:#333333">
+        Hi <strong style="color:#111111">${x(firstName)}</strong>,<br><br>
+        We're glad to have you. Your account is ready — here's how to get started.
+      </span>
+    </td></tr>
+    <tr><td style="padding:24px 100px 0"><table border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><td style="height:1px;background-color:#EEEEEE;font-size:0">&nbsp;</td></tr></tbody></table></td></tr>
+    <tr><td style="padding:24px 100px 16px"><p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:9px;font-weight:bold;letter-spacing:2.5px;text-transform:uppercase;color:#999999">Get started in 3 steps</p></td></tr>
+    ${step("1", "Log in to your account", `Visit DualMind Arena and sign in with ${String(u.email ?? "")}.`)}
+    ${step("2", "Complete your profile", "Fill in your details to personalise your Arena experience.")}
+    ${step("3", "Enter the Arena", "Explore the platform and see what DualMind Arena can do for you.")}
+    <tr><td style="padding:8px 100px 0"><table border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><td style="height:1px;background-color:#EEEEEE;font-size:0">&nbsp;</td></tr></tbody></table></td></tr>
+    <tr><td style="padding:24px 100px 8px">
+      <p style="margin:0 0 12px;font-family:Arial,Helvetica,sans-serif;font-size:9px;font-weight:bold;letter-spacing:2.5px;text-transform:uppercase;color:#999999">Your account</p>
+      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border:1px solid #EEEEEE"><tbody>
+        ${dr("Email", String(u.email ?? ""))}
+        ${dr("Sign-in via", getProvider(u), true)}
+      </tbody></table>
+    </td></tr>
+    <tr><td style="padding:24px 100px 12px;text-align:center">
+      <table border="0" cellpadding="0" cellspacing="0" style="margin:0 auto"><tbody><tr>
+        <td style="border-radius:3px;background-color:#111111">
+          <a href="${dashUrl}" target="_blank" style="display:inline-block;padding:17px 56px;font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:bold;letter-spacing:1.4px;text-transform:uppercase;color:#FFFFFF;text-decoration:none;border-radius:3px">Go to DualMind Arena</a>
+        </td>
+      </tr></tbody></table>
+    </td></tr>
+    <tr><td style="padding:4px 100px 32px;text-align:center">
+      <span style="font-family:Arial,Helvetica,sans-serif;font-size:10pt;color:#999999">Signed in as <strong style="color:#555555">${email}</strong> via <strong style="color:#555555">${provider}</strong></span>
+    </td></tr>`;
+
+  return {
+    subject: `Welcome to DualMind Arena, ${x(firstName)}! Your account is ready 🎉`,
+    html: arenaShell(`Your DualMind Arena account is live — welcome, ${x(firstName)}!`, content, year, site),
+  };
+}
+
+// ─── Login notification email ─────────────────────────────────────────────────
+function buildLogin(u: Record<string, unknown>, body: ReqBody, sec: LoginSecurityContext, siteUrl: string) {
+  const firstName   = getFirstName(u);
+  const site        = x(siteUrl);
+  const resetUrl    = x(`${siteUrl}/reset-password`);
+  const year        = new Date().getFullYear();
+  const isHighRisk  = sec.riskLevel === "high";
+  const rc          = riskColor(sec.riskLevel);
+  const time        = formatDate(sec.occurredAtIso, body.timezone);
+  const travelInfo  = sec.impossibleTravel && sec.travelKm && sec.travelKmh
+    ? `${Math.round(sec.travelKm).toLocaleString()} km — ${Math.round(sec.travelKmh).toLocaleString()} km/h (flagged)`
+    : sec.travelKm ? `${Math.round(sec.travelKm).toLocaleString()} km from last login` : "";
+
+  const content = `
+    <tr><td style="background-color:#0D0D0D;padding:44px 60px 36px;text-align:center" valign="top">
+      <p style="margin:0 0 10px;font-family:Arial,Helvetica,sans-serif;font-size:9px;font-weight:bold;letter-spacing:3.5px;text-transform:uppercase;color:#666666">DualMind Labs</p>
+      <h1 style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:32pt;line-height:38pt;font-weight:normal;color:#FFFFFF">New sign-in<br>detected</h1>
+      <p style="margin:16px 0 10px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:18px;color:#AAAAAA">Someone just signed in to your <strong style="color:#CCAA55">Arena</strong> account.</p>
+      <table border="0" cellpadding="0" cellspacing="0" style="margin:8px auto 0"><tbody><tr>
+        <td style="border-radius:20px;background-color:${rc};padding:5px 16px">
+          <span style="font-family:Arial,Helvetica,sans-serif;font-size:10px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;color:#FFFFFF">Risk: ${sec.riskLevel.toUpperCase()} &nbsp;&middot;&nbsp; ${sec.riskScore}/100</span>
+        </td>
+      </tr></tbody></table>
+    </td></tr>
+    <tr><td style="background-color:#CCAA55;height:3px;font-size:0;line-height:0">&nbsp;</td></tr>
+    <tr><td style="padding:40px 100px 8px;text-align:left">
+      <span style="font-family:Arial,Helvetica,sans-serif;font-size:13pt;line-height:20pt;color:#333333">
+        Hi <strong style="color:#111111">${x(firstName)}</strong>,<br><br>
+        We noticed a new sign-in to your DualMind Arena account. If this was you, no action is needed.
+      </span>
+    </td></tr>
+    <tr><td style="padding:24px 100px 0"><table border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><td style="height:1px;background-color:#EEEEEE;font-size:0">&nbsp;</td></tr></tbody></table></td></tr>
+    <tr><td style="padding:24px 100px 12px"><p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:9px;font-weight:bold;letter-spacing:2.5px;text-transform:uppercase;color:#999999">Sign-in details</p></td></tr>
+    <tr><td style="padding:0 100px 28px">
+      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border:1px solid #EEEEEE"><tbody>
+        ${dr("Account",          String(u.email ?? ""))}
+        ${dr("Time",             time)}
+        ${dr("IP Address",       sec.ipAddress, false, true)}
+        ${dr("Location",         sec.locationText)}
+        ${dr("City",             sec.cityName)}
+        ${dr("Region",           sec.regionName)}
+        ${dr("Postal Code",      sec.zipCode)}
+        ${dr("Country",          sec.countryName + (sec.countryCode ? ` (${sec.countryCode})` : ""))}
+        ${dr("Continent",        sec.continent)}
+        ${dr("Capital",          sec.capital)}
+        ${dr("Local Time",       sec.localTime)}
+        ${dr("Currencies",       sec.currencies)}
+        ${dr("Languages",        sec.languages)}
+        ${dr("ISP / Org",        sec.asnOrganization)}
+        ${dr("Network ASN",      sec.asn ? `AS${sec.asn}` : "")}
+        ${dr("Proxy / VPN",      sec.isProxy ? "Yes — proxy or VPN detected" : "No")}
+        ${dr("Device",           sec.device)}
+        ${dr("Browser",          sec.browser)}
+        ${dr("Sign-in via",      getProvider(u))}
+        ${dr("New device",       sec.isNewDevice ? "Yes — first time seen" : "No — recognised")}
+        ${dr("New country",      sec.isNewCountry ? "Yes — different from last login" : "No")}
+        ${travelInfo ? dr("Travel distance", travelInfo) : ""}
+        ${dr("Impossible travel",sec.impossibleTravel ? "Yes — flagged" : "No", true)}
+      </tbody></table>
+    </td></tr>
+    <tr><td style="padding:0 100px 24px">
+      <table border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr>
+        <td style="padding:16px 20px;background-color:#FEF9F9;border:1px solid #F5C6C6;border-left:3px solid #BB0000">
+          <p style="margin:0 0 5px;font-family:Arial,Helvetica,sans-serif;font-size:10px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;color:#BB0000">Wasn't you?</p>
+          <span style="font-family:Arial,Helvetica,sans-serif;font-size:10pt;line-height:16pt;color:#7A0000">
+            If you don't recognise this sign-in, your account may be compromised. Reset your password immediately or <a href="mailto:support@dualmindlab.tech" style="color:#BB0000;text-decoration:underline">contact us</a>.
+          </span>
+        </td>
+      </tr></tbody></table>
+    </td></tr>
+    <tr><td style="padding:0 100px 40px;text-align:center">
+      <table border="0" cellpadding="0" cellspacing="0" style="margin:0 auto"><tbody><tr>
+        <td style="border-radius:3px;background-color:#BB0000;padding-right:10px">
+          <a href="${resetUrl}" style="display:inline-block;padding:14px 28px;font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;color:#FFFFFF;text-decoration:none;border-radius:3px">Secure My Account</a>
+        </td>
+        <td style="border-radius:3px;background-color:#111111">
+          <a href="${site}" style="display:inline-block;padding:14px 28px;font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;color:#FFFFFF;text-decoration:none;border-radius:3px">Go to Arena</a>
+        </td>
+      </tr></tbody></table>
+    </td></tr>
+    <tr><td style="padding:0 100px 32px">
+      <span style="font-family:Arial,Helvetica,sans-serif;font-size:11pt;line-height:17pt;color:#555555">
+        DualMind will never ask for your password by email. Need help? <strong><a href="mailto:support@dualmindlab.tech" style="text-decoration:underline;color:#111111">Contact support</a></strong>.
+      </span><br>&nbsp;
+    </td></tr>`;
+
+  return {
+    subject: isHighRisk
+      ? `⚠ High-risk sign-in detected on your DualMind Arena account`
+      : `New sign-in to your DualMind Arena account`,
+    html: arenaShell(`New sign-in from ${sec.device} — ${sec.cityName || sec.countryName || "unknown location"}.`, content, year, site),
+  };
+}
+
+// ─── Server ───────────────────────────────────────────────────────────────────
 serve(async (req: Request): Promise<Response> => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: CORS });
-  }
-  if (req.method !== "POST") {
-    return new Response(
-      JSON.stringify({ error: "Method not allowed" }),
-      { status: 405, headers: JSON_HDR },
-    );
-  }
+  if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
+  if (req.method !== "POST") return new Response(
+    JSON.stringify({ error: "Method not allowed" }), { status: 405, headers: JSON_HDR });
 
   try {
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return new Response(
-        JSON.stringify({ error: "Missing or invalid Authorization header" }),
-        { status: 401, headers: JSON_HDR },
-      );
-    }
+    if (!authHeader?.startsWith("Bearer ")) return new Response(
+      JSON.stringify({ error: "Missing or invalid Authorization header" }), { status: 401, headers: JSON_HDR });
 
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
-    const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    const RESEND_KEY = Deno.env.get("RESEND_API_KEY");
-    const FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL");
-    const FROM_NAME = Deno.env.get("RESEND_FROM_NAME") ?? "DualMind";
-    const SITE_URL = Deno.env.get("SITE_URL") ?? "https://dualmindlab.tech";
+    const SERVICE_KEY  = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const RESEND_KEY   = Deno.env.get("RESEND_API_KEY");
+    const SITE_URL     = Deno.env.get("SITE_URL") ?? "https://dualmindlab.tech";
 
-    if (!SUPABASE_URL || !SERVICE_KEY || !RESEND_KEY || !FROM_EMAIL) {
-      console.error("[send-user-auth-email] Missing env vars");
-      return new Response(
-        JSON.stringify({ error: "Server configuration error — contact support" }),
-        { status: 503, headers: JSON_HDR },
-      );
+    if (!SUPABASE_URL || !SERVICE_KEY || !RESEND_KEY) {
+      console.error("[auth-email] Missing env vars");
+      return new Response(JSON.stringify({ error: "Server configuration error" }), { status: 503, headers: JSON_HDR });
     }
 
     const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
-    const token = authHeader.slice(7).trim();
+    const token    = authHeader.slice(7).trim();
     const { data: { user }, error: authErr } = await supabase.auth.getUser(token);
 
-    if (authErr || !user?.email) {
-      return new Response(
-        JSON.stringify({ error: "Invalid or expired token" }),
-        { status: 401, headers: JSON_HDR },
-      );
-    }
+    if (authErr || !user?.email) return new Response(
+      JSON.stringify({ error: "Invalid or expired token" }), { status: 401, headers: JSON_HDR });
 
-    if (isRateLimited(user.id)) {
-      return new Response(
-        JSON.stringify({ error: "Rate limit reached — please wait before sending another email" }),
-        { status: 429, headers: { ...JSON_HDR, "Retry-After": "60" } },
-      );
-    }
+    if (isRateLimited(user.id)) return new Response(
+      JSON.stringify({ error: "Rate limit reached — please wait before sending another email" }),
+      { status: 429, headers: { ...JSON_HDR, "Retry-After": "60" } });
 
     const body: ReqBody = await req.json().catch(() => ({}));
-
-    if (body.type !== "welcome" && body.type !== "login") {
-      return new Response(
-        JSON.stringify({ error: 'type must be "welcome" or "login"' }),
-        { status: 400, headers: JSON_HDR },
-      );
-    }
+    if (body.type !== "welcome" && body.type !== "login") return new Response(
+      JSON.stringify({ error: 'type must be "welcome" or "login"' }), { status: 400, headers: JSON_HDR });
 
     const u = user as unknown as Record<string, unknown>;
-    const email =
-      body.type === "welcome"
-        ? buildWelcome(u, body, SITE_URL)
-        : buildLogin(u, body, req, SITE_URL);
+
+    // ── Per-type from address ────────────────────────────────────────────────
+    const fromName  = body.type === "welcome" ? "Team DualMind"             : "DualMind Security";
+    const fromEmail = body.type === "welcome" ? "welcome@dualmindlab.tech"  : "security@dualmindlab.tech";
+
+    let loginSecurity: LoginSecurityContext | null = null;
+    if (body.type === "login") {
+      loginSecurity = await buildLoginSecurityContext(supabase, user.id, body, req);
+    }
+
+    const email = body.type === "welcome"
+      ? buildWelcome(u, body, SITE_URL)
+      : buildLogin(u, body, loginSecurity as LoginSecurityContext, SITE_URL);
 
     const resendRes = await fetch("https://api.resend.com/emails", {
       method: "POST",
-      headers: {
-        "Authorization": `Bearer ${RESEND_KEY}`,
-        "Content-Type": "application/json",
-      },
+      headers: { "Authorization": `Bearer ${RESEND_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        from: `${FROM_NAME} <${FROM_EMAIL}>`,
-        to: [user.email],
+        from: `${fromName} <${fromEmail}>`,
+        to:   [user.email],
         subject: email.subject,
-        html: email.html,
+        html:    email.html,
         tags: [
-          { name: "type", value: body.type },
-          { name: "userId", value: user.id },
+          { name: "type",   value: body.type },
+          { name: "userId", value: user.id   },
         ],
       }),
     });
 
     const resendData = await resendRes.json();
 
+    if (body.type === "login" && loginSecurity) {
+      await persistLoginSecurityData(supabase, user.id, loginSecurity, resendRes.ok, resendData?.id ?? null);
+    }
+
     if (!resendRes.ok) {
-      console.error("[send-user-auth-email] Resend error:", resendData);
-      return new Response(
-        JSON.stringify({ error: "Email delivery failed", detail: resendData }),
-        { status: 502, headers: JSON_HDR },
-      );
+      console.error("[auth-email] Resend error:", resendData);
+      return new Response(JSON.stringify({ error: "Email delivery failed", detail: resendData }), { status: 502, headers: JSON_HDR });
     }
 
     return new Response(
-      JSON.stringify({
-        success: true,
-        sentTo: user.email,
-        type: body.type,
-        messageId: resendData?.id ?? null,
-      }),
+      JSON.stringify({ success: true, sentTo: user.email, type: body.type, messageId: resendData?.id ?? null }),
       { status: 200, headers: JSON_HDR },
     );
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Internal server error";
-    console.error("[send-user-auth-email] Unhandled:", msg);
+    console.error("[auth-email] Unhandled:", msg);
     return new Response(JSON.stringify({ error: msg }), { status: 500, headers: JSON_HDR });
   }
 });

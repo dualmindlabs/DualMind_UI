@@ -135,6 +135,8 @@ window.DUALMIND_CONFIG.email = window.DUALMIND_CONFIG.email || {};
 window.DUALMIND_CONFIG.email.sendWelcomeOnSignUp = window.DUALMIND_CONFIG.email.sendWelcomeOnSignUp !== false;
 window.DUALMIND_CONFIG.email.sendLoginNotification = window.DUALMIND_CONFIG.email.sendLoginNotification !== false;
 window.DUALMIND_CONFIG.email.clientDebounceMs = window.DUALMIND_CONFIG.email.clientDebounceMs || 30000;
+window.DUALMIND_CONFIG.email.ipInfoApiUrl = window.DUALMIND_CONFIG.email.ipInfoApiUrl || 'https://free.freeipapi.com/api/json/';
+window.DUALMIND_CONFIG.email.ipInfoTimeoutMs = window.DUALMIND_CONFIG.email.ipInfoTimeoutMs || 3000;
 
 // ========== OFFLINE MODE CONFIGURATION ==========
 // When backend is not available, app runs in offline/demo mode

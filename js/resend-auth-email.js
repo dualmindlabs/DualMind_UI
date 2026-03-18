@@ -24,6 +24,127 @@
   var _subscribed = false;
   var _loginInFlight = null;
 
+  function trimStr(v) {
+    return typeof v === 'string' ? v.trim() : '';
+  }
+
+  function buildLocation(ipInfo) {
+    if (!ipInfo || typeof ipInfo !== 'object') {
+      return '';
+    }
+
+    var city = trimStr(ipInfo.cityName);
+    var region = trimStr(ipInfo.regionName || ipInfo.regionCode);
+    var country = trimStr(ipInfo.countryName || ipInfo.countryCode);
+    var parts = [city, region, country].filter(Boolean);
+    return parts.join(', ');
+  }
+
+  async function fetchIpInfo() {
+    var emailConfig = emailCfg();
+    var endpoint = trimStr(emailConfig.ipInfoApiUrl) || 'https://free.freeipapi.com/api/json/';
+    var timeoutMs = typeof emailConfig.ipInfoTimeoutMs === 'number' ? emailConfig.ipInfoTimeoutMs : 3000;
+
+    if (typeof AbortController === 'undefined') {
+      try {
+        var noAbortRes = await fetch(endpoint, { method: 'GET' });
+        if (!noAbortRes.ok) return null;
+        return await noAbortRes.json();
+      } catch (e) {
+        return null;
+      }
+    }
+
+    var ctrl = new AbortController();
+    var timer = setTimeout(function () {
+      ctrl.abort();
+    }, timeoutMs);
+
+    try {
+      var res = await fetch(endpoint, {
+        method: 'GET',
+        signal: ctrl.signal,
+      });
+
+      if (!res.ok) {
+        return null;
+      }
+
+      return await res.json();
+    } catch (e) {
+      return null;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  async function enrichLoginInfo(loginInfo) {
+    var info = Object.assign({}, loginInfo || {});
+
+    if (!info.time) {
+      info.time = new Date().toISOString();
+    }
+
+    var needsIp = !trimStr(info.ip);
+    var needsLocation = !trimStr(info.location);
+
+    if (!needsIp && !needsLocation) {
+      return info;
+    }
+
+    var ipData = await fetchIpInfo();
+    if (!ipData || typeof ipData !== 'object') {
+      return info;
+    }
+
+    if (needsIp && trimStr(ipData.ipAddress)) {
+      info.ip = trimStr(ipData.ipAddress);
+    }
+
+    if (needsLocation) {
+      var location = buildLocation(ipData);
+      if (location) {
+        info.location = location;
+      }
+    }
+
+    return info;
+  }
+
+  function buildDeviceFingerprint(timezone) {
+    var ua = '';
+    var platform = '';
+    var language = '';
+    var width = '';
+    var height = '';
+    var colorDepth = '';
+
+    try {
+      ua = navigator.userAgent || '';
+      platform = navigator.platform || '';
+      language = navigator.language || '';
+    } catch (e) {
+      ua = '';
+    }
+
+    try {
+      width = String(screen.width || '');
+      height = String(screen.height || '');
+      colorDepth = String(screen.colorDepth || '');
+    } catch (e) {
+      width = '';
+    }
+
+    return [
+      ua,
+      platform,
+      language,
+      timezone || '',
+      width + 'x' + height,
+      colorDepth,
+    ].join('|');
+  }
+
   function cfg() { return g.DUALMIND_CONFIG || {}; }
   function emailCfg() { return cfg().email || {}; }
   function sbCfg() { return cfg().supabase || {}; }
@@ -155,6 +276,13 @@
       },
       opts || {}
     );
+
+    if (type === 'login') {
+      payload.loginInfo = await enrichLoginInfo(payload.loginInfo);
+      if (!payload.loginInfo.deviceFingerprint) {
+        payload.loginInfo.deviceFingerprint = buildDeviceFingerprint(timezone);
+      }
+    }
 
     var res;
     var data;
