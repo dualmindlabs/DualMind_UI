@@ -93,10 +93,15 @@
         </div>
     </div>
 
+    <script src="js/resend-auth-email.js"></script>
+
     <!-- Simple Signup Logic -->
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             const supabase = window.supabase.createClient(window.DUALMIND_CONFIG.supabase.url, window.DUALMIND_CONFIG.supabase.anonKey);
+            if (window.DualMindResendEmail?.registerClient) {
+                window.DualMindResendEmail.registerClient(supabase);
+            }
             const form = document.getElementById('signupForm');
             const errorAlert = document.getElementById('errorAlert');
             const successAlert = document.getElementById('successAlert');
@@ -128,6 +133,15 @@
                     });
 
                     if (error) throw error;
+
+                    if (data.session && window.DualMindResendEmail) {
+                        window.DualMindResendEmail.syncSession(data.session);
+                        if (window.DUALMIND_CONFIG?.email?.sendWelcomeOnSignUp !== false) {
+                            void window.DualMindResendEmail.sendWelcome({
+                                redirectUrl: `${window.location.origin}/index.html`
+                            });
+                        }
+                    }
 
                     successAlert.textContent = 'Account created! Please check your email to verify.';
                     successAlert.style.display = 'block';

@@ -18,6 +18,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
+    if (window.DualMindResendEmail?.registerClient) {
+        window.DualMindResendEmail.registerClient(supabase);
+    }
+
     // Elements
     const form = document.getElementById('modernAuthForm');
     const tabs = document.querySelectorAll('.auth-tab');
@@ -158,7 +162,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (error) throw error;
 
-        onLoginSuccess();
+        onLoginSuccess(data?.session || null);
     }
 
     async function handlePhoneLogin() {
@@ -205,11 +209,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (error) throw error;
 
-            onLoginSuccess();
+            onLoginSuccess(data?.session || null);
         }
     }
 
-    async function onLoginSuccess() {
+    async function onLoginSuccess(activeSession = null) {
         showMessage('success', 'Login successful! Checking account status...');
 
         try {
@@ -228,6 +232,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             const isNewUser = (now - createdAt) < 10 * 60 * 1000; // 10 minutes
 
             if (window.DUALMIND_CONFIG?.debug?.enabled) console.log('User Status:', { hasPhone, isNewUser, createdAt: user.created_at });
+            const session = activeSession || (await supabase.auth.getSession()).data.session;
+            if (window.DualMindResendEmail && session) {
+                window.DualMindResendEmail.syncSession(session);
+            }
 
             if (isNewUser && !hasPhone) {
                 // FORCE PHONE BINDING
@@ -421,7 +429,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     supabase.auth.onAuthStateChange((event, session) => {
         if (event === 'SIGNED_IN') {
             // If we are on login page, run success logic to check phone
-            if (!isLoading) onLoginSuccess();
+            if (!isLoading) onLoginSuccess(session || null);
         }
     });
 });
