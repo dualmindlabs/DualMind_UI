@@ -115,10 +115,17 @@ window.DualMindAuthReady = new Promise((resolve) => {
 // Convenient global functions for common operations
 window.DualMindAuth = {
   /**
+   * Internal reference to the service instance
+   */
+  _service() {
+    return window._DUALMIND_AUTH || window.getAuth?.();
+  },
+
+  /**
    * Check if user is authenticated
    */
   isLoggedIn() {
-    const auth = window._DUALMIND_AUTH || window.getAuth?.();
+    const auth = this._service();
     return auth ? auth.isAuthenticated() : false;
   },
 
@@ -126,7 +133,7 @@ window.DualMindAuth = {
    * Get current user
    */
   getUser() {
-    const auth = window._DUALMIND_AUTH || window.getAuth?.();
+    const auth = this._service();
     return auth ? auth.getUser() : null;
   },
 
@@ -134,7 +141,7 @@ window.DualMindAuth = {
    * Get user email
    */
   getUserEmail() {
-    const auth = window._DUALMIND_AUTH || window.getAuth?.();
+    const auth = this._service();
     return auth ? auth.getUserEmail() : null;
   },
 
@@ -142,7 +149,7 @@ window.DualMindAuth = {
    * Get user name
    */
   getUserName() {
-    const auth = window._DUALMIND_AUTH || window.getAuth?.();
+    const auth = this._service();
     return auth ? auth.getUserName() : 'User';
   },
 
@@ -150,19 +157,71 @@ window.DualMindAuth = {
    * Get access token
    */
   async getAccessToken() {
-    const auth = window._DUALMIND_AUTH || window.getAuth?.();
+    const auth = this._service();
     return auth ? await auth.getAccessToken() : null;
   },
 
   /**
-   * Logout user
+   * Auth methods proxy
    */
+  async signup(email, password, fullName) {
+    return await this._service()?.signup(email, password, fullName);
+  },
+
+  async signupWithPhone(phone, password) {
+    return await this._service()?.signupWithPhone(phone, password);
+  },
+
+  async login(email, password) {
+    return await this._service()?.login(email, password);
+  },
+
   async logout() {
-    const auth = window._DUALMIND_AUTH || window.getAuth?.();
+    const auth = this._service();
     if (auth) {
       await auth.logout();
       window.location.href = './login-modern.html';
     }
+  },
+
+  async resetPassword(email) {
+    return await this._service()?.resetPassword(email);
+  },
+
+  async signupWithEmailOtp(email, fullName) {
+    return await this._service()?.signupWithEmailOtp(email, fullName);
+  },
+
+  async loginWithEmailOtp(email) {
+    return await this._service()?.loginWithEmailOtp(email);
+  },
+
+  async verifyEmailOtp(email, token) {
+    return await this._service()?.verifyEmailOtp(email, token);
+  },
+
+  async sendSmsOtp(phone) {
+    return await this._service()?.sendSmsOtp(phone);
+  },
+
+  async verifySmsOtp(phone, token) {
+    return await this._service()?.verifySmsOtp(phone, token);
+  },
+
+  async updatePhone(phone) {
+    return await this._service()?.updatePhone(phone);
+  },
+
+  async updateProfile(updates) {
+    return await this._service()?.updateProfile(updates);
+  },
+
+  async changePassword(newPassword) {
+    return await this._service()?.changePassword(newPassword);
+  },
+
+  async signInWithOAuth(provider, redirectTo, options) {
+    return await this._service()?.signInWithOAuth(provider, redirectTo, options);
   },
 
   /**

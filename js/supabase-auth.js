@@ -87,7 +87,7 @@ export class SupabaseAuthService {
             full_name: fullName,
             avatar_url: null,
           },
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: `${window.location.origin}/auth-callback.html`,
         },
       });
 
@@ -108,13 +108,48 @@ export class SupabaseAuthService {
       return {
         success: true,
         user: this.user,
-        needsEmailConfirmation: !data.session, // User needs to confirm email
+        needsEmailConfirmation: !data.session,
       };
     } catch (error) {
       console.error('Signup error:', error);
       return {
         success: false,
         error: error.message || 'Signup failed',
+      };
+    }
+  }
+
+  /**
+   * Sign up with phone and password
+   * NOTE: Email must be captured post-verification as per requirements
+   */
+  async signupWithPhone(phone, password) {
+    try {
+      const { data, error } = await this.supabase.auth.signUp({
+        phone: phone,
+        password: password,
+      });
+
+      if (error) {
+        return {
+          success: false,
+          error: this._parseError(error),
+        };
+      }
+
+      // Typically signUp with phone returns user but no session until verified
+      this.user = data.user;
+      
+      return {
+        success: true,
+        user: this.user,
+        needsSmsVerification: true,
+      };
+    } catch (error) {
+      console.error('Phone signup error:', error);
+      return {
+        success: false,
+        error: error.message || 'Phone signup failed',
       };
     }
   }
@@ -213,7 +248,7 @@ export class SupabaseAuthService {
             full_name: fullName,
             avatar_url: null,
           },
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: `${window.location.origin}/auth-callback.html`,
         },
       });
 
@@ -245,7 +280,7 @@ export class SupabaseAuthService {
       const { error } = await this.supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: `${window.location.origin}/auth-callback.html`,
         },
       });
 
@@ -322,13 +357,15 @@ export class SupabaseAuthService {
 
       return {
         success: true,
-        message: 'OTP sent to your phone. Please check your messages.',
+        message: 'OTP sent! We have triggered both SMS and Call delivery.',
       };
     } catch (error) {
       console.error('SMS OTP error:', error);
+      const parsed = this._parseError(error);
       return {
         success: false,
-        error: error.message || 'Failed to send SMS OTP',
+        error: parsed.message || 'Failed to send OTP. Please wait before retrying.',
+        code: parsed.code
       };
     }
   }

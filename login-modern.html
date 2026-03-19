@@ -15,14 +15,17 @@
     <!-- Styles -->
     <link rel="stylesheet" href="css/tokens.css">
     <link rel="stylesheet" href="css/auth-modern.css">
+    <link rel="stylesheet" href="css/auth-ui-fixes.css">
+    <link rel="stylesheet" href="css/custom-modal.css">
 
     <!-- Config & Supabase -->
     <script src="config.js"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="js/supabase-init.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/libphonenumber-js@1.10.44/bundle/libphonenumber-max.js"></script>
 </head>
 
-<body>
+<body class="login-page">
     <div class="bg-glow"></div>
 
     <div class="auth-container">
@@ -33,22 +36,30 @@
                 <div class="logo-text">DualMind</div>
             </div>
 
-            <h1 class="hero-title">Battle of<br>Intelligence</h1>
+            <h1 class="hero-title">Welcome<br>Back</h1>
             <p class="hero-subtitle">
-                Compare top AI models side-by-side. Vote for the best responses and climb the leaderboard.
+                Sign in to continue comparing top AI models and climb the leaderboard.
             </p>
         </div>
 
         <!-- Right Side: Form -->
         <div class="auth-form-wrapper">
-            <div class="form-header">
+            <div class="form-header stagger-item" style="--delay: 0.1s">
                 <h2 class="form-title">Welcome Back</h2>
-                <p class="form-subtitle">Sign in to continue your journey</p>
+                <p class="form-subtitle">Sign in to your account</p>
             </div>
 
-            <div class="auth-tabs">
+            <!-- Tabs -->
+            <div class="auth-tabs stagger-item" style="--delay: 0.2s">
                 <button class="auth-tab active" data-mode="email">Email</button>
                 <button class="auth-tab" data-mode="phone">Phone</button>
+            </div>
+
+            <!-- Step Indicator -->
+            <div class="step-indicator stagger-item" style="--delay: 0.3s">
+                <div class="step-dot active"></div>
+                <div class="step-dot"></div>
+                <span class="step-text">Step 1 of 2</span>
             </div>
 
             <!-- Messages -->
@@ -56,56 +67,79 @@
             <div id="successAlert" class="message success"></div>
 
             <form id="modernAuthForm">
-                <!-- Email Inputs -->
-                <div id="emailGroup">
-                    <div class="input-group">
-                        <input type="email" id="email" class="input-field" placeholder="Email address"
-                            autocomplete="email">
-                        <i class="ri-mail-line input-icon"></i>
+                <!-- Group 1: Credentials (Step 1) -->
+                <div id="credentialsStep">
+                    <!-- Email Inputs -->
+                    <div id="emailGroup" class="stagger-item" style="--delay: 0.4s">
+                        <div class="input-group">
+                            <input type="email" id="email" class="input-field" placeholder="Email address"
+                                autocomplete="email">
+                            <i class="ri-mail-line input-icon"></i>
+                        </div>
+                    </div>
+
+                    <!-- Phone Inputs -->
+                    <div id="phoneGroup" style="display: none; flex-direction: column;">
+                        <div class="input-group phone-input-wrapper">
+                            <div class="country-picker">
+                                <img src="https://flagcdn.com/w20/in.png" width="20" alt="India">
+                                <span>+91</span>
+                            </div>
+                            <input type="tel" id="phone" class="input-field" placeholder="Phone number" 
+                                style="padding-left: 16px;" maxlength="11">
+                        </div>
+                        <p style="font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 5px; margin-left: 5px;">
+                            We'll call you and read out the code for maximum security.
+                        </p>
+                    </div>
+
+                    <!-- Password Input (Login only needs password for Email mode) -->
+                    <div id="passwordGroup" class="stagger-item" style="--delay: 0.5s">
+                        <div class="input-group">
+                            <input type="password" id="password" class="input-field" placeholder="Password"
+                                autocomplete="current-password">
+                            <i class="ri-lock-line input-icon"></i>
+                            <i class="ri-eye-off-line password-toggle" id="togglePassword"></i>
+                        </div>
+                        <div style="text-align: right; margin-top: 8px;">
+                            <a href="forgot-password.html" class="link" style="font-size: 12px;">Forgot password?</a>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Password Input -->
-                <div id="passwordGroup">
-                    <div class="input-group">
-                        <input type="password" id="password" class="input-field" placeholder="Password"
-                            autocomplete="current-password">
-                        <i class="ri-lock-line input-icon"></i>
-                    </div>
-                </div>
-
-                <!-- Phone Inputs -->
-                <div id="phoneGroup" style="display: none; flex-direction: column;">
-                    <div class="input-group phone-group">
-                        <div class="country-code">+91</div>
-                        <input type="tel" id="phone" class="input-field" placeholder="Phone number"
-                            style="padding-left: 16px;">
-                    </div>
-                </div>
-
-                <!-- OTP Input -->
+                <!-- Group 2: OTP Verification (Step 2) -->
                 <div id="otpGroup" style="display: none;">
-                    <div class="input-group">
-                        <input type="text" id="otp" class="input-field" placeholder="Enter 6-digit code" maxlength="6"
-                            pattern="\d*">
-                        <i class="ri-shield-keyhole-line input-icon"></i>
+                    <p style="text-align: center; font-size: 14px; margin-bottom: 20px; color: rgba(255,255,255,0.7);">
+                        Enter the 6-digit code we sent you.
+                    </p>
+                    <div class="otp-container">
+                        <input type="text" class="otp-box" maxlength="1" pattern="\d*" inputmode="numeric" autocomplete="one-time-code">
+                        <input type="text" class="otp-box" maxlength="1" pattern="\d*" inputmode="numeric">
+                        <input type="text" class="otp-box" maxlength="1" pattern="\d*" inputmode="numeric">
+                        <input type="text" class="otp-box" maxlength="1" pattern="\d*" inputmode="numeric">
+                        <input type="text" class="otp-box" maxlength="1" pattern="\d*" inputmode="numeric">
+                        <input type="text" class="otp-box" maxlength="1" pattern="\d*" inputmode="numeric">
+                    </div>
+                    
+                    <div class="resend-timer">
+                        <span id="resendTimer"></span>
+                        <div style="display: flex; gap: 15px; justify-content: center; align-items: center;">
+                            <a href="#" id="resendAction" class="resend-link disabled">Resend Code</a>
+                            <span style="color: rgba(255,255,255,0.2)">|</span>
+                            <a href="#" id="changePhoneAction" class="resend-link">Wrong number?</a>
+                        </div>
                     </div>
                 </div>
 
-                <div style="text-align: right; margin-bottom: 20px;">
-                    <a href="forgot-password.html" id="forgotLink" class="link" style="font-size: 13px;">Forgot
-                        password?</a>
-                </div>
-
-                <button type="submit" id="submitBtn" class="btn-primary">
+                <button type="submit" id="submitBtn" class="btn-primary stagger-item" style="--delay: 0.6s; margin-top: 20px;">
                     <span class="btn-text">Sign In</span>
                     <span class="btn-icon"><i class="ri-arrow-right-line"></i></span>
                 </button>
             </form>
 
-            <div class="divider">or continue with</div>
+            <div class="divider stagger-item" style="--delay: 0.7s">or continue with</div>
 
-            <div class="social-buttons">
+            <div class="social-buttons stagger-item" style="--delay: 0.8s">
                 <button class="btn-social" id="socialGitHub">
                     <i class="ri-github-fill" style="font-size: 20px;"></i>
                     GitHub
@@ -116,14 +150,14 @@
                 </button>
             </div>
 
-            <div class="auth-footer">
+            <div class="auth-footer stagger-item" style="--delay: 0.9s">
                 Don't have an account? <a href="signup-modern.html" class="link">Sign up free</a>
             </div>
         </div>
     </div>
 
     <!-- Logic -->
-    <script src="js/auth-modern.js"></script>
+    <script type="module" src="js/auth-modern.js"></script>
 </body>
 
 </html>

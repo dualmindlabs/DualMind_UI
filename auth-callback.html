@@ -1,285 +1,304 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Email Confirmation - DualMind</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Inria+Sans:wght@400;700&display=swap"
-    rel="stylesheet">
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authenticating - DualMind</title>
+    
+    <!-- Design System -->
+    <link rel="stylesheet" href="css/tokens.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/auth-modern.css">
+    <link rel="stylesheet" href="css/auth-ui-fixes.css">
+    
+    <!-- Icons & Fonts -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
 
-    body {
-      font-family: 'Inria Sans', sans-serif;
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-    }
-
-    .container {
-      text-align: center;
-      padding: 40px;
-      background: rgba(0, 0, 0, 0.3);
-      border-radius: 16px;
-      backdrop-filter: blur(10px);
-      max-width: 400px;
-    }
-
-    .logo {
-      margin-bottom: 30px;
-    }
-
-    .logo-icon {
-      display: inline-block;
-      width: 60px;
-      height: 60px;
-    }
-
-    h1 {
-      font-size: 28px;
-      margin-bottom: 12px;
-      font-family: 'Do Hyeon', sans-serif;
-    }
-
-    p {
-      color: rgba(255, 255, 255, 0.7);
-      margin-bottom: 20px;
-      font-size: 15px;
-    }
-
-    .spinner {
-      width: 40px;
-      height: 40px;
-      border: 4px solid rgba(255, 255, 255, 0.2);
-      border-top-color: #4AABC2;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 20px auto;
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-
-    .message {
-      padding: 12px 16px;
-      border-radius: 8px;
-      margin: 20px 0;
-      font-size: 14px;
-    }
-
-    .message.success {
-      background: rgba(76, 175, 80, 0.2);
-      border: 1px solid rgba(76, 175, 80, 0.3);
-      color: #69f0ae;
-    }
-
-    .message.error {
-      background: rgba(244, 67, 54, 0.2);
-      border: 1px solid rgba(244, 67, 54, 0.3);
-      color: #ff6b6b;
-    }
-
-    .link {
-      color: #4AABC2;
-      text-decoration: none;
-      cursor: pointer;
-      transition: color 0.2s;
-    }
-
-    .link:hover {
-      color: white;
-    }
-  </style>
-  <script src="./config.js"></script>
-</head>
-
-<body>
-  <div class="container">
-    <div class="logo">
-      <img src="./assets/logo.png" alt="DualMind Logo" class="logo-icon" style="width: 60px; height: auto;">
-    </div>
-
-    <h1 id="title">Confirming Email...</h1>
-    <p id="message">Please wait while we confirm your email address.</p>
-
-    <div class="spinner" id="spinner"></div>
-
-    <div id="status" style="display: none;">
-      <!-- Will be updated by script -->
-    </div>
-
-    <p style="margin-top: 40px; font-size: 13px;">
-      Redirecting to <a class="link" href="./index.html">DualMind</a> in <span id="countdown">5</span> seconds...
-    </p>
-  </div>
-
-  <script type="module">
-    import { initializeSupabaseAuth } from './js/supabase-auth.js';
-
-    const supabaseConfig = window.DUALMIND_CONFIG.supabase;
-
-    if (!supabaseConfig.url || supabaseConfig.url.includes('your-project')) {
-      document.getElementById('title').textContent = 'Configuration Error';
-      document.getElementById('message').innerHTML = 'Supabase not configured. <a class="link" href="./login.html">Back to login</a>';
-      document.getElementById('spinner').style.display = 'none';
-      return;
-    }
-
-    const auth = initializeSupabaseAuth(supabaseConfig.url, supabaseConfig.anonKey);
-    const spinner = document.getElementById('spinner');
-    const title = document.getElementById('title');
-    const message = document.getElementById('message');
-    const status = document.getElementById('status');
-    const countdown = document.getElementById('countdown');
-
-    let countdownValue = 5;
-
-    // Check for auth session immediately (handles OAuth and Magic Links)
-    const checkSession = async () => {
-      // Small pause to let Supabase SDK process the hash
-      await new Promise(r => setTimeout(r, 500));
-
-      if (auth.isAuthenticated()) {
-        spinner.style.display = 'none';
-        title.textContent = '✅ Authentication Successful!';
-        message.textContent = 'You have successfully signed in. Redirecting to app...';
-        status.style.display = 'block';
-        status.innerHTML = '<div class="message success">Redirecting to DualMind Arena...</div>';
-
-        // Immediate redirect for social login
-        setTimeout(() => {
-          window.location.href = './index.html';
-        }, 1500);
-        return true;
-      }
-      return false;
-    };
-
-    // Check hash for special flows (recovery/email confirm)
-    const hash = window.location.hash;
-
-    if (hash && hash.includes('type=recovery')) {
-      handlePasswordReset();
-    } else if (hash && hash.includes('type=email')) {
-      handleEmailConfirmation();
-    } else {
-      // Try generic session check (OAuth)
-      checkSession().then(isAuthed => {
-        if (!isAuthed) {
-          spinner.style.display = 'none';
-          title.textContent = 'No Active Session';
-          message.textContent = 'It looks like you may have already confirmed your email or session expired.';
-          status.style.display = 'block';
-          status.innerHTML = '<div class="message success">Go back to <a class="link" href="./login.html">Login</a>.</div>';
+    <style>
+        body {
+            font-family: var(--font-sans);
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #0B0F1A;
+            color: white;
+            min-height: 100vh;
         }
-      });
-    }
 
-    function handleEmailConfirmation() {
-      setTimeout(() => {
-        spinner.style.display = 'none';
-        title.textContent = '✅ Email Confirmed!';
-        message.textContent = 'Your email has been verified. You can now use all features.';
-        status.style.display = 'block';
-        status.innerHTML = '<div class="message success">Redirecting to app...</div>';
+        .callback-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 40px;
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: card-appear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
 
-        // Redirect after countdown
-        const redirectInterval = setInterval(() => {
-          countdownValue--;
-          countdown.textContent = countdownValue;
+        @keyframes card-appear {
+            from { opacity: 0; transform: scale(0.9) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
 
-          if (countdownValue <= 0) {
-            clearInterval(redirectInterval);
-            // FORCE LOCALHOST PORT 8000
-            if (window.location.hostname === 'localhost') {
-              window.location.href = 'http://localhost:8000/index.html';
-            } else {
-              window.location.href = './index.html';
+        .status-header {
+            margin-bottom: 30px;
+        }
+
+        .status-icon {
+            width: 80px;
+            height: 80px;
+            background: rgba(74, 171, 194, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 40px;
+            color: var(--color-cyan);
+            border: 1px solid rgba(74, 171, 194, 0.2);
+            transition: all 0.5s ease;
+        }
+
+        .status-icon.success {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border-color: rgba(16, 185, 129, 0.2);
+            box-shadow: 0 0 30px rgba(16, 185, 129, 0.2);
+        }
+
+        .status-icon.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border-color: rgba(239, 68, 68, 0.2);
+            box-shadow: 0 0 30px rgba(239, 68, 68, 0.2);
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.7) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p {
+            font-size: 15px;
+            color: rgba(255, 255, 255, 0.5);
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 2px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--color-cyan);
+            width: 0%;
+            transition: width 3s linear;
+        }
+
+        .countdown-text {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.3);
+            font-family: var(--font-mono);
+        }
+
+        .btn-redirect {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--color-cyan);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 10px;
+            transition: all 0.2s ease;
+            box-shadow: 0 10px 20px -5px rgba(74, 171, 194, 0.4);
+        }
+
+        .btn-redirect:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 25px -5px rgba(74, 171, 194, 0.5);
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Checkmark Animation */
+        .checkmark__circle {
+            stroke-dasharray: 166;
+            stroke-dashoffset: 166;
+            stroke-width: 2;
+            stroke-miterlimit: 10;
+            stroke: #10b981;
+            fill: none;
+            animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+        }
+
+        .checkmark {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: block;
+            stroke-width: 3;
+            stroke: #fff;
+            stroke-miterlimit: 10;
+            box-shadow: inset 0px 0px 0px #10b981;
+            animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
+        }
+
+        .checkmark__check {
+            transform-origin: 50% 50%;
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+        }
+
+        @keyframes stroke { 100% { stroke-dashoffset: 0; } }
+        @keyframes scale { 0%, 100% { transform: none; } 50% { transform: scale3d(1.1, 1.1, 1); } }
+        @keyframes fill { 100% { box-shadow: inset 0px 0px 0px 30px #10b981; } }
+    </style>
+    <script src="config.js"></script>
+</head>
+<body>
+    <div class="callback-card">
+        <div class="status-header">
+            <div class="status-icon" id="statusIcon">
+                <div class="spinner-large"></div>
+            </div>
+            <h1 id="title">Verifying Session</h1>
+            <p id="message">Please wait as we secure your connection and redirect you back to the app.</p>
+        </div>
+
+        <div class="progress-bar" id="progressBar" style="display: none;">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div id="countdownArea" style="display: none;">
+            <div class="countdown-text">Redirecting in <span id="counter">3</span>s...</div>
+            <a href="index.html" class="btn-redirect">
+                Go Now <i class="ri-arrow-right-line"></i>
+            </a>
+        </div>
+        
+        <div id="errorArea" style="display: none;">
+            <a href="login-modern.html" class="btn-redirect" style="background: rgba(255,255,255,0.1); box-shadow: none;">
+                <i class="ri-arrow-left-line"></i> Back to Login
+            </a>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeSupabaseAuth } from './js/supabase-auth.js';
+
+        const config = window.DUALMIND_CONFIG.supabase;
+        const auth = initializeSupabaseAuth(config.url, config.anonKey);
+        
+        const title = document.getElementById('title');
+        const message = document.getElementById('message');
+        const statusIcon = document.getElementById('statusIcon');
+        const progressBar = document.getElementById('progressBar');
+        const progressFill = document.getElementById('progressFill');
+        const countdownArea = document.getElementById('countdownArea');
+        const errorArea = document.getElementById('errorArea');
+        const counter = document.getElementById('counter');
+
+        async function init() {
+            // Small delay for Supabase hash processing
+            await new Promise(r => setTimeout(r, 800));
+
+            try {
+                // 1. Check if authenticated
+                const isAuthed = await auth.isAuthenticated();
+                if (isAuthed) {
+                    showSuccess('Session Verified', 'Successfully authenticated! Welcome back to DualMind.');
+                    startRedirect('./index.html');
+                    return;
+                }
+
+                // 2. Check for hash parameters (Recovery/Confirmation)
+                const hash = window.location.hash;
+                if (hash) {
+                    if (hash.includes('type=recovery')) {
+                        showSuccess('Reset Link Confirmed', 'Redirecting you to the recovery page to set your new password.');
+                        startRedirect('./update-password.html' + hash);
+                        return;
+                    } 
+                    if (hash.includes('type=email_confirmation')) {
+                        showSuccess('Email Verified', 'Your email has been confirmed. Redirecting to start your journey.');
+                        startRedirect('./index.html');
+                        return;
+                    }
+                }
+
+                // 3. Fallback
+                showError('No Session Found', 'It seems your session link has expired or reached its limit. Please try signing in again.');
+            } catch (err) {
+                console.error('Auth Callback Error:', err);
+                showError('Verification Failed', err.message || 'An unexpected error occurred during verification.');
             }
-          }
-        }, 1000);
-      }, 1500);
-    }
+        }
 
-    function handlePasswordReset() {
-      // Extract reset token from URL
-      const params = new URLSearchParams(hash.substring(1));
-      const accessToken = params.get('access_token');
-      const type = params.get('type');
+        function showSuccess(t, m) {
+            title.textContent = t;
+            message.textContent = m;
+            statusIcon.innerHTML = `
+                <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                    <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+                    <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                </svg>
+            `;
+            statusIcon.classList.add('success');
+            progressBar.style.display = 'block';
+            setTimeout(() => progressFill.style.width = '100%', 10);
+        }
 
-      if (accessToken && type === 'recovery') {
-        // Store the reset token and redirect to password reset page
-        sessionStorage.setItem('resetToken', accessToken);
+        function showError(t, m) {
+            title.textContent = t;
+            message.textContent = m;
+            statusIcon.innerHTML = '<i class="ri-error-warning-fill"></i>';
+            statusIcon.classList.add('error');
+            errorArea.style.display = 'block';
+        }
 
-        spinner.style.display = 'none';
-        title.textContent = '🔐 Reset Your Password';
-        message.textContent = 'You can now set a new password for your account.';
-        status.style.display = 'block';
-        status.innerHTML = `
-          <div style="margin: 20px 0;">
-            <input type="password" id="newPassword" placeholder="New password" 
-              style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: white; margin-bottom: 10px;">
-            <input type="password" id="confirmPassword" placeholder="Confirm password"
-              style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: white; margin-bottom: 10px;">
-            <button onclick="resetPassword()" style="width: 100%; padding: 10px; background: #4AABC2; border: none; border-radius: 8px; color: white; cursor: pointer; font-weight: bold;">
-              Reset Password
-            </button>
-          </div>
-        `;
+        function startRedirect(target) {
+            countdownArea.style.display = 'block';
+            let timeLeft = 3;
+            const timer = setInterval(() => {
+                timeLeft--;
+                counter.textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    // Handle localhost quirk
+                    let finalTarget = target;
+                    if (window.location.hostname === 'localhost' && !target.startsWith('http')) {
+                        finalTarget = `http://localhost:8000/${target.replace('./', '')}`;
+                    }
+                    window.location.href = finalTarget;
+                }
+            }, 1000);
+        }
 
-        window.resetPassword = async function () {
-          const newPassword = document.getElementById('newPassword').value;
-          const confirmPassword = document.getElementById('confirmPassword').value;
-
-          if (!newPassword || !confirmPassword) {
-            alert('Please fill in both password fields');
-            return;
-          }
-
-          if (newPassword !== confirmPassword) {
-            alert('Passwords do not match');
-            return;
-          }
-
-          if (newPassword.length < 6) {
-            alert('Password must be at least 6 characters');
-            return;
-          }
-
-          try {
-            const result = await auth.changePassword(newPassword);
-            if (result.success) {
-              spinner.style.display = 'none';
-              title.textContent = '✅ Password Reset!';
-              message.textContent = 'Your password has been successfully updated.';
-              status.innerHTML = '<div class="message success">Redirecting to login...</div>';
-
-              setTimeout(() => {
-                window.location.href = './login.html';
-              }, 2000);
-            } else {
-              alert('Error: ' + result.error);
-            }
-          } catch (error) {
-            alert('Error resetting password: ' + error.message);
-          }
-        };
-      }
-    }
-  </script>
+        init();
+    </script>
 </body>
-
 </html>

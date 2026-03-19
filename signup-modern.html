@@ -15,14 +15,17 @@
     <!-- Styles -->
     <link rel="stylesheet" href="css/tokens.css">
     <link rel="stylesheet" href="css/auth-modern.css">
+    <link rel="stylesheet" href="css/auth-ui-fixes.css">
+    <link rel="stylesheet" href="css/custom-modal.css">
 
     <!-- Config & Supabase -->
     <script src="config.js"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="js/supabase-init.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/libphonenumber-js@1.10.44/bundle/libphonenumber-max.js"></script>
 </head>
 
-<body>
+<body class="signup-page">
     <div class="bg-glow"></div>
 
     <div class="auth-container">
@@ -41,42 +44,122 @@
 
         <!-- Right Side: Form -->
         <div class="auth-form-wrapper">
-            <div class="form-header">
+            <div class="form-header stagger-item" style="--delay: 0.1s">
                 <h2 class="form-title">Create Account</h2>
                 <p class="form-subtitle">Start your journey today</p>
+            </div>
+
+            <!-- Tabs -->
+            <div class="auth-tabs stagger-item" style="--delay: 0.2s">
+                <button class="auth-tab active" data-mode="email">Email</button>
+                <button class="auth-tab" data-mode="phone">Phone</button>
+            </div>
+
+            <!-- Step Indicator -->
+            <div class="step-indicator stagger-item" style="--delay: 0.3s">
+                <div class="step-dot active"></div>
+                <div class="step-dot"></div>
+                <div class="step-dot"></div>
+                <span class="step-text">Step 1 of 3</span>
             </div>
 
             <!-- Messages -->
             <div id="errorAlert" class="message error"></div>
             <div id="successAlert" class="message success"></div>
 
-            <form id="signupForm">
-                <div class="input-group">
-                    <input type="email" id="email" class="input-field" placeholder="Email address" required>
-                    <i class="ri-mail-line input-icon"></i>
+            <form id="modernAuthForm">
+                <!-- Group 1: Credentials (Step 1) -->
+                <div id="credentialsStep">
+                    <!-- Email Inputs -->
+                    <div id="emailGroup" class="stagger-item" style="--delay: 0.4s">
+                        <div class="input-group">
+                            <input type="email" id="email" class="input-field" placeholder="Email address"
+                                autocomplete="email">
+                            <i class="ri-mail-line input-icon"></i>
+                        </div>
+                    </div>
+
+                    <!-- Phone Inputs -->
+                    <div id="phoneGroup" style="display: none; flex-direction: column;" class="stagger-item" style="--delay: 0.4s">
+                        <div class="input-group phone-input-wrapper">
+                            <div class="country-picker">
+                                <img src="https://flagcdn.com/w20/in.png" width="20" alt="India">
+                                <span>+91</span>
+                            </div>
+                            <input type="tel" id="phone" class="input-field" placeholder="Phone number" 
+                                style="padding-left: 16px;" maxlength="11">
+                        </div>
+                        <p style="font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 5px; margin-left: 5px;">
+                            We'll send a code via SMS and Call simultaneously.
+                        </p>
+                    </div>
+
+                    <!-- Password Input -->
+                    <div id="passwordGroup" class="stagger-item" style="--delay: 0.5s">
+                        <div class="input-group">
+                            <input type="password" id="password" class="input-field" placeholder="Create password"
+                                autocomplete="new-password" minlength="6">
+                            <i class="ri-lock-line input-icon"></i>
+                            <i class="ri-eye-off-line password-toggle" id="togglePassword"></i>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="input-group">
-                    <input type="password" id="password" class="input-field" placeholder="Create password" required
-                        minlength="6">
-                    <i class="ri-lock-line input-icon"></i>
+                <!-- Group 2: OTP Verification (Step 2) -->
+                <div id="otpGroup" style="display: none;">
+                    <p style="text-align: center; font-size: 14px; margin-bottom: 20px; color: rgba(255,255,255,0.7);">
+                        Enter the 6-digit code we sent you.
+                    </p>
+                    <div class="otp-container">
+                        <input type="text" class="otp-box" maxlength="1" pattern="\d*" inputmode="numeric" autocomplete="one-time-code">
+                        <input type="text" class="otp-box" maxlength="1" pattern="\d*" inputmode="numeric">
+                        <input type="text" class="otp-box" maxlength="1" pattern="\d*" inputmode="numeric">
+                        <input type="text" class="otp-box" maxlength="1" pattern="\d*" inputmode="numeric">
+                        <input type="text" class="otp-box" maxlength="1" pattern="\d*" inputmode="numeric">
+                        <input type="text" class="otp-box" maxlength="1" pattern="\d*" inputmode="numeric">
+                    </div>
+                    
+                    <div class="resend-timer">
+                        <span id="resendTimer"></span>
+                        <div style="display: flex; gap: 15px; justify-content: center; align-items: center;">
+                            <a href="#" id="resendAction" class="resend-link disabled">Resend Code</a>
+                            <span style="color: rgba(255,255,255,0.2)">|</span>
+                            <a href="#" id="changePhoneAction" class="resend-link">Wrong number?</a>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="input-group" style="margin-bottom: 24px;">
-                    <input type="password" id="confirmPassword" class="input-field" placeholder="Confirm password"
-                        required minlength="6">
-                    <i class="ri-shield-check-line input-icon"></i>
+                <!-- Group 3: Profile Enrichment (Step 3 - Phone Only) -->
+                <div id="profileGroup" style="display: none;">
+                    <div class="input-group">
+                        <input type="text" id="enrichFullName" class="input-field" placeholder="Full name">
+                        <i class="ri-user-line input-icon"></i>
+                    </div>
+                    <div class="input-group">
+                        <input type="email" id="enrichEmail" class="input-field" placeholder="Email address">
+                        <i class="ri-mail-line input-icon"></i>
+                    </div>
+                    <p style="font-size: 12px; color: rgba(255,255,255,0.5); text-align: center; margin-top: 10px;">
+                        Providing an email allows you to recover your account if you lose access to your phone.
+                    </p>
                 </div>
 
-                <button type="submit" id="submitBtn" class="btn-primary">
-                    <span class="btn-text">Sign Up</span>
-                    <span class="btn-icon"><i class="ri-user-add-line"></i></span>
+                <div class="terms-group stagger-item" style="--delay: 0.6s; margin-top: 15px; display: flex; gap: 10px; align-items: flex-start; cursor: pointer;">
+                    <input type="checkbox" id="termsCheck" style="width: 18px; height: 18px; margin-top: 2px; cursor: pointer;">
+                    <label for="termsCheck" style="font-size: 13px; color: rgba(255,255,255,0.7); line-height: 1.4; cursor: pointer;">
+                        I agree to the <a href="terms.html" target="_blank" class="link">Terms of Service</a> and <a href="privacy.html" target="_blank" class="link">Privacy Policy</a>.
+                    </label>
+                </div>
+
+                <button type="submit" id="submitBtn" class="btn-primary stagger-item" style="--delay: 0.7s; margin-top: 20px;">
+                    <span class="btn-text">Create Account</span>
+                    <span class="btn-icon"><i class="ri-arrow-right-line"></i></span>
                 </button>
             </form>
 
-            <div class="divider">or sign up with</div>
+            <div class="divider stagger-item" style="--delay: 0.8s">or sign up with</div>
 
-            <div class="social-buttons">
+            <div class="social-buttons stagger-item" style="--delay: 0.9s">
                 <button class="btn-social" id="socialGitHub">
                     <i class="ri-github-fill" style="font-size: 20px;"></i>
                     GitHub
@@ -87,69 +170,14 @@
                 </button>
             </div>
 
-            <div class="auth-footer">
+            <div class="auth-footer stagger-item" style="--delay: 1s">
                 Already have an account? <a href="login-modern.html" class="link">Sign in</a>
             </div>
         </div>
     </div>
 
-    <!-- Simple Signup Logic -->
-    <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            const supabase = window.supabase.createClient(window.DUALMIND_CONFIG.supabase.url, window.DUALMIND_CONFIG.supabase.anonKey);
-            const form = document.getElementById('signupForm');
-            const errorAlert = document.getElementById('errorAlert');
-            const successAlert = document.getElementById('successAlert');
-            const submitBtn = document.getElementById('submitBtn');
-
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                errorAlert.style.display = 'none';
-                successAlert.style.display = 'none';
-                submitBtn.disabled = true;
-                submitBtn.querySelector('.btn-text').textContent = 'Creating Account...';
-
-                const email = document.getElementById('email').value;
-                const password = document.getElementById('password').value;
-                const confirmPassword = document.getElementById('confirmPassword').value;
-
-                if (password !== confirmPassword) {
-                    errorAlert.textContent = 'Passwords do not match';
-                    errorAlert.style.display = 'block';
-                    submitBtn.disabled = false;
-                    submitBtn.querySelector('.btn-text').textContent = 'Sign Up';
-                    return;
-                }
-
-                try {
-                    const { data, error } = await supabase.auth.signUp({
-                        email,
-                        password
-                    });
-
-                    if (error) throw error;
-
-                    successAlert.textContent = 'Account created! Please check your email to verify.';
-                    successAlert.style.display = 'block';
-                    form.reset();
-                } catch (err) {
-                    errorAlert.textContent = err.message;
-                    errorAlert.style.display = 'block';
-                } finally {
-                    submitBtn.disabled = false;
-                    submitBtn.querySelector('.btn-text').textContent = 'Sign Up';
-                }
-            });
-
-            // Social Login Handlers (Reuse from login)
-            document.getElementById('socialGitHub').addEventListener('click', async () => {
-                await supabase.auth.signInWithOAuth({ provider: 'github', options: { redirectTo: window.location.origin + '/index.html' } });
-            });
-            document.getElementById('socialGoogle').addEventListener('click', async () => {
-                await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + '/index.html' } });
-            });
-        });
-    </script>
+    <!-- Logic -->
+    <script type="module" src="js/auth-modern.js"></script>
 </body>
 
 </html>

@@ -1,0 +1,269 @@
+/* 
+ * Auth UI Fixes & Improvements
+ * Segmented OTP, Countdown Timer, and Step Indicators
+ */
+
+/* Step Indicator */
+.step-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
+.step-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.step-dot.active {
+    background: var(--color-cyan);
+    box-shadow: 0 0 10px var(--color-cyan);
+    transform: scale(1.2);
+}
+
+.step-text {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: 500;
+}
+
+/* Segmented OTP Input */
+.otp-container {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.otp-box {
+    width: 45px;
+    height: 55px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    text-align: center;
+    font-size: 24px;
+    font-weight: 600;
+    color: white;
+    transition: all 0.2s ease;
+}
+
+.otp-box:focus {
+    outline: none;
+    border-color: var(--color-cyan);
+    background: rgba(74, 171, 194, 0.1);
+    box-shadow: 0 0 15px rgba(74, 171, 194, 0.2);
+    transform: translateY(-2px);
+}
+
+.otp-box::placeholder {
+    color: rgba(255, 255, 255, 0.1);
+}
+
+/* Countdown Timer */
+.resend-timer {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.5);
+    margin-top: 15px;
+    text-align: center;
+}
+
+.resend-link {
+    color: var(--color-cyan);
+    text-decoration: none;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.resend-link.disabled {
+    color: rgba(255, 255, 255, 0.3);
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Phone Input Formatting */
+.phone-input-wrapper {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.country-picker {
+    width: 80px;
+    padding: 12px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+/* Animations */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+.shake {
+    animation: shake 0.2s ease-in-out 0s 2;
+}
+
+/* Password Visibility Toggle */
+.input-group {
+    position: relative;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    font-size: 18px;
+    z-index: 10;
+    transition: color 0.2s ease;
+}
+
+.password-toggle:hover {
+    color: var(--color-cyan);
+}
+
+/* Step Animations */
+.step-container {
+    position: relative;
+    overflow: hidden;
+    min-height: 200px;
+}
+
+.auth-step {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.auth-step.fade-out {
+    opacity: 0;
+    transform: translateX(-20px);
+    pointer-events: none;
+    position: absolute;
+    width: 100%;
+}
+
+.auth-step.fade-in {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.auth-step.hidden {
+    display: none;
+}
+
+/* OTP Verifying State */
+.otp-container.verifying {
+    opacity: 0.6;
+    pointer-events: none;
+    position: relative;
+}
+
+.otp-container.verifying::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin-left: -10px;
+    margin-top: -10px;
+    border: 2px solid var(--color-cyan);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Inline Errors */
+.input-error {
+    border-color: #ef4444 !important;
+    background: rgba(239, 68, 68, 0.05) !important;
+}
+
+.error-hint {
+    color: #ef4444;
+    font-size: 11px;
+    margin-top: 4px;
+    margin-left: 12px;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .otp-box {
+        width: 38px;
+        height: 48px;
+        font-size: 20px;
+        border-radius: 10px;
+    }
+    .otp-container {
+        gap: 8px;
+    }
+}
+
+/* Social Login Buttons & Spinners */
+.btn-social {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.btn-social:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.btn-social:disabled {
+    opacity: 0.7;
+    cursor: default;
+}
+
+.spinner-small {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-top-color: var(--color-cyan);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Validation Transitions */
+.input-group {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.input-error-shake {
+    animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+}

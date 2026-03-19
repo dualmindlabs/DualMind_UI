@@ -321,6 +321,32 @@ class DualMindAPIService {
     return data.items || data || [];
   }
 
+  async getMe() {
+    const token = await this.getAuthToken();
+    if (!token) return null;
+    
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    };
+
+    try {
+      const response = await fetch(`${this.baseUrl}/api/users/me`, {
+        method: 'GET',
+        headers
+      });
+
+      if (!response.ok) {
+        return null; // Silent fail if unauthorized or missing
+      }
+
+      return await response.json();
+    } catch (e) {
+      console.warn('Failed to fetch user profile:', e);
+      return null;
+    }
+  }
+
   async submitVote(comparisonId, winnerModelName, userId = null) {
     const token = await this.getAuthToken();
     const headers = {
