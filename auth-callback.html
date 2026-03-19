@@ -104,6 +104,7 @@
     }
   </style>
   <script src="./config.js"></script>
+  <script src="./js/resend-auth-email.js"></script>
 </head>
 
 <body>
@@ -130,12 +131,14 @@
     import { initializeSupabaseAuth } from './js/supabase-auth.js';
 
     const supabaseConfig = window.DUALMIND_CONFIG.supabase;
+    const searchParams = new URLSearchParams(window.location.search);
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
 
     if (!supabaseConfig.url || supabaseConfig.url.includes('your-project')) {
       document.getElementById('title').textContent = 'Configuration Error';
-      document.getElementById('message').innerHTML = 'Supabase not configured. <a class="link" href="./login.html">Back to login</a>';
+      document.getElementById('message').innerHTML = 'Supabase not configured. <a class="link" href="./login-modern.html">Back to login</a>';
       document.getElementById('spinner').style.display = 'none';
-      return;
+      throw new Error('Supabase config missing');
     }
 
     const auth = initializeSupabaseAuth(supabaseConfig.url, supabaseConfig.anonKey);
@@ -144,93 +147,176 @@
     const message = document.getElementById('message');
     const status = document.getElementById('status');
     const countdown = document.getElementById('countdown');
+    const authType = hashParams.get('type') || searchParams.get('type') || '';
+    const shouldSendWelcome = searchParams.get('welcome') === '1' || authType === 'signup';
+    const isRecoveryFlow = authType === 'recovery' || searchParams.get('mode') === 'resetPassword';
 
     let countdownValue = 5;
 
-    // Check for auth session immediately (handles OAuth and Magic Links)
-    const checkSession = async () => {
-      // Small pause to let Supabase SDK process the hash
-      await new Promise(r => setTimeout(r, 500));
+    if (window.DualMindResendEmail?.registerClient && auth.supabase) {
+      window.DualMindResendEmail.registerClient(auth.supabase);
+    }
 
-      if (auth.isAuthenticated()) {
-        spinner.style.display = 'none';
-        title.textContent = '✅ Authentication Successful!';
-        message.textContent = 'You have successfully signed in. Redirecting to app...';
-        status.style.display = 'block';
-        status.innerHTML = '<div class="message success">Redirecting to DualMind Arena...</div>';
-
-        // Immediate redirect for social login
-        setTimeout(() => {
-          window.location.href = './index.html';
-        }, 1500);
-        return true;
+    function getRedirectTarget() {
+      if (window.location.hostname === 'localhost') {
+        return 'http://localhost:8000/index.html';
       }
-      return false;
-    };
+      return './index.html';
+    }
 
-    // Check hash for special flows (recovery/email confirm)
-    const hash = window.location.hash;
+    function getLoginTarget() {
+      if (window.location.hostname === 'localhost') {
+        return 'http://localhost:8000/login-modern.html';
+      }
+      return './login-modern.html';
+    }
 
-    if (hash && hash.includes('type=recovery')) {
-      handlePasswordReset();
-    } else if (hash && hash.includes('type=email')) {
-      handleEmailConfirmation();
-    } else {
-      // Try generic session check (OAuth)
-      checkSession().then(isAuthed => {
-        if (!isAuthed) {
-          spinner.style.display = 'none';
-          title.textContent = 'No Active Session';
-          message.textContent = 'It looks like you may have already confirmed your email or session expired.';
-          status.style.display = 'block';
-          status.innerHTML = '<div class="message success">Go back to <a class="link" href="./login.html">Login</a>.</div>';
+    function startRedirectCountdown(targetUrl) {
+      countdownValue = 5;
+      countdown.textContent = String(countdownValue);
+
+      const redirectInterval = setInterval(() => {
+        countdownValue -= 1;
+        countdown.textContent = String(countdownValue);
+
+        if (countdownValue <= 0) {
+          clearInterval(redirectInterval);
+          window.location.href = targetUrl;
         }
+      }, 1000);
+    }
+
+    async function waitForSession(timeoutMs = 5000) {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      try {
+        const { data } = await auth.supabase.auth.getSession();
+        if (data?.session) {
+          return data.session;
+        }
+      } catch (error) {
+        console.warn('Immediate session lookup failed:', error);
+      }
+
+      return new Promise((resolve) => {
+        let settled = false;
+        let timer = null;
+        let listener = null;
+
+        const finish = (session) => {
+          if (settled) return;
+          settled = true;
+
+          if (timer) {
+            clearTimeout(timer);
+          }
+
+          const subscription = listener?.data?.subscription;
+          if (subscription?.unsubscribe) {
+            subscription.unsubscribe();
+          }
+
+          resolve(session || null);
+        };
+
+        timer = setTimeout(() => finish(null), timeoutMs);
+
+        listener = auth.supabase.auth.onAuthStateChange((event, session) => {
+          if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') && session) {
+            finish(session);
+          }
+        });
       });
     }
 
-    function handleEmailConfirmation() {
+    async function maybeSendWelcomeEmail(session) {
+      if (!shouldSendWelcome) return;
+      if (window.DUALMIND_CONFIG?.email?.sendWelcomeOnSignUp === false) return;
+      if (!window.DualMindResendEmail || !session?.user?.id) return;
+
+      const sentKey = `dualmind.auth.welcome-confirmed:${session.user.id}`;
+      if (sessionStorage.getItem(sentKey) === '1') {
+        return;
+      }
+
+      window.DualMindResendEmail.syncSession(session);
+
+      try {
+        const result = await window.DualMindResendEmail.sendWelcome({
+          redirectUrl: `${window.location.origin}/index.html`
+        });
+
+        if (result?.success) {
+          sessionStorage.setItem(sentKey, '1');
+        } else {
+          console.warn('Welcome email send failed:', result);
+        }
+      } catch (error) {
+        console.warn('Welcome email send threw an error:', error);
+      }
+    }
+
+    async function checkSession() {
+      const session = await waitForSession();
+
+      if (!session) {
+        return false;
+      }
+
+      await maybeSendWelcomeEmail(session);
+
+      spinner.style.display = 'none';
+      title.textContent = 'Authentication Successful!';
+      message.textContent = 'You have successfully signed in. Redirecting to the app...';
+      status.style.display = 'block';
+      status.innerHTML = '<div class="message success">Redirecting to DualMind Arena...</div>';
+
       setTimeout(() => {
-        spinner.style.display = 'none';
-        title.textContent = '✅ Email Confirmed!';
-        message.textContent = 'Your email has been verified. You can now use all features.';
-        status.style.display = 'block';
-        status.innerHTML = '<div class="message success">Redirecting to app...</div>';
-
-        // Redirect after countdown
-        const redirectInterval = setInterval(() => {
-          countdownValue--;
-          countdown.textContent = countdownValue;
-
-          if (countdownValue <= 0) {
-            clearInterval(redirectInterval);
-            // FORCE LOCALHOST PORT 8000
-            if (window.location.hostname === 'localhost') {
-              window.location.href = 'http://localhost:8000/index.html';
-            } else {
-              window.location.href = './index.html';
-            }
-          }
-        }, 1000);
+        window.location.href = getRedirectTarget();
       }, 1500);
+
+      return true;
+    }
+
+    async function handleEmailConfirmation() {
+      const session = await waitForSession();
+      if (session) {
+        await maybeSendWelcomeEmail(session);
+      }
+
+      spinner.style.display = 'none';
+      title.textContent = 'Email Confirmed!';
+      message.textContent = session
+        ? 'Your email has been verified. Redirecting you into DualMind now.'
+        : 'Your email has been verified. You can now use all features.';
+      status.style.display = 'block';
+      status.innerHTML = '<div class="message success">Redirecting to app...</div>';
+
+      startRedirectCountdown(getRedirectTarget());
+    }
+
+    function showConfirmationError() {
+      spinner.style.display = 'none';
+      title.textContent = 'Confirmation Error';
+      message.textContent = 'We could not finish confirming your session. Please try signing in.';
+      status.style.display = 'block';
+      status.innerHTML = `<div class="message error">Go back to <a class="link" href="${getLoginTarget()}">Login</a>.</div>`;
     }
 
     function handlePasswordReset() {
-      // Extract reset token from URL
-      const params = new URLSearchParams(hash.substring(1));
-      const accessToken = params.get('access_token');
-      const type = params.get('type');
+      const accessToken = hashParams.get('access_token');
+      const type = hashParams.get('type');
 
       if (accessToken && type === 'recovery') {
-        // Store the reset token and redirect to password reset page
         sessionStorage.setItem('resetToken', accessToken);
 
         spinner.style.display = 'none';
-        title.textContent = '🔐 Reset Your Password';
+        title.textContent = 'Reset Your Password';
         message.textContent = 'You can now set a new password for your account.';
         status.style.display = 'block';
         status.innerHTML = `
           <div style="margin: 20px 0;">
-            <input type="password" id="newPassword" placeholder="New password" 
+            <input type="password" id="newPassword" placeholder="New password"
               style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: white; margin-bottom: 10px;">
             <input type="password" id="confirmPassword" placeholder="Confirm password"
               style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: white; margin-bottom: 10px;">
@@ -263,12 +349,12 @@
             const result = await auth.changePassword(newPassword);
             if (result.success) {
               spinner.style.display = 'none';
-              title.textContent = '✅ Password Reset!';
+              title.textContent = 'Password Reset!';
               message.textContent = 'Your password has been successfully updated.';
               status.innerHTML = '<div class="message success">Redirecting to login...</div>';
 
               setTimeout(() => {
-                window.location.href = './login.html';
+                window.location.href = getLoginTarget();
               }, 2000);
             } else {
               alert('Error: ' + result.error);
@@ -278,6 +364,25 @@
           }
         };
       }
+    }
+
+    if (isRecoveryFlow) {
+      handlePasswordReset();
+    } else if (authType === 'email' || authType === 'signup' || shouldSendWelcome) {
+      handleEmailConfirmation().catch((error) => {
+        console.error('Email confirmation flow failed:', error);
+        showConfirmationError();
+      });
+    } else {
+      checkSession().then((isAuthed) => {
+        if (!isAuthed) {
+          spinner.style.display = 'none';
+          title.textContent = 'No Active Session';
+          message.textContent = 'It looks like you may have already confirmed your email or the session expired.';
+          status.style.display = 'block';
+          status.innerHTML = `<div class="message success">Go back to <a class="link" href="${getLoginTarget()}">Login</a>.</div>`;
+        }
+      });
     }
   </script>
 </body>

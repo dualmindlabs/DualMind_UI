@@ -87,7 +87,7 @@ export class SupabaseAuthService {
             full_name: fullName,
             avatar_url: null,
           },
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: `${window.location.origin}/auth-callback.html?welcome=1&type=signup`,
         },
       });
 
@@ -213,7 +213,7 @@ export class SupabaseAuthService {
             full_name: fullName,
             avatar_url: null,
           },
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: `${window.location.origin}/auth-callback.html?welcome=1&type=signup`,
         },
       });
 
@@ -245,7 +245,7 @@ export class SupabaseAuthService {
       const { error } = await this.supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: `${window.location.origin}/auth-callback.html`,
         },
       });
 
