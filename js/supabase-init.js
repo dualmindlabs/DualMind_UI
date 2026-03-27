@@ -62,6 +62,18 @@ window.DualMindAuthReady = new Promise((resolve) => {
         // Setup global auth reference
         window.getAuth = () => auth;
 
+        // Initialize auth email helper if available.
+        import('./resend-auth-email.js').then(() => {
+          if (window.DualMindResendEmail?.registerClient) {
+            window.DualMindResendEmail.registerClient(auth.supabase);
+            if (window.DualMindResendEmail.syncSession) {
+              window.DualMindResendEmail.syncSession(auth.getSession());
+            }
+          }
+        }).catch((helperError) => {
+          console.warn('Auth email helper not loaded:', helperError);
+        });
+
         // Resolve the ready promise
         window._resolveDualMindAuthReady?.();
       } catch (error) {

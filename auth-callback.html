@@ -178,6 +178,7 @@
         @keyframes fill { 100% { box-shadow: inset 0px 0px 0px 30px #10b981; } }
     </style>
     <script src="config.js"></script>
+    <script src="js/resend-auth-email.js"></script>
 </head>
 <body>
     <div class="callback-card">
@@ -221,6 +222,49 @@
         const countdownArea = document.getElementById('countdownArea');
         const errorArea = document.getElementById('errorArea');
         const counter = document.getElementById('counter');
+        const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+        const searchParams = new URLSearchParams(window.location.search);
+        const authType = hashParams.get('type') || searchParams.get('type') || '';
+        const shouldSendWelcome = searchParams.get('welcome') === '1' || authType === 'signup' || authType === 'email_confirmation';
+
+        async function resolveSession() {
+            const serviceSession = auth.getSession ? auth.getSession() : null;
+            if (serviceSession?.access_token) return serviceSession;
+
+            try {
+                const result = await auth.supabase.auth.getSession();
+                return result?.data?.session || null;
+            } catch (sessionErr) {
+                console.warn('Session lookup failed in callback:', sessionErr);
+                return null;
+            }
+        }
+
+        async function maybeSendWelcomeEmail(session) {
+            if (!shouldSendWelcome) return;
+            if (window.DUALMIND_CONFIG?.email?.sendWelcomeOnSignUp === false) return;
+            if (!window.DualMindResendEmail?.sendWelcome) return;
+            if (!session?.user?.id) return;
+
+            const sentKey = `dualmind.auth.welcome-confirmed:${session.user.id}`;
+            if (sessionStorage.getItem(sentKey) === '1') return;
+
+            window.DualMindResendEmail.syncSession(session);
+
+            try {
+                const result = await window.DualMindResendEmail.sendWelcome({
+                    redirectUrl: `${window.location.origin}/index.html`
+                });
+
+                if (result?.success) {
+                    sessionStorage.setItem(sentKey, '1');
+                } else {
+                    console.warn('Welcome email send failed:', result);
+                }
+            } catch (welcomeErr) {
+                console.warn('Welcome email send threw an error:', welcomeErr);
+            }
+        }
 
         async function init() {
             // Small delay for Supabase hash processing
@@ -230,6 +274,8 @@
                 // 1. Check if authenticated
                 const isAuthed = await auth.isAuthenticated();
                 if (isAuthed) {
+                    const session = await resolveSession();
+                    await maybeSendWelcomeEmail(session);
                     showSuccess('Session Verified', 'Successfully authenticated! Welcome back to DualMind.');
                     startRedirect('./index.html');
                     return;
@@ -243,7 +289,9 @@
                         startRedirect('./update-password.html' + hash);
                         return;
                     } 
-                    if (hash.includes('type=email_confirmation')) {
+                    if (hash.includes('type=email_confirmation') || hash.includes('type=signup')) {
+                        const session = await resolveSession();
+                        await maybeSendWelcomeEmail(session);
                         showSuccess('Email Verified', 'Your email has been confirmed. Redirecting to start your journey.');
                         startRedirect('./index.html');
                         return;

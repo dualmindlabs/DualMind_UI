@@ -35,6 +35,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     const termsCheck = document.getElementById('termsCheck');
     const socialGitHub = document.getElementById('socialGitHub');
     const socialGoogle = document.getElementById('socialGoogle');
+    const passwordInput = document.getElementById('password');
+
+    const passwordRules = {
+        minLength: 10,
+        lower: /[a-z]/,
+        upper: /[A-Z]/,
+        number: /\d/,
+        symbol: /[^A-Za-z0-9]/,
+    };
+
+    let passwordSecurityEls = null;
+    let confirmPasswordEls = null;
+    let passwordBreachState = 'idle'; // idle | checking | clean | pwned | error
+    let breachDebounceTimer = null;
+    let breachRequestId = 0;
 
     // --- State ---
     let mode = 'email'; // 'email' or 'phone'
@@ -51,8 +66,291 @@ document.addEventListener('DOMContentLoaded', async () => {
     initPhoneFormatting();
     initPasswordToggle();
     initSocialLogins();
+    initPasswordSecurityUI();
     initRealTimeValidation();
     updateUIState();
+
+    function evaluatePassword(value) {
+        const checks = {
+            minLength: value.length >= passwordRules.minLength,
+            lower: passwordRules.lower.test(value),
+            upper: passwordRules.upper.test(value),
+            number: passwordRules.number.test(value),
+            symbol: passwordRules.symbol.test(value),
+        };
+
+        const score = Object.values(checks).filter(Boolean).length;
+        let label = 'Too weak';
+        let color = 'var(--error)';
+        let percent = 10;
+
+        if (score >= 5) {
+            label = 'Strong';
+            color = 'var(--success)';
+            percent = 100;
+        } else if (score >= 4) {
+            label = 'Good';
+            color = '#f59e0b';
+            percent = 80;
+        } else if (score >= 3) {
+            label = 'Fair';
+            color = '#f97316';
+            percent = 60;
+        } else if (score >= 2) {
+            label = 'Weak';
+            color = '#ef4444';
+            percent = 40;
+        }
+
+        return {
+            checks,
+            score,
+            label,
+            color,
+            percent,
+            isStrong: score === 5,
+        };
+    }
+
+    async function sha1Hex(value) {
+        const enc = new TextEncoder();
+        const data = enc.encode(value);
+        const hashBuffer = await crypto.subtle.digest('SHA-1', data);
+        return Array.from(new Uint8Array(hashBuffer))
+            .map((b) => b.toString(16).padStart(2, '0'))
+            .join('')
+            .toUpperCase();
+    }
+
+    function setPasswordBreachUI(state, count = 0) {
+        if (!passwordSecurityEls?.breachCheck) return;
+        const node = passwordSecurityEls.breachCheck;
+        const icon = node.querySelector('i');
+        const text = node.querySelector('.password-check-text');
+
+        node.classList.remove('valid', 'warning', 'checking');
+
+        if (state === 'checking') {
+            node.classList.add('checking');
+            if (icon) icon.className = 'ri-loader-4-line spin-anim';
+            if (text) text.textContent = 'Checking breach database...';
+            return;
+        }
+
+        if (state === 'clean') {
+            node.classList.add('valid');
+            if (icon) icon.className = 'ri-checkbox-circle-fill';
+            if (text) text.textContent = 'Not found in known breach data';
+            return;
+        }
+
+        if (state === 'pwned') {
+            node.classList.add('warning');
+            if (icon) icon.className = 'ri-error-warning-fill';
+            if (text) text.textContent = `Found in breach data (${count} times). Use a different password.`;
+            return;
+        }
+
+        if (state === 'error') {
+            node.classList.add('warning');
+            if (icon) icon.className = 'ri-alarm-warning-fill';
+            if (text) text.textContent = 'Breach check unavailable right now';
+            return;
+        }
+
+        if (icon) icon.className = 'ri-checkbox-blank-circle-line';
+        if (text) text.textContent = 'Breach check runs automatically';
+    }
+
+    async function runBreachCheck(passwordValue) {
+        const currentRequestId = ++breachRequestId;
+
+        if (!passwordValue || passwordValue.length < passwordRules.minLength) {
+            passwordBreachState = 'idle';
+            setPasswordBreachUI('idle');
+            return { state: 'idle', count: 0 };
+        }
+
+        passwordBreachState = 'checking';
+        setPasswordBreachUI('checking');
+
+        try {
+            const hash = await sha1Hex(passwordValue);
+            const prefix = hash.slice(0, 5);
+            const suffix = hash.slice(5);
+
+            const res = await fetch(`https://api.pwnedpasswords.com/range/${prefix}`, {
+                method: 'GET',
+                headers: {
+                    'Add-Padding': 'true',
+                },
+            });
+
+            if (!res.ok) {
+                throw new Error(`HIBP error ${res.status}`);
+            }
+
+            const body = await res.text();
+            const lines = body.split('\n');
+            let breachCount = 0;
+
+            for (const line of lines) {
+                const [lineSuffix, countStr] = line.trim().split(':');
+                if (lineSuffix === suffix) {
+                    breachCount = parseInt(countStr || '0', 10) || 0;
+                    break;
+                }
+            }
+
+            if (currentRequestId !== breachRequestId) {
+                return { state: passwordBreachState, count: 0 };
+            }
+
+            if (breachCount > 0) {
+                passwordBreachState = 'pwned';
+                setPasswordBreachUI('pwned', breachCount);
+                return { state: 'pwned', count: breachCount };
+            }
+
+            passwordBreachState = 'clean';
+            setPasswordBreachUI('clean');
+            return { state: 'clean', count: 0 };
+        } catch (err) {
+            if (currentRequestId !== breachRequestId) {
+                return { state: passwordBreachState, count: 0 };
+            }
+            passwordBreachState = 'error';
+            setPasswordBreachUI('error');
+            return { state: 'error', count: 0 };
+        }
+    }
+
+    function initPasswordSecurityUI() {
+        if (authContext !== 'signup' || !passwordGroup) return;
+
+        const confirmWrapper = document.createElement('div');
+        confirmWrapper.className = 'confirm-password-wrapper';
+        confirmWrapper.innerHTML = `
+            <div class="input-group">
+                <input type="password" id="confirmPassword" class="input-field" placeholder="Confirm password" autocomplete="new-password">
+                <i class="ri-shield-check-line input-icon"></i>
+            </div>
+            <div class="confirm-password-hint" id="confirmPasswordHint"></div>
+        `;
+        passwordGroup.insertAdjacentElement('afterend', confirmWrapper);
+        confirmPasswordEls = {
+            wrapper: confirmWrapper,
+            input: document.getElementById('confirmPassword'),
+            hint: document.getElementById('confirmPasswordHint'),
+        };
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'password-security';
+        wrapper.innerHTML = `
+            <div class="password-security-header">
+                <span class="password-security-title"><i class="ri-lock-2-line"></i> Password security</span>
+                <button type="button" class="password-tips-trigger" id="passwordTipsTrigger" aria-expanded="false">Show secure password tips</button>
+            </div>
+            <div class="password-tips-popover" id="passwordTipsPopover" hidden>
+                <div class="password-tips-heading">Use a secure password</div>
+                <ul>
+                    <li>Avoid names, birthdays, and keyboard patterns.</li>
+                    <li>Use 3-4 random words with symbols and numbers.</li>
+                    <li>Do not reuse passwords from other apps.</li>
+                    <li>Use a password manager to save strong passwords.</li>
+                </ul>
+            </div>
+            <div class="password-strength-track">
+                <div class="password-strength-fill" id="passwordStrengthFill"></div>
+            </div>
+            <div class="password-strength-label" id="passwordStrengthLabel">Too weak</div>
+            <div class="password-checklist">
+                <div class="password-check" id="checkMinLength"><i class="ri-checkbox-blank-circle-line"></i> At least 10 characters</div>
+                <div class="password-check" id="checkUpper"><i class="ri-checkbox-blank-circle-line"></i> 1 uppercase letter</div>
+                <div class="password-check" id="checkLower"><i class="ri-checkbox-blank-circle-line"></i> 1 lowercase letter</div>
+                <div class="password-check" id="checkNumber"><i class="ri-checkbox-blank-circle-line"></i> 1 number</div>
+                <div class="password-check" id="checkSymbol"><i class="ri-checkbox-blank-circle-line"></i> 1 special character</div>
+                <div class="password-check" id="checkBreach"><i class="ri-checkbox-blank-circle-line"></i> <span class="password-check-text">Breach check runs automatically</span></div>
+            </div>
+        `;
+
+        confirmWrapper.insertAdjacentElement('afterend', wrapper);
+        passwordSecurityEls = {
+            wrapper,
+            strengthFill: document.getElementById('passwordStrengthFill'),
+            strengthLabel: document.getElementById('passwordStrengthLabel'),
+            tipsTrigger: document.getElementById('passwordTipsTrigger'),
+            tipsPopover: document.getElementById('passwordTipsPopover'),
+            checks: {
+                minLength: document.getElementById('checkMinLength'),
+                upper: document.getElementById('checkUpper'),
+                lower: document.getElementById('checkLower'),
+                number: document.getElementById('checkNumber'),
+                symbol: document.getElementById('checkSymbol'),
+            },
+            breachCheck: document.getElementById('checkBreach'),
+        };
+
+        passwordSecurityEls.tipsTrigger?.addEventListener('click', () => {
+            const isOpen = !passwordSecurityEls.tipsPopover.hidden;
+            passwordSecurityEls.tipsPopover.hidden = isOpen;
+            passwordSecurityEls.tipsTrigger.setAttribute('aria-expanded', String(!isOpen));
+            passwordSecurityEls.tipsTrigger.textContent = isOpen ? 'Show secure password tips' : 'Hide secure password tips';
+        });
+
+        document.addEventListener('click', (event) => {
+            if (!passwordSecurityEls || passwordSecurityEls.tipsPopover.hidden) return;
+            if (passwordSecurityEls.wrapper.contains(event.target)) return;
+            passwordSecurityEls.tipsPopover.hidden = true;
+            passwordSecurityEls.tipsTrigger?.setAttribute('aria-expanded', 'false');
+            if (passwordSecurityEls.tipsTrigger) {
+                passwordSecurityEls.tipsTrigger.textContent = 'Show secure password tips';
+            }
+        });
+
+        setPasswordBreachUI('idle');
+    }
+
+    function updateConfirmPasswordUI() {
+        if (!confirmPasswordEls || !passwordInput) return false;
+
+        const passwordValue = passwordInput.value || '';
+        const confirmValue = confirmPasswordEls.input.value || '';
+
+        if (!confirmValue) {
+            showInputStatus(confirmPasswordEls.input, 'none');
+            confirmPasswordEls.hint.textContent = '';
+            return false;
+        }
+
+        const isMatch = passwordValue === confirmValue;
+        showInputStatus(confirmPasswordEls.input, isMatch ? 'success' : 'error');
+        confirmPasswordEls.hint.textContent = isMatch ? 'Passwords match' : 'Passwords do not match';
+        confirmPasswordEls.hint.classList.toggle('valid', isMatch);
+        confirmPasswordEls.hint.classList.toggle('invalid', !isMatch);
+        return isMatch;
+    }
+
+    function updatePasswordSecurityUI(passwordValue) {
+        if (!passwordSecurityEls) return;
+
+        const evaluation = evaluatePassword(passwordValue);
+        passwordSecurityEls.strengthFill.style.width = `${evaluation.percent}%`;
+        passwordSecurityEls.strengthFill.style.backgroundColor = evaluation.color;
+        passwordSecurityEls.strengthLabel.textContent = evaluation.label;
+        passwordSecurityEls.strengthLabel.style.color = evaluation.color;
+
+        Object.entries(passwordSecurityEls.checks).forEach(([key, node]) => {
+            const valid = evaluation.checks[key];
+            node.classList.toggle('valid', valid);
+            const icon = node.querySelector('i');
+            if (icon) {
+                icon.className = valid ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line';
+            }
+        });
+
+        return evaluation;
+    }
 
     // --- Tab Logic ---
     function initTabs() {
@@ -362,6 +660,28 @@ document.addEventListener('DOMContentLoaded', async () => {
         const email = document.getElementById('email').value.trim();
         const password = document.getElementById('password').value;
         const fullName = document.getElementById('fullName')?.value || '';
+        const confirmPassword = confirmPasswordEls?.input?.value || '';
+
+        const evaluation = evaluatePassword(password);
+        if (!evaluation.isStrong) {
+            throw new Error('Use a stronger password before creating your account.');
+        }
+        if (!confirmPassword) {
+            throw new Error('Please confirm your password.');
+        }
+        if (password !== confirmPassword) {
+            throw new Error('Passwords do not match.');
+        }
+
+        if (passwordBreachState === 'checking') {
+            const check = await runBreachCheck(password);
+            if (check.state === 'pwned') {
+                throw new Error('This password appears in breach databases. Choose a different one.');
+            }
+        } else if (passwordBreachState === 'pwned') {
+            throw new Error('This password appears in breach databases. Choose a different one.');
+        }
+
         const result = await auth.signup(email, password, fullName);
         if (!result.success) throw new Error(result.error);
         
@@ -376,11 +696,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function handlePhoneStart() {
         const phone = getValidatedPhone();
         const password = document.getElementById('password').value;
+        const confirmPassword = confirmPasswordEls?.input?.value || '';
 
         if (window.DUALMIND_CONFIG?.debug?.enabled) console.log('Starting phone auth process...', { phone, context: authContext });
 
         if (authContext === 'signup') {
-            if (!password || password.length < 6) throw new Error('Password must be at least 6 characters');
+            const evaluation = evaluatePassword(password || '');
+            if (!evaluation.isStrong) throw new Error('Use a stronger password for signup security.');
+            if (!confirmPassword) throw new Error('Please confirm your password.');
+            if (password !== confirmPassword) throw new Error('Passwords do not match.');
+            if (passwordBreachState === 'checking') {
+                const check = await runBreachCheck(password);
+                if (check.state === 'pwned') throw new Error('This password appears in breach databases. Choose a different one.');
+            } else if (passwordBreachState === 'pwned') {
+                throw new Error('This password appears in breach databases. Choose a different one.');
+            }
             
             // For phone signup, we use signupWithPhone which triggers initial OTP
             const result = await auth.signupWithPhone(phone, password);
@@ -503,7 +833,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- Real-time Validation ---
     function initRealTimeValidation() {
         const emailInput = document.getElementById('email');
-        const passwordInput = document.getElementById('password');
 
         if (emailInput) {
             emailInput.addEventListener('input', () => {
@@ -521,20 +850,38 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const val = passwordInput.value;
                 if (val.length === 0) {
                     showInputStatus(passwordInput, 'none');
+                    if (confirmPasswordEls) updateConfirmPasswordUI();
                     return;
                 }
 
                 if (authContext === 'signup') {
-                    // Password strength for signup
-                    const hasUpper = /[A-Z]/.test(val);
-                    const hasNum = /[0-9]/.test(val);
-                    const isLong = val.length >= 8;
-                    const isValid = hasUpper && hasNum && isLong;
+                    const result = updatePasswordSecurityUI(val);
+                    const isValid = result?.isStrong;
                     showInputStatus(passwordInput, isValid ? 'success' : 'error');
+                    if (confirmPasswordEls) updateConfirmPasswordUI();
+
+                    if (breachDebounceTimer) {
+                        clearTimeout(breachDebounceTimer);
+                    }
+
+                    if (isValid) {
+                        breachDebounceTimer = setTimeout(() => {
+                            runBreachCheck(val);
+                        }, 550);
+                    } else {
+                        passwordBreachState = 'idle';
+                        setPasswordBreachUI('idle');
+                    }
                 } else {
                     // Just check length for login
                     showInputStatus(passwordInput, val.length >= 6 ? 'success' : 'none');
                 }
+            });
+        }
+
+        if (confirmPasswordEls?.input) {
+            confirmPasswordEls.input.addEventListener('input', () => {
+                updateConfirmPasswordUI();
             });
         }
     }

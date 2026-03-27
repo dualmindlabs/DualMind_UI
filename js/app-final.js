@@ -190,6 +190,15 @@ class App {
           this.state.backendAvailable = true;
           this.hideBackendUnavailableBanner();
 
+          if (!wasAvailable && this.state.user) {
+            this.flushPendingUserSync().catch((flushErr) => {
+              console.warn('[UserSync] Flush after backend recovery failed:', flushErr);
+            });
+            this.flushPendingVotes().catch((flushErr) => {
+              console.warn('[VoteQueue] Flush after backend recovery failed:', flushErr);
+            });
+          }
+
           // Notify listeners (Sidebar, etc.) that backend is ready
           if (!wasAvailable) {
             document.dispatchEvent(new CustomEvent('backend-available', { detail: { available: true } }));
@@ -1178,16 +1187,24 @@ class App {
 
       // Don't render here - applyVoteSelection already handled visual feedback
 
+      const votePayload = {
+        comparisonId: turn.comparisonId,
+        voteChoice: voteChoice, // 'left' | 'right' | 'tie' | 'both-bad'
+        userId: this.state.user?.id,
+        voteDurationMs: durationMs
+      };
+
       if (this.state.backendAvailable && turn.comparisonId) {
         // 🚨 CORRECTED: Send voteChoice enum, NOT model names
-        await this.api.arena.submitVote({
+        await this.api.arena.submitVote(votePayload);
+      } else if (turn.comparisonId) {
+        this.enqueuePendingVote(votePayload, 'backend-unavailable');
+        console.info('[VoteQueue] Vote queued while backend unavailable.', {
           comparisonId: turn.comparisonId,
-          voteChoice: voteChoice, // 'left' | 'right' | 'tie' | 'both-bad'
-          userId: this.state.user?.id,
-          voteDurationMs: durationMs
+          voteChoice
         });
       } else {
-        console.warn('Skipping vote submit (offline or missing comparisonId)');
+        console.warn('Skipping vote submit (missing comparisonId)');
       }
 
       // Keep both responses visible for 2 seconds after voting
@@ -1465,36 +1482,201 @@ class App {
   }
 
   async syncUserWithBackend() {
-    if (!this.state.backendAvailable || !this.state.user) return;
+    if (!this.state.user) return;
+
+    const userData = {
+      id: this.state.user.id,
+      email: this.state.user.email,
+      phone: this.state.user.phone || null,
+      name: this.state.user.user_metadata?.name ||
+        this.state.user.user_metadata?.full_name ||
+        this.state.user.email?.split('@')[0] || 'User',
+      avatar_url: this.state.user.user_metadata?.avatar_url || null,
+      provider: this.state.user.app_metadata?.provider || 'email'
+    };
+
+    if (!this.state.backendAvailable) {
+      this.enqueuePendingUserSync(userData, 'backend-unavailable');
+      console.info('[UserSync] Backend unavailable. Sync queued.', {
+        userId: userData.id,
+        email: userData.email
+      });
+      return;
+    }
 
     try {
-
-      // Prepare user data for backend
-      const userData = {
-        id: this.state.user.id,
-        email: this.state.user.email,
-        phone: this.state.user.phone || null,
-        name: this.state.user.user_metadata?.name ||
-          this.state.user.user_metadata?.full_name ||
-          this.state.user.email?.split('@')[0] || 'User',
-        avatar_url: this.state.user.user_metadata?.avatar_url || null,
-        provider: this.state.user.app_metadata?.provider || 'email'
-      };
-
       // Call backend to sync/create user
       await this.api.users.syncUser(userData);
+      this.removePendingUserSync(userData.id);
+      console.info('[UserSync] Sync success.', {
+        userId: userData.id,
+        email: userData.email
+      });
+      await this.flushPendingUserSync();
     } catch (error) {
+      this.enqueuePendingUserSync(userData, 'sync-error', error?.message || String(error));
+
       // 🚨 Robust handling: If sync fails (e.g. race condition or DB error), 
       // check if it's just a duplicate or non-critical DB error.
       const msg = error?.message || error?.toString() || '';
 
       if (msg.includes('Database error') || msg.includes('duplicate')) {
-        console.warn('⚠️ Backend sync warning (likely harmless):', msg);
+        console.warn('[UserSync] Backend sync warning (likely harmless):', msg);
       } else {
-        console.warn('⚠️ Failed to sync user with backend:', error);
+        console.warn('[UserSync] Failed to sync user with backend:', error);
       }
       // Don't block the app, just continue
     }
+  }
+
+  getPendingUserSyncQueue() {
+    const key = 'dualmind.userSync.queue.v1';
+    try {
+      const raw = localStorage.getItem(key);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+
+  setPendingUserSyncQueue(queue) {
+    const key = 'dualmind.userSync.queue.v1';
+    try {
+      localStorage.setItem(key, JSON.stringify(Array.isArray(queue) ? queue : []));
+    } catch (e) {
+      console.warn('[UserSync] Failed to persist sync queue:', e);
+    }
+  }
+
+  enqueuePendingUserSync(userData, reason = 'unknown', errorMessage = null) {
+    if (!userData?.id) return;
+
+    const queue = this.getPendingUserSyncQueue();
+    const existingIndex = queue.findIndex((item) => item.userData?.id === userData.id);
+    const existingAttempts = existingIndex >= 0 ? (queue[existingIndex].attempts || 0) : 0;
+
+    const nextEntry = {
+      userData,
+      reason,
+      attempts: existingAttempts + 1,
+      updatedAt: new Date().toISOString(),
+      lastError: errorMessage || null,
+    };
+
+    if (existingIndex >= 0) {
+      queue[existingIndex] = nextEntry;
+    } else {
+      queue.push(nextEntry);
+    }
+
+    this.setPendingUserSyncQueue(queue);
+  }
+
+  removePendingUserSync(userId) {
+    if (!userId) return;
+    const queue = this.getPendingUserSyncQueue().filter((item) => item.userData?.id !== userId);
+    this.setPendingUserSyncQueue(queue);
+  }
+
+  async flushPendingUserSync() {
+    if (!this.state.backendAvailable) return;
+
+    const queue = this.getPendingUserSyncQueue();
+    if (!queue.length) return;
+
+    const remaining = [];
+    for (const entry of queue) {
+      try {
+        await this.api.users.syncUser(entry.userData);
+        console.info('[UserSync] Flushed queued user sync.', {
+          userId: entry.userData?.id,
+          email: entry.userData?.email,
+          attempts: entry.attempts
+        });
+      } catch (err) {
+        remaining.push({
+          ...entry,
+          attempts: (entry.attempts || 0) + 1,
+          updatedAt: new Date().toISOString(),
+          lastError: err?.message || String(err)
+        });
+        console.warn('[UserSync] Queued sync still failing.', {
+          userId: entry.userData?.id,
+          email: entry.userData?.email,
+          error: err?.message || String(err)
+        });
+      }
+    }
+
+    this.setPendingUserSyncQueue(remaining);
+  }
+
+  getPendingVoteQueue() {
+    const key = 'dualmind.vote.queue.v1';
+    try {
+      const raw = localStorage.getItem(key);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+
+  setPendingVoteQueue(queue) {
+    const key = 'dualmind.vote.queue.v1';
+    try {
+      localStorage.setItem(key, JSON.stringify(Array.isArray(queue) ? queue : []));
+    } catch (e) {
+      console.warn('[VoteQueue] Failed to persist queue:', e);
+    }
+  }
+
+  enqueuePendingVote(voteData, reason = 'unknown', errorMessage = null) {
+    if (!voteData?.comparisonId || !voteData?.voteChoice) return;
+
+    const queue = this.getPendingVoteQueue();
+    queue.push({
+      voteData,
+      reason,
+      attempts: 1,
+      updatedAt: new Date().toISOString(),
+      lastError: errorMessage || null
+    });
+    this.setPendingVoteQueue(queue);
+  }
+
+  async flushPendingVotes() {
+    if (!this.state.backendAvailable) return;
+
+    const queue = this.getPendingVoteQueue();
+    if (!queue.length) return;
+
+    const remaining = [];
+    for (const entry of queue) {
+      try {
+        await this.api.arena.submitVote(entry.voteData);
+        console.info('[VoteQueue] Flushed queued vote.', {
+          comparisonId: entry.voteData?.comparisonId,
+          voteChoice: entry.voteData?.voteChoice,
+          attempts: entry.attempts
+        });
+      } catch (err) {
+        remaining.push({
+          ...entry,
+          attempts: (entry.attempts || 0) + 1,
+          updatedAt: new Date().toISOString(),
+          lastError: err?.message || String(err)
+        });
+        console.warn('[VoteQueue] Queued vote still failing.', {
+          comparisonId: entry.voteData?.comparisonId,
+          voteChoice: entry.voteData?.voteChoice,
+          error: err?.message || String(err)
+        });
+      }
+    }
+
+    this.setPendingVoteQueue(remaining);
   }
 
   async createThread(firstMessage) {

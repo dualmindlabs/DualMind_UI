@@ -120,6 +120,7 @@ window.DUALMIND_CONFIG.supabase = window.DUALMIND_CONFIG.supabase || {};
 // Get these from: https://app.supabase.com/project/[your-project]/settings/api
 window.DUALMIND_CONFIG.supabase.url = window.DUALMIND_CONFIG.supabase.url || 'https://calqfzajyidkdzbaswjp.supabase.co';
 window.DUALMIND_CONFIG.supabase.anonKey = window.DUALMIND_CONFIG.supabase.anonKey || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhbHFmemFqeWlka2R6YmFzd2pwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyNzMwODMsImV4cCI6MjA3OTg0OTA4M30.ptXyUNCcAhGi9u2kVDHOxSBvQv0W72S5HHqkIFXQS08';
+window.DUALMIND_CONFIG.supabase.authEmailFunctionUrl = window.DUALMIND_CONFIG.supabase.authEmailFunctionUrl || 'https://calqfzajyidkdzbaswjp.supabase.co/functions/v1/email-wel-safe';
 
 // Optional: Supabase storage bucket for user avatars
 window.DUALMIND_CONFIG.supabase.storageBucket = window.DUALMIND_CONFIG.supabase.storageBucket || 'avatars';
@@ -128,6 +129,12 @@ window.DUALMIND_CONFIG.supabase.storageBucket = window.DUALMIND_CONFIG.supabase.
 window.DUALMIND_CONFIG.auth = window.DUALMIND_CONFIG.auth || {};
 window.DUALMIND_CONFIG.auth.mode = window.DUALMIND_CONFIG.auth.mode || 'supabase'; // 'supabase' for direct auth, 'backend' for server auth
 window.DUALMIND_CONFIG.auth.autoInitialize = window.DUALMIND_CONFIG.auth.autoInitialize !== false; // Auto-init on page load
+
+// Auth email behavior for edge function helper
+window.DUALMIND_CONFIG.email = window.DUALMIND_CONFIG.email || {};
+window.DUALMIND_CONFIG.email.sendWelcomeOnSignUp = window.DUALMIND_CONFIG.email.sendWelcomeOnSignUp !== false;
+window.DUALMIND_CONFIG.email.sendLoginNotification = window.DUALMIND_CONFIG.email.sendLoginNotification !== false;
+window.DUALMIND_CONFIG.email.clientDebounceMs = window.DUALMIND_CONFIG.email.clientDebounceMs || 30000;
 
 // ========== OFFLINE MODE CONFIGURATION ==========
 // When backend is not available, app runs in offline/demo mode
