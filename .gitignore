@@ -1,4 +1,103 @@
-node_modules
-dist
-.wrangler
-deploy_build
+# Dependencies
+node_modules/
+**/node_modules/
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# Build output / compiled / framework artifacts
+dist/
+build/
+out/
+.next/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+deploy_build/
+.wrangler/
+.vercel/
+
+# Python / misc compiled
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# AI / IDE generated files and folders
+.cursor/
+.cursorignore
+.cursorules
+cursor.json
+.windsurf/
+.windsurfrules
+.copilot/
+.github/copilot-instructions.md
+.aider*
+aider.conf.yml
+.cline/
+cline_docs/
+.continue/
+*.ai.md
+ai-context/
+ai-notes/
+ai-docs/
+CLAUDE.md
+claude.md
+.claude/
+.agentic/
+agent-context/
+llm-context/
+llm_context/
+*_ai_context.*
+*_context.ai.*
+*copilot*
+*cursor*
+*windsurf*
+*aider*
+*cline*
+
+# Auto-generated markdown / docs
+*_COMPLETE_*
+*_TECHNICAL_OVERVIEW*
+*_complete_technical*
+knowledge/
+knowledge_base/
+.knowledge/
+docs/ai-*
+docs/generated-*
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.iml
+*.swp
+*.swo
+*~
+
+# Secrets and env
+.env
+.env.*
+*.env
+!.env.example
+secrets.*
+*.secret
+config.local.*
+
+# Logs / temp / cache
+*.log
+logs/
+tmp/
+temp/
+.cache/
+crash-reports/
+
+# Existing project-specific ignores
+playwright-report/
+test-results/
