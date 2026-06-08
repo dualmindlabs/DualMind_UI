@@ -101,3 +101,10 @@ crash-reports/
 # Existing project-specific ignores
 playwright-report/
 test-results/
+
+# CHANGE 2 Igrows
+.env.local
+.env.production
+local-config.js
+wrangler-dist.toml
+
