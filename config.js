@@ -116,11 +116,14 @@ if (window.DUALMIND_CONFIG.speedPreset) {
 // Direct authentication with Supabase (no backend required)
 window.DUALMIND_CONFIG.supabase = window.DUALMIND_CONFIG.supabase || {};
 
-// 🔴 UPDATE THESE WITH YOUR SUPABASE CREDENTIALS 🔴
-// Get these from: https://app.supabase.com/project/[your-project]/settings/api
-window.DUALMIND_CONFIG.supabase.url = window.DUALMIND_CONFIG.supabase.url || 'https://calqfzajyidkdzbaswjp.supabase.co';
-window.DUALMIND_CONFIG.supabase.anonKey = window.DUALMIND_CONFIG.supabase.anonKey || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNhbHFmemFqeWlka2R6YmFzd2pwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyNzMwODMsImV4cCI6MjA3OTg0OTA4M30.ptXyUNCcAhGi9u2kVDHOxSBvQv0W72S5HHqkIFXQS08';
-window.DUALMIND_CONFIG.supabase.authEmailFunctionUrl = window.DUALMIND_CONFIG.supabase.authEmailFunctionUrl || 'https://calqfzajyidkdzbaswjp.supabase.co/functions/v1/email-wel-safe';
+// copy config.example.js to .env and fill in real values, never commit real credentials
+const envSupabaseUrl = (typeof process !== 'undefined' && process.env && process.env.SUPABASE_URL) ? process.env.SUPABASE_URL : 'YOUR_SUPABASE_URL';
+const envSupabaseAnonKey = (typeof process !== 'undefined' && process.env && process.env.SUPABASE_ANON_KEY) ? process.env.SUPABASE_ANON_KEY : 'YOUR_SUPABASE_ANON_KEY';
+
+window.DUALMIND_CONFIG.supabase.url = window.DUALMIND_CONFIG.supabase.url || envSupabaseUrl;
+window.DUALMIND_CONFIG.supabase.anonKey = window.DUALMIND_CONFIG.supabase.anonKey || envSupabaseAnonKey;
+window.DUALMIND_CONFIG.supabase.authEmailFunctionUrl = window.DUALMIND_CONFIG.supabase.authEmailFunctionUrl || (envSupabaseUrl !== 'YOUR_SUPABASE_URL' ? `${envSupabaseUrl}/functions/v1/email-wel-safe` : 'YOUR_SUPABASE_URL/functions/v1/email-wel-safe');
+
 
 // Optional: Supabase storage bucket for user avatars
 window.DUALMIND_CONFIG.supabase.storageBucket = window.DUALMIND_CONFIG.supabase.storageBucket || 'avatars';
