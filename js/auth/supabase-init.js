@@ -63,7 +63,7 @@ window.DualMindAuthReady = new Promise((resolve) => {
         window.getAuth = () => auth;
 
         // Initialize auth email helper if available.
-        import('./resend-auth-email.js').then(() => {
+        import('../resend-auth-email.js').then(() => {
           if (window.DualMindResendEmail?.registerClient) {
             window.DualMindResendEmail.registerClient(auth.supabase);
             if (window.DualMindResendEmail.syncSession) {

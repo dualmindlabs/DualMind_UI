@@ -3,14 +3,14 @@
  * Component orchestration and event handling with authentication
  */
 
-import { Sidebar } from '../components/Sidebar.js';
-import { Header } from '../components/Header.js';
-import { ChatInput } from '../components/ChatInput.js';
-import { ChatView } from '../components/chat/ChatView.js';
-import { pickModelPair, buildMockReply, streamText } from './mockArena.js';
-import { api } from './apiInstance.js';
+import { Sidebar } from '../../components/Sidebar.js';
+import { Header } from '../../components/Header.js';
+import { ChatInput } from '../../components/ChatInput.js';
+import { ChatView } from '../../components/chat/ChatView.js';
+import { pickModelPair, buildMockReply, streamText } from '../mockArena.js';
+import { api } from '../apiInstance.js';
 import { LeaderboardModal } from './leaderboardModal.js';
-import { shareModal } from '../components/ShareModal.js';
+import { shareModal } from '../../components/ShareModal.js';
 
 class App {
   constructor() {
@@ -601,7 +601,7 @@ class App {
       btn.addEventListener('mouseleave', () => { btn.style.background = 'transparent'; });
       btn.addEventListener('click', async () => {
         dropdown.remove();
-        const { ChatExport } = await import('./chatExport.js');
+        const { ChatExport } = await import('../chatExport.js');
         const exporter = new ChatExport(this.state);
         exporter.download(fmt.id);
       });

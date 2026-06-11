@@ -25,14 +25,13 @@ const itemsToCopy = [
   'admin-email-system',
   'config.js',
   'theme.js',
-  'api-service.js',
   'arena-core.js',
   'arena-redesign.css',
   'performance-monitor.js',
   'manifest.json',
   'robots.txt',
   'sitemap.xml',
-  'js/app-final.js'  // Add the new app file
+  'js/ui/app.js'  // Add the new app file
 ];
 
 function copyRecursive(src, dest) {
