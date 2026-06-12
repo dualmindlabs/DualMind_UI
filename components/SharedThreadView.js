@@ -4,11 +4,10 @@
  * Accessible without authentication
  */
 
+import { sanitizeHTML } from '../js/ui/utils.js';
+
 function escapeHtml(str) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
+  return sanitizeHTML(str);
 }
 
 export class SharedThreadView {

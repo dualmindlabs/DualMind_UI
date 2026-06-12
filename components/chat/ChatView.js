@@ -6,6 +6,7 @@
  */
 
 import { Icons } from '../../js/icons.js';
+import { sanitizeHTML } from '../../js/ui/utils.js';
 
 function renderRefreshIcon(color = 'white', size = 18) {
   return `
@@ -28,10 +29,7 @@ function renderExpandIcon(color = 'white', size = 18) {
 }
 
 function escapeHtml(str) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
+  return sanitizeHTML(str);
 }
 
 export class ChatView {
@@ -89,11 +87,7 @@ export class ChatView {
       }
     }
     // Fallback if marked not loaded
-    return String(text)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/\n/g, '<br>');
+    return sanitizeHTML(text).replace(/\n/g, '<br>');
   }
 
   setState(next) {

@@ -3,6 +3,8 @@
  * Provides beautiful, consistent modals for confirmations, editing, and alerts
  */
 
+import { sanitizeHTML } from '../js/ui/utils.js';
+
 export class CustomModal {
   constructor() {
     this.isOpen = false;
@@ -249,9 +251,7 @@ export class CustomModal {
   }
 
   escapeHtml(str) {
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
+    return sanitizeHTML(str);
   }
 }
 

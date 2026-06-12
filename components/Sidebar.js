@@ -5,6 +5,7 @@
 
 import { Icons } from '../js/icons.js';
 import { customModal } from './CustomModal.js';
+import { sanitizeHTML } from '../js/ui/utils.js';
 
 export class Sidebar {
   constructor(containerId) {
@@ -186,10 +187,7 @@ export class Sidebar {
   }
 
   escapeHtml(str) {
-    if (!str) return '';
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
+    return sanitizeHTML(str);
   }
 
   getUserInitials() {
