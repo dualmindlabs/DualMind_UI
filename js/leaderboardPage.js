@@ -11,9 +11,18 @@ function escapeHtml(str) {
 function renderSkeleton(root) {
   root.innerHTML = `
     <div class="dm-lb-stats-bar">
-      <div class="dm-lb-stat-card"><div class="dm-skel w-40" style="margin: 0 auto 12px; height: 36px;"></div><div class="dm-skel w-70" style="margin: 0 auto; height: 12px;"></div></div>
-      <div class="dm-lb-stat-card"><div class="dm-skel w-40" style="margin: 0 auto 12px; height: 36px;"></div><div class="dm-skel w-70" style="margin: 0 auto; height: 12px;"></div></div>
-      <div class="dm-lb-stat-card"><div class="dm-skel w-40" style="margin: 0 auto 12px; height: 36px;"></div><div class="dm-skel w-70" style="margin: 0 auto; height: 12px;"></div></div>
+      <div class="dm-lb-stat-card">
+        <div class="leaderboard-skeleton-cell skeleton-shimmer" style="width: 40px; margin: 0 auto 12px; height: 36px;"></div>
+        <div class="leaderboard-skeleton-cell skeleton-shimmer" style="width: 70px; margin: 0 auto; height: 12px;"></div>
+      </div>
+      <div class="dm-lb-stat-card">
+        <div class="leaderboard-skeleton-cell skeleton-shimmer" style="width: 40px; margin: 0 auto 12px; height: 36px;"></div>
+        <div class="leaderboard-skeleton-cell skeleton-shimmer" style="width: 70px; margin: 0 auto; height: 12px;"></div>
+      </div>
+      <div class="dm-lb-stat-card">
+        <div class="leaderboard-skeleton-cell skeleton-shimmer" style="width: 40px; margin: 0 auto 12px; height: 36px;"></div>
+        <div class="leaderboard-skeleton-cell skeleton-shimmer" style="width: 70px; margin: 0 auto; height: 12px;"></div>
+      </div>
     </div>
     <div class="dm-lb-shell">
       <div class="dm-lb-top">
@@ -22,21 +31,14 @@ function renderSkeleton(root) {
           <div class="dm-lb-subtitle">Loading stats…</div>
         </div>
       </div>
-      <div class="dm-lb-grid-wrap">
-        <div class="dm-lb-grid-header">
-          <div>Rank</div>
-          <div>Model</div>
-          <div>Elo Rating</div>
-          <div>Win Rate</div>
-          <div>Responses</div>
-        </div>
-        ${Array.from({ length: 10 }).map(() => `
-          <div class="dm-lb-grid-skel">
-            <div class="dm-skel w-30"></div>
-            <div class="dm-skel w-70"></div>
-            <div class="dm-skel w-40"></div>
-            <div class="dm-skel w-70"></div>
-            <div class="dm-skel w-40"></div>
+      <div class="leaderboard-skeleton-container">
+        ${Array.from({ length: 8 }).map(() => `
+          <div class="leaderboard-skeleton-row">
+            <div class="leaderboard-skeleton-cell skeleton-shimmer" style="width: 30px;"></div>
+            <div class="leaderboard-skeleton-cell skeleton-shimmer" style="width: 140px;"></div>
+            <div class="leaderboard-skeleton-cell skeleton-shimmer" style="width: 60px;"></div>
+            <div class="leaderboard-skeleton-cell skeleton-shimmer" style="width: 100px;"></div>
+            <div class="leaderboard-skeleton-cell skeleton-shimmer" style="width: 50px;"></div>
           </div>
         `).join('')}
       </div>

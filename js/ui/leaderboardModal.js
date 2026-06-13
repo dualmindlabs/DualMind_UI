@@ -144,21 +144,14 @@ export class LeaderboardModal {
             <div class="dm-lb-subtitle">Loading stats…</div>
           </div>
         </div>
-        <div class="dm-lb-grid-wrap">
-          <div class="dm-lb-grid-header">
-            <div>Rank</div>
-            <div>Model</div>
-            <div>Elo Rating</div>
-            <div>Win Rate</div>
-            <div>Responses</div>
-          </div>
+        <div class="leaderboard-skeleton-container">
           ${Array.from({ length: 6 }).map(() => `
-            <div class="dm-lb-grid-skel">
-              <div class="dm-skel w-30"></div>
-              <div class="dm-skel w-70"></div>
-              <div class="dm-skel w-40"></div>
-              <div class="dm-skel w-70"></div>
-              <div class="dm-skel w-40"></div>
+            <div class="leaderboard-skeleton-row">
+              <div class="leaderboard-skeleton-cell skeleton-shimmer" style="width: 30px;"></div>
+              <div class="leaderboard-skeleton-cell skeleton-shimmer" style="width: 140px;"></div>
+              <div class="leaderboard-skeleton-cell skeleton-shimmer" style="width: 60px;"></div>
+              <div class="leaderboard-skeleton-cell skeleton-shimmer" style="width: 100px;"></div>
+              <div class="leaderboard-skeleton-cell skeleton-shimmer" style="width: 50px;"></div>
             </div>
           `).join('')}
         </div>

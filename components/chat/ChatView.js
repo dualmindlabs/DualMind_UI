@@ -451,7 +451,16 @@ export class ChatView {
           </div>
         </div>
 
-        <div class="response-body markdown-body" id="${bodyId}" aria-live="${streaming ? 'polite' : 'off'}">${this.renderMarkdown(text)}${streaming ? '<span class="stream-caret" aria-hidden="true"></span>' : ''}</div>
+        <div class="response-body markdown-body" id="${bodyId}" aria-live="${streaming ? 'polite' : 'off'}">
+          ${streaming && !text ? `
+            <div class="battle-skeleton-body">
+              <div class="battle-skeleton-line skeleton-shimmer" style="width: 92%;"></div>
+              <div class="battle-skeleton-line skeleton-shimmer" style="width: 78%;"></div>
+              <div class="battle-skeleton-line skeleton-shimmer" style="width: 86%;"></div>
+              <div class="battle-skeleton-line skeleton-shimmer" style="width: 65%;"></div>
+            </div>
+          ` : this.renderMarkdown(text) + (streaming ? '<span class="stream-caret" aria-hidden="true"></span>' : '')}
+        </div>
       </article>
     `;
   }
@@ -541,7 +550,18 @@ export class ChatView {
     if (subtitle) subtitle.textContent = data.streaming ? 'Streaming response' : 'Full response';
 
     if (body) {
-      body.innerHTML = this.renderMarkdown(data.text || '') + (data.streaming ? '<span class="stream-caret" aria-hidden="true"></span>' : '');
+      if (data.streaming && !data.text) {
+        body.innerHTML = `
+          <div class="battle-skeleton-body">
+            <div class="battle-skeleton-line skeleton-shimmer" style="width: 92%;"></div>
+            <div class="battle-skeleton-line skeleton-shimmer" style="width: 78%;"></div>
+            <div class="battle-skeleton-line skeleton-shimmer" style="width: 86%;"></div>
+            <div class="battle-skeleton-line skeleton-shimmer" style="width: 65%;"></div>
+          </div>
+        `;
+      } else {
+        body.innerHTML = this.renderMarkdown(data.text || '') + (data.streaming ? '<span class="stream-caret" aria-hidden="true"></span>' : '');
+      }
       body.scrollTop = 0;
       if (window.hljs) {
         body.querySelectorAll('pre code').forEach((block) => {

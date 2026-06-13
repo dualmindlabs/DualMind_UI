@@ -2458,3 +2458,125 @@
 .battle-vs-divider {
   min-height: 200px;
 }
+
+/* ========================================
+   CSS Skeleton Loading Screens (CHANGE 7)
+   ======================================== */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.02) 25%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0.02) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+}
+
+/* Battle View Skeleton Panels */
+.battle-skeleton-container {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 0 18px;
+  align-items: stretch;
+  width: 100%;
+  padding: 12px 0 32px;
+}
+
+.battle-skeleton-card {
+  background: linear-gradient(180deg, rgba(18, 20, 30, 0.94), rgba(12, 14, 22, 0.92));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: 20px;
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.battle-skeleton-card::before {
+  content: "";
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  left: 12px;
+  width: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.battle-skeleton-card--left::before {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), var(--color-cyan, #4AABC2), rgba(255, 255, 255, 0.03));
+}
+
+.battle-skeleton-card--right::before {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), var(--color-terra, #CB9275), rgba(255, 255, 255, 0.03));
+}
+
+.battle-skeleton-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding-bottom: 12px;
+}
+
+.battle-skeleton-badge {
+  width: 110px;
+  height: 24px;
+  border-radius: 8px;
+}
+
+.battle-skeleton-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.battle-skeleton-action {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+}
+
+.battle-skeleton-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+.battle-skeleton-line {
+  height: 14px;
+  border-radius: 4px;
+}
+
+/* Leaderboard Skeleton Rows */
+.leaderboard-skeleton-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.leaderboard-skeleton-row {
+  display: grid;
+  grid-template-columns: 50px 1.5fr 1fr 1fr 80px;
+  gap: 16px;
+  align-items: center;
+  padding: 16px 20px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+}
+
+.leaderboard-skeleton-cell {
+  height: 18px;
+  border-radius: 4px;
+}
+
