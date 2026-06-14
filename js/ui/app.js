@@ -9,7 +9,6 @@ import { ChatInput } from '../../components/ChatInput.js';
 import { ChatView } from '../../components/chat/ChatView.js';
 import { pickModelPair, buildMockReply, streamText } from '../mockArena.js';
 import { api } from '../apiInstance.js';
-import { LeaderboardModal } from './leaderboardModal.js';
 import { shareModal } from '../../components/ShareModal.js';
 
 class App {
@@ -348,11 +347,7 @@ class App {
       this.components.sidebar.updateUserInfo();
     }
 
-    // Leaderboard modal
-    this.leaderboard = new LeaderboardModal({
-      api: this.api,
-      isApiEnabled: () => !!this.state.apiEnabled,
-    });
+
 
     // Set up global event listeners
     this.attachGlobalListeners();
@@ -1845,10 +1840,43 @@ class App {
     this.renderChat();
   }
 
-  showLeaderboard() {
-    // Dedicated leaderboard page (static route)
-    // Use relative URL so it works on localhost and deployed subpaths.
-    window.location.assign('./leaderboard/');
+  async showLeaderboard() {
+    if (this.leaderboard) {
+      this.leaderboard.open();
+      return;
+    }
+
+    const btn = document.querySelector('[data-action="leaderboard"]');
+    let originalIcon = null;
+    let iconEl = null;
+
+    if (btn) {
+      iconEl = btn.querySelector('.nav-icon');
+      if (iconEl) {
+        originalIcon = iconEl.innerHTML;
+        iconEl.innerHTML = '<svg class="spinner" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="animation: spin 0.8s linear infinite; display: inline-block; vertical-align: middle;"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle><path d="M12 2a10 10 0 0 1 10 10" stroke="#4AABC2"></path></svg>';
+      }
+      btn.style.pointerEvents = 'none';
+    }
+
+    try {
+      const { LeaderboardModal } = await import('./leaderboardModal.js');
+      this.leaderboard = new LeaderboardModal({
+        api: this.api,
+        isApiEnabled: () => !!this.state.apiEnabled,
+      });
+      this.leaderboard.open();
+    } catch (err) {
+      console.error('Failed to load leaderboard modal:', err);
+      alert('Failed to load leaderboard. Please try again.');
+    } finally {
+      if (btn) {
+        btn.style.pointerEvents = '';
+        if (iconEl && originalIcon !== null) {
+          iconEl.innerHTML = originalIcon;
+        }
+      }
+    }
   }
 
   adjustLayout(sidebarState = null) {
