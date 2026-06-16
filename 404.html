@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page Not Found - DualMind Arena</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --color-cyan: #4AABC2;
+      --color-terra: #CB9275;
+      --bg-dark: #090a10;
+      --glass-bg: rgba(16, 18, 28, 0.85);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --font-sans: 'Outfit', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: #ffffff;
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Background glow elements */
+    .bg-glow-1 {
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(74, 171, 194, 0.12) 0%, transparent 70%);
+      top: -10%;
+      left: -10%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .bg-glow-2 {
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(203, 146, 117, 0.12) 0%, transparent 70%);
+      bottom: -10%;
+      right: -10%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .container {
+      position: relative;
+      z-index: 10;
+      width: 90%;
+      max-width: 540px;
+      padding: 40px;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+      text-align: center;
+      animation: floatIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    @keyframes floatIn {
+      from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.96);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .error-code {
+      font-size: 110px;
+      font-weight: 800;
+      line-height: 1;
+      background: linear-gradient(135deg, var(--color-cyan), var(--color-terra));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 16px;
+      letter-spacing: -2px;
+      animation: pulseGlow 3s ease-in-out infinite;
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% {
+        filter: drop-shadow(0 0 10px rgba(74, 171, 194, 0.1));
+      }
+      50% {
+        filter: drop-shadow(0 0 25px rgba(203, 146, 117, 0.25));
+      }
+    }
+
+    .error-title {
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: #ffffff;
+    }
+
+    .error-desc {
+      font-size: 15px;
+      color: rgba(255, 255, 255, 0.65);
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 14px 28px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--color-cyan), rgba(74, 171, 194, 0.8));
+      color: #ffffff;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 15px;
+      box-shadow: 0 4px 15px rgba(74, 171, 194, 0.25);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .btn:hover {
+      box-shadow: 0 6px 20px rgba(74, 171, 194, 0.4);
+      transform: translateY(-2px);
+      background: linear-gradient(135deg, var(--color-cyan), var(--color-terra));
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .icon {
+      font-size: 18px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg-glow-1"></div>
+  <div class="bg-glow-2"></div>
+
+  <div class="container">
+    <div class="error-code">404</div>
+    <h1 class="error-title">Lost in the Arena?</h1>
+    <p class="error-desc">The page you are looking for doesn't exist or has been moved. Let's get you back to comparing language models.</p>
+    <a href="/" class="btn">
+      <i class="ri-home-5-line icon"></i>
+      <span>Back to Arena</span>
+    </a>
+  </div>
+</body>
+
+</html>

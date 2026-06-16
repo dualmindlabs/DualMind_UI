@@ -271,6 +271,28 @@ Sitemap: https://${domain}/sitemap.xml`, {
       }
     }
 
+    // Serve custom 404.html if asset is not found
+    if (env?.ASSETS?.fetch) {
+      try {
+        const errorUrl = new URL(request.url);
+        errorUrl.pathname = '/404.html';
+        const errorResponse = await env.ASSETS.fetch(new Request(errorUrl, request));
+        if (errorResponse && errorResponse.status !== 404) {
+          const response = new Response(errorResponse.body, {
+            status: 404,
+            statusText: 'Not Found',
+            headers: errorResponse.headers
+          });
+          response.headers.set('content-type', 'text/html; charset=utf-8');
+          response.headers.set('X-Content-Type-Options', 'nosniff');
+          response.headers.set('X-Frame-Options', 'DENY');
+          return response;
+        }
+      } catch (error) {
+        console.error('Failed to load custom 404 page:', error);
+      }
+    }
+
     return new Response('Not Found', { status: 404 });
   },
 };
