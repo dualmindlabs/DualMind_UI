@@ -12,7 +12,7 @@ export class Header {
     this.modes = [
       { id: 'battle', name: 'Battle', subtitle: 'Battle with 2 anonymous models', icon: Icons.battle },
       { id: 'arena', name: 'Side by Side', subtitle: 'Compare 2 models of your choice', icon: Icons.splitRectangle },
-      { id: 'direct', name: 'Direct Chat', subtitle: 'Chat with one model at a time', icon: Icons.arrowUp }
+      { id: 'direct', name: 'Direct Chat', subtitle: 'Chat with one model at a time', icon: Icons.chat }
     ];
     this.isDropdownOpen = false;
     this.isUserMenuOpen = false;

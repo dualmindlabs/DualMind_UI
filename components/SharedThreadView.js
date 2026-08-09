@@ -90,7 +90,7 @@ export class SharedThreadView {
       window.location.hostname.includes('workers.dev');
 
     if (isProd) {
-      return 'https://dualmind-arena-cgh0cvdfhkbgatba.uaenorth-01.azurewebsites.net';
+      return 'https://api.dualmindlab.tech';
     }
 
     return window.DUALMIND_CONFIG?.backendUrl ||

@@ -23,7 +23,7 @@ export default {
     if (pathname.startsWith('/api/')) {
       console.log('Worker proxy: intercepting', pathname);
 
-      const backendUrl = env?.BACKEND_URL || 'https://dualmind-arena-cgh0cvdfhkbgatba.uaenorth-01.azurewebsites.net';
+      const backendUrl = env?.BACKEND_URL || 'https://api.dualmindlab.tech';
 
       // Map frontend /api/health to backend /health
       let backendPath = pathname;
