@@ -60,6 +60,10 @@ llm_context/
 *aider*
 *cline*
 
+# Exceptions: intentionally committed AI agent guides
+!.cursorrules
+!CLAUDE.md
+
 # Auto-generated markdown / docs
 *_COMPLETE_*
 *_TECHNICAL_OVERVIEW*
