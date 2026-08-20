@@ -9,7 +9,7 @@ node_modules/
 !.yarn/releases
 !.yarn/versions
 
-# Build output / compiled / framework artifacts
+sandbox/
 dist/
 build/
 out/
