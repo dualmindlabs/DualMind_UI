@@ -18,5 +18,11 @@
       "binding": "FLAGS",
       "app_id": "1b260a52-d2dd-4116-a42e-43c9e71fe717"
     }
-  ]
+  ],
+  "observability": {
+    "logs": {
+      "enabled": false,
+      "invocation_logs": true
+    }
+  }
 }

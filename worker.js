@@ -37,24 +37,22 @@ export default {
       const response = new Response(waitlistResponse.body, waitlistResponse);
       response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
       response.headers.set('CDN-Cache-Control', 'no-store');
+      response.headers.set('X-Waitlist-Flag', 'true');
+      response.headers.set('X-Waitlist-Source', 'external-worker');
       return response;
     }
 
     // API Proxy: Forward /api/* requests to backend server
     if (pathname.startsWith('/api/')) {
-      console.log('Worker proxy: intercepting', pathname);
-
       const backendUrl = env?.BACKEND_URL || 'https://api.dualmindlab.tech';
 
       // Map frontend /api/health to backend /health
       let backendPath = pathname;
       if (pathname === '/api/health') {
         backendPath = '/health';
-        console.log('Worker proxy: mapping /api/health -> /health');
       }
 
       const backendRequestUrl = new URL(backendPath + url.search, backendUrl);
-      console.log('Worker proxy: forwarding to', backendRequestUrl.toString());
 
       try {
         const backendResponse = await fetch(backendRequestUrl, {
@@ -62,8 +60,6 @@ export default {
           headers: request.headers,
           body: request.method !== 'GET' && request.method !== 'HEAD' ? request.body : null,
         });
-
-        console.log('Worker proxy: backend responded with', backendResponse.status);
 
         const response = new Response(backendResponse.body, backendResponse);
         Object.keys(corsHeaders).forEach(key => {
@@ -99,18 +95,11 @@ export default {
 
         let assetResponse = await env.ASSETS.fetch(new Request(shareUrl, request));
 
-        // If /share/index.html is not found (e.g. if deployed structure is flat), 
-        // try fetching from root /share.html or just /index.html as fallback
-        if (!assetResponse || assetResponse.status === 404) {
-          console.log('Worker: /share/index.html not found, trying fallback');
-          // Try root index? No, let's try just letting it fall through or error out
-          // But valid SPA routing usually means serving the unpredictable path as index.html
-        }
-
         if (assetResponse && assetResponse.status !== 404) {
           const response = new Response(assetResponse.body, assetResponse);
           response.headers.set('X-Content-Type-Options', 'nosniff');
           response.headers.set('X-Frame-Options', 'DENY');
+          response.headers.set('X-Waitlist-Flag', isWishlistActive ? 'true' : 'false');
           // Important: Cache control to prevent stale share pages
           response.headers.set('cache-control', 'no-store, no-cache, must-revalidate');
           return response;
@@ -243,6 +232,7 @@ Sitemap: https://${domain}/sitemap.xml`, {
         response.headers.set('X-Content-Type-Options', 'nosniff');
         response.headers.set('X-Frame-Options', 'DENY');
         response.headers.set('X-XSS-Protection', '1; mode=block');
+        response.headers.set('X-Waitlist-Flag', isWishlistActive ? 'true' : 'false');
 
         // Prevent stale deployments being cached (especially JS/CSS/HTML)
         const lower = pathname.toLowerCase();
@@ -272,6 +262,7 @@ Sitemap: https://${domain}/sitemap.xml`, {
           response.headers.set('X-Content-Type-Options', 'nosniff');
           response.headers.set('X-Frame-Options', 'DENY');
           response.headers.set('X-XSS-Protection', '1; mode=block');
+          response.headers.set('X-Waitlist-Flag', isWishlistActive ? 'true' : 'false');
           response.headers.set('cache-control', 'no-store, no-cache, must-revalidate, max-age=0');
           return response;
         }
@@ -287,6 +278,7 @@ Sitemap: https://${domain}/sitemap.xml`, {
           response.headers.set('X-Content-Type-Options', 'nosniff');
           response.headers.set('X-Frame-Options', 'DENY');
           response.headers.set('X-XSS-Protection', '1; mode=block');
+          response.headers.set('X-Waitlist-Flag', isWishlistActive ? 'true' : 'false');
           return response;
         }
       }
