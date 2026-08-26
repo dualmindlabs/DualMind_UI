@@ -31,10 +31,13 @@ export default {
       console.warn('Flagship flag evaluation error:', e);
     }
 
-    // 2. If wishlist-active is true, route non-API requests to the waitlist worker
+    // 2. If wishlist-active is true, route ALL non-API requests to the waitlist page
     if (isWishlistActive && !pathname.startsWith('/api/')) {
-      const waitlistTargetUrl = new URL(pathname + url.search, 'https://dualmind-waitlist.creharsh.workers.dev');
-      return await fetch(new Request(waitlistTargetUrl, request));
+      const waitlistResponse = await fetch('https://dualmind-waitlist.creharsh.workers.dev/');
+      const response = new Response(waitlistResponse.body, waitlistResponse);
+      response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+      response.headers.set('CDN-Cache-Control', 'no-store');
+      return response;
     }
 
     // API Proxy: Forward /api/* requests to backend server
