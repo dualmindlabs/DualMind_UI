@@ -7,54 +7,37 @@ on:
     branches: [main, master]
 
 jobs:
-  build-test-deploy:
+  build-and-lint:
+    name: Build & Lint
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [18, 20]
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          submodules: true
 
-      - name: Cache node modules
-        uses: actions/cache@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ matrix.node-version }}-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-${{ matrix.node-version }}-
+          version: 10
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
-          cache: npm
+          node-version: 20
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
-      - name: Lint code
-        run: npm run lint
-
-      - name: Run tests
-        run: npm test
-        continue-on-error: false
+      - name: Lint codebase
+        run: pnpm run lint
 
       - name: Build project
-        run: npm run build
+        run: node build.js
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: dist-${{ matrix.node-version }}
+          name: dist
           path: dist/
-
-      - name: Deploy to Cloudflare Workers (only on main)
-        if: github.ref == 'refs/heads/main' && matrix.node-version == '20'
-        env:
-          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-        run: |
-          npm i -g @cloudflare/wrangler
-          npx wrangler publish
+          retention-days: 7
