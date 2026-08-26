@@ -19,32 +19,7 @@ export default {
       });
     }
 
-    // Check Flagship / environment feature flag
-    let isWishlistActive = false;
-    try {
-      if (env?.FLAGS?.getBooleanValue) {
-        isWishlistActive = await env.FLAGS.getBooleanValue("wishlist-active", false);
-      } else if (env?.WISHLIST_ACTIVE === 'true' || env?.WISHLIST_ACTIVE === true) {
-        isWishlistActive = true;
-      }
-    } catch (e) {
-      console.warn('Flag check error:', e);
-    }
 
-    // If wishlist flag is active, serve waitlist page to web users while keeping API intact
-    if (isWishlistActive && !pathname.startsWith('/api/')) {
-      if (env?.ASSETS?.fetch) {
-        const waitlistUrl = new URL('/waitlist.html', request.url);
-        const waitlistResponse = await env.ASSETS.fetch(new Request(waitlistUrl, request));
-        if (waitlistResponse && waitlistResponse.status !== 404) {
-          const response = new Response(waitlistResponse.body, waitlistResponse);
-          response.headers.set('X-Content-Type-Options', 'nosniff');
-          response.headers.set('X-Frame-Options', 'DENY');
-          response.headers.set('cache-control', 'no-store, no-cache, must-revalidate, max-age=0');
-          return response;
-        }
-      }
-    }
 
     // API Proxy: Forward /api/* requests to backend server
     if (pathname.startsWith('/api/')) {
