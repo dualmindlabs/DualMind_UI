@@ -21,25 +21,11 @@ export default {
 
 
 
-    // 1. Evaluate Flagship "wishlist-active" feature flag
-    let isWishlistActive = false;
-    try {
-      if (env?.FLAGS?.getBooleanValue) {
-        isWishlistActive = await env.FLAGS.getBooleanValue('wishlist-active', false);
-      }
-    } catch (e) {
-      console.warn('Flagship flag evaluation error:', e);
-    }
-
-    // 2. If wishlist-active is true, route ALL non-API requests to the waitlist page
-    if (isWishlistActive && !pathname.startsWith('/api/')) {
-      const waitlistResponse = await fetch('https://dualmind-waitlist.creharsh.workers.dev/');
-      const response = new Response(waitlistResponse.body, waitlistResponse);
-      response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
-      response.headers.set('CDN-Cache-Control', 'no-store');
-      response.headers.set('X-Waitlist-Flag', 'true');
-      response.headers.set('X-Waitlist-Source', 'external-worker');
-      return response;
+    // Force all non-API traffic to the waitlist worker
+    if (!pathname.startsWith('/api/')) {
+      const redirectUrl = new URL('https://early.dualmindlab.tech/');
+      redirectUrl.search = url.search;
+      return Response.redirect(redirectUrl.toString(), 302);
     }
 
     // API Proxy: Forward /api/* requests to backend server
@@ -99,7 +85,6 @@ export default {
           const response = new Response(assetResponse.body, assetResponse);
           response.headers.set('X-Content-Type-Options', 'nosniff');
           response.headers.set('X-Frame-Options', 'DENY');
-          response.headers.set('X-Waitlist-Flag', isWishlistActive ? 'true' : 'false');
           // Important: Cache control to prevent stale share pages
           response.headers.set('cache-control', 'no-store, no-cache, must-revalidate');
           return response;
@@ -232,7 +217,6 @@ Sitemap: https://${domain}/sitemap.xml`, {
         response.headers.set('X-Content-Type-Options', 'nosniff');
         response.headers.set('X-Frame-Options', 'DENY');
         response.headers.set('X-XSS-Protection', '1; mode=block');
-        response.headers.set('X-Waitlist-Flag', isWishlistActive ? 'true' : 'false');
 
         // Prevent stale deployments being cached (especially JS/CSS/HTML)
         const lower = pathname.toLowerCase();
@@ -262,8 +246,7 @@ Sitemap: https://${domain}/sitemap.xml`, {
           response.headers.set('X-Content-Type-Options', 'nosniff');
           response.headers.set('X-Frame-Options', 'DENY');
           response.headers.set('X-XSS-Protection', '1; mode=block');
-          response.headers.set('X-Waitlist-Flag', isWishlistActive ? 'true' : 'false');
-          response.headers.set('cache-control', 'no-store, no-cache, must-revalidate, max-age=0');
+            response.headers.set('cache-control', 'no-store, no-cache, must-revalidate, max-age=0');
           return response;
         }
       }
@@ -278,8 +261,7 @@ Sitemap: https://${domain}/sitemap.xml`, {
           response.headers.set('X-Content-Type-Options', 'nosniff');
           response.headers.set('X-Frame-Options', 'DENY');
           response.headers.set('X-XSS-Protection', '1; mode=block');
-          response.headers.set('X-Waitlist-Flag', isWishlistActive ? 'true' : 'false');
-          return response;
+            return response;
         }
       }
     }
