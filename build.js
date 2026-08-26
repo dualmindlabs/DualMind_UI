@@ -21,6 +21,7 @@ const filesToCopy = [
     'terms.html',
     'theme.js',
     'update-password.html',
+    'waitlist.html',
     'ads.txt'
 ];
 
