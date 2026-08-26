@@ -21,6 +21,22 @@ export default {
 
 
 
+    // 1. Evaluate Flagship "wishlist-active" feature flag
+    let isWishlistActive = false;
+    try {
+      if (env?.FLAGS?.getBooleanValue) {
+        isWishlistActive = await env.FLAGS.getBooleanValue('wishlist-active', false);
+      }
+    } catch (e) {
+      console.warn('Flagship flag evaluation error:', e);
+    }
+
+    // 2. If wishlist-active is true, route non-API requests to the waitlist worker
+    if (isWishlistActive && !pathname.startsWith('/api/')) {
+      const waitlistTargetUrl = new URL(pathname + url.search, 'https://dualmind-waitlist.creharsh.workers.dev');
+      return await fetch(new Request(waitlistTargetUrl, request));
+    }
+
     // API Proxy: Forward /api/* requests to backend server
     if (pathname.startsWith('/api/')) {
       console.log('Worker proxy: intercepting', pathname);
