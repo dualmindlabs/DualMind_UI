@@ -56,6 +56,11 @@ for (const file of filesToCopy) {
     }
 }
 
+// Copy worker.js to dist/_worker.js for Cloudflare Pages Advanced mode
+if (fs.existsSync(path.join(srcDir, 'worker.js'))) {
+    fs.copyFileSync(path.join(srcDir, 'worker.js'), path.join(distDir, '_worker.js'));
+}
+
 // Copy directories
 function copyDir(src, dest) {
     if (!fs.existsSync(src)) return;
