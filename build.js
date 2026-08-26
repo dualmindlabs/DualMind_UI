@@ -57,6 +57,13 @@ for (const file of filesToCopy) {
     }
 }
 
+// Sync root waitlist.html to waitlist worker public folder
+const waitlistWorkerPublic = path.join(srcDir, 'waitlist-worker', 'public');
+if (fs.existsSync(path.join(srcDir, 'waitlist.html'))) {
+    fs.mkdirSync(waitlistWorkerPublic, { recursive: true });
+    fs.copyFileSync(path.join(srcDir, 'waitlist.html'), path.join(waitlistWorkerPublic, 'index.html'));
+}
+
 
 
 // Copy directories

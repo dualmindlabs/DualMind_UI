@@ -25,6 +25,9 @@ export default {
     if (!pathname.startsWith('/api/')) {
       const redirectUrl = new URL('https://early.dualmindlab.tech/');
       redirectUrl.search = url.search;
+      if (!redirectUrl.searchParams.has('ref')) {
+        redirectUrl.searchParams.set('ref', 'arena');
+      }
       return Response.redirect(redirectUrl.toString(), 302);
     }
 
