@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "npx serve . -p 8000",
     "start": "npm run dev",
-    "lint": "eslint *.js **/*.js --ignore-pattern node_modules --ignore-pattern old-html-backup --ignore-pattern mock-api-server.js --ignore-pattern admin-email-system/**",
+    "lint": "eslint *.js **/*.js --ignore-pattern node_modules --ignore-pattern old-html-backup --ignore-pattern mock-api-server.js --ignore-pattern \"admin-email-system/**\"",
     "lint:fix": "npm run lint -- --fix",
     "test": "playwright test",
     "test:ui-bugs": "playwright test tests/ui-config-bugs.spec.js",
@@ -29,6 +29,7 @@
   "author": "DualMind Team",
   "license": "MIT",
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "eslint": "^8.56.0",
     "http-server": "^14.1.1",
     "serve": "^14.2.1"

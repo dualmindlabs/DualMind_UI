@@ -1,0 +1,2814 @@
+{
+  "largest": [
+    {
+      "file": "js/ui/app.js",
+      "lines": 2112
+    },
+    {
+      "file": "components/chat/ChatView.js",
+      "lines": 1075
+    },
+    {
+      "file": "js/auth-modern.js",
+      "lines": 906
+    },
+    {
+      "file": "js/auth/supabase-auth.js",
+      "lines": 698
+    },
+    {
+      "file": "components/Sidebar.js",
+      "lines": 692
+    },
+    {
+      "file": "js/auth/api-service.js",
+      "lines": 611
+    },
+    {
+      "file": "js/feature-flags.js",
+      "lines": 427
+    },
+    {
+      "file": "components/SharedThreadView.js",
+      "lines": 368
+    },
+    {
+      "file": "js/api/core/HttpClient.js",
+      "lines": 356
+    },
+    {
+      "file": "js/auth-examples.js",
+      "lines": 355
+    },
+    {
+      "file": "components/ShareModal.js",
+      "lines": 337
+    },
+    {
+      "file": "components/ChatInput.js",
+      "lines": 323
+    },
+    {
+      "file": "js/chatExport.js",
+      "lines": 306
+    },
+    {
+      "file": "js/resend-auth-email.js",
+      "lines": 305
+    },
+    {
+      "file": "worker.js",
+      "lines": 298
+    },
+    {
+      "file": "arena-core.js",
+      "lines": 292
+    },
+    {
+      "file": "js/ui/leaderboardModal.js",
+      "lines": 281
+    },
+    {
+      "file": "components/Header.js",
+      "lines": 275
+    },
+    {
+      "file": "js/auth/supabase-init.js",
+      "lines": 269
+    },
+    {
+      "file": "mock-api-server.js",
+      "lines": 261
+    },
+    {
+      "file": "components/CustomModal.js",
+      "lines": 260
+    },
+    {
+      "file": "js/api-client.js",
+      "lines": 259
+    },
+    {
+      "file": "login/auth-complete.js",
+      "lines": 242
+    },
+    {
+      "file": "performance-monitor.js",
+      "lines": 234
+    },
+    {
+      "file": "js/api/examples.js",
+      "lines": 219
+    },
+    {
+      "file": "js/leaderboardPage.js",
+      "lines": 205
+    },
+    {
+      "file": "js/icons.js",
+      "lines": 194
+    },
+    {
+      "file": "js/auth.js",
+      "lines": 192
+    },
+    {
+      "file": "js/api/utils/errors.js",
+      "lines": 180
+    },
+    {
+      "file": "login/js/app-final.js",
+      "lines": 167
+    },
+    {
+      "file": "js/api/utils/errorHandler.js",
+      "lines": 163
+    },
+    {
+      "file": "config.js",
+      "lines": 146
+    },
+    {
+      "file": "js/api/services/ArenaService.js",
+      "lines": 139
+    },
+    {
+      "file": "js/api/apiClient.js",
+      "lines": 119
+    },
+    {
+      "file": "js/mockArena.js",
+      "lines": 115
+    },
+    {
+      "file": "js/api/utils/authProvider.js",
+      "lines": 115
+    },
+    {
+      "file": "js/api/DualMindApi.js",
+      "lines": 114
+    },
+    {
+      "file": "js/update-password.js",
+      "lines": 98
+    },
+    {
+      "file": "js/api/services/ThreadService.js",
+      "lines": 88
+    },
+    {
+      "file": "test-everything.js",
+      "lines": 87
+    }
+  ],
+  "innerHTML": [
+    {
+      "file": "arena-core.js",
+      "line": 79,
+      "code": "this.arenaGrid.innerHTML = cards;"
+    },
+    {
+      "file": "arena-core.js",
+      "line": 103,
+      "code": "body.innerHTML = `"
+    },
+    {
+      "file": "arena-core.js",
+      "line": 111,
+      "code": "meta.innerHTML = '<i class=\"ri-check-line\"></i>';"
+    },
+    {
+      "file": "arena-core.js",
+      "line": 116,
+      "code": "meta.innerHTML = '<i class=\"ri-loader-4-line\"></i>';"
+    },
+    {
+      "file": "arena-core.js",
+      "line": 154,
+      "code": "badge.innerHTML = '<i class=\"ri-award-line\"></i> Winner';"
+    },
+    {
+      "file": "arena-core.js",
+      "line": 201,
+      "code": "this.arenaGrid.innerHTML = `"
+    },
+    {
+      "file": "arena-core.js",
+      "line": 277,
+      "code": "this.arenaGrid.innerHTML = '';"
+    },
+    {
+      "file": "login/auth-complete.js",
+      "line": 118,
+      "code": "submitBtn.innerHTML = '<span>Verify Code</span><i class=\"ri-check-line\"></i>';"
+    },
+    {
+      "file": "login/auth-complete.js",
+      "line": 192,
+      "code": "submitBtn.innerHTML = '<span>Verify Code</span><i class=\"ri-check-line\"></i>';"
+    },
+    {
+      "file": "login/auth-complete.js",
+      "line": 194,
+      "code": "submitBtn.innerHTML = '<span>Send Code</span><i class=\"ri-smartphone-line\"></i>';"
+    },
+    {
+      "file": "login/auth-complete.js",
+      "line": 197,
+      "code": "submitBtn.innerHTML = isLogin"
+    },
+    {
+      "file": "components/ChatInput.js",
+      "line": 26,
+      "code": "this.container.innerHTML = `"
+    },
+    {
+      "file": "components/ChatInput.js",
+      "line": 269,
+      "code": "preview.innerHTML = this.renderAttachments();"
+    },
+    {
+      "file": "components/ShareModal.js",
+      "line": 25,
+      "code": "overlay.innerHTML = this.render();"
+    },
+    {
+      "file": "components/ShareModal.js",
+      "line": 233,
+      "code": "overlay.innerHTML = this.render();"
+    },
+    {
+      "file": "components/ShareModal.js",
+      "line": 330,
+      "code": "overlay.innerHTML = this.render();"
+    },
+    {
+      "file": "components/SharedThreadView.js",
+      "line": 106,
+      "code": "this.container.innerHTML = this.renderLoading();"
+    },
+    {
+      "file": "components/SharedThreadView.js",
+      "line": 111,
+      "code": "this.container.innerHTML = this.renderError();"
+    },
+    {
+      "file": "components/SharedThreadView.js",
+      "line": 115,
+      "code": "this.container.innerHTML = `"
+    },
+    {
+      "file": "components/Header.js",
+      "line": 33,
+      "code": "this.container.innerHTML = `"
+    },
+    {
+      "file": "components/Header.js",
+      "line": 192,
+      "code": "if (modeIcon) modeIcon.innerHTML = modeData.icon('white');"
+    },
+    {
+      "file": "components/Sidebar.js",
+      "line": 78,
+      "code": "this.container.innerHTML = `"
+    },
+    {
+      "file": "components/Sidebar.js",
+      "line": 240,
+      "code": "listContainer.innerHTML = this.renderRecentChats();"
+    },
+    {
+      "file": "components/CustomModal.js",
+      "line": 22,
+      "code": "root.innerHTML = `"
+    },
+    {
+      "file": "components/CustomModal.js",
+      "line": 175,
+      "code": "toast.innerHTML = `"
+    },
+    {
+      "file": "components/CustomModal.js",
+      "line": 204,
+      "code": "if (contentEl) contentEl.innerHTML = content;"
+    },
+    {
+      "file": "components/chat/ChatView.js",
+      "line": 117,
+      "code": "temp.innerHTML = turnHtml;"
+    },
+    {
+      "file": "components/chat/ChatView.js",
+      "line": 152,
+      "code": "this.container.innerHTML = `"
+    },
+    {
+      "file": "components/chat/ChatView.js",
+      "line": 475,
+      "code": "modal.innerHTML = `"
+    },
+    {
+      "file": "components/chat/ChatView.js",
+      "line": 554,
+      "code": "body.innerHTML = `"
+    },
+    {
+      "file": "components/chat/ChatView.js",
+      "line": 563,
+      "code": "body.innerHTML = this.renderMarkdown(data.text || '') + (data.streaming ? '<span class=\"stream-caret\" aria-hidden=\"true\"></span>' : '');"
+    },
+    {
+      "file": "components/chat/ChatView.js",
+      "line": 871,
+      "code": "el.innerHTML = this.renderMarkdown(fullText) + (streaming ? '<span class=\"stream-caret\" aria-hidden=\"true\"></span>' : '');"
+    },
+    {
+      "file": "components/chat/ChatView.js",
+      "line": 898,
+      "code": "el.innerHTML = this.renderMarkdown(fullText) + (streaming ? '<span class=\"stream-caret\" aria-hidden=\"true\"></span>' : '');"
+    },
+    {
+      "file": "components/chat/ChatView.js",
+      "line": 909,
+      "code": "modalBody.innerHTML = this.renderMarkdown(fullText) + (streaming ? '<span class=\"stream-caret\" aria-hidden=\"true\"></span>' : '');"
+    },
+    {
+      "file": "js/chatExport.js",
+      "line": 260,
+      "code": "frame.innerHTML = this.toHTML();"
+    },
+    {
+      "file": "js/update-password.js",
+      "line": 29,
+      "code": "submitBtn.innerHTML = isLoading"
+    },
+    {
+      "file": "js/auth-examples.js",
+      "line": 251,
+      "code": "this.container.innerHTML = `"
+    },
+    {
+      "file": "js/auth-examples.js",
+      "line": 266,
+      "code": "this.container.innerHTML = `"
+    },
+    {
+      "file": "js/auth-examples.js",
+      "line": 325,
+      "code": "messagesDiv.innerHTML = messages.map(msg => `"
+    },
+    {
+      "file": "js/auth-modern.js",
+      "line": 233,
+      "code": "confirmWrapper.innerHTML = `"
+    },
+    {
+      "file": "js/auth-modern.js",
+      "line": 249,
+      "code": "wrapper.innerHTML = `"
+    },
+    {
+      "file": "js/auth-modern.js",
+      "line": 440,
+      "code": "if (btnIcon) btnIcon.innerHTML = '<div class=\"spinner\"></div>';"
+    },
+    {
+      "file": "js/auth-modern.js",
+      "line": 445,
+      "code": "if (btnIcon) btnIcon.innerHTML = '<i class=\"ri-arrow-right-line\"></i>';"
+    },
+    {
+      "file": "js/auth-modern.js",
+      "line": 542,
+      "code": "button.innerHTML = '<div class=\"spinner-small\"></div> Connecting...';"
+    },
+    {
+      "file": "js/auth-modern.js",
+      "line": 552,
+      "code": "button.innerHTML = originalContent;"
+    },
+    {
+      "file": "js/forgot-password.js",
+      "line": 28,
+      "code": "submitBtn.innerHTML = isLoading"
+    },
+    {
+      "file": "js/leaderboardPage.js",
+      "line": 12,
+      "code": "root.innerHTML = `"
+    },
+    {
+      "file": "js/leaderboardPage.js",
+      "line": 50,
+      "code": "root.innerHTML = `"
+    },
+    {
+      "file": "js/leaderboardPage.js",
+      "line": 90,
+      "code": "root.innerHTML = `"
+    },
+    {
+      "file": "js/ui/leaderboardModal.js",
+      "line": 58,
+      "code": "root.innerHTML = `"
+    },
+    {
+      "file": "js/ui/leaderboardModal.js",
+      "line": 127,
+      "code": "this._els.content.innerHTML = `"
+    },
+    {
+      "file": "js/ui/leaderboardModal.js",
+      "line": 139,
+      "code": "this._els.content.innerHTML = `"
+    },
+    {
+      "file": "js/ui/leaderboardModal.js",
+      "line": 187,
+      "code": "this._els.content.innerHTML = `"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 382,
+      "code": "indicator.innerHTML = `"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 918,
+      "code": "if (leftEl) leftEl.innerHTML = '';"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 919,
+      "code": "if (rightEl) rightEl.innerHTML = '';"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 1114,
+      "code": "container.innerHTML = `"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 1144,
+      "code": "container.innerHTML = '';"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 1345,
+      "code": "buttonElement.innerHTML = originalContent;"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 1410,
+      "code": "buttonElement.innerHTML = '\u23f3';"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 1423,
+      "code": "buttonElement.innerHTML = '\u23f9';"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 1458,
+      "code": "buttonElement.innerHTML = '\u23f9';"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 1857,
+      "code": "iconEl.innerHTML = '<svg class=\"spinner\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\" style=\"animation: spin 0.8s linear infinite; display: inline-block; vertical-align: middle;\"><circle cx=\"12\" cy=\"12\" r=\"10\" stroke-opacity=\"0.25\"></circle><path d=\"M12 2a10 10 0 0 1 10 10\" stroke=\"#4AABC2\"></path></svg>';"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 1876,
+      "code": "iconEl.innerHTML = originalIcon;"
+    }
+  ],
+  "console": [
+    {
+      "file": "build-deploy.js",
+      "line": 39,
+      "code": "console.log(`Skipping ${src} (not found)`);"
+    },
+    {
+      "file": "build-deploy.js",
+      "line": 55,
+      "code": "console.log(`Copied: ${src}`);"
+    },
+    {
+      "file": "build-deploy.js",
+      "line": 59,
+      "code": "console.log('Building deployment package...\\n');"
+    },
+    {
+      "file": "build-deploy.js",
+      "line": 67,
+      "code": "console.log('\\n\u2705 Build complete! Files copied to dist/');"
+    },
+    {
+      "file": "build-deploy.js",
+      "line": 68,
+      "code": "console.log('Run: wrangler deploy --config wrangler-dist.toml');"
+    },
+    {
+      "file": "build.js",
+      "line": 83,
+      "code": "console.log('Frontend built to /dist successfully!');"
+    },
+    {
+      "file": "performance-monitor.js",
+      "line": 40,
+      "code": "console.log('Page Load Metrics:', this.metrics.pageLoad);"
+    },
+    {
+      "file": "performance-monitor.js",
+      "line": 72,
+      "code": "console.warn(`Slow API call: ${url} took ${duration.toFixed(0)}ms`);"
+    },
+    {
+      "file": "performance-monitor.js",
+      "line": 109,
+      "code": "console.warn('Performance Observer not supported:', e);"
+    },
+    {
+      "file": "performance-monitor.js",
+      "line": 223,
+      "code": "suggestions.forEach(s => console.log('\u2022', s));"
+    },
+    {
+      "file": "mock-api-server.js",
+      "line": 62,
+      "code": "console.log('\ud83d\udd10 Login attempt:', req.body);"
+    },
+    {
+      "file": "mock-api-server.js",
+      "line": 93,
+      "code": "console.log('\u2705 Login successful for:', user.email);"
+    },
+    {
+      "file": "mock-api-server.js",
+      "line": 108,
+      "code": "console.log('\ud83d\udcdd Signup attempt:', req.body);"
+    },
+    {
+      "file": "mock-api-server.js",
+      "line": 149,
+      "code": "console.log('\u2705 Signup successful for:', newUser.email);"
+    },
+    {
+      "file": "mock-api-server.js",
+      "line": 165,
+      "code": "console.log('\ud83d\udcca Leaderboard requested by:', req.user.email);"
+    },
+    {
+      "file": "mock-api-server.js",
+      "line": 175,
+      "code": "console.log('\ud83d\uddf3\ufe0f Vote submitted by:', req.user.email, 'Data:', req.body);"
+    },
+    {
+      "file": "mock-api-server.js",
+      "line": 185,
+      "code": "console.log('\ud83d\udcac Chat request by:', req.user.email, 'Data:', req.body);"
+    },
+    {
+      "file": "mock-api-server.js",
+      "line": 248,
+      "code": "console.log(`\ud83d\ude80 DualMind Mock API Server running on http://localhost:${PORT}`);"
+    },
+    {
+      "file": "mock-api-server.js",
+      "line": 249,
+      "code": "console.log('\ud83d\udccb Available endpoints:');"
+    },
+    {
+      "file": "mock-api-server.js",
+      "line": 250,
+      "code": "console.log('   POST /api/auth/login');"
+    },
+    {
+      "file": "mock-api-server.js",
+      "line": 251,
+      "code": "console.log('   POST /api/auth/signup');"
+    },
+    {
+      "file": "mock-api-server.js",
+      "line": 252,
+      "code": "console.log('   GET /api/health');"
+    },
+    {
+      "file": "mock-api-server.js",
+      "line": 253,
+      "code": "console.log('   GET /api/arena/model-stats (requires auth)');"
+    },
+    {
+      "file": "mock-api-server.js",
+      "line": 254,
+      "code": "console.log('   POST /api/arena/vote (requires auth)');"
+    },
+    {
+      "file": "mock-api-server.js",
+      "line": 255,
+      "code": "console.log('   POST /api/arena/dualchat (requires auth)');"
+    },
+    {
+      "file": "mock-api-server.js",
+      "line": 256,
+      "code": "console.log('\\n\ud83d\udd11 Test credentials:');"
+    },
+    {
+      "file": "mock-api-server.js",
+      "line": 257,
+      "code": "console.log('   Email: test@example.com');"
+    },
+    {
+      "file": "mock-api-server.js",
+      "line": 258,
+      "code": "console.log('   Password: password123');"
+    },
+    {
+      "file": "mock-api-server.js",
+      "line": 259,
+      "code": "console.log('   Email: admin@dualmind.com');"
+    },
+    {
+      "file": "mock-api-server.js",
+      "line": 260,
+      "code": "console.log('   Password: admin123');"
+    },
+    {
+      "file": "worker.js",
+      "line": 24,
+      "code": "console.log('Worker proxy: intercepting', pathname);"
+    },
+    {
+      "file": "worker.js",
+      "line": 32,
+      "code": "console.log('Worker proxy: mapping /api/health -> /health');"
+    },
+    {
+      "file": "worker.js",
+      "line": 36,
+      "code": "console.log('Worker proxy: forwarding to', backendRequestUrl.toString());"
+    },
+    {
+      "file": "worker.js",
+      "line": 45,
+      "code": "console.log('Worker proxy: backend responded with', backendResponse.status);"
+    },
+    {
+      "file": "worker.js",
+      "line": 57,
+      "code": "console.error('Worker proxy error:', error);"
+    },
+    {
+      "file": "worker.js",
+      "line": 84,
+      "code": "console.log('Worker: /share/index.html not found, trying fallback');"
+    },
+    {
+      "file": "worker.js",
+      "line": 292,
+      "code": "console.error('Failed to load custom 404 page:', error);"
+    },
+    {
+      "file": "test-supabase-auth.js",
+      "line": 9,
+      "code": "console.log(`\\n\ud83d\ude80 Supabase Auth Diagnostics for Project: ${PROJECT_ID}\\n`);"
+    },
+    {
+      "file": "test-supabase-auth.js",
+      "line": 13,
+      "code": "console.log(`Checking [${provider.toUpperCase()}]...`);"
+    },
+    {
+      "file": "test-supabase-auth.js",
+      "line": 26,
+      "code": "console.log('\u2705 ENABLED: Redirects to GitHub/Google...');"
+    },
+    {
+      "file": "test-supabase-auth.js",
+      "line": 29,
+      "code": "console.log(`\u274c FAILED: ${data.msg} (Code: ${data.error_code})`);"
+    },
+    {
+      "file": "test-supabase-auth.js",
+      "line": 31,
+      "code": "console.log(`\u2753 UNKNOWN STATUS (${response.status})`);"
+    },
+    {
+      "file": "test-supabase-auth.js",
+      "line": 34,
+      "code": "console.error(`\ud83d\udca5 FETCH FAILED: ${error.message}`);"
+    },
+    {
+      "file": "test-supabase-auth.js",
+      "line": 38,
+      "code": "console.log('\\n--- DIAGNOSIS SUMMARY ---');"
+    },
+    {
+      "file": "test-supabase-auth.js",
+      "line": 39,
+      "code": "console.log('If GITHUB shows \u274c DISABLED:');"
+    },
+    {
+      "file": "test-supabase-auth.js",
+      "line": 40,
+      "code": "console.log('1. Go to https://app.supabase.com/project/' + PROJECT_ID + '/auth/providers');"
+    },
+    {
+      "file": "test-supabase-auth.js",
+      "line": 41,
+      "code": "console.log('2. Find GitHub and toggle \"Enable GitHub\" to ON.');"
+    },
+    {
+      "file": "test-supabase-auth.js",
+      "line": 42,
+      "code": "console.log('3. Ensure Client ID and Secret are saved.');"
+    },
+    {
+      "file": "test-supabase-auth.js",
+      "line": 43,
+      "code": "console.log('4. Ensure Callback URL matches: ' + BASE_URL + '/callback');"
+    },
+    {
+      "file": "test-everything.js",
+      "line": 5,
+      "code": "console.log('\ud83d\ude80 Starting DualMind Arena System Test...\\n');"
+    },
+    {
+      "file": "test-everything.js",
+      "line": 8,
+      "code": "console.log('1. Frontend Check:');"
+    },
+    {
+      "file": "test-everything.js",
+      "line": 9,
+      "code": "console.log('   \u2705 URL:', window.location.origin);"
+    },
+    {
+      "file": "test-everything.js",
+      "line": 10,
+      "code": "console.log('   \u2705 Title:', document.title);"
+    },
+    {
+      "file": "test-everything.js",
+      "line": 13,
+      "code": "console.log('\\n2. Authentication Check:');"
+    },
+    {
+      "file": "test-everything.js",
+      "line": 16,
+      "code": "console.log('   \u2705 Auth module loaded');"
+    },
+    {
+      "file": "test-everything.js",
+      "line": 17,
+      "code": "console.log('   \u2705 Logged in:', isLoggedIn);"
+    },
+    {
+      "file": "test-everything.js",
+      "line": 20,
+      "code": "console.log('   \u2705 User:', user?.email || user?.phone || 'Unknown');"
+    },
+    {
+      "file": "test-everything.js",
+      "line": 23,
+      "code": "console.log('   \u274c Auth module not loaded');"
+    },
+    {
+      "file": "test-everything.js",
+      "line": 27,
+      "code": "console.log('\\n3. Backend Check:');"
+    },
+    {
+      "file": "test-everything.js",
+      "line": 31,
+      "code": "console.log('   \u2705 Backend reachable');"
+    },
+    {
+      "file": "test-everything.js",
+      "line": 33,
+      "code": "console.log('   \u2705 Backend response:', data.message);"
+    },
+    {
+      "file": "test-everything.js",
+      "line": 35,
+      "code": "console.log('   \u274c Backend error:', response.status);"
+    },
+    {
+      "file": "test-everything.js",
+      "line": 38,
+      "code": "console.log('   \u274c Backend not reachable:', error.message);"
+    },
+    {
+      "file": "test-everything.js",
+      "line": 42,
+      "code": "console.log('\\n4. Components Check:');"
+    },
+    {
+      "file": "test-everything.js",
+      "line": 46,
+      "code": "console.log('   ' + (el ? '\u2705' : '\u274c'), id);"
+    },
+    {
+      "file": "test-everything.js",
+      "line": 50,
+      "code": "console.log('\\n5. Configuration Check:');"
+    },
+    {
+      "file": "test-everything.js",
+      "line": 51,
+      "code": "console.log('   \u2705 Backend URL:', window.DUALMIND_CONFIG?.apiBaseUrl);"
+    },
+    {
+      "file": "test-everything.js",
+      "line": 52,
+      "code": "console.log('   \u2705 Supabase URL:', window.DUALMIND_CONFIG?.supabase?.url ? 'Set' : 'Not set');"
+    },
+    {
+      "file": "test-everything.js",
+      "line": 53,
+      "code": "console.log('   \u2705 App Ready:', window._DUALMIND_APP_READY ? 'Yes' : 'No');"
+    },
+    {
+      "file": "test-everything.js",
+      "line": 56,
+      "code": "console.log('\\n6. User Sync Test:');"
+    },
+    {
+      "file": "test-everything.js",
+      "line": 69,
+      "code": "console.log('   \u2705 User sync endpoint working');"
+    },
+    {
+      "file": "test-everything.js",
+      "line": 71,
+      "code": "console.log('   \u274c User sync failed:', await response.text());"
+    },
+    {
+      "file": "test-everything.js",
+      "line": 74,
+      "code": "console.log('   \u274c User sync error:', error.message);"
+    },
+    {
+      "file": "test-everything.js",
+      "line": 78,
+      "code": "console.log('\\n\ud83c\udf89 System Test Complete!');"
+    },
+    {
+      "file": "test-everything.js",
+      "line": 79,
+      "code": "console.log('\\n\ud83d\udccb Summary:');"
+    },
+    {
+      "file": "test-everything.js",
+      "line": 80,
+      "code": "console.log('   - Frontend: http://localhost:8002');"
+    },
+    {
+      "file": "test-everything.js",
+      "line": 81,
+      "code": "console.log('   - Backend:  http://localhost:5079');"
+    },
+    {
+      "file": "test-everything.js",
+      "line": 82,
+      "code": "console.log('   - Login:    http://localhost:8002/login/');"
+    },
+    {
+      "file": "test-everything.js",
+      "line": 83,
+      "code": "console.log('   - Test:     http://localhost:8002/test-auth.html');"
+    },
+    {
+      "file": "login/js/app-final.js",
+      "line": 58,
+      "code": "console.error('Session check error:', error);"
+    },
+    {
+      "file": "components/ShareModal.js",
+      "line": 285,
+      "code": "if (window.DUALMIND_CONFIG?.debug?.enabled) console.log('\u2705 Visibility updated to:', visibility);"
+    },
+    {
+      "file": "components/ShareModal.js",
+      "line": 288,
+      "code": "console.error('Failed to update visibility:', error);"
+    },
+    {
+      "file": "components/SharedThreadView.js",
+      "line": 80,
+      "code": "console.error('Error loading thread:', err);"
+    },
+    {
+      "file": "components/SharedThreadView.js",
+      "line": 356,
+      "code": "console.error('Markdown parse error:', e);"
+    },
+    {
+      "file": "components/Sidebar.js",
+      "line": 56,
+      "code": "console.warn('API client not available');"
+    },
+    {
+      "file": "components/Sidebar.js",
+      "line": 73,
+      "code": "console.warn('Failed to load threads:', error);"
+    },
+    {
+      "file": "components/Sidebar.js",
+      "line": 425,
+      "code": "console.error('Failed to rename thread:', error);"
+    },
+    {
+      "file": "components/Sidebar.js",
+      "line": 463,
+      "code": "console.error('Failed to delete thread:', error);"
+    },
+    {
+      "file": "components/chat/ChatView.js",
+      "line": 85,
+      "code": "console.error('Markdown parse error:', e);"
+    },
+    {
+      "file": "components/chat/ChatView.js",
+      "line": 773,
+      "code": "if (window.DUALMIND_CONFIG?.debug?.enabled) console.log('Select clicked:', e.target.id);"
+    },
+    {
+      "file": "components/chat/ChatView.js",
+      "line": 812,
+      "code": "if (window.DUALMIND_CONFIG?.debug?.enabled) console.log('Saved model selection:', { left: leftVal, right: rightVal });"
+    },
+    {
+      "file": "components/chat/ChatView.js",
+      "line": 819,
+      "code": "if (window.DUALMIND_CONFIG?.debug?.enabled) console.log('Saved direct model:', e.target.value);"
+    },
+    {
+      "file": "js/auth.js",
+      "line": 28,
+      "code": "console.error('Failed to parse auth data:', e);"
+    },
+    {
+      "file": "js/auth.js",
+      "line": 76,
+      "code": "console.error('Login error:', error);"
+    },
+    {
+      "file": "js/auth.js",
+      "line": 121,
+      "code": "console.error('Signup error:', error);"
+    },
+    {
+      "file": "js/chatExport.js",
+      "line": 292,
+      "code": "console.warn('Unknown export format:', format);"
+    },
+    {
+      "file": "js/api-client.js",
+      "line": 33,
+      "code": "console.warn('Could not get Supabase auth token:', error);"
+    },
+    {
+      "file": "js/api-client.js",
+      "line": 115,
+      "code": "console.log(`[API] ${method} ${path}`);"
+    },
+    {
+      "file": "js/api-client.js",
+      "line": 130,
+      "code": "console.error('Could not logout:', error);"
+    },
+    {
+      "file": "js/api-client.js",
+      "line": 142,
+      "code": "console.log(`[API] \u2713 ${method} ${path}`, responseData);"
+    },
+    {
+      "file": "js/api-client.js",
+      "line": 160,
+      "code": "console.error(`[API] \u2717 ${method} ${path}`, error);"
+    },
+    {
+      "file": "js/update-password.js",
+      "line": 53,
+      "code": "console.log('Waiting for authentication...');"
+    },
+    {
+      "file": "js/update-password.js",
+      "line": 92,
+      "code": "console.error('Update password error:', error);"
+    },
+    {
+      "file": "js/feature-flags.js",
+      "line": 43,
+      "code": "console.warn('[FeatureFlags] DualMindAuthReady failed:', err);"
+    },
+    {
+      "file": "js/feature-flags.js",
+      "line": 228,
+      "code": "console.warn('[FeatureFlags] Supabase users role lookup failed:', {"
+    },
+    {
+      "file": "js/feature-flags.js",
+      "line": 366,
+      "code": "console.warn('[FeatureFlags] Role is tester, but no tester-marked elements found. Add [data-role=\"tester\"] or .tester-only in UI.');"
+    },
+    {
+      "file": "js/feature-flags.js",
+      "line": 408,
+      "code": "console.warn('[FeatureFlags] /api/users/me user mismatch. Role gating skipped.', {"
+    },
+    {
+      "file": "js/feature-flags.js",
+      "line": 425,
+      "code": "console.warn('[FeatureFlags] Failed to check user role/features:', error);"
+    },
+    {
+      "file": "js/auth-examples.js",
+      "line": 24,
+      "code": "console.log('\u2705 User authenticated');"
+    },
+    {
+      "file": "js/auth-examples.js",
+      "line": 25,
+      "code": "console.log('Email:', DualMindAuth.getUserEmail());"
+    },
+    {
+      "file": "js/auth-examples.js",
+      "line": 26,
+      "code": "console.log('Name:', DualMindAuth.getUserName());"
+    },
+    {
+      "file": "js/auth-examples.js",
+      "line": 76,
+      "code": "console.error('Logout failed:', error);"
+    },
+    {
+      "file": "js/auth-examples.js",
+      "line": 96,
+      "code": "console.log('User data:', data);"
+    },
+    {
+      "file": "js/auth-examples.js",
+      "line": 107,
+      "code": "console.error('Failed to fetch user data:', error);"
+    },
+    {
+      "file": "js/auth-examples.js",
+      "line": 136,
+      "code": "console.log('Message sent:', data);"
+    },
+    {
+      "file": "js/auth-examples.js",
+      "line": 139,
+      "code": "console.error('Failed to send message:', error);"
+    },
+    {
+      "file": "js/auth-examples.js",
+      "line": 180,
+      "code": "console.log('User logged out in another tab');"
+    },
+    {
+      "file": "js/auth-examples.js",
+      "line": 189,
+      "code": "console.log('Auth check:', isLoggedIn ? '\u2705 Logged in' : '\u274c Not logged in');"
+    },
+    {
+      "file": "js/auth-examples.js",
+      "line": 217,
+      "code": "console.error('Failed to create match:', error);"
+    },
+    {
+      "file": "js/auth-examples.js",
+      "line": 232,
+      "code": "console.warn('Unauthorized - logging out user');"
+    },
+    {
+      "file": "js/auth-examples.js",
+      "line": 314,
+      "code": "console.error('Failed to send message:', error);"
+    },
+    {
+      "file": "js/auth-examples.js",
+      "line": 332,
+      "code": "console.error('Failed to load messages:', error);"
+    },
+    {
+      "file": "js/auth-modern.js",
+      "line": 10,
+      "code": "console.error('Supabase client not found!');"
+    },
+    {
+      "file": "js/auth-modern.js",
+      "line": 370,
+      "code": "if (window.DUALMIND_CONFIG?.debug?.enabled) console.log('Updating UI state:', { mode, currentStep, authContext });"
+    },
+    {
+      "file": "js/auth-modern.js",
+      "line": 643,
+      "code": "console.error(err);"
+    },
+    {
+      "file": "js/auth-modern.js",
+      "line": 701,
+      "code": "if (window.DUALMIND_CONFIG?.debug?.enabled) console.log('Starting phone auth process...', { phone, context: authContext });"
+    },
+    {
+      "file": "js/auth-modern.js",
+      "line": 717,
+      "code": "if (window.DUALMIND_CONFIG?.debug?.enabled) console.log('Signup result:', result);"
+    },
+    {
+      "file": "js/auth-modern.js",
+      "line": 733,
+      "code": "if (window.DUALMIND_CONFIG?.debug?.enabled) console.log('Login OTP request result:', result);"
+    },
+    {
+      "file": "js/resend-auth-email.js",
+      "line": 113,
+      "code": "console.error('[DualMindAuthEmail] Missing authEmailFunctionUrl config.');"
+    },
+    {
+      "file": "js/resend-auth-email.js",
+      "line": 171,
+      "code": "console.error('[DualMindAuthEmail] Request failed', {"
+    },
+    {
+      "file": "js/resend-auth-email.js",
+      "line": 203,
+      "code": "console.error('[DualMindAuthEmail] Network error', {"
+    },
+    {
+      "file": "js/forgot-password.js",
+      "line": 67,
+      "code": "console.error('Reset password error:', error);"
+    },
+    {
+      "file": "js/auth/api-service.js",
+      "line": 98,
+      "code": "console.log('API SERVICE: Making streaming request to:', `${this.baseUrl}/api/arena/chat/stream`);"
+    },
+    {
+      "file": "js/auth/api-service.js",
+      "line": 105,
+      "code": "console.log('API SERVICE: Streaming response status:', response.status);"
+    },
+    {
+      "file": "js/auth/api-service.js",
+      "line": 112,
+      "code": "console.log('API SERVICE: Starting to read streaming response');"
+    },
+    {
+      "file": "js/auth/api-service.js",
+      "line": 125,
+      "code": "console.log('API SERVICE: Streaming reader done');"
+    },
+    {
+      "file": "js/auth/api-service.js",
+      "line": 133,
+      "code": "console.log('API SERVICE: Received buffer chunk, processing lines:', lines.length);"
+    },
+    {
+      "file": "js/auth/api-service.js",
+      "line": 144,
+      "code": "console.log('API SERVICE: Parsed SSE event:', event);"
+    },
+    {
+      "file": "js/auth/api-service.js",
+      "line": 152,
+      "code": "console.log('API SERVICE: Delta text received:', deltaText);"
+    },
+    {
+      "file": "js/auth/api-service.js",
+      "line": 162,
+      "code": "console.log('API SERVICE: Streaming done event received');"
+    },
+    {
+      "file": "js/auth/api-service.js",
+      "line": 166,
+      "code": "console.warn('API SERVICE: Failed to parse SSE event:', parseError);"
+    },
+    {
+      "file": "js/auth/api-service.js",
+      "line": 171,
+      "code": "console.log('API SERVICE: Streaming loop completed, accumulated text length:', accumulatedText.length);"
+    },
+    {
+      "file": "js/auth/api-service.js",
+      "line": 192,
+      "code": "console.error('API SERVICE: Streaming error:', error);"
+    },
+    {
+      "file": "js/auth/api-service.js",
+      "line": 345,
+      "code": "console.warn('Failed to fetch user profile:', e);"
+    },
+    {
+      "file": "js/auth/api-service.js",
+      "line": 569,
+      "code": "console.warn(`Feature flag '${key}' not found, defaulting to false`);"
+    },
+    {
+      "file": "js/auth/api-service.js",
+      "line": 576,
+      "code": "console.warn(`Error fetching feature flag '${key}':`, error);"
+    },
+    {
+      "file": "js/auth/api-service.js",
+      "line": 599,
+      "code": "console.warn('Health check failed:', error);"
+    },
+    {
+      "file": "js/auth/supabase-init.js",
+      "line": 24,
+      "code": "console.warn('\u26a0\ufe0f Supabase configuration not found. Make sure config.js is loaded first.');"
+    },
+    {
+      "file": "js/auth/supabase-init.js",
+      "line": 31,
+      "code": "console.warn('\u26a0\ufe0f Supabase credentials not configured in config.js');"
+    },
+    {
+      "file": "js/auth/supabase-init.js",
+      "line": 52,
+      "code": "if (window.DUALMIND_CONFIG?.debug?.enabled) console.log('\u2705 Supabase Auth initialized successfully');"
+    },
+    {
+      "file": "js/auth/supabase-init.js",
+      "line": 57,
+      "code": "if (window.DUALMIND_CONFIG?.debug?.enabled) console.log(`\u2705 User logged in: ${user.email}`);"
+    },
+    {
+      "file": "js/auth/supabase-init.js",
+      "line": 59,
+      "code": "if (window.DUALMIND_CONFIG?.debug?.enabled) console.log('\u2139\ufe0f No active session. Waiting for login.');"
+    },
+    {
+      "file": "js/auth/supabase-init.js",
+      "line": 74,
+      "code": "console.warn('Auth email helper not loaded:', helperError);"
+    },
+    {
+      "file": "js/auth/supabase-init.js",
+      "line": 80,
+      "code": "console.error('\u274c Failed to initialize Supabase Auth:', error);"
+    },
+    {
+      "file": "js/auth/supabase-init.js",
+      "line": 84,
+      "code": "console.error('\u274c Failed to load Supabase auth module:', error);"
+    },
+    {
+      "file": "js/auth/supabase-init.js",
+      "line": 120,
+      "code": "console.warn('Could not add auth header:', error);"
+    },
+    {
+      "file": "js/auth/supabase-init.js",
+      "line": 268,
+      "code": "if (window.DUALMIND_CONFIG?.debug?.enabled) console.log('\u2705 Supabase Auth module loaded');"
+    },
+    {
+      "file": "js/auth/supabase-init.js",
+      "line": 269,
+      "code": "if (window.DUALMIND_CONFIG?.debug?.enabled) console.log('\ud83d\udcd6 Usage: DualMindAuth.isLoggedIn(), DualMindAuth.getUser(), etc.');"
+    },
+    {
+      "file": "js/auth/supabase-auth.js",
+      "line": 55,
+      "code": "console.warn('Session refresh failed:', e);"
+    },
+    {
+      "file": "js/auth/supabase-auth.js",
+      "line": 72,
+      "code": "console.error('Auth initialization failed:', error);"
+    },
+    {
+      "file": "js/auth/supabase-auth.js",
+      "line": 114,
+      "code": "console.error('Signup error:', error);"
+    },
+    {
+      "file": "js/auth/supabase-auth.js",
+      "line": 149,
+      "code": "console.error('Phone signup error:', error);"
+    },
+    {
+      "file": "js/auth/supabase-auth.js",
+      "line": 183,
+      "code": "console.error('Login error:', error);"
+    },
+    {
+      "file": "js/auth/supabase-auth.js",
+      "line": 198,
+      "code": "console.error('Logout error:', error);"
+    },
+    {
+      "file": "js/auth/supabase-auth.js",
+      "line": 205,
+      "code": "console.error('Logout error:', error);"
+    },
+    {
+      "file": "js/auth/supabase-auth.js",
+      "line": 231,
+      "code": "console.error('Reset password error:', error);"
+    },
+    {
+      "file": "js/auth/supabase-auth.js",
+      "line": 267,
+      "code": "console.error('Email OTP signup error:', error);"
+    },
+    {
+      "file": "js/auth/supabase-auth.js",
+      "line": 299,
+      "code": "console.error('Email OTP login error:', error);"
+    },
+    {
+      "file": "js/auth/supabase-auth.js",
+      "line": 334,
+      "code": "console.error('Email OTP verification error:', error);"
+    },
+    {
+      "file": "js/auth/supabase-auth.js",
+      "line": 363,
+      "code": "console.error('SMS OTP error:', error);"
+    },
+    {
+      "file": "js/auth/supabase-auth.js",
+      "line": 400,
+      "code": "console.error('SMS OTP verification error:', error);"
+    },
+    {
+      "file": "js/auth/supabase-auth.js",
+      "line": 432,
+      "code": "console.error('Update phone error:', error);"
+    },
+    {
+      "file": "js/auth/supabase-auth.js",
+      "line": 460,
+      "code": "console.error('Update profile error:', error);"
+    },
+    {
+      "file": "js/auth/supabase-auth.js",
+      "line": 489,
+      "code": "console.error('Change password error:', error);"
+    },
+    {
+      "file": "js/auth/supabase-auth.js",
+      "line": 665,
+      "code": "console.error('OAuth login error:', error);"
+    },
+    {
+      "file": "js/api/apiClient.js",
+      "line": 13,
+      "code": "console.warn("
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 28,
+      "code": "console.log('\\n\ud83d\udcdd Example 1: Non-Streaming Chat\\n');"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 36,
+      "code": "console.log('Response:', response.text);"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 37,
+      "code": "console.log('Model:', response.model?.name);"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 38,
+      "code": "console.log('Time:', response.responseTimeMs, 'ms');"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 40,
+      "code": "console.error('Error:', toUserMessage(error));"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 48,
+      "code": "console.log('\\n\ud83c\udf0a Example 2: Streaming Chat\\n');"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 60,
+      "code": "console.log('\\n');"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 61,
+      "code": "console.log('Total length:', fullText.length, 'characters');"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 63,
+      "code": "console.error('\\nError:', toUserMessage(error));"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 71,
+      "code": "console.log('\\n\ud83d\uded1 Example 3: Abort Streaming after 2 seconds\\n');"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 77,
+      "code": "console.log('\\n\u26a0\ufe0f Aborting...');"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 91,
+      "code": "console.log('\\n\\nCompleted:', chars, 'characters');"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 94,
+      "code": "console.log('Stream was aborted as expected!');"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 96,
+      "code": "console.error('Error:', toUserMessage(error));"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 105,
+      "code": "console.log('\\n\u2694\ufe0f Example 4: Battle Mode\\n');"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 112,
+      "code": "console.log('--- Agent 1 ---');"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 113,
+      "code": "console.log('Model:', battle.agent1.model?.displayName || battle.agent1.model?.name);"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 114,
+      "code": "console.log('Response:', battle.agent1.text.substring(0, 200) + '...');"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 115,
+      "code": "console.log();"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 117,
+      "code": "console.log('--- Agent 2 ---');"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 118,
+      "code": "console.log('Model:', battle.agent2.model?.displayName || battle.agent2.model?.name);"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 119,
+      "code": "console.log('Response:', battle.agent2.text.substring(0, 200) + '...');"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 120,
+      "code": "console.log();"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 122,
+      "code": "console.log('Comparison ID:', battle.comparisonId);"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 127,
+      "code": "console.log('\u2705 Vote submitted for Agent 1!');"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 130,
+      "code": "console.error('Error:', toUserMessage(error));"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 138,
+      "code": "console.log('\\n\ud83c\udfc6 Example 5: Leaderboard\\n');"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 143,
+      "code": "console.log('Top Models:');"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 145,
+      "code": "console.log(`  ${i + 1}. ${m.modelName || m.name} - ${m.wins || 0} wins`);"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 148,
+      "code": "console.error('Error:', toUserMessage(error));"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 156,
+      "code": "console.log('\\n\ud83d\udcac Example 6: Thread Management\\n');"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 161,
+      "code": "console.log('Created thread:', thread.id);"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 165,
+      "code": "console.log('Recent threads:', threads.length);"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 169,
+      "code": "console.log('Thread updated');"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 173,
+      "code": "console.log('Thread deleted');"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 175,
+      "code": "console.error('Error:', toUserMessage(error));"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 183,
+      "code": "console.log('\\n\u2764\ufe0f Example 7: Health Check\\n');"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 186,
+      "code": "console.log('Backend status:', isHealthy ? '\u2705 Healthy' : '\u274c Unavailable');"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 193,
+      "code": "console.log('='.repeat(60));"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 194,
+      "code": "console.log('DualMind API Examples');"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 195,
+      "code": "console.log('='.repeat(60));"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 202,
+      "code": "console.log('\\n\u26a0\ufe0f Backend not available. Skipping remaining examples.');"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 213,
+      "code": "console.log('\\n' + '='.repeat(60));"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 214,
+      "code": "console.log('All examples completed!');"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 215,
+      "code": "console.log('='.repeat(60));"
+    },
+    {
+      "file": "js/api/examples.js",
+      "line": 219,
+      "code": "runAll().catch(console.error);"
+    },
+    {
+      "file": "js/api/core/HttpClient.js",
+      "line": 76,
+      "code": "console.log(`[HttpClient] Token attached: ${token.substring(0, 10)}... (Length: ${token.length})`);"
+    },
+    {
+      "file": "js/api/core/HttpClient.js",
+      "line": 79,
+      "code": "console.warn('[HttpClient] No token retrieved!');"
+    },
+    {
+      "file": "js/api/core/HttpClient.js",
+      "line": 80,
+      "code": "console.warn('[HttpClient] Auth checks:', {"
+    },
+    {
+      "file": "js/api/core/HttpClient.js",
+      "line": 97,
+      "code": "console.log(`[API ${ts}]`, ...args);"
+    },
+    {
+      "file": "js/api/utils/authProvider.js",
+      "line": 20,
+      "code": "console.warn('[authProvider] Failed to get token from _DUALMIND_AUTH:', err);"
+    },
+    {
+      "file": "js/api/utils/authProvider.js",
+      "line": 32,
+      "code": "console.warn('[authProvider] Failed to get token from DualMindAuth:', err);"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 108,
+      "code": "console.warn('Failed to restore auth token. Clearing stale session.', tokenError);"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 112,
+      "code": "console.warn('Failed to clear stale session:', logoutError);"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 155,
+      "code": "console.error('App element not found \u2014 check index.html for #app');"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 170,
+      "code": "console.warn('Backend check failed:', err);"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 194,
+      "code": "console.warn('[UserSync] Flush after backend recovery failed:', flushErr);"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 197,
+      "code": "console.warn('[VoteQueue] Flush after backend recovery failed:', flushErr);"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 294,
+      "code": "console.warn('Failed to load models:', error);"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 518,
+      "code": "console.warn('No active thread to share. Start a conversation first.');"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 957,
+      "code": "console.warn('API request failed, falling back to mock responses:', msg);"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 1071,
+      "code": "console.warn('API request failed, falling back to mock responses:', msg);"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 1092,
+      "code": "console.warn('\u274c Floating voting container not found!');"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 1158,
+      "code": "console.warn('Turn not found or already voted');"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 1163,
+      "code": "console.warn('\u23f3 Cannot vote while responses are streaming');"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 1202,
+      "code": "console.warn('Skipping vote submit (missing comparisonId)');"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 1227,
+      "code": "console.error('\u274c Vote submission failed:', error);"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 1440,
+      "code": "console.warn('Backend TTS failed, falling back to browser API:', error);"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 1473,
+      "code": "console.error('Browser TTS also failed:', browserError);"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 1519,
+      "code": "console.warn('[UserSync] Backend sync warning (likely harmless):', msg);"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 1521,
+      "code": "console.warn('[UserSync] Failed to sync user with backend:', error);"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 1543,
+      "code": "console.warn('[UserSync] Failed to persist sync queue:', e);"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 1599,
+      "code": "console.warn('[UserSync] Queued sync still failing.', {"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 1626,
+      "code": "console.warn('[VoteQueue] Failed to persist queue:', e);"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 1666,
+      "code": "console.warn('[VoteQueue] Queued vote still failing.', {"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 1730,
+      "code": "console.warn('\u274c Thread creation failed even after retry:', retryError);"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 1733,
+      "code": "console.warn('Failed to create thread:', error);"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 1824,
+      "code": "console.error('Failed to load thread:', error);"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 1870,
+      "code": "console.error('Failed to load leaderboard modal:', err);"
+    }
+  ],
+  "window_globals": [
+    {
+      "file": "config.js",
+      "line": 1,
+      "code": "window.DUALMIND_CONFIG = window.DUALMIND_CONFIG || {};"
+    },
+    {
+      "file": "arena-core.js",
+      "line": 291,
+      "code": "window.ArenaMode = ArenaMode;"
+    },
+    {
+      "file": "config.example.js",
+      "line": 1,
+      "code": "window.DUALMIND_CONFIG = window.DUALMIND_CONFIG || {};"
+    },
+    {
+      "file": "performance-monitor.js",
+      "line": 49,
+      "code": "window.fetch = async (...args) => {"
+    },
+    {
+      "file": "performance-monitor.js",
+      "line": 213,
+      "code": "window.performanceMonitor = performanceMonitor;"
+    },
+    {
+      "file": "login/js/supabase-init.js",
+      "line": 2,
+      "code": "window.supabase = window.supabase || {};"
+    },
+    {
+      "file": "login/js/supabase-init.js",
+      "line": 11,
+      "code": "window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);"
+    },
+    {
+      "file": "login/js/app-final.js",
+      "line": 11,
+      "code": "if (typeof window.supabaseClient === 'undefined') {"
+    },
+    {
+      "file": "login/js/app-final.js",
+      "line": 167,
+      "code": "window.dualMindAuth = new DualMindAuth();"
+    },
+    {
+      "file": "js/auth.js",
+      "line": 72,
+      "code": "window.DUALMIND_AUTH_TOKEN = this.token;"
+    },
+    {
+      "file": "js/auth.js",
+      "line": 117,
+      "code": "window.DUALMIND_AUTH_TOKEN = this.token;"
+    },
+    {
+      "file": "js/auth.js",
+      "line": 188,
+      "code": "window.getSupabaseAccessToken = async () => {"
+    },
+    {
+      "file": "js/api-client.js",
+      "line": 255,
+      "code": "window.APIClient = APIClient;"
+    },
+    {
+      "file": "js/api-client.js",
+      "line": 256,
+      "code": "window.createAPIClient = createAPIClient;"
+    },
+    {
+      "file": "js/api-client.js",
+      "line": 257,
+      "code": "window.getAPIClient = getAPIClient;"
+    },
+    {
+      "file": "js/feature-flags.js",
+      "line": 395,
+      "code": "window._DUALMIND_TESTER_ENERGY_BALANCE = Number.isFinite(energyBalance) ? energyBalance : null;"
+    },
+    {
+      "file": "js/apiInstance.js",
+      "line": 27,
+      "code": "window.DualMindApiInstance = api;"
+    },
+    {
+      "file": "js/auth/api-service.js",
+      "line": 610,
+      "code": "window.DualMindAPIService = DualMindAPIService;"
+    },
+    {
+      "file": "js/auth/supabase-init.js",
+      "line": 8,
+      "code": "window.DualMindAuthReady = new Promise((resolve) => {"
+    },
+    {
+      "file": "js/auth/supabase-init.js",
+      "line": 9,
+      "code": "window._resolveDualMindAuthReady = resolve;"
+    },
+    {
+      "file": "js/auth/supabase-init.js",
+      "line": 18,
+      "code": "window._SUPABASE_AUTH_INITIALIZED = true;"
+    },
+    {
+      "file": "js/auth/supabase-init.js",
+      "line": 49,
+      "code": "window._DUALMIND_AUTH = auth;"
+    },
+    {
+      "file": "js/auth/supabase-init.js",
+      "line": 63,
+      "code": "window.getAuth = () => auth;"
+    },
+    {
+      "file": "js/auth/supabase-init.js",
+      "line": 97,
+      "code": "window.fetch = async function (resource, config = {}) {"
+    },
+    {
+      "file": "js/auth/supabase-init.js",
+      "line": 128,
+      "code": "window.DualMindAuth = {"
+    },
+    {
+      "file": "js/auth/supabase-init.js",
+      "line": 265,
+      "code": "window.auth = window.DualMindAuth;"
+    },
+    {
+      "file": "js/auth/supabase-auth.js",
+      "line": 694,
+      "code": "window.SupabaseAuthService = SupabaseAuthService;"
+    },
+    {
+      "file": "js/auth/supabase-auth.js",
+      "line": 695,
+      "code": "window.initializeSupabaseAuth = initializeSupabaseAuth;"
+    },
+    {
+      "file": "js/auth/supabase-auth.js",
+      "line": 696,
+      "code": "window.getSupabaseAuthService = getSupabaseAuthService;"
+    },
+    {
+      "file": "js/api/utils/authProvider.js",
+      "line": 37,
+      "code": "if (typeof window.getSupabaseAccessToken === 'function') {"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 68,
+      "code": "window._DUALMIND_API = this.api;"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 292,
+      "code": "window._DUALMIND_MODELS = response.items || response || [];"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 295,
+      "code": "window._DUALMIND_MODELS = [];"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 332,
+      "code": "window._APP = this;"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 373,
+      "code": "window._DUALMIND_APP_READY = true;"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 2108,
+      "code": "window.DualMindArena = app;"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 2109,
+      "code": "window._APP = app;"
+    }
+  ],
+  "event_listeners": [
+    {
+      "file": "theme.js",
+      "line": 19,
+      "code": "window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => {"
+    },
+    {
+      "file": "performance-monitor.js",
+      "line": 26,
+      "code": "window.addEventListener('load', () => {"
+    },
+    {
+      "file": "performance-monitor.js",
+      "line": 115,
+      "code": "window.addEventListener('error', (event) => {"
+    },
+    {
+      "file": "performance-monitor.js",
+      "line": 130,
+      "code": "window.addEventListener('unhandledrejection', (event) => {"
+    },
+    {
+      "file": "performance-monitor.js",
+      "line": 216,
+      "code": "document.addEventListener('keydown', (e) => {"
+    },
+    {
+      "file": "performance-monitor.js",
+      "line": 230,
+      "code": "window.addEventListener('beforeunload', () => {"
+    },
+    {
+      "file": "login/auth-complete.js",
+      "line": 26,
+      "code": "tab.addEventListener('click', () => {"
+    },
+    {
+      "file": "login/auth-complete.js",
+      "line": 57,
+      "code": "forgotBtn.addEventListener('click', async (e) => {"
+    },
+    {
+      "file": "login/auth-complete.js",
+      "line": 165,
+      "code": "form.addEventListener('submit', async (e) => {"
+    },
+    {
+      "file": "login/auth-complete.js",
+      "line": 205,
+      "code": "phoneInput.addEventListener('input', (e) => {"
+    },
+    {
+      "file": "login/auth-complete.js",
+      "line": 230,
+      "code": "otpInput.addEventListener('input', (e) => {"
+    },
+    {
+      "file": "login/js/supabase-init.js",
+      "line": 19,
+      "code": "document.addEventListener('DOMContentLoaded', initializeSupabase);"
+    },
+    {
+      "file": "login/js/app-final.js",
+      "line": 26,
+      "code": "loginForm.addEventListener('submit', (e) => this.handleLogin(e));"
+    },
+    {
+      "file": "login/js/app-final.js",
+      "line": 32,
+      "code": "registerForm.addEventListener('submit', (e) => this.handleRegister(e));"
+    },
+    {
+      "file": "login/js/app-final.js",
+      "line": 38,
+      "code": "googleBtn.addEventListener('click', () => this.handleGoogleLogin());"
+    },
+    {
+      "file": "login/js/app-final.js",
+      "line": 44,
+      "code": "toggleBtn.addEventListener('click', (e) => {"
+    },
+    {
+      "file": "components/ChatInput.js",
+      "line": 128,
+      "code": "input?.addEventListener('input', (e) => {"
+    },
+    {
+      "file": "components/ChatInput.js",
+      "line": 139,
+      "code": "input?.addEventListener('keydown', (e) => {"
+    },
+    {
+      "file": "components/ChatInput.js",
+      "line": 148,
+      "code": "submitBtn?.addEventListener('click', () => this.submit());"
+    },
+    {
+      "file": "components/ChatInput.js",
+      "line": 151,
+      "code": "this.container.querySelector('#add-btn')?.addEventListener('click', () => this.handleAdd());"
+    },
+    {
+      "file": "components/ChatInput.js",
+      "line": 152,
+      "code": "this.container.querySelector('#web-btn')?.addEventListener('click', () => this.handleWebSearch());"
+    },
+    {
+      "file": "components/ChatInput.js",
+      "line": 153,
+      "code": "this.container.querySelector('#image-btn')?.addEventListener('click', () => this.handleImageUpload());"
+    },
+    {
+      "file": "components/ChatInput.js",
+      "line": 154,
+      "code": "this.container.querySelector('#code-btn')?.addEventListener('click', () => this.handleCodeMode());"
+    },
+    {
+      "file": "components/ChatInput.js",
+      "line": 158,
+      "code": "btn.addEventListener('click', (e) => {"
+    },
+    {
+      "file": "components/ChatInput.js",
+      "line": 165,
+      "code": "this.container.querySelector('.chat-input-container')?.addEventListener('click', (e) => {"
+    },
+    {
+      "file": "components/ChatInput.js",
+      "line": 211,
+      "code": "fileInput.addEventListener('change', (e) => {"
+    },
+    {
+      "file": "components/ChatInput.js",
+      "line": 224,
+      "code": "fileInput.addEventListener('change', (e) => {"
+    },
+    {
+      "file": "components/ChatInput.js",
+      "line": 274,
+      "code": "btn.addEventListener('click', (e) => {"
+    },
+    {
+      "file": "components/ShareModal.js",
+      "line": 173,
+      "code": "overlay.addEventListener('click', (e) => {"
+    },
+    {
+      "file": "components/ShareModal.js",
+      "line": 180,
+      "code": "overlay.addEventListener('click', (e) => {"
+    },
+    {
+      "file": "components/ShareModal.js",
+      "line": 187,
+      "code": "overlay.addEventListener('click', (e) => {"
+    },
+    {
+      "file": "components/ShareModal.js",
+      "line": 194,
+      "code": "overlay.addEventListener('change', async (e) => {"
+    },
+    {
+      "file": "components/ShareModal.js",
+      "line": 202,
+      "code": "overlay.addEventListener('click', async (e) => {"
+    },
+    {
+      "file": "components/ShareModal.js",
+      "line": 211,
+      "code": "overlay.addEventListener('click', async (e) => {"
+    },
+    {
+      "file": "components/ShareModal.js",
+      "line": 218,
+      "code": "document.addEventListener('keydown', (e) => {"
+    },
+    {
+      "file": "components/Header.js",
+      "line": 103,
+      "code": "mobileMenuBtn?.addEventListener('click', () => {"
+    },
+    {
+      "file": "components/Header.js",
+      "line": 109,
+      "code": "modeBtn?.addEventListener('click', () => this.toggleDropdown());"
+    },
+    {
+      "file": "components/Header.js",
+      "line": 114,
+      "code": "option.addEventListener('click', () => {"
+    },
+    {
+      "file": "components/Header.js",
+      "line": 121,
+      "code": "shareBtn?.addEventListener('click', () => {"
+    },
+    {
+      "file": "components/Header.js",
+      "line": 127,
+      "code": "exportBtn?.addEventListener('click', () => {"
+    },
+    {
+      "file": "components/Header.js",
+      "line": 138,
+      "code": "document.addEventListener('click', this._onDocumentClick);"
+    },
+    {
+      "file": "components/Header.js",
+      "line": 151,
+      "code": "document.addEventListener('keydown', this._onDocumentKeyDown);"
+    },
+    {
+      "file": "components/Header.js",
+      "line": 154,
+      "code": "document.addEventListener('sidebar-toggle', (e) => {"
+    },
+    {
+      "file": "components/Sidebar.js",
+      "line": 273,
+      "code": "listContainer.addEventListener('click', this._threadClickHandler);"
+    },
+    {
+      "file": "components/Sidebar.js",
+      "line": 279,
+      "code": "toggleBtn?.addEventListener('click', () => {"
+    },
+    {
+      "file": "components/Sidebar.js",
+      "line": 295,
+      "code": "logoBtn?.addEventListener('click', () => {"
+    },
+    {
+      "file": "components/Sidebar.js",
+      "line": 304,
+      "code": "floatingToggle?.addEventListener('click', () => {"
+    },
+    {
+      "file": "components/Sidebar.js",
+      "line": 315,
+      "code": "overlay?.addEventListener('click', () => this.close());"
+    },
+    {
+      "file": "components/Sidebar.js",
+      "line": 320,
+      "code": "item.addEventListener('click', (e) => {"
+    },
+    {
+      "file": "components/Sidebar.js",
+      "line": 330,
+      "code": "settingsBtn?.addEventListener('click', (e) => {"
+    },
+    {
+      "file": "components/Sidebar.js",
+      "line": 337,
+      "code": "document.addEventListener('click', (e) => {"
+    },
+    {
+      "file": "components/Sidebar.js",
+      "line": 351,
+      "code": "logoutBtn?.addEventListener('click', (e) => {"
+    },
+    {
+      "file": "components/Sidebar.js",
+      "line": 357,
+      "code": "window.addEventListener('resize', () => this.handleResize());"
+    },
+    {
+      "file": "components/Sidebar.js",
+      "line": 360,
+      "code": "document.addEventListener('backend-available', (e) => {"
+    },
+    {
+      "file": "components/Sidebar.js",
+      "line": 366,
+      "code": "document.addEventListener('threads-changed', () => {"
+    },
+    {
+      "file": "components/Sidebar.js",
+      "line": 398,
+      "code": "listContainer.addEventListener('click', this._threadActionsClickHandler);"
+    },
+    {
+      "file": "components/Sidebar.js",
+      "line": 630,
+      "code": "document.addEventListener('keydown', this._focusTrapHandler);"
+    },
+    {
+      "file": "components/Sidebar.js",
+      "line": 640,
+      "code": "document.addEventListener('keydown', this._escapeHandler);"
+    },
+    {
+      "file": "components/CustomModal.js",
+      "line": 33,
+      "code": "root.querySelector('.custom-modal-overlay').addEventListener('click', () => this.close());"
+    },
+    {
+      "file": "components/CustomModal.js",
+      "line": 36,
+      "code": "document.addEventListener('keydown', (e) => {"
+    },
+    {
+      "file": "components/CustomModal.js",
+      "line": 115,
+      "code": "input.addEventListener('keydown', (e) => {"
+    },
+    {
+      "file": "components/CustomModal.js",
+      "line": 220,
+      "code": "btn.addEventListener('click', (e) => {"
+    },
+    {
+      "file": "components/chat/ChatView.js",
+      "line": 498,
+      "code": "modal.addEventListener('click', (e) => {"
+    },
+    {
+      "file": "components/chat/ChatView.js",
+      "line": 504,
+      "code": "document.addEventListener('keydown', (e) => {"
+    },
+    {
+      "file": "components/chat/ChatView.js",
+      "line": 749,
+      "code": "this.container.addEventListener('click', this._onClick);"
+    },
+    {
+      "file": "components/chat/ChatView.js",
+      "line": 772,
+      "code": "newSelect.addEventListener('click', (e) => {"
+    },
+    {
+      "file": "components/chat/ChatView.js",
+      "line": 779,
+      "code": "newSelect.addEventListener('mousedown', (e) => {"
+    },
+    {
+      "file": "components/chat/ChatView.js",
+      "line": 815,
+      "code": "freshLeftSelect?.addEventListener('change', handleModelChange);"
+    },
+    {
+      "file": "components/chat/ChatView.js",
+      "line": 816,
+      "code": "freshRightSelect?.addEventListener('change', handleModelChange);"
+    },
+    {
+      "file": "components/chat/ChatView.js",
+      "line": 817,
+      "code": "freshDirectSelect?.addEventListener('change', (e) => {"
+    },
+    {
+      "file": "components/chat/ChatView.js",
+      "line": 824,
+      "code": "swapBtn?.addEventListener('click', () => {"
+    },
+    {
+      "file": "components/chat/ChatView.js",
+      "line": 835,
+      "code": "randomBtn?.addEventListener('click', () => {"
+    },
+    {
+      "file": "components/chat/ChatView.js",
+      "line": 853,
+      "code": "chip.addEventListener('click', () => {"
+    },
+    {
+      "file": "components/chat/ChatView.js",
+      "line": 962,
+      "code": "scrollContainer.addEventListener('scroll', () => {"
+    },
+    {
+      "file": "components/chat/ChatView.js",
+      "line": 1012,
+      "code": "body.addEventListener('scroll', updateAtBottom, { passive: true });"
+    },
+    {
+      "file": "js/update-password.js",
+      "line": 1,
+      "code": "document.addEventListener('DOMContentLoaded', async () => {"
+    },
+    {
+      "file": "js/update-password.js",
+      "line": 59,
+      "code": "form.addEventListener('submit', async (e) => {"
+    },
+    {
+      "file": "js/feature-flags.js",
+      "line": 6,
+      "code": "document.addEventListener('DOMContentLoaded', () => {"
+    },
+    {
+      "file": "js/feature-flags.js",
+      "line": 50,
+      "code": "document.addEventListener('user-logged-in', () => {"
+    },
+    {
+      "file": "js/feature-flags.js",
+      "line": 54,
+      "code": "document.addEventListener('backend-available', (evt) => {"
+    },
+    {
+      "file": "js/auth-examples.js",
+      "line": 176,
+      "code": "window.addEventListener('storage', (event) => {"
+    },
+    {
+      "file": "js/auth-examples.js",
+      "line": 230,
+      "code": "window.addEventListener('fetch', (event) => {"
+    },
+    {
+      "file": "js/auth-examples.js",
+      "line": 285,
+      "code": "sendBtn.addEventListener('click', () => this.sendMessage());"
+    },
+    {
+      "file": "js/auth-examples.js",
+      "line": 286,
+      "code": "messageInput.addEventListener('keypress', (e) => {"
+    },
+    {
+      "file": "js/auth-modern.js",
+      "line": 3,
+      "code": "document.addEventListener('DOMContentLoaded', async () => {"
+    },
+    {
+      "file": "js/auth-modern.js",
+      "line": 294,
+      "code": "passwordSecurityEls.tipsTrigger?.addEventListener('click', () => {"
+    },
+    {
+      "file": "js/auth-modern.js",
+      "line": 301,
+      "code": "document.addEventListener('click', (event) => {"
+    },
+    {
+      "file": "js/auth-modern.js",
+      "line": 358,
+      "code": "tab.addEventListener('click', () => {"
+    },
+    {
+      "file": "js/auth-modern.js",
+      "line": 454,
+      "code": "input.addEventListener('input', (e) => {"
+    },
+    {
+      "file": "js/auth-modern.js",
+      "line": 467,
+      "code": "input.addEventListener('keydown', (e) => {"
+    },
+    {
+      "file": "js/auth-modern.js",
+      "line": 495,
+      "code": "phoneInput.addEventListener('input', (e) => {"
+    },
+    {
+      "file": "js/auth-modern.js",
+      "line": 522,
+      "code": "togglePassword.addEventListener('click', () => {"
+    },
+    {
+      "file": "js/auth-modern.js",
+      "line": 532,
+      "code": "socialGitHub.addEventListener('click', async () => handleSocialLogin('github', socialGitHub));"
+    },
+    {
+      "file": "js/auth-modern.js",
+      "line": 535,
+      "code": "socialGoogle.addEventListener('click', async () => handleSocialLogin('google', socialGoogle));"
+    },
+    {
+      "file": "js/auth-modern.js",
+      "line": 588,
+      "code": "resendAction.addEventListener('click', (e) => {"
+    },
+    {
+      "file": "js/auth-modern.js",
+      "line": 596,
+      "code": "changePhoneAction.addEventListener('click', (e) => {"
+    },
+    {
+      "file": "js/auth-modern.js",
+      "line": 619,
+      "code": "form.addEventListener('submit', (e) => {"
+    },
+    {
+      "file": "js/auth-modern.js",
+      "line": 838,
+      "code": "emailInput.addEventListener('input', () => {"
+    },
+    {
+      "file": "js/auth-modern.js",
+      "line": 849,
+      "code": "passwordInput.addEventListener('input', () => {"
+    },
+    {
+      "file": "js/auth-modern.js",
+      "line": 883,
+      "code": "confirmPasswordEls.input.addEventListener('input', () => {"
+    },
+    {
+      "file": "js/resend-auth-email.js",
+      "line": 290,
+      "code": "document.addEventListener('DOMContentLoaded', autoSetup);"
+    },
+    {
+      "file": "js/forgot-password.js",
+      "line": 1,
+      "code": "document.addEventListener('DOMContentLoaded', async () => {"
+    },
+    {
+      "file": "js/forgot-password.js",
+      "line": 34,
+      "code": "form.addEventListener('submit', async (e) => {"
+    },
+    {
+      "file": "js/leaderboardPage.js",
+      "line": 193,
+      "code": "refreshBtn?.addEventListener('click', (e) => {"
+    },
+    {
+      "file": "js/leaderboardPage.js",
+      "line": 202,
+      "code": "document.addEventListener('DOMContentLoaded', init);"
+    },
+    {
+      "file": "js/api/core/HttpClient.js",
+      "line": 164,
+      "code": "signal.addEventListener('abort', () => controller.abort(), { once: true });"
+    },
+    {
+      "file": "js/api/core/HttpClient.js",
+      "line": 260,
+      "code": "signal.addEventListener('abort', () => controller.abort(), { once: true });"
+    },
+    {
+      "file": "js/ui/leaderboardModal.js",
+      "line": 92,
+      "code": "root.addEventListener('click', this._onClick);"
+    },
+    {
+      "file": "js/ui/leaderboardModal.js",
+      "line": 101,
+      "code": "document.addEventListener('keydown', this._onKeyDown);"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 36,
+      "code": "document.addEventListener('toggle-code-mode', (e) => {"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 45,
+      "code": "document.addEventListener('toggle-web-search', (e) => {"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 55,
+      "code": "document.addEventListener('user-logout', () => this.handleLogout());"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 160,
+      "code": "document.addEventListener('DOMContentLoaded', () => this.setup());"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 270,
+      "code": "btn.addEventListener('click', async () => {"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 412,
+      "code": "document.addEventListener('toggle-mobile-menu', () => {"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 417,
+      "code": "document.addEventListener('nav-action', (e) => {"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 422,
+      "code": "document.addEventListener('mode-change', (e) => {"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 428,
+      "code": "document.addEventListener('api-toggle', (e) => {"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 433,
+      "code": "document.addEventListener('click', (e) => {"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 461,
+      "code": "document.addEventListener('chat-submit', (e) => {"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 466,
+      "code": "document.addEventListener('vote-submit', (e) => {"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 471,
+      "code": "document.addEventListener('mouseover', (e) => {"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 482,
+      "code": "document.addEventListener('mouseout', (e) => {"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 494,
+      "code": "document.addEventListener('sidebar-toggle', (e) => {"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 499,
+      "code": "document.addEventListener('thread-clicked', (e) => {"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 504,
+      "code": "window.addEventListener('resize', () => {"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 509,
+      "code": "document.addEventListener('keydown', (e) => {"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 514,
+      "code": "document.addEventListener('open-share-modal', () => {"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 531,
+      "code": "document.addEventListener('open-export-menu', async () => {"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 595,
+      "code": "btn.addEventListener('mouseenter', () => { btn.style.background = 'rgba(74,171,194,0.12)'; });"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 596,
+      "code": "btn.addEventListener('mouseleave', () => { btn.style.background = 'transparent'; });"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 597,
+      "code": "btn.addEventListener('click', async () => {"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 606,
+      "code": "btn.addEventListener('keydown', (e) => {"
+    },
+    {
+      "file": "js/ui/app.js",
+      "line": 639,
+      "code": "setTimeout(() => document.addEventListener('click', closeOnClick, true), 0);"
+    }
+  ],
+  "fetch_calls": [
+    {
+      "file": "worker.js",
+      "line": 2,
+      "code": "async fetch(request, env) {"
+    },
+    {
+      "file": "worker.js",
+      "line": 39,
+      "code": "const backendResponse = await fetch(backendRequestUrl, {"
+    },
+    {
+      "file": "worker.js",
+      "line": 79,
+      "code": "let assetResponse = await env.ASSETS.fetch(new Request(shareUrl, request));"
+    },
+    {
+      "file": "worker.js",
+      "line": 217,
+      "code": "let assetResponse = await env.ASSETS.fetch(request);"
+    },
+    {
+      "file": "worker.js",
+      "line": 248,
+      "code": "assetResponse = await env.ASSETS.fetch(new Request(htmlUrl, request));"
+    },
+    {
+      "file": "worker.js",
+      "line": 263,
+      "code": "assetResponse = await env.ASSETS.fetch(new Request(indexUrl, request));"
+    },
+    {
+      "file": "worker.js",
+      "line": 279,
+      "code": "const errorResponse = await env.ASSETS.fetch(new Request(errorUrl, request));"
+    },
+    {
+      "file": "test-supabase-auth.js",
+      "line": 16,
+      "code": "const response = await fetch(url, {"
+    },
+    {
+      "file": "test-everything.js",
+      "line": 29,
+      "code": "const response = await fetch('http://localhost:5079/api/arena/ping');"
+    },
+    {
+      "file": "test-everything.js",
+      "line": 59,
+      "code": "const response = await fetch('http://localhost:5079/api/users/sync', {"
+    },
+    {
+      "file": "components/ShareModal.js",
+      "line": 270,
+      "code": "const response = await fetch(`${baseUrl}/api/threads/${this.threadId}/visibility`, {"
+    },
+    {
+      "file": "components/SharedThreadView.js",
+      "line": 64,
+      "code": "const response = await fetch(`${this.getBaseUrl()}/api/threads/${this.threadId}`);"
+    },
+    {
+      "file": "components/SharedThreadView.js",
+      "line": 71,
+      "code": "const messagesResponse = await fetch(`${this.getBaseUrl()}/api/threads/${this.threadId}/messages`);"
+    },
+    {
+      "file": "js/auth.js",
+      "line": 40,
+      "code": "const response = await fetch(`${this.getApiUrl()}/api/auth/login`, {"
+    },
+    {
+      "file": "js/auth.js",
+      "line": 86,
+      "code": "const response = await fetch(`${this.getApiUrl()}/api/auth/signup`, {"
+    },
+    {
+      "file": "js/api-client.js",
+      "line": 118,
+      "code": "const response = await fetch(url, fetchOptions);"
+    },
+    {
+      "file": "js/api-client.js",
+      "line": 202,
+      "code": "const response = await fetch(url, {"
+    },
+    {
+      "file": "js/feature-flags.js",
+      "line": 174,
+      "code": "const response = await fetch(`${apiUrl}/api/users/sync`, {"
+    },
+    {
+      "file": "js/feature-flags.js",
+      "line": 198,
+      "code": "let response = await fetch(endpointWithEnergy, {"
+    },
+    {
+      "file": "js/feature-flags.js",
+      "line": 210,
+      "code": "response = await fetch(endpointRoleOnly, {"
+    },
+    {
+      "file": "js/auth-modern.js",
+      "line": 182,
+      "code": "const res = await fetch(`https://api.pwnedpasswords.com/range/${prefix}`, {"
+    },
+    {
+      "file": "js/resend-auth-email.js",
+      "line": 154,
+      "code": "var res = await fetch(url, {"
+    },
+    {
+      "file": "js/auth/api-service.js",
+      "line": 48,
+      "code": "const response = await fetch(`${this.baseUrl}/api/arena/chat`, {"
+    },
+    {
+      "file": "js/auth/api-service.js",
+      "line": 99,
+      "code": "const response = await fetch(`${this.baseUrl}/api/arena/chat/stream`, {"
+    },
+    {
+      "file": "js/auth/api-service.js",
+      "line": 232,
+      "code": "const response = await fetch(`${this.baseUrl}/api/arena/dualchat`, {"
+    },
+    {
+      "file": "js/auth/api-service.js",
+      "line": 311,
+      "code": "const response = await fetch(`${this.baseUrl}/api/models`, {"
+    },
+    {
+      "file": "js/auth/api-service.js",
+      "line": 334,
+      "code": "const response = await fetch(`${this.baseUrl}/api/users/me`, {"
+    },
+    {
+      "file": "js/auth/api-service.js",
+      "line": 366,
+      "code": "const response = await fetch(`${this.baseUrl}/api/arena/model-vote`, {"
+    },
+    {
+      "file": "js/auth/api-service.js",
+      "line": 393,
+      "code": "const response = await fetch(`${this.baseUrl}/api/arena/model-stats`, {"
+    },
+    {
+      "file": "js/auth/api-service.js",
+      "line": 425,
+      "code": "const response = await fetch(`${this.baseUrl}/api/threads?${params}`, {"
+    },
+    {
+      "file": "js/auth/api-service.js",
+      "line": 447,
+      "code": "const response = await fetch(`${this.baseUrl}/api/threads/${threadId}/messages`, {"
+    },
+    {
+      "file": "js/auth/api-service.js",
+      "line": 472,
+      "code": "const response = await fetch(`${this.baseUrl}/api/threads`, {"
+    },
+    {
+      "file": "js/auth/api-service.js",
+      "line": 502,
+      "code": "const response = await fetch(`${this.baseUrl}/api/threads/${threadId}`, {"
+    },
+    {
+      "file": "js/auth/api-service.js",
+      "line": 535,
+      "code": "const response = await fetch(`${this.baseUrl}/api/threads/${threadId}/visibility`, {"
+    },
+    {
+      "file": "js/auth/api-service.js",
+      "line": 563,
+      "code": "const response = await fetch(`${this.baseUrl}/api/settings/feature-flag/${key}`, {"
+    },
+    {
+      "file": "js/auth/api-service.js",
+      "line": 589,
+      "code": "const response = await fetch(`${this.baseUrl}/health`, {"
+    },
+    {
+      "file": "js/auth/supabase-init.js",
+      "line": 260,
+      "code": "return fetch(url, { ...options, headers });"
+    },
+    {
+      "file": "js/api/apiClient.js",
+      "line": 111,
+      "code": "const response = await fetch(url, { method: 'POST', headers, body: JSON.stringify({ text, voice }) });"
+    }
+  ]
+}

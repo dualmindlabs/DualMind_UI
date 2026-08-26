@@ -9,7 +9,7 @@ node_modules/
 !.yarn/releases
 !.yarn/versions
 
-# Build output / compiled / framework artifacts
+sandbox/
 dist/
 build/
 out/
@@ -59,6 +59,10 @@ llm_context/
 *windsurf*
 *aider*
 *cline*
+
+# Exceptions: intentionally committed AI agent guides
+!.cursorrules
+!CLAUDE.md
 
 # Auto-generated markdown / docs
 *_COMPLETE_*

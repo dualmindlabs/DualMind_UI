@@ -1,0 +1,58 @@
+# DualMind Arena — AI Agent Rules
+
+## What this repo is
+
+DualMind Arena is a **vanilla-JS AI model battle arena**. Users compare two LLM responses side-by-side, vote, and build a leaderboard. Static HTML/CSS/JS is served by Cloudflare Workers; an Azure backend handles `/api/*`; Supabase handles client-side auth.
+
+## Golden rules
+
+1. **Read `AGENTS.md` before any major change.** It contains the canonical file map, event bus, globals, and design-token rules.
+2. **Do not import deprecated shims.** Use `js/apiInstance.js` for API calls; use `js/auth/supabase-auth.js` for auth; the app orchestrator is `js/ui/app.js`.
+3. **Keep `window` globals minimal.** If a new global is unavoidable, add it to the AGENTS.md Window Globals table.
+4. **Sanitize HTML that touches user or AI content.** Use `DOMPurify` (already loaded) or React/Vue-safe rendering.
+5. **Stick to the design tokens.** `#4AABC2` and layout offsets must come from `css/tokens.css` variables.
+6. **No `console.log` in production paths.** Use `console.warn`/`console.error` only for real errors.
+7. **Run the tooling after changes.** Fix the lint glob first (`package.json` line 9 needs quotes around `--ignore-pattern "admin-email-system/**"`).
+
+## Quick commands
+
+```bash
+npm install          # dependencies
+npm run dev          # http://localhost:8000
+npm run lint         # broken out-of-box; fix glob quoting first
+npm run test         # broken; playwright is not installed
+npm run build        # build.js -> ./dist
+npm run deploy       # build + wrangler deploy
+```
+
+## Architecture at a glance
+
+```
+Browser
+  ├─ config.js              → window.DUALMIND_CONFIG
+  ├─ js/auth/supabase-init.js  → window.DualMindAuth / window.DualMindAuthReady
+  ├─ js/ui/app.js           → main App class (window._APP)
+  │    ├─ components/Header.js
+  │    ├─ components/Sidebar.js
+  │    ├─ components/ChatInput.js
+  │    └─ components/chat/ChatView.js
+  └─ js/apiInstance.js      → api singleton (window._DUALMIND_API)
+
+Cloudflare Worker (worker.js)
+  ├─ /api/*   → Azure backend
+  ├─ /share/* → share/index.html
+  └─ /*       → ASSETS binding (dist/)
+```
+
+## What NOT to do
+
+- Do not touch prototypes: `App.jsx`, `next-dualmind/`, `old-html-backup/`, `arena-core.js`.
+- Do not import `js/api-client.js`, `js/auth.js`, or `js/auth/api-service.js` in new code.
+- Do not add inline `<style>` or hardcoded hex colors in JS templates.
+- Do not put real secrets in `config.js`.
+
+## Known traps
+
+- `login/auth-complete.js` is currently broken (undefined `emailInput`, `setLoading`, `supabaseClient`, `SITE_URL`). Any auth change here must fix those references first.
+- `process.env` in `config.js` does **not** work in the browser; config must come from build-time replacement or env injection.
+- The worker sets `Access-Control-Allow-Origin: *`; restrict it to real origins before production.
