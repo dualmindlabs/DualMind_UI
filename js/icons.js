@@ -6,25 +6,20 @@
 export const Icons = {
   // Logo Grid Icon
   logo: (size = 21) => `
-    <svg width="${size}" height="${size}" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M0 1C0 0.447715 0.447715 0 1 0H8C8.55228 0 9 0.447715 9 1V8C9 8.55228 8.55228 9 8 9H1C0.447715 9 0 8.55228 0 8V1Z" fill="#577B87"/>
-      <path d="M12 1C12 0.447715 12.4477 0 13 0H20C20.5523 0 21 0.447715 21 1V8C21 8.55228 20.5523 9 20 9H13C12.4477 9 12 8.55228 12 8V1Z" fill="#4AABC2"/>
-      <path d="M12 13C12 12.4477 12.4477 12 13 12H20C20.5523 12 21 12.4477 21 13V20C21 20.5523 20.5523 21 20 21H13C12.4477 21 12 20.5523 12 20V13Z" fill="#CB9275"/>
-      <path d="M0 13C0 12.4477 0.447715 12 1 12H8C8.55228 12 9 12.4477 9 13V20C9 20.5523 8.55228 21 8 21H1C0.447715 21 0 20.5523 0 20V13Z" fill="#FDF4CD"/>
-    </svg>
+    <img src="assets/logo.png" alt="DualMind Logo" style="width: ${size}px; height: auto;">
   `,
 
   // Chevron Down
   chevronDown: (color = '#577B87', size = 15) => `
-    <svg width="${size}" height="${Math.round(size * 0.6)}" viewBox="0 0 15 9" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path fill-rule="evenodd" clip-rule="evenodd" d="M6.07853 8.21663C6.35978 8.49753 6.74103 8.65531 7.13853 8.65531C7.53603 8.65531 7.91728 8.49753 8.19853 8.21663L13.8565 2.56063C14.1378 2.27923 14.2957 1.89763 14.2957 1.49977C14.2956 1.10192 14.1374 0.72039 13.856 0.439127C13.5746 0.157865 13.193 -9.37265e-05 12.7952 4.17234e-08C12.3973 9.38099e-05 12.0158 0.158233 11.7345 0.439627L7.13853 5.03563L2.54253 0.439627C2.25975 0.166254 1.88092 0.0148813 1.48762 0.0181122C1.09432 0.0213432 0.718028 0.178919 0.439783 0.456901C0.161539 0.734883 0.00360754 1.11103 5.72205e-06 1.50432C-0.00359609 1.89762 0.14742 2.2766 0.420527 2.55963L6.07753 8.21763L6.07853 8.21663Z" fill="${color}"/>
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="6 9 12 15 18 9"></polyline>
     </svg>
   `,
 
   // Chevron Up (for open dropdown)
   chevronUp: (color = '#577B87', size = 15) => `
-    <svg width="${size}" height="${Math.round(size * 0.6)}" viewBox="0 0 15 9" fill="none" xmlns="http://www.w3.org/2000/svg" style="transform: rotate(180deg)">
-      <path fill-rule="evenodd" clip-rule="evenodd" d="M6.07853 8.21663C6.35978 8.49753 6.74103 8.65531 7.13853 8.65531C7.53603 8.65531 7.91728 8.49753 8.19853 8.21663L13.8565 2.56063C14.1378 2.27923 14.2957 1.89763 14.2957 1.49977C14.2956 1.10192 14.1374 0.72039 13.856 0.439127C13.5746 0.157865 13.193 -9.37265e-05 12.7952 4.17234e-08C12.3973 9.38099e-05 12.0158 0.158233 11.7345 0.439627L7.13853 5.03563L2.54253 0.439627C2.25975 0.166254 1.88092 0.0148813 1.48762 0.0181122C1.09432 0.0213432 0.718028 0.178919 0.439783 0.456901C0.161539 0.734883 0.00360754 1.11103 5.72205e-06 1.50432C-0.00359609 1.89762 0.14742 2.2766 0.420527 2.55963L6.07753 8.21763L6.07853 8.21663Z" fill="${color}"/>
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="18 15 12 9 6 15"></polyline>
     </svg>
   `,
 
@@ -56,17 +51,14 @@ export const Icons = {
     </svg>
   `,
 
-  // Battle / Shield with Crossed Swords Icon - From Reference Image
+  // Battle / Shield with Crossed Swords Icon
   battle: (color = 'white', size = 20) => `
-    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <!-- Left Sword (behind shield) -->
-      <path d="M6 3L8 5M8 5L6.5 6.5L4 21L5.5 19.5L7 21L8.5 19.5M8 5L10 7" stroke="${color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-      <!-- Right Sword (behind shield) -->
-      <path d="M18 3L16 5M16 5L17.5 6.5L20 21L18.5 19.5L17 21L15.5 19.5M16 5L14 7" stroke="${color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-      <!-- Shield (front) -->
-      <path d="M12 3C12 3 8 4.5 8 7V12C8 16 10 19 12 21C14 19 16 16 16 12V7C16 4.5 12 3 12 3Z" stroke="${color}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-      <!-- Shield Center Detail -->
-      <path d="M12 9V15M10 12H14" stroke="${color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke-width="2" />
+      <path d="M8.5 15.5l7-7" stroke-width="1.5" />
+      <path d="M15.5 15.5l-7-7" stroke-width="1.5" />
+      <path d="M8 13.5l2.5 2.5" stroke-width="1.5" />
+      <path d="M16 13.5l-2.5 2.5" stroke-width="1.5" />
     </svg>
   `,
 
@@ -109,15 +101,18 @@ export const Icons = {
 
   // Arrow Up / Send Icon
   arrowUp: (color = 'white', size = 15) => `
-    <svg width="${size}" height="${Math.round(size * 1.27)}" viewBox="0 0 15 19" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M8.21848 0.43868C7.93723 0.157779 7.55598 0 7.15848 0C6.76098 0 6.37973 0.157779 6.09848 0.43868L0.439481 6.09468C0.158086 6.37607 -4.19311e-09 6.75773 0 7.15568C4.19311e-09 7.55363 0.158086 7.93529 0.439481 8.21668C0.720875 8.49808 1.10253 8.65616 1.50048 8.65616C1.89843 8.65616 2.28009 8.49808 2.56148 8.21668L5.65848 5.12068V16.6557C5.65848 17.0535 5.81652 17.435 6.09782 17.7163C6.37912 17.9976 6.76066 18.1557 7.15848 18.1557C7.55631 18.1557 7.93784 17.9976 8.21914 17.7163C8.50045 17.435 8.65848 17.0535 8.65848 16.6557V5.12068L11.7545 8.21668C11.8938 8.35601 12.0592 8.46654 12.2413 8.54194C12.4233 8.61735 12.6184 8.65616 12.8155 8.65616C13.0125 8.65616 13.2076 8.61735 13.3897 8.54194C13.5717 8.46654 13.7371 8.35601 13.8765 8.21668C14.0158 8.07735 14.1263 7.91194 14.2017 7.72989C14.2771 7.54784 14.316 7.35273 14.316 7.15568C14.316 6.95863 14.2771 6.76352 14.2017 6.58147C14.1263 6.39942 14.0158 6.23401 13.8765 6.09468L8.21848 0.43868Z" fill="${color}"/>
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="12" y1="19" x2="12" y2="5"></line>
+      <polyline points="5 12 12 5 19 12"></polyline>
     </svg>
   `,
 
   // Chat Bubble Icon
   chat: (color = 'white', size = 20) => `
-    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M21 11.5C21.0034 12.8199 20.6951 14.1219 20.1 15.3C19.3944 16.7118 18.3098 17.8992 16.9674 18.7293C15.6251 19.5594 14.0782 19.9994 12.5 20C11.1801 20.0035 9.87812 19.6951 8.7 19.1L3 21L4.9 15.3C4.30493 14.1219 3.99656 12.8199 4 11.5C4.00061 9.92179 4.44061 8.37488 5.27072 7.03258C6.10083 5.69028 7.28825 4.6056 8.7 3.90003C9.87812 3.30496 11.1801 2.99659 12.5 3.00003H13C15.0843 3.11502 17.053 3.99479 18.5291 5.47089C20.0052 6.94699 20.885 8.91568 21 11V11.5Z" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+      <path d="M8 10h8" opacity="0.6"></path>
+      <path d="M8 14h6" opacity="0.6"></path>
     </svg>
   `,
 
@@ -152,9 +147,10 @@ export const Icons = {
 
   // Split Rectangle / Side by Side Icon
   splitRectangle: (color = 'white', size = 20) => `
-    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="3" y="3" width="18" height="18" rx="2" stroke="${color}" stroke-width="2"/>
-      <path d="M12 3V21" stroke="${color}" stroke-width="2"/>
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="4" width="8" height="16" rx="2" stroke-width="2" />
+      <rect x="13" y="4" width="8" height="16" rx="2" stroke-width="2" />
+      <path d="M6 8h2M6 12h2M16 8h2M16 12h2" stroke-width="1.5" opacity="0.6" />
     </svg>
   `,
 
@@ -165,6 +161,31 @@ export const Icons = {
       <path d="M6 15C7.65685 15 9 13.6569 9 12C9 10.3431 7.65685 9 6 9C4.34315 9 3 10.3431 3 12C3 13.6569 4.34315 15 6 15Z" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       <path d="M18 22C19.6569 22 21 20.6569 21 19C21 17.3431 19.6569 16 18 16C16.3431 16 15 17.3431 15 19C15 20.6569 16.3431 22 18 22Z" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       <path d="M8.59 13.51L15.42 17.49M15.41 6.51L8.59 10.49" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  `,
+
+  // Rename / Pencil Icon
+  rename: (color = 'white', size = 14) => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M11 4H4C3.46957 4 2.96086 4.21071 2.58579 4.58579C2.21071 4.96086 2 5.46957 2 6V20C2 20.5304 2.21071 21.0391 2.58579 21.4142C2.96086 21.7893 3.46957 22 4 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V13" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M18.5 2.50001C18.8978 2.10219 19.4374 1.87869 20 1.87869C20.5626 1.87869 21.1022 2.10219 21.5 2.50001C21.8978 2.89784 22.1213 3.4374 22.1213 4.00001C22.1213 4.56262 21.8978 5.10219 21.5 5.50001L12 15L8 16L9 12L18.5 2.50001Z" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  `,
+
+  // Trash / Delete Icon
+  trash: (color = 'white', size = 14) => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M3 6H5H21" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M19 6V20C19 20.5304 18.7893 21.0391 18.4142 21.4142C18.0391 21.7893 17.5304 22 17 22H7C6.46957 22 5.96086 21.7893 5.58579 21.4142C5.21071 21.0391 5 20.5304 5 20V6M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  `,
+
+  // Download Icon
+  download: (color = 'white', size = 18) => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M7 10L12 15L17 10" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M12 15V3" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
   `
 };

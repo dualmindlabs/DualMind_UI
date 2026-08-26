@@ -19,6 +19,8 @@ export default {
       });
     }
 
+
+
     // API Proxy: Forward /api/* requests to backend server
     if (pathname.startsWith('/api/')) {
       console.log('Worker proxy: intercepting', pathname);
@@ -72,16 +74,26 @@ export default {
     // Handle /share/* routes explicitly for thread sharing
     if (pathname.startsWith('/share')) {
       if (env?.ASSETS?.fetch) {
+        // Rewrite all /share/* requests to /share/index.html
         const shareUrl = new URL(request.url);
         shareUrl.pathname = '/share/index.html';
-        const assetResponse = await env.ASSETS.fetch(new Request(shareUrl, request));
+
+        let assetResponse = await env.ASSETS.fetch(new Request(shareUrl, request));
+
+        // If /share/index.html is not found (e.g. if deployed structure is flat), 
+        // try fetching from root /share.html or just /index.html as fallback
+        if (!assetResponse || assetResponse.status === 404) {
+          console.log('Worker: /share/index.html not found, trying fallback');
+          // Try root index? No, let's try just letting it fall through or error out
+          // But valid SPA routing usually means serving the unpredictable path as index.html
+        }
 
         if (assetResponse && assetResponse.status !== 404) {
           const response = new Response(assetResponse.body, assetResponse);
           response.headers.set('X-Content-Type-Options', 'nosniff');
           response.headers.set('X-Frame-Options', 'DENY');
-          response.headers.set('X-XSS-Protection', '1; mode=block');
-          response.headers.set('cache-control', 'no-store, no-cache, must-revalidate, max-age=0');
+          // Important: Cache control to prevent stale share pages
+          response.headers.set('cache-control', 'no-store, no-cache, must-revalidate');
           return response;
         }
       }
@@ -192,6 +204,16 @@ Sitemap: https://${domain}/sitemap.xml`, {
       });
     }
 
+    // Ads.txt
+    if (pathname === '/ads.txt') {
+      return new Response('google.com, pub-7046688828386115, DIRECT, f08c47fec0942fa0', {
+        headers: {
+          'content-type': 'text/plain; charset=utf-8',
+          'cache-control': 'public, max-age=86400'
+        },
+      });
+    }
+
     // Serve static assets from ASSETS binding
     if (env?.ASSETS?.fetch) {
       let assetResponse = await env.ASSETS.fetch(request);
@@ -248,6 +270,28 @@ Sitemap: https://${domain}/sitemap.xml`, {
           response.headers.set('X-XSS-Protection', '1; mode=block');
           return response;
         }
+      }
+    }
+
+    // Serve custom 404.html if asset is not found
+    if (env?.ASSETS?.fetch) {
+      try {
+        const errorUrl = new URL(request.url);
+        errorUrl.pathname = '/404.html';
+        const errorResponse = await env.ASSETS.fetch(new Request(errorUrl, request));
+        if (errorResponse && errorResponse.status !== 404) {
+          const response = new Response(errorResponse.body, {
+            status: 404,
+            statusText: 'Not Found',
+            headers: errorResponse.headers
+          });
+          response.headers.set('content-type', 'text/html; charset=utf-8');
+          response.headers.set('X-Content-Type-Options', 'nosniff');
+          response.headers.set('X-Frame-Options', 'DENY');
+          return response;
+        }
+      } catch (error) {
+        console.error('Failed to load custom 404 page:', error);
       }
     }
 

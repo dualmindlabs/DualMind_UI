@@ -78,7 +78,6 @@ export class HttpClient {
         } else {
             console.warn('[HttpClient] No token retrieved!');
             console.warn('[HttpClient] Auth checks:', {
-                DUALMIND_AUTH_TOKEN: !!window.DUALMIND_AUTH_TOKEN,
                 _DUALMIND_AUTH: !!window._DUALMIND_AUTH,
                 DualMindAuth: !!window.DualMindAuth,
                 localStorage_dualmind: !!localStorage.getItem('dualmind.auth.supabase')

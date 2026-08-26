@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="description" content="View a shared DualMind AI battle thread">
     <meta name="theme-color" content="#000000">
 
@@ -20,6 +20,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/vs2015.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
 
     <!-- Styles -->
     <link rel="stylesheet" href="../css/styles.css">
@@ -97,7 +98,7 @@
 
                 // Initialize the API service if available
                 const config = window.DUALMIND_CONFIG || {};
-                const baseUrl = config.apiBaseUrl || config.api?.baseUrl || 'http://localhost:5079';
+                const baseUrl = config.backendUrl || config.apiBaseUrl || config.api?.baseUrl || 'http://localhost:5079';
 
                 // Create simple API wrapper for shared thread view
                 window._API = {

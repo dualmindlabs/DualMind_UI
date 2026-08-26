@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - DualMind Arena</title>
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://arena.dualmindlab.tech/login-modern.html">
+    <meta property="og:title" content="Login - DualMind Arena">
+    <meta property="og:description" content="Sign in to DualMind Arena to compare and vote on AI model responses.">
+    <meta property="og:image" content="https://arena.dualmindlab.tech/assets/og-image.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://arena.dualmindlab.tech/login-modern.html">
+    <meta property="twitter:title" content="Login - DualMind Arena">
+    <meta property="twitter:description" content="Sign in to DualMind Arena to compare and vote on AI model responses.">
+    <meta property="twitter:image" content="https://arena.dualmindlab.tech/assets/og-image.png">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/tokens.css">
+    <link rel="stylesheet" href="css/auth-modern.css">
+    <link rel="stylesheet" href="css/auth-ui-fixes.css">
+    <link rel="stylesheet" href="css/custom-modal.css">
+
+    <!-- Config & Supabase -->
+    <script src="config.js"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="js/auth/supabase-init.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/libphonenumber-js@1.10.44/bundle/libphonenumber-max.js"></script>
+</head>
+
+<body class="login-page">
+    <div class="bg-glow"></div>
+
+    <div class="auth-container">
+        <!-- Left Side: Hero -->
+        <div class="auth-hero">
+            <div class="logo-area">
+                <img src="assets/logo.png" alt="DualMind Logo" class="logo-icon" style="height: 48px; width: auto;">
+                <div class="logo-text">DualMind</div>
+            </div>
+
+            <h1 class="hero-title">Welcome<br>Back</h1>
+            <p class="hero-subtitle">
+                Sign in to continue comparing top AI models and climb the leaderboard.
+            </p>
+        </div>
+
+        <!-- Right Side: Form -->
+        <div class="auth-form-wrapper">
+            <div class="form-header stagger-item" style="--delay: 0.1s">
+                <h2 class="form-title">Welcome Back</h2>
+                <p class="form-subtitle">Sign in to your account</p>
+            </div>
+
+            <!-- Tabs -->
+            <div class="auth-tabs stagger-item" style="--delay: 0.2s">
+                <button class="auth-tab active" data-mode="email">Email</button>
+                <button class="auth-tab" data-mode="phone">Phone</button>
+            </div>
+
+            <!-- Step Indicator -->
+            <div class="step-indicator stagger-item" style="--delay: 0.3s">
+                <div class="step-dot active"></div>
+                <div class="step-dot"></div>
+                <span class="step-text">Step 1 of 2</span>
+            </div>
+
+            <!-- Messages -->
+            <div id="errorAlert" class="message error"></div>
+            <div id="successAlert" class="message success"></div>
+
+            <form id="modernAuthForm">
+                <!-- Group 1: Credentials (Step 1) -->
+                <div id="credentialsStep">
+                    <!-- Email Inputs -->
+                    <div id="emailGroup" class="stagger-item" style="--delay: 0.4s">
+                        <div class="input-group">
+                            <input type="email" id="email" class="input-field" placeholder="Email address"
+                                autocomplete="email">
+                            <i class="ri-mail-line input-icon"></i>
+                        </div>
+                    </div>
+
+                    <!-- Phone Inputs -->
+                    <div id="phoneGroup" style="display: none; flex-direction: column;">
+                        <div class="input-group phone-input-wrapper">
+                            <div class="country-picker">
+                                <img src="https://flagcdn.com/w20/in.png" width="20" alt="India">
+                                <span>+91</span>
+                            </div>
+                            <input type="tel" id="phone" class="input-field" placeholder="Phone number" 
+                                style="padding-left: 16px;" maxlength="11">
+                        </div>
+                        <p style="font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 5px; margin-left: 5px;">
+                            We'll call you and read out the code for maximum security.
+                        </p>
+                    </div>
+
+                    <!-- Password Input (Login only needs password for Email mode) -->
+                    <div id="passwordGroup" class="stagger-item" style="--delay: 0.5s">
+                        <div class="input-group">
+                            <input type="password" id="password" class="input-field" placeholder="Password"
+                                autocomplete="current-password">
+                            <i class="ri-lock-line input-icon"></i>
+                            <i class="ri-eye-off-line password-toggle" id="togglePassword"></i>
+                        </div>
+                        <div style="text-align: right; margin-top: 8px;">
+                            <a href="forgot-password.html" class="link" style="font-size: 12px;">Forgot password?</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Group 2: OTP Verification (Step 2) -->
+                <div id="otpGroup" style="display: none;">
+                    <p style="text-align: center; font-size: 14px; margin-bottom: 20px; color: rgba(255,255,255,0.7);">
+                        Enter the 6-digit code we sent you.
+                    </p>
+                    <div class="otp-container">
+                        <input type="text" class="otp-box" maxlength="1" pattern="\d*" inputmode="numeric" autocomplete="one-time-code">
+                        <input type="text" class="otp-box" maxlength="1" pattern="\d*" inputmode="numeric">
+                        <input type="text" class="otp-box" maxlength="1" pattern="\d*" inputmode="numeric">
+                        <input type="text" class="otp-box" maxlength="1" pattern="\d*" inputmode="numeric">
+                        <input type="text" class="otp-box" maxlength="1" pattern="\d*" inputmode="numeric">
+                        <input type="text" class="otp-box" maxlength="1" pattern="\d*" inputmode="numeric">
+                    </div>
+                    
+                    <div class="resend-timer">
+                        <span id="resendTimer"></span>
+                        <div style="display: flex; gap: 15px; justify-content: center; align-items: center;">
+                            <a href="#" id="resendAction" class="resend-link disabled">Resend Code</a>
+                            <span style="color: rgba(255,255,255,0.2)">|</span>
+                            <a href="#" id="changePhoneAction" class="resend-link">Wrong number?</a>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" id="submitBtn" class="btn-primary stagger-item" style="--delay: 0.6s; margin-top: 20px;">
+                    <span class="btn-text">Sign In</span>
+                    <span class="btn-icon"><i class="ri-arrow-right-line"></i></span>
+                </button>
+            </form>
+
+            <div class="divider stagger-item" style="--delay: 0.7s">or continue with</div>
+
+            <div class="social-buttons stagger-item" style="--delay: 0.8s">
+                <button class="btn-social" id="socialGitHub">
+                    <i class="ri-github-fill" style="font-size: 20px;"></i>
+                    GitHub
+                </button>
+                <button class="btn-social" id="socialGoogle">
+                    <i class="ri-google-fill" style="font-size: 20px;"></i>
+                    Google
+                </button>
+            </div>
+
+            <div class="auth-footer stagger-item" style="--delay: 0.9s">
+                Don't have an account? <a href="signup-modern.html" class="link">Sign up free</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logic -->
+    <script type="module" src="js/auth-modern.js"></script>
+</body>
+
+</html>

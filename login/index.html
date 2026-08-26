@@ -5,6 +5,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DualMind Arena — Login</title>
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://arena.dualmindlab.tech/login/">
+  <meta property="og:title" content="DualMind Arena — Login">
+  <meta property="og:description" content="Sign in to DualMind Arena to compare and vote on AI model responses.">
+  <meta property="og:image" content="https://arena.dualmindlab.tech/assets/og-image.png">
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://arena.dualmindlab.tech/login/">
+  <meta property="twitter:title" content="DualMind Arena — Login">
+  <meta property="twitter:description" content="Sign in to DualMind Arena to compare and vote on AI model responses.">
+  <meta property="twitter:image" content="https://arena.dualmindlab.tech/assets/og-image.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -427,7 +441,9 @@
     const toggleBtn = document.getElementById('toggleBtn');
     const toggleText = document.getElementById('toggleText');
     const errorMsg = document.getElementById('errorMsg');
+    const successMsg = document.getElementById('successMsg');
     const googleBtn = document.getElementById('googleBtn');
+    const forgotBtn = document.getElementById('forgotBtn');
     const title = document.querySelector('.brand-title');
     const subtitle = document.querySelector('.brand-subtitle');
 
@@ -566,6 +582,43 @@
         }
       } catch (err) {
         errorMsg.textContent = err.message;
+        errorMsg.style.display = 'block';
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    // Forgot Password
+    forgotBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const email = emailInput.value.trim();
+      
+      if (!email) {
+        errorMsg.textContent = 'Please enter your email address';
+        errorMsg.style.display = 'block';
+        emailInput.focus();
+        return;
+      }
+
+      setLoading(true);
+      errorMsg.style.display = 'none';
+      successMsg.style.display = 'none';
+
+      try {
+        const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+          redirectTo: `${SITE_URL}/auth-callback.html?mode=resetPassword`
+        });
+
+        if (error) throw error;
+
+        successMsg.textContent = 'Password reset email sent! Please check your inbox.';
+        successMsg.style.display = 'block';
+        
+        setTimeout(() => {
+          successMsg.style.display = 'none';
+        }, 10000);
+      } catch (err) {
+        errorMsg.textContent = err.message || 'Failed to send password reset email';
         errorMsg.style.display = 'block';
       } finally {
         setLoading(false);

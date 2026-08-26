@@ -8,6 +8,20 @@
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://arena.dualmindlab.tech/leaderboard/">
 
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://arena.dualmindlab.tech/leaderboard/">
+  <meta property="og:title" content="AI Model Leaderboard – DualMind Arena">
+  <meta property="og:description" content="Explore the real-time AI model leaderboard on DualMind Arena. See which AI models rank highest in battles, user votes, and performance metrics.">
+  <meta property="og:image" content="https://arena.dualmindlab.tech/assets/og-image.png">
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://arena.dualmindlab.tech/leaderboard/">
+  <meta property="twitter:title" content="AI Model Leaderboard – DualMind Arena">
+  <meta property="twitter:description" content="Explore the real-time AI model leaderboard on DualMind Arena. See which AI models rank highest in battles, user votes, and performance metrics.">
+  <meta property="twitter:image" content="https://arena.dualmindlab.tech/assets/og-image.png">
+
   <!-- Fonts & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,7 +35,7 @@
   <script src="../theme.js"></script>
 
   <script src="../config.js"></script>
-  <script src="../js/supabase-init.js"></script>
+  <script src="../js/auth/supabase-init.js"></script>
 
   <!-- Favicon -->
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs/%3E%3Crect width='64' height='64' rx='12' fill='%230f1115'/%3E%3Cpath d='M20 18h24l-6 10 6 10H20l6-10-6-10z' fill='%238ab4ff'/%3E%3C/svg%3E">
@@ -60,7 +74,7 @@
         </a>
       </div>
 
-      <div class="mission-card">
+      <div class="mission-card" style="padding: 0; background: transparent; border: none; box-shadow: none;">
         <div id="leaderboard-root"></div>
       </div>
 
@@ -88,6 +102,25 @@
         </ul>
         <p>
           This multi-faceted approach ensures that rankings reflect both objective performance metrics and subjective user preferences, giving you a comprehensive view of each model's strengths and weaknesses.
+        </p>
+      </div>
+
+      <div class="mission-card">
+        <h2>Understanding the Elo Rating System</h2>
+        <p>
+          The DualMind Arena utilizes the <strong>Elo rating system</strong>—originally developed for ranking chess players—to evaluate AI models. This system is considered the gold standard for head-to-head competitive rankings because it accounts for the relative strength of opponents, not just the raw number of wins and losses.
+        </p>
+        <p>
+          Here is how Elo works in our arena:
+        </p>
+        <ul>
+          <li><strong>Dynamic Scoring:</strong> Every model starts with a baseline rating (usually 1000). Ratings go up when a model wins a battle and go down when it loses.</li>
+          <li><strong>Context Matters:</strong> Winning against a highly-rated model (an "upset") earns significantly more points than beating a low-rated model.</li>
+          <li><strong>Loss Penalties:</strong> Losing to a lower-rated model results in a larger point deduction compared to losing to a top-tier model.</li>
+          <li><strong>Ties:</strong> In the event of a tie, points are subtly shifted from the higher-rated model to the lower-rated model, indicating that the underdog performed better than expected.</li>
+        </ul>
+        <p>
+          By using Elo, our leaderboard prevents models from artificially inflating their rank by only winning easy matchups. It ensures that the models at the top have consistently proven their capability against the strongest competition available.
         </p>
       </div>
 

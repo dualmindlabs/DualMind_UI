@@ -39,34 +39,28 @@ export class ShareModal {
     return `
       <div class="share-modal glass-panel">
         <div class="share-modal-header">
-          <h2 class="share-modal-title">
-            ${this.renderShareIcon()}
-            Share Thread
-          </h2>
-          <button class="share-modal-close" aria-label="Close modal">
+          <div class="share-modal-title-row">
+            <div class="share-modal-icon">${this.renderShareIcon()}</div>
+            <h2 class="share-modal-title">Share Conversation</h2>
+          </div>
+          <button class="share-modal-close" aria-label="Close modal" title="Close">
             ${Icons.close('white', 20)}
           </button>
         </div>
 
         <div class="share-modal-body">
-          <div class="share-toggle-section">
-            <div class="share-toggle-info">
-              <span class="share-toggle-label">Public Access</span>
-              <span class="share-toggle-hint">Allow anyone with the link to view this thread</span>
+          ${!isPublicOrUnlisted ? `
+            <div class="share-info-card">
+              <div class="info-icon">🔒</div>
+              <div class="info-content">
+                <div class="info-title">Private Conversation</div>
+                <div class="info-text">Only you can see this conversation. Enable sharing to create a shareable link.</div>
+              </div>
             </div>
-            <label class="share-toggle">
-              <input 
-                type="checkbox" 
-                id="share-toggle-input"
-                ${isPublicOrUnlisted ? 'checked' : ''}
-                ${this.isLoading ? 'disabled' : ''}
-              />
-              <span class="share-toggle-slider"></span>
-            </label>
-          </div>
+          ` : ''}
 
           <div class="share-link-section ${isPublicOrUnlisted ? 'active' : 'inactive'}">
-            <label class="share-link-label">Share Link</label>
+            <label class="share-link-label">Shareable Link</label>
             <div class="share-link-container">
               <input 
                 type="text" 
@@ -74,52 +68,66 @@ export class ShareModal {
                 value="${shareUrl}" 
                 readonly 
                 id="share-link-input"
+                ${!isPublicOrUnlisted ? 'disabled' : ''}
               />
               <button 
                 class="share-copy-btn" 
                 id="share-copy-btn"
                 ${!isPublicOrUnlisted ? 'disabled' : ''}
+                aria-label="Copy link"
+                title="Copy to clipboard"
               >
                 ${this.renderCopyIcon()}
-                <span class="copy-text">Copy</span>
+                <span class="copy-text">Copy Link</span>
               </button>
             </div>
-            ${!isPublicOrUnlisted ? '<p class="share-link-disabled-hint">Enable public access to share this thread</p>' : ''}
           </div>
 
           <div class="share-visibility-section">
-            <label class="share-visibility-label">Visibility</label>
+            <label class="share-visibility-label">Visibility Options</label>
             <div class="share-visibility-options">
               <button 
                 class="visibility-option ${this.currentVisibility === 'private' ? 'active' : ''}"
                 data-visibility="private"
+                ${this.isLoading ? 'disabled' : ''}
+                title="Only you can access"
               >
-                🔒 Private
+                <span class="visibility-icon">🔒</span>
+                <div class="visibility-content">
+                  <span class="visibility-name">Private</span>
+                  <span class="visibility-desc">Only you</span>
+                </div>
               </button>
               <button 
                 class="visibility-option ${this.currentVisibility === 'unlisted' ? 'active' : ''}"
                 data-visibility="unlisted"
+                ${this.isLoading ? 'disabled' : ''}
+                title="Anyone with the link"
               >
-                🔗 Unlisted
+                <span class="visibility-icon">🔗</span>
+                <div class="visibility-content">
+                  <span class="visibility-name">Unlisted</span>
+                  <span class="visibility-desc">Anyone with link</span>
+                </div>
               </button>
               <button 
                 class="visibility-option ${this.currentVisibility === 'public' ? 'active' : ''}"
                 data-visibility="public"
+                ${this.isLoading ? 'disabled' : ''}
+                title="Public and discoverable"
               >
-                🌐 Public
+                <span class="visibility-icon">🌐</span>
+                <div class="visibility-content">
+                  <span class="visibility-name">Public</span>
+                  <span class="visibility-desc">Everyone</span>
+                </div>
               </button>
             </div>
-            <p class="visibility-hint">
-              ${this.getVisibilityHint()}
-            </p>
+            <p class="visibility-hint">${this.getVisibilityHint()}</p>
           </div>
         </div>
 
-        <div class="share-modal-footer">
-          <button class="share-done-btn" id="share-done-btn">Done</button>
-        </div>
-
-        ${this.isLoading ? '<div class="share-modal-loading"><div class="spinner"></div></div>' : ''}
+        ${this.isLoading ? '<div class="share-modal-loading"><div class="spinner"></div><span>Updating...</span></div>' : ''}
       </div>
     `;
   }
@@ -147,11 +155,11 @@ export class ShareModal {
   getVisibilityHint() {
     switch (this.currentVisibility) {
       case 'private':
-        return 'Only you can see this thread';
+        return 'This conversation is private and cannot be shared';
       case 'unlisted':
-        return 'Anyone with the link can view, but not searchable';
+        return 'Anyone with the link can view this conversation, but it won\'t appear in search results';
       case 'public':
-        return 'Anyone can view and discover this thread';
+        return 'This conversation is publicly visible and may appear in search results';
       default:
         return '';
     }
@@ -274,7 +282,7 @@ export class ShareModal {
         }
 
         this.currentVisibility = visibility;
-        console.log('✅ Visibility updated to:', visibility);
+        if (window.DUALMIND_CONFIG?.debug?.enabled) console.log('✅ Visibility updated to:', visibility);
       }
     } catch (error) {
       console.error('Failed to update visibility:', error);

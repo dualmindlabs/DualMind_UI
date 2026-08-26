@@ -33,12 +33,7 @@ export async function getAuthToken() {
         }
     }
 
-    // 3. Explicit injection (dev override)
-    if (typeof window.DUALMIND_AUTH_TOKEN === 'string' && window.DUALMIND_AUTH_TOKEN.trim()) {
-        return window.DUALMIND_AUTH_TOKEN.trim();
-    }
-
-    // 4. Optional custom hook
+    // 3. Optional custom hook
     if (typeof window.getSupabaseAccessToken === 'function') {
         try {
             const token = await window.getSupabaseAccessToken();

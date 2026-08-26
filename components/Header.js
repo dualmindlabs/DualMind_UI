@@ -12,7 +12,7 @@ export class Header {
     this.modes = [
       { id: 'battle', name: 'Battle', subtitle: 'Battle with 2 anonymous models', icon: Icons.battle },
       { id: 'arena', name: 'Side by Side', subtitle: 'Compare 2 models of your choice', icon: Icons.splitRectangle },
-      { id: 'direct', name: 'Direct Chat', subtitle: 'Chat with one model at a time', icon: Icons.arrowUp }
+      { id: 'direct', name: 'Direct Chat', subtitle: 'Chat with one model at a time', icon: Icons.chat }
     ];
     this.isDropdownOpen = false;
     this.isUserMenuOpen = false;
@@ -31,9 +31,9 @@ export class Header {
     const currentModeData = this.modes.find(m => m.id === this.currentMode);
 
     this.container.innerHTML = `
-      <header id="main-header" class="main-header">
+      <header id="main-header" class="main-header" role="banner">
         <!-- Mobile Menu Toggle -->
-        <button id="mobile-menu-btn" class="mobile-menu-btn lg:hidden" aria-label="Open sidebar">
+        <button id="mobile-menu-btn" class="mobile-menu-btn lg:hidden" aria-label="Open sidebar" title="Open menu">
           ${Icons.hamburger('white', 24)}
         </button>
 
@@ -45,7 +45,8 @@ export class Header {
             aria-haspopup="menu"
             aria-expanded="${this.isDropdownOpen ? 'true' : 'false'}"
             aria-controls="mode-dropdown"
-            aria-label="Select mode (current: ${currentModeData.name})"
+            aria-label="Select chat mode"
+            title="Select chat mode (current: ${currentModeData.name})"
           >
             <span class="mode-icon">${currentModeData.icon('white')}</span>
             <span class="mode-text">${currentModeData.name}</span>
@@ -65,6 +66,7 @@ export class Header {
                 data-mode="${mode.id}"
                 role="menuitemradio"
                 aria-checked="${mode.id === this.currentMode ? 'true' : 'false'}"
+                title="${mode.subtitle}"
               >
                 <div class="mode-option-content">
                   <div class="mode-option-text">
@@ -81,34 +83,15 @@ export class Header {
 
         <!-- Right Controls -->
         <div class="header-controls">
-          <!-- Share Button -->
-          <button id="share-thread-btn" class="header-icon-btn" aria-label="Share thread" title="Share this thread">
+          <!-- Share Button (hidden initially, shown when thread exists) -->
+          <button id="share-thread-btn" class="header-icon-btn" aria-label="Share thread" title="Share this conversation" style="display:none">
             ${Icons.share('white', 18)}
           </button>
 
-          <!-- User Menu -->
-          <div class="user-menu">
-            <button id="user-btn" class="user-btn" aria-label="User menu">
-              <span class="user-avatar">${this.getUserInitials()}</span>
-            </button>
-            
-            <!-- User Dropdown -->
-            <div id="user-dropdown" class="user-dropdown ${this.isUserMenuOpen ? 'open' : ''}">
-              <div class="user-info">
-                <div class="user-avatar-large">${this.getUserInitials()}</div>
-                <div class="user-details">
-                  <div class="user-name">${this.getUserName()}</div>
-                  <div class="user-email">${this.getUserEmail()}</div>
-                </div>
-              </div>
-              <div class="user-actions">
-                <button id="logout-btn" class="user-action-btn">
-                  <span class="user-action-icon">${Icons.logout('white')}</span>
-                  <span class="user-action-text">Logout</span>
-                </button>
-              </div>
-            </div>
-          </div>
+          <!-- Export Button (hidden initially, shown when turns exist) -->
+          <button id="export-btn" class="header-icon-btn" aria-label="Export conversation" title="Export conversation" style="display:none">
+            ${Icons.download('white', 18)}
+          </button>
         </div>
       </header>
     `;
@@ -133,18 +116,16 @@ export class Header {
       });
     });
 
-    // User menu toggle
-    const userBtn = this.container.querySelector('#user-btn');
-    userBtn?.addEventListener('click', () => this.toggleUserMenu());
-
-    // Logout button
-    const logoutBtn = this.container.querySelector('#logout-btn');
-    logoutBtn?.addEventListener('click', () => this.handleLogout());
-
     // Share button
     const shareBtn = this.container.querySelector('#share-thread-btn');
     shareBtn?.addEventListener('click', () => {
       document.dispatchEvent(new CustomEvent('open-share-modal'));
+    });
+
+    // Export button
+    const exportBtn = this.container.querySelector('#export-btn');
+    exportBtn?.addEventListener('click', () => {
+      document.dispatchEvent(new CustomEvent('open-export-menu'));
     });
 
     // Close dropdown on outside click
@@ -152,7 +133,6 @@ export class Header {
     this._onDocumentClick = (e) => {
       if (!this.container.contains(e.target)) {
         this.closeDropdown();
-        this.closeUserMenu();
       }
     };
     document.addEventListener('click', this._onDocumentClick);
@@ -165,10 +145,6 @@ export class Header {
         if (this.isDropdownOpen) {
           e.preventDefault();
           this.closeDropdown(true);
-        }
-        if (this.isUserMenuOpen) {
-          e.preventDefault();
-          this.closeUserMenu(true);
         }
       }
     };
@@ -207,8 +183,26 @@ export class Header {
   selectMode(modeId) {
     this.currentMode = modeId;
     this.closeDropdown();
-    this.render();
-    this.attachEventListeners();
+
+    // Surgical DOM update — no full re-render to avoid listener accumulation and repaint
+    const modeData = this.modes.find(m => m.id === modeId);
+    if (modeData) {
+      const modeIcon = this.container.querySelector('.mode-icon');
+      const modeText = this.container.querySelector('.mode-text');
+      if (modeIcon) modeIcon.innerHTML = modeData.icon('white');
+      if (modeText) modeText.textContent = modeData.name;
+
+      // Update trigger button title
+      const modeBtn = this.container.querySelector('#mode-btn');
+      if (modeBtn) modeBtn.title = `Select chat mode (current: ${modeData.name})`;
+
+      // Update active state + aria-checked on each option
+      this.container.querySelectorAll('.mode-option').forEach(opt => {
+        const isActive = opt.dataset.mode === modeId;
+        opt.classList.toggle('active', isActive);
+        opt.setAttribute('aria-checked', isActive ? 'true' : 'false');
+      });
+    }
 
     // Dispatch mode change event
     document.dispatchEvent(new CustomEvent('mode-change', {
@@ -217,87 +211,64 @@ export class Header {
   }
 
   toggleUserMenu() {
-    this.isUserMenuOpen = !this.isUserMenuOpen;
-    this.updateUserMenuState();
+    // Removed logic
   }
 
   closeUserMenu(restoreFocus = false) {
-    if (this.isUserMenuOpen) {
-      this.isUserMenuOpen = false;
-      this.updateUserMenuState();
-      if (restoreFocus) this.container.querySelector('#user-btn')?.focus();
-    }
+    // Removed logic
   }
 
   updateUserMenuState() {
-    const dropdown = this.container.querySelector('#user-dropdown');
-    dropdown?.classList.toggle('open', this.isUserMenuOpen);
+    // Removed logic
   }
 
   handleLogout() {
-    this.closeUserMenu();
-    // Use the global auth system
-    if (window.DualMindAuth && window.DualMindAuth.logout) {
-      window.DualMindAuth.logout();
-    }
+    // Removed logic
   }
 
   getUserInitials() {
-    if (!window.DualMindAuth) return '...';
-
-    const user = window.DualMindAuth.getUser();
-    if (!user) return 'G';
-
-    const name = user.user_metadata?.full_name || user.email;
-    if (!name) return 'U';
-
-    const parts = name.split(/[\s@]/);
-    if (parts.length >= 2) {
-      return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
-    }
-    return name.substring(0, 2).toUpperCase();
+    // Removed logic
   }
 
   getUserName() {
-    if (!window.DualMindAuth) return 'Loading...';
-
-    const user = window.DualMindAuth.getUser();
-    if (!user) return 'Guest';
-
-    // Try user_metadata.full_name first
-    if (user.user_metadata?.full_name) {
-      return user.user_metadata.full_name;
-    }
-
-    // Fallback to email username
-    if (user.email) {
-      return user.email.split('@')[0];
-    }
-
-    return 'User';
+    // Removed logic
   }
 
   getUserEmail() {
-    if (!window.DualMindAuth) return 'Loading...';
-
-    const user = window.DualMindAuth.getUser();
-    return user?.email || 'guest@dualmind.ai';
+    // Removed logic
   }
 
-  handleSidebarToggle({ isOpen, isMobile }) {
+  handleSidebarToggle({ isOpen, isCollapsed, isMobile }) {
     const header = this.container.querySelector('#main-header');
-    if (header) {
-      if (!isMobile) {
-        header.style.left = isOpen ? '257px' : '0';
-      } else {
-        header.style.left = '0';
-      }
+    if (!header) return;
+
+    if (isMobile) {
+      header.style.left = '0';
+      return;
     }
+
+    // Read sidebar width from CSS variable so it stays in sync with tokens.css
+    const sidebarWidth = getComputedStyle(document.documentElement)
+      .getPropertyValue('--sidebar-width').trim() || '260px';
+    const collapsedWidth = getComputedStyle(document.documentElement)
+      .getPropertyValue('--sidebar-collapsed-width').trim() || '80px';
+
+    header.style.left = isCollapsed ? collapsedWidth : sidebarWidth;
   }
 
   // Public method to get current mode
   getCurrentMode() {
     return this.currentMode;
+  }
+
+  setShareVisible(visible) {
+    const btn = this.container.querySelector('#share-thread-btn');
+    if (btn) btn.style.display = visible ? '' : 'none';
+  }
+
+  setExportVisible(visible) {
+    const btn = this.container.querySelector('#export-btn');
+    if (btn) btn.style.display = visible ? '' : 'none';
   }
 }
 

@@ -1,221 +1,120 @@
-# DualMind Arena - AI Battle Platform
+# DualMind Arena — AI Model Battle Platform
 
-**The ultimate AI model comparison platform with real-time battles and leaderboards.**
+[![Live Demo](https://img.shields.io/badge/Live-arena.dualmindlab.tech-4AABC2)](https://arena.dualmindlab.tech)
 
-## 🚀 Quick Start
+DualMind Arena is a premium AI comparison platform where users run side-by-side battles between language models, vote on the best responses, and explore an open LLM leaderboard.
 
-### Prerequisites
-- Node.js installed
-- Backend server running on `http://localhost:65476`
-- Supabase account (credentials already configured)
+> **Status:** Active development / pre-launch clean-up. See `docs/CODEBASE_AUDIT.md` for current issues and the [Setup](#setup) section below for the correct way to run the project.
 
-### Installation & Run
+## What it does
 
-```powershell
-# Install dependencies
-npm install
+- **Battle mode:** Two anonymous models respond to the same prompt; you vote before identities are revealed.
+- **Arena mode:** Pick a model pair and compare responses with names visible.
+- **Direct mode:** One-on-one chat with a single model.
+- **Leaderboard:** Elo ratings and model stats across the community.
+- **Threading, sharing, exports:** Save conversations, share them publicly or via link, export to MD/JSON/CSV/HTML/PDF.
 
-# Start the development server
-npm run dev
-```
+## Tech Stack
 
-Open **http://localhost:8000** in your browser.
+| Layer | Tech |
+|-------|------|
+| Frontend | Vanilla JavaScript (ES modules), custom CSS design tokens, Cloudflare Worker static hosting |
+| Auth | Supabase client-side auth (localStorage session) |
+| Backend proxy | Cloudflare Worker (`worker.js`) proxies `/api/*` to an Azure Web API |
+| CSS | Custom design system in `css/tokens.css` — **not** Tailwind |
+| Tests | Playwright (dependency config currently incomplete — see Setup) |
 
-## ✨ Features
-
-### 🎯 Battle Mode
-- Compare two AI models side-by-side
-- Random model selection for blind testing
-- Vote for the better response
-- Real-time streaming responses
-
-### 💬 Direct Chat Mode
-- Chat with a single AI model
-- Conversation history maintained
-- Multiple model options
-
-### 🏆 Leaderboard
-- Live model rankings
-- Win rates and statistics
-- Response time metrics
-- Cached for performance
-
-### 🔐 Authentication
-- Supabase-powered auth
-- Email/password login
-- Google OAuth support
-- Admin role detection
-- Secure session management
-
-## 📁 Project Structure
+## Project Structure
 
 ```
 DualMind_UI/
-├── index.html              # Main app entry
-├── config.js               # Global configuration
-├── components/             # UI components
-│   ├── Header.js          # Top navigation
-│   ├── Sidebar.js         # Side navigation
-│   └── chat/              # Chat components
-├── css/                   # Stylesheets
-│   ├── styles.css         # Main styles
-│   └── auth-styles.css    # Auth page styles
-├── js/                    # JavaScript modules
-│   ├── app.js             # Main app logic
-│   ├── apiClient.js       # API client
-│   ├── supabase-auth.js   # Auth service
-│   ├── supabase-init.js   # Auth initialization
-│   └── leaderboardModal.js # Leaderboard component
-├── login/                 # Login/signup page
-│   └── index.html
-└── package.json           # Dependencies
-
+├── index.html                 # Main app shell
+├── config.js                  # Runtime config (loaded synchronously)
+├── worker.js                  # Cloudflare Worker: routing + API proxy
+├── wrangler.jsonc             # Cloudflare Worker config
+├── css/                       # Design tokens + component styles
+├── js/                        # Core application logic
+│   ├── ui/app.js              # Main App class
+│   ├── apiInstance.js         # API singleton
+│   ├── api/                   # API client, services, HTTP core
+│   └── auth/                  # Supabase auth service + init
+├── components/                # Reusable UI components
+├── login/                     # Auth pages
+├── leaderboard/               # Leaderboard standalone page
+├── share/                     # Public shared thread view
+├── docs/                      # Audit, architecture, roadmap
+└── AGENTS.md                  # AI agent / contributor guide
 ```
 
-## 🔧 Configuration
+## Setup
 
-### Backend URL
-Edit `config.js` to switch between local and production:
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-```javascript
-const BACKEND_MODE = 'localhost'; // or 'production'
+2. **Configure Supabase credentials:**
+   Edit `config.js` and set your own Supabase project values:
+   ```js
+   const envSupabaseUrl = 'https://your-project.supabase.co';
+   const envSupabaseAnonKey = 'your-anon-key';
+   ```
+   > Note: `config.js` runs in the browser, so it cannot read `process.env` or `.env` files directly. Use build-time replacements or Wrangler secrets for production.
 
-const BACKEND_URLS = {
-  localhost: 'http://localhost:65476',
-  production: 'https://api.dualmindlab.tech'
-};
+3. **Run the local dev server:**
+   ```bash
+   npm run dev
+   ```
+   The app will be available at `http://localhost:8000`.
+
+4. **Linting (currently needs a small fix):**
+   `package.json` line 9 has an unquoted glob that fails on some shells. Quote the ignore patterns, then run:
+   ```bash
+   npm run lint
+   ```
+
+5. **Tests (currently broken):**
+   Playwright is not installed by default. If you want to run E2E tests:
+   ```bash
+   npm i -D @playwright/test
+   npx playwright install
+   npm run test
+   ```
+
+## Deployment
+
+```bash
+npm run deploy
 ```
 
-### Supabase Credentials
-Already configured in `config.js`:
-- URL: `https://calqfzajyidkdzbaswjp.supabase.co`
-- Anon Key: (configured)
+This runs `npm run build` (copies the curated static set to `dist/`) then `npx wrangler deploy` using `wrangler.jsonc`.
 
-## 🎨 Customization
+> There is also a second build script pair (`build-deploy.js` + `wrangler-dist.toml`) that is currently redundant; we are consolidating on `build.js` + `wrangler.jsonc`.
 
-### Change Background Image
-Edit `index.html` line 35:
-```html
-<img 
-  src="YOUR_IMAGE_URL_HERE" 
-  alt="" 
-  class="app-background"
-  loading="eager"
-/>
-```
+## API Endpoints (proxied through `/api/`)
 
-### Modify Colors
-Edit CSS variables in `css/styles.css`:
-```css
-:root {
-  --color-teal: #577B87;
-  --color-cyan: #4AABC2;
-  --color-terra: #CB9275;
-  --color-cream: #FDF4CD;
-}
-```
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| `POST` | `/api/arena/chat` | Single-model chat |
+| `POST` | `/api/arena/dualchat` | Two-model anonymous battle |
+| `POST` | `/api/arena/model-vote` | Submit a vote |
+| `GET`  | `/api/arena/model-stats` | Leaderboard stats |
 
-## 📡 API Endpoints
+## Documentation
 
-All endpoints require `Authorization: Bearer <JWT_TOKEN>` header.
+- [`AGENTS.md`](./AGENTS.md) — canonical architecture, file map, event bus, globals, and design-token rules for contributors and AI agents.
+- [`CLAUDE.md`](./CLAUDE.md) — targeted guide for Claude Code / Claude desktop agents.
+- [`docs/CODEBASE_AUDIT.md`](./docs/CODEBASE_AUDIT.md) — current health audit and startup-readiness roadmap.
+- [`docs/DEEP_AUDIT.md`](./docs/DEEP_AUDIT.md) — fine-grained, per-file findings with line numbers.
+- [`admin-email-system/DEPLOYMENT_GUIDE.md`](./admin-email-system/DEPLOYMENT_GUIDE.md) — separate admin panel sub-project.
 
-### Arena
-- `POST /api/arena/chat` - Single model chat
-- `POST /api/arena/chat/stream` - Streaming chat
-- `POST /api/arena/dualchat` - Battle mode (2 models)
-- `POST /api/arena/model-vote` - Submit vote
-- `GET /api/arena/model-stats` - Leaderboard data
+## Contributing
 
-### Admin
-- `GET /api/admin/check` - Check admin status
+1. Read `AGENTS.md` and `CLAUDE.md`.
+2. Do not import deprecated shims (`js/api-client.js`, `js/auth.js`, `js/auth/api-service.js`).
+3. Keep `window.*` globals minimal and document them if added.
+4. Run lint and verify Playwright tests before submitting PRs.
 
-### Health
-- `GET /health` - Backend health check
+## License
 
-## 🧪 Testing
-
-### Test Authentication
-1. Navigate to login page
-2. Create account or login
-3. Verify redirect to main app
-4. Check user info in header/sidebar
-
-### Test Battle Mode
-1. Enter a prompt
-2. Wait for 2 model responses
-3. Vote for preferred response
-4. Check leaderboard updates
-
-### Test Direct Chat
-1. Switch to Direct Chat mode
-2. Send messages
-3. Verify conversation flow
-
-## 🐛 Troubleshooting
-
-### Backend Not Available
-- App falls back to offline mode with mock responses
-- Check backend is running on correct port
-- Verify CORS settings on backend
-
-### Login Issues
-- Clear browser cache and localStorage
-- Check Supabase credentials in config.js
-- Verify email confirmation settings
-
-### API Errors
-- Check browser console for details
-- Verify backend URL in config.js
-- Ensure auth token is valid
-
-## 📱 Responsive Design
-
-Fully responsive with breakpoints:
-- **Desktop**: Full sidebar, all features
-- **Tablet**: Collapsible sidebar
-- **Mobile**: Drawer sidebar, optimized layout
-
-## 🔒 Security
-
-- JWT-based authentication
-- Secure session storage
-- HTTPS recommended for production
-- CORS protection
-- XSS prevention
-
-## 📚 Documentation
-
-- `SETUP_COMPLETE.md` - Detailed setup guide
-- `API_ENDPOINTS_VERIFIED.md` - API documentation
-
-## 🚀 Deployment
-
-### Production Checklist
-- [ ] Update `BACKEND_MODE` to 'production'
-- [ ] Configure production backend URL
-- [ ] Enable HTTPS
-- [ ] Set up CDN for static assets
-- [ ] Configure Supabase production settings
-- [ ] Test all features in production
-
-## 💡 Tips
-
-- Use **Ctrl/Cmd + K** to focus chat input
-- Press **Escape** to close modals/sidebar
-- Click **Leaderboard** to see model rankings
-- Vote after each battle to improve rankings
-
-## 🤝 Support
-
-For issues or questions:
-1. Check troubleshooting section
-2. Review API documentation
-3. Check browser console for errors
-
-## 📄 License
-
-Proprietary - DualMind Arena
-
----
-
-**Built with ❤️ for AI enthusiasts**
+MIT — see [package.json](./package.json).

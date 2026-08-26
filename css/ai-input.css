@@ -4,17 +4,9 @@
    ======================================== */
 
 .AI-Input {
-  --primary-color: #2e2e2e;
-  --neutral-color: #d3d3d3;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  position: relative;
-  width: 100%;
   margin: 0 auto;
   user-select: none;
-  z-index: -3;
+  z-index: auto;
 }
 
 #voice {
@@ -143,7 +135,9 @@
   animation: dm-chat-marquee 22s linear infinite;
 }
 
-.chat-marquee:hover .chat-marquee-track {
+.chat-marquee:hover .chat-marquee-track,
+.chat-container:focus-within .chat-marquee-track,
+.AI-Input:focus-within .chat-marquee-track {
   animation-play-state: paused;
 }
 
@@ -175,17 +169,12 @@
   transform: scale(0.98);
 }
 .chat-container {
-  position: relative;
-  top: 0;
-  width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
   background: var(--primary-color);
   border: 0.2rem solid rgba(255, 255, 255, 0.3);
   border-radius: 1rem;
   overflow: hidden;
   transition: all 0.5s cubic-bezier(0.3, 1.5, 0.6, 1);
-  z-index: -2;
+  z-index: 10;
 }
 
 .chat-container::before {
@@ -223,7 +212,7 @@
   transition: all 0.2s ease-in-out;
 }
 
-#chat-input {
+.AI-Input #chat-input {
   padding: 0.6rem;
   width: 100%;
   min-height: 3rem;
@@ -238,22 +227,22 @@
   animation: typing-effect 3s steps(30, end) infinite alternate;
 }
 
-#chat-input::placeholder {
+.AI-Input #chat-input::placeholder {
   color: var(--neutral-color);
 }
 
-#chat-input::-webkit-scrollbar {
+.AI-Input #chat-input::-webkit-scrollbar {
   width: 0.7rem;
   border-radius: 9999px;
 }
 
-#chat-input::-webkit-scrollbar-thumb {
+.AI-Input #chat-input::-webkit-scrollbar-thumb {
   background-color: var(--primary-color);
   border: 0.2rem solid var(--neutral-color);
   border-radius: 9999px;
 }
 
-#chat-input::-webkit-scrollbar-track {
+.AI-Input #chat-input::-webkit-scrollbar-track {
   background-color: var(--neutral-color);
   border-radius: 9999px;
 }

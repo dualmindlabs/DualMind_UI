@@ -27,15 +27,37 @@
 /* Modal Container */
 .share-modal {
   width: 100%;
-  max-width: 440px;
-  max-height: calc(100vh - 32px);
+  max-width: 460px;
+  max-height: calc(100vh - 40px);
   overflow-y: auto;
-  background: linear-gradient(145deg, rgba(30, 30, 40, 0.95), rgba(20, 20, 30, 0.98));
-  border: 1px solid rgba(74, 171, 194, 0.2);
-  border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  overflow-x: hidden;
+  background: linear-gradient(145deg, rgba(30, 30, 42, 0.98), rgba(20, 20, 32, 0.99));
+  border: 1px solid rgba(74, 171, 194, 0.25);
+  border-radius: 20px;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(74, 171, 194, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.05);
   position: relative;
-  animation: modalSlideIn 0.25s ease-out;
+  animation: modalSlideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(74, 171, 194, 0.3) transparent;
+}
+
+/* Custom scrollbar for webkit browsers */
+.share-modal::-webkit-scrollbar {
+  width: 6px;
+}
+
+.share-modal::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 8px 0;
+}
+
+.share-modal::-webkit-scrollbar-thumb {
+  background: rgba(74, 171, 194, 0.3);
+  border-radius: 3px;
+}
+
+.share-modal::-webkit-scrollbar-thumb:hover {
+  background: rgba(74, 171, 194, 0.5);
 }
 
 @keyframes modalSlideIn {
@@ -170,7 +192,7 @@
 }
 
 .share-toggle input:checked + .share-toggle-slider {
-  background: linear-gradient(135deg, #4AABC2, #6BC5D8);
+  background: linear-gradient(135deg, var(--color-cyan, #4AABC2), #6BC5D8);
 }
 
 .share-toggle input:checked + .share-toggle-slider::before {
@@ -229,7 +251,7 @@
   align-items: center;
   gap: 6px;
   padding: 12px 16px;
-  background: linear-gradient(135deg, #4AABC2, #3A9BB2);
+  background: linear-gradient(135deg, var(--color-cyan, #4AABC2), #3A9BB2);
   border: none;
   border-radius: 8px;
   color: #fff;
@@ -241,7 +263,7 @@
 }
 
 .share-copy-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #5BBCD3, #4AABC2);
+  background: linear-gradient(135deg, #5BBCD3, var(--color-cyan, #4AABC2));
   transform: translateY(-1px);
 }
 
@@ -302,7 +324,7 @@
 .visibility-option.active {
   background: rgba(74, 171, 194, 0.15);
   border-color: rgba(74, 171, 194, 0.4);
-  color: #4AABC2;
+  color: var(--color-cyan, #4AABC2);
 }
 
 .visibility-hint {
@@ -320,7 +342,7 @@
 
 .share-done-btn {
   padding: 12px 32px;
-  background: linear-gradient(135deg, #4AABC2, #3A9BB2);
+  background: linear-gradient(135deg, var(--color-cyan, #4AABC2), #3A9BB2);
   border: none;
   border-radius: 8px;
   color: #fff;
@@ -331,7 +353,7 @@
 }
 
 .share-done-btn:hover {
-  background: linear-gradient(135deg, #5BBCD3, #4AABC2);
+  background: linear-gradient(135deg, #5BBCD3, var(--color-cyan, #4AABC2));
   transform: translateY(-1px);
 }
 
@@ -350,7 +372,7 @@
   width: 32px;
   height: 32px;
   border: 3px solid rgba(255, 255, 255, 0.1);
-  border-top-color: #4AABC2;
+  border-top-color: var(--color-cyan, #4AABC2);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
