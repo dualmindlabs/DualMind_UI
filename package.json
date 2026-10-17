@@ -27,7 +27,7 @@
     "leaderboard"
   ],
   "author": "DualMind Team",
-  "license": "MIT",
+  "license": "UNLICENSED",
   "devDependencies": {
     "@playwright/test": "^1.62.1",
     "eslint": "^8.57.1",
