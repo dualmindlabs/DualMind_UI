@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { joinWaitlist } from '@/lib/waitlist';
+import { HONEYPOT_FIELD, joinWaitlist, readDeviceNote, type DeviceNote } from '@/lib/waitlist';
 import { useHydrated, useReducedMotion } from '@/lib/media';
 import { cn } from '@/lib/cn';
 import Magnet from './reactbits/Magnet';
@@ -14,13 +14,16 @@ type FormState =
   | { kind: 'invalid' }
   | { kind: 'duplicate'; email: string }
   | { kind: 'error' }
+  | { kind: 'limited' }
   | { kind: 'joined'; email: string };
 
-const HINT = 'Launch updates only. No spam, unsubscribe anytime.';
+const HINT = "We'll only email you about the launch. No spam, and you can opt out anytime.";
 
 export function SignupForm({ refCode }: { refCode: string | null }) {
   const [state, setState] = useState<FormState>({ kind: 'idle' });
+  const [note, setNote] = useState<DeviceNote | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const honeypotRef = useRef<HTMLInputElement>(null);
   const doneRef = useRef<HTMLParagraphElement>(null);
   const hydrated = useHydrated();
   const reduced = useReducedMotion();
@@ -31,6 +34,15 @@ export function SignupForm({ refCode }: { refCode: string | null }) {
   useEffect(() => {
     if (joined) doneRef.current?.focus();
   }, [joined]);
+
+  // After hydration: greet a browser that already joined, or offer to send an email the old page
+  // only kept in this browser.
+  useEffect(() => {
+    const found = readDeviceNote();
+    setNote(found);
+    const input = inputRef.current;
+    if (found?.kind === 'legacy' && input && !input.value) input.value = found.email;
+  }, []);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -45,12 +57,19 @@ export function SignupForm({ refCode }: { refCode: string | null }) {
       return;
     }
     setState({ kind: 'pending' });
-    const outcome = await joinWaitlist(email, refCode);
+    const normalised = email.toLowerCase();
+    const outcome = await joinWaitlist(email, refCode, honeypotRef.current?.value ?? '');
+    if (outcome === 'joined' || outcome === 'duplicate') setNote({ kind: 'joined', email: normalised });
     if (outcome === 'joined') {
       input.value = '';
-      setState({ kind: 'joined', email: email.toLowerCase() });
+      setState({ kind: 'joined', email: normalised });
     } else if (outcome === 'duplicate') {
-      setState({ kind: 'duplicate', email: email.toLowerCase() });
+      setState({ kind: 'duplicate', email: normalised });
+    } else if (outcome === 'invalid') {
+      setState({ kind: 'invalid' });
+      input.focus();
+    } else if (outcome === 'rate_limited') {
+      setState({ kind: 'limited' });
     } else {
       setState({ kind: 'error' });
     }
@@ -62,7 +81,7 @@ export function SignupForm({ refCode }: { refCode: string | null }) {
   }
 
   const tone =
-    state.kind === 'invalid' || state.kind === 'error'
+    state.kind === 'invalid' || state.kind === 'error' || state.kind === 'limited'
       ? 'bad'
       : state.kind === 'duplicate'
         ? 'info'
@@ -90,8 +109,8 @@ export function SignupForm({ refCode }: { refCode: string | null }) {
                 You're on the list.
               </p>
               <p className="mt-0.5 text-[15px] leading-snug text-fg-soft">
-                We'll be in touch at <span className="text-fg [overflow-wrap:anywhere]">{state.email}</span>. Meanwhile, try a battle
-                below.
+                We'll email <span className="text-fg [overflow-wrap:anywhere]">{state.email}</span> when the Arena opens.
+                Meanwhile, try a battle below.
               </p>
             </div>
             <button
@@ -107,6 +126,14 @@ export function SignupForm({ refCode }: { refCode: string | null }) {
             <label htmlFor={EMAIL_INPUT_ID} className="sr-only">
               Email address
             </label>
+            {/* Honeypot: off screen and out of the tab order. A bot that fills it gets a normal
+                answer, but the server stores nothing. */}
+            <div aria-hidden="true" className="absolute -left-[10000px] top-0 size-px overflow-hidden">
+              <label>
+                Leave this field empty
+                <input ref={honeypotRef} type="text" name={HONEYPOT_FIELD} tabIndex={-1} autoComplete="off" defaultValue="" />
+              </label>
+            </div>
             <input
               ref={inputRef}
               id={EMAIL_INPUT_ID}
@@ -179,6 +206,12 @@ export function SignupForm({ refCode }: { refCode: string | null }) {
             We couldn't save your spot just now. Please try again in a moment.
           </>
         )}
+        {state.kind === 'limited' && (
+          <>
+            <Alert className="mt-px size-4 flex-none" />
+            Too many tries from this network. Please wait a few minutes and try again.
+          </>
+        )}
         {state.kind === 'duplicate' && (
           <>
             <Info className="mt-px size-4 flex-none" />
@@ -188,7 +221,23 @@ export function SignupForm({ refCode }: { refCode: string | null }) {
           </>
         )}
         {state.kind === 'pending' && <span className="sr-only">Saving your spot…</span>}
-        {(state.kind === 'idle' || state.kind === 'pending') && <span aria-hidden={pending || undefined}>{HINT}</span>}
+        {(state.kind === 'idle' || state.kind === 'pending') && (
+          <span aria-hidden={pending || undefined} data-testid="signup-hint">
+            {note?.kind === 'joined' ? (
+              <>
+                You've already joined from this device as <span className="text-fg-soft [overflow-wrap:anywhere]">{note.email}</span>.
+              </>
+            ) : note?.kind === 'legacy' ? (
+              <>
+                Signed up here before? Our old page only saved{' '}
+                <span className="text-fg-soft [overflow-wrap:anywhere]">{note.email}</span> in this browser. Join again to be
+                counted.
+              </>
+            ) : (
+              HINT
+            )}
+          </span>
+        )}
       </p>
     </div>
   );
