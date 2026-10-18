@@ -80,8 +80,24 @@ test('nothing is wider than the screen, and the model marquee shows', async ({ p
       .filter(el => el.scrollWidth > el.clientWidth + 1 && getComputedStyle(el).overflowX === 'visible' && el.clientWidth > 0)
       .slice(-12)
       .map(el => `${el.tagName.toLowerCase()}[${String(el.getAttribute('class')).slice(0, 70)}] ${el.clientWidth}->${el.scrollWidth}`);
+    // Hide each top-level block in turn to see which one makes the page wider.
+    const blocks = [
+      ...Array.from(document.querySelectorAll('#root > *')),
+      ...Array.from(document.querySelectorAll('main > *')),
+    ] as HTMLElement[];
+    const culprits = blocks
+      .map(block => {
+        const before = block.style.display;
+        block.style.display = 'none';
+        const without = document.documentElement.scrollWidth;
+        block.style.display = before;
+        return { block, without };
+      })
+      .filter(({ without }) => without <= width)
+      .map(({ block }) => `${block.tagName.toLowerCase()}#${block.id}[${String(block.getAttribute('class')).slice(0, 50)}]`);
     const canvas = document.createElement('canvas');
     return {
+      culprits,
       width,
       scrollWidth: document.documentElement.scrollWidth,
       tooWide,

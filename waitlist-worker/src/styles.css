@@ -308,7 +308,7 @@
 
   .preview-line {
     transform-origin: left center;
-    animation: preview-stream 4.2s var(--ease-out-expo) infinite both;
+    animation: preview-stream 6s var(--ease-out-expo) infinite both;
   }
 
   .preview-pick {
@@ -394,10 +394,10 @@
 @keyframes preview-stream {
   0% {
     transform: scaleX(0);
-    opacity: 0.5;
+    opacity: 0.6;
   }
-  30%,
-  86% {
+  14%,
+  90% {
     transform: scaleX(1);
     opacity: 1;
   }

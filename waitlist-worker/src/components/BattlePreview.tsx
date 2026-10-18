@@ -45,8 +45,8 @@ export function BattlePreview() {
                 {LINES[side].map((width, row) => (
                   <span
                     key={row}
-                    className="preview-line block h-[7px] rounded-full bg-fg/[0.09]"
-                    style={{ width: `${width}%`, animationDelay: `${row * 140 + (side === 'b' ? 70 : 0)}ms` }}
+                    className="preview-line block h-[7px] rounded-full bg-fg/[0.15]"
+                    style={{ width: `${width}%`, animationDelay: `${row * 220 + (side === 'b' ? 110 : 0)}ms` }}
                   />
                 ))}
                 <span
