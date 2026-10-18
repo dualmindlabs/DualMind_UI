@@ -81,11 +81,11 @@ export function SignupForm({ refCode }: { refCode: string | null }) {
         )}
 
         {joined ? (
-          <div className="flex flex-wrap items-start gap-x-4 gap-y-2 px-3 py-3 sm:flex-nowrap sm:items-center sm:px-4" data-testid="signup-success">
+          <div className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-x-4 gap-y-2 px-3 py-3 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center sm:px-4" data-testid="signup-success">
             <span className="grid size-11 flex-none place-items-center rounded-full bg-ok/12 text-ok ring-1 ring-ok/40">
               <Check className="size-5" />
             </span>
-            <div className="min-w-0 flex-1">
+            <div className="min-w-0">
               <p ref={doneRef} tabIndex={-1} className="text-lg font-medium tracking-[-0.01em] text-fg outline-none">
                 You're on the list.
               </p>
@@ -97,7 +97,7 @@ export function SignupForm({ refCode }: { refCode: string | null }) {
             <button
               type="button"
               onClick={reset}
-              className="link-sweep ml-15 flex-none font-mono text-[11px] uppercase tracking-[0.2em] text-muted sm:ml-0"
+              className="link-sweep col-start-2 justify-self-start font-mono text-[11px] uppercase tracking-[0.2em] text-muted sm:col-start-3"
             >
               Add another
             </button>
