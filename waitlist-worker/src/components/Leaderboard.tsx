@@ -95,7 +95,7 @@ export function Leaderboard({ stats }: { stats: ArenaStatsState }) {
                           />
                         </div>
                         <p className="mt-1.5 font-mono text-[10.5px] uppercase tracking-[0.16em] text-muted">
-                          {providerLabel(model.provider)} · {model.winRate.toFixed(1)}% wins
+                          {providerLabel(model.provider)} · {model.battles.toLocaleString('en-US')} battles · {model.winRate.toFixed(1)}% wins
                         </p>
                         <div className="mt-3 h-[3px] w-full max-w-[320px] overflow-hidden rounded-full bg-line-soft" aria-hidden="true">
                           <div

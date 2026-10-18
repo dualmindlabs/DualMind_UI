@@ -124,7 +124,7 @@ export function SignupForm({ refCode }: { refCode: string | null }) {
                 if (state.kind !== 'idle' && state.kind !== 'pending') setState({ kind: 'idle' });
               }}
               className={cn(
-                'h-14 min-w-0 flex-1 rounded-[14px] border bg-ink/80 px-5 text-base text-fg placeholder:text-muted/70 transition-[border-color,box-shadow] duration-200',
+                'h-14 w-full min-w-0 rounded-[14px] sm:w-auto sm:flex-1 border bg-ink/80 px-5 text-base text-fg placeholder:text-muted/70 transition-[border-color,box-shadow] duration-200',
                 'focus:outline-none focus-visible:outline-none focus:ring-4',
                 state.kind === 'invalid'
                   ? 'border-bad/70 focus:border-bad focus:ring-bad/15'

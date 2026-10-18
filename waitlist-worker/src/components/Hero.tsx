@@ -2,6 +2,7 @@ import { useEffect, useState, type CSSProperties } from 'react';
 import type { ArenaStatsState } from '@/lib/arena-stats';
 import { useReducedMotion } from '@/lib/media';
 import BlurText from './reactbits/BlurText';
+import { BattlePreview } from './BattlePreview';
 import { HeroBackdrop } from './HeroBackdrop';
 import { LiveStrip } from './LiveStrip';
 import { SignupForm } from './SignupForm';
@@ -63,38 +64,44 @@ export function Hero({ refCode, stats }: { refCode: string | null; stats: ArenaS
   return (
     <section className="relative isolate overflow-hidden" aria-labelledby="hero-title">
       <HeroBackdrop />
-      <div className="mx-auto max-w-[1200px] px-4 pt-28 pb-20 sm:px-8 sm:pt-40 sm:pb-28 lg:pt-44">
-        <p className="eyebrow rise flex items-center gap-2.5">
-          <span className="live-dot" aria-hidden="true" />
-          DualMind Arena · Early access
-        </p>
-
-        <Headline />
-
-        <p
-          className="rise mt-8 max-w-[44ch] text-[17px] leading-relaxed text-fg-soft sm:text-lg"
-          style={{ '--rise-delay': '180ms' } as CSSProperties}
-        >
-          DualMind Arena runs blind battles between AI models. Read two anonymous answers to the same prompt, vote
-          for the better one, then see who wrote them. Every vote moves a public ELO leaderboard.
-        </p>
-
-        {note && (
-          <p
-            className="rise mt-6 inline-flex items-center gap-2 rounded-full border border-line bg-surface/70 px-3.5 py-1.5 font-mono text-[11px] tracking-[0.06em] text-fg-soft"
-            data-testid="ref-note"
-          >
-            <span className="size-1.5 rounded-full bg-violet-text" aria-hidden="true" />
-            {note}
+      <div className="mx-auto max-w-[1200px] px-4 pt-28 pb-20 sm:px-8 sm:pt-40 sm:pb-28 lg:pt-44 xl:grid xl:grid-cols-[minmax(0,1fr)_440px] xl:items-center xl:gap-14">
+        <div>
+          <p className="eyebrow rise flex items-center gap-2.5">
+            <span className="live-dot" aria-hidden="true" />
+            DualMind Arena · Early access
           </p>
-        )}
 
-        <div className="rise mt-9" style={{ '--rise-delay': '280ms' } as CSSProperties}>
-          <SignupForm refCode={refCode} />
+          <Headline />
+
+          <p
+            className="rise mt-8 max-w-[44ch] text-[16px] leading-relaxed text-fg-soft sm:text-lg"
+            style={{ '--rise-delay': '180ms' } as CSSProperties}
+          >
+            DualMind Arena runs blind battles between AI models. Read two anonymous answers to the same prompt, vote
+            for the better one, then see who wrote them. Every vote moves a public ELO leaderboard.
+          </p>
+
+          {note && (
+            <p
+              className="rise mt-6 inline-flex items-center gap-2 rounded-full border border-line bg-surface/70 px-3.5 py-1.5 font-mono text-[11px] tracking-[0.06em] text-fg-soft"
+              data-testid="ref-note"
+            >
+              <span className="size-1.5 rounded-full bg-violet-text" aria-hidden="true" />
+              {note}
+            </p>
+          )}
+
+          <div className="rise mt-9" style={{ '--rise-delay': '280ms' } as CSSProperties}>
+            <SignupForm refCode={refCode} />
+          </div>
+
+          <div className="rise mt-7" style={{ '--rise-delay': '380ms' } as CSSProperties}>
+            <LiveStrip stats={stats} />
+          </div>
         </div>
 
-        <div className="rise mt-7" style={{ '--rise-delay': '380ms' } as CSSProperties}>
-          <LiveStrip stats={stats} />
+        <div className="rise" style={{ '--rise-delay': '450ms' } as CSSProperties}>
+          <BattlePreview />
         </div>
       </div>
     </section>

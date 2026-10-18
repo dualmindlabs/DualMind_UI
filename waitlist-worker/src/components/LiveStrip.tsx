@@ -47,10 +47,11 @@ export function LiveStrip({ stats }: { stats: ArenaStatsState }) {
       <span className={ITEM}>
         <CountUp to={providers.length} duration={1} className="tabular-nums text-fg" /> providers
       </span>
-      <span className={`${ITEM} normal-case tracking-[0.04em]`}>
-        <span className="uppercase tracking-[0.2em]">#1</span>
-        <span className="text-fg">{leader.name}</span>
+      <span className="basis-full normal-case tracking-[0.04em] sm:basis-auto">
+        <span className="mr-2 uppercase tracking-[0.2em]">#1</span>
+        <span className="break-all text-fg">{leader.name}</span>
         <span className="text-muted">
+          {' '}
           · {Math.round(leader.elo)} ELO · {providerLabel(leader.provider)}
         </span>
       </span>

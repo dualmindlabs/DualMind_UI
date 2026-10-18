@@ -166,15 +166,18 @@ export function BattleDemo() {
                   <span className={cn('inline-flex items-center gap-2 font-mono text-[12px] uppercase tracking-[0.18em]', meta.tint)}>
                     <span className={cn('size-2 rounded-full', meta.dot)} aria-hidden="true" />
                     {vote ? (
-                      <DecryptedText
-                        key={`${index}-${vote}`}
-                        text={crisp ? 'Answered the question' : 'Sounded good, said little'}
-                        animateOn="view"
-                        sequential
-                        speed={28}
-                        characters="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&*"
-                        encryptedClassName="text-muted"
-                      />
+                      <>
+                        <span aria-hidden="true">{side.toUpperCase()} ·</span>
+                        <DecryptedText
+                          key={`${index}-${vote}`}
+                          text={crisp ? 'Answered the question' : 'Sounded good, said little'}
+                          animateOn="view"
+                          sequential
+                          speed={28}
+                          characters="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&*"
+                          encryptedClassName="text-muted"
+                        />
+                      </>
                     ) : (
                       meta.label
                     )}

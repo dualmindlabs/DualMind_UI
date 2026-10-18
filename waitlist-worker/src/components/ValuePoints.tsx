@@ -29,7 +29,7 @@ const POINTS: Point[] = [
   },
   {
     Icon: OpenData,
-    title: 'A leaderboard anyone can check',
+    title: 'A public leaderboard',
     body: 'The rankings and the API behind them are public. Read the leaderboard, or query it yourself, without an account.',
     tag: 'GET /api/arena/model-stats',
     glow: 'rgb(203 146 117 / 0.9)',

@@ -14,6 +14,8 @@ export interface ArenaModel {
   rank: number;
   elo: number;
   winRate: number;
+  /** Comparisons the model has appeared in (`totalResponses`, "Battles" in the docs). */
+  battles: number;
 }
 
 export interface ArenaStats {
@@ -44,6 +46,7 @@ function toModel(raw: unknown): ArenaModel | null {
   const elo = Number(item.eloScore ?? item.elo);
   const rank = Number(item.eloRank);
   const winRate = Number(item.winRate ?? item.win_rate);
+  const battles = Number(item.totalResponses ?? item.total_matches);
   if (typeof name !== 'string' || !name || typeof provider !== 'string' || !Number.isFinite(elo)) return null;
   return {
     id: String(item.modelId ?? item.model_id ?? name),
@@ -52,6 +55,7 @@ function toModel(raw: unknown): ArenaModel | null {
     rank: Number.isFinite(rank) ? rank : 0,
     elo,
     winRate: Number.isFinite(winRate) ? winRate : 0,
+    battles: Number.isFinite(battles) ? battles : 0,
   };
 }
 
