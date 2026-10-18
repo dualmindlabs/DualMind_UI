@@ -11,6 +11,16 @@
     "directory": "dist",
     "binding": "ASSETS"
   },
+  // Waitlist signups (POST /api/signup, server/signup.js). Schema: migrations/; the deploy
+  // workflow (.github/workflows/deploy-waitlist.yml) applies new migrations before deploying.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "dualmind-waitlist",
+      "database_id": "729bf3b6-8c71-46ab-b788-9ec51a4ae57a",
+      "migrations_dir": "migrations"
+    }
+  ],
   "observability": {
     "logs": {
       "enabled": false,

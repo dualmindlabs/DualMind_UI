@@ -1,6 +1,21 @@
+import { handleSignup } from './server/signup.js';
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+
+    // Waitlist API: POST /api/signup saves an email in D1 (see server/signup.js). Handled before
+    // the traffic log below, so signup requests are never logged with their IP.
+    if (url.pathname === '/api/signup') {
+      return handleSignup(request, env);
+    }
+    if (url.pathname.startsWith('/api/')) {
+      return new Response(JSON.stringify({ error: 'not_found' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' },
+      });
+    }
+
     const referer = request.headers.get('referer') || 'direct';
     const ua = request.headers.get('user-agent') || 'unknown';
     const ip = request.headers.get('cf-connecting-ip') || 'unknown';
