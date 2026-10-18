@@ -104,7 +104,7 @@ DualMind_UI/
 ├── login/, *.html          # Sign-in, sign-up, verification and password pages
 ├── leaderboard/, share/    # Standalone leaderboard and shared-thread pages
 ├── about/, faq/, models/…  # Static info and legal pages
-├── waitlist-worker/        # Separate worker for the pre-launch waitlist
+├── waitlist-worker/        # Pre-launch waitlist: Vite + React app and its worker
 ├── tests/                  # Playwright end-to-end tests
 ├── docs/                   # Codebase audits and UI roadmap
 └── AGENTS.md               # Detailed architecture and contributor guide
@@ -189,7 +189,7 @@ The arena runs as the Cloudflare Worker **`dualmind-arena`** on the route `arena
   pnpm run deploy   # pnpm build, then npx wrangler deploy (wrangler.jsonc)
   ```
 
-- **Waitlist worker** (`dualmind-waitlist`, served at `early.dualmindlab.tech`): `pnpm build` copies `waitlist.html` into `waitlist-worker/public/`; deploy it with `npx wrangler deploy` from `waitlist-worker/`.
+- **Waitlist worker** (`dualmind-waitlist`, served at `early.dualmindlab.tech`): a Vite + React app in `waitlist-worker/`. Deploy it with `npx wrangler deploy` from `waitlist-worker/`; Wrangler installs its dependencies and builds it first. Nothing deploys it automatically. See [`waitlist-worker/README.md`](./waitlist-worker/README.md).
 
 GitHub Actions ([`ci.yml`](./.github/workflows/ci.yml)) runs lint and build on every push and pull request to `master` and uploads `dist/` as an artifact. It does not deploy.
 

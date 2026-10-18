@@ -8,11 +8,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Redesigned waitlist page at `early.dualmindlab.tech`, rebuilt as a prerendered Vite + React + Tailwind app in `waitlist-worker/`: a headline reveal, crossing WebGL spotlights, a hands-on demo battle, the live top five from the public leaderboard API and a marquee of the Arena's models, using React Bits and Magic UI components. Signups keep working exactly as before. A `Waitlist page` workflow builds it, runs Playwright tests and uploads desktop and mobile screenshots.
 - `LICENSE` (proprietary, all rights reserved), `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1), `SECURITY.md`, `SUPPORT.md` and this changelog.
 - GitHub issue forms for bug reports and feature requests, a pull request template, `CODEOWNERS` and a Dependabot configuration for npm and GitHub Actions.
 
 ### Changed
 
+- `build.js` no longer copies `waitlist.html` into `dist/` or into the waitlist worker, and the old single-file `waitlist.html` is removed.
 - Rewrote `README.md` with architecture, setup, configuration, deployment and related-project sections.
 - `package.json` now declares the package as `UNLICENSED` to match the proprietary license.
 - ESLint upgraded from 8 to 10. `.eslintrc.json` is replaced by a flat config, `eslint.config.mjs`, with the same rules; ESLint 10's new `no-useless-assignment` rule reports warnings.
