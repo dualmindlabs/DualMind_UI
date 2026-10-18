@@ -24,7 +24,7 @@ node build-deploy.js     # Alternative build script with a different file set
 **Tooling fixes that must be done first:**
 1. `package.json` lint glob `admin-email-system/**` is unquoted and fails on shells that expand `**`. Add double quotes around every `--ignore-pattern` value.
 2. Add `@playwright/test` to `devDependencies` (and optionally a browser install step) or remove `npm run test`.
-3. `eslint` is on v8; if upgrading to v10, update `.eslintrc.json` to flat config.
+3. Done: `eslint` is on v10 with a flat config (`eslint.config.mjs`).
 
 ---
 
