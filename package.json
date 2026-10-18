@@ -30,7 +30,7 @@
   "license": "UNLICENSED",
   "devDependencies": {
     "@playwright/test": "^1.62.1",
-    "eslint": "^8.57.1",
+    "eslint": "^10.12.0",
     "http-server": "^14.1.1",
     "serve": "^14.2.6"
   }
