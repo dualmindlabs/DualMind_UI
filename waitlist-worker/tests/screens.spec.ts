@@ -71,7 +71,7 @@ test('nothing is wider than the screen, and the model marquee shows', async ({ p
       }
       return false;
     };
-    const tooWide = [...document.querySelectorAll('body *')]
+    const tooWide = Array.from(document.querySelectorAll('body *'))
       .filter(el => el.getBoundingClientRect().right > width + 0.5 && !clipped(el))
       .slice(0, 12)
       .map(el => `${el.tagName.toLowerCase()}[${String(el.getAttribute('class')).slice(0, 80)}] right=${el.getBoundingClientRect().right.toFixed(1)}`);
