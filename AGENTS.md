@@ -149,7 +149,7 @@ Mode changes are dispatched as `mode-change` CustomEvent and handled surgically 
 
 ### Waitlist sub-project
 
-`waitlist-worker/` is the pre-launch waitlist at `early.dualmindlab.tech`, served by the separate `dualmind-waitlist` Worker. It is a Vite + React + Tailwind app with its own `package.json`, prerendered at build time into `waitlist-worker/dist/`. It shares no code with the arena app; the root `build.js` no longer copies anything into it. See `waitlist-worker/README.md`.
+`waitlist-worker/` is the pre-launch waitlist at `early.dualmindlab.tech`, served by the separate `dualmind-waitlist` Worker. It is a Vite + React + Tailwind app with its own `package.json`, prerendered at build time into `waitlist-worker/dist/`. Its worker (`worker.js` + `server/signup.js`) also answers `POST /api/signup` and stores signups in the D1 database `dualmind-waitlist` (binding `DB`, migrations in `waitlist-worker/migrations/`). `.github/workflows/deploy-waitlist.yml` deploys it on pushes to `master` that touch `waitlist-worker/`. It shares no code with the arena app; the root `build.js` no longer copies anything into it. See `waitlist-worker/README.md`.
 
 ### Admin sub-project
 

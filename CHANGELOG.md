@@ -8,7 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
-- Redesigned waitlist page at `early.dualmindlab.tech`, rebuilt as a prerendered Vite + React + Tailwind app in `waitlist-worker/`: a headline reveal, crossing WebGL spotlights, a hands-on demo battle, the live top five from the public leaderboard API and a marquee of the Arena's models, using React Bits and Magic UI components. Signups keep working exactly as before. A `Waitlist page` workflow builds it, runs Playwright tests and uploads desktop and mobile screenshots.
+- Redesigned waitlist page at `early.dualmindlab.tech`, rebuilt as a prerendered Vite + React + Tailwind app in `waitlist-worker/`: a headline reveal, crossing WebGL spotlights, a hands-on demo battle, the live top five from the public leaderboard API and a marquee of the Arena's models, using React Bits and Magic UI components. A `Waitlist page` workflow builds it, runs Playwright tests and uploads desktop and mobile screenshots.
+- Real waitlist signups: the waitlist worker answers `POST /api/signup` and stores emails in the Cloudflare D1 database `dualmind-waitlist` (schema in `waitlist-worker/migrations/`), with email validation, a honeypot field, a 2 KB body limit, a same-origin check and a per-IP rate limit. Until now the page only saved emails in the visitor's own browser, so none reached the team; the form now offers to send such an old local signup for real.
+- `deploy-waitlist.yml` workflow: applies D1 migrations and deploys the waitlist worker on pushes to `master` that touch `waitlist-worker/`, or by hand. Needs the `CLOUDFLARE_API_TOKEN` secret.
 - `LICENSE` (proprietary, all rights reserved), `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1), `SECURITY.md`, `SUPPORT.md` and this changelog.
 - GitHub issue forms for bug reports and feature requests, a pull request template, `CODEOWNERS` and a Dependabot configuration for npm and GitHub Actions.
 
