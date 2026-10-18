@@ -2,8 +2,13 @@
   "name": "dualmind-waitlist",
   "main": "worker.js",
   "compatibility_date": "2024-12-01",
+  // The page is a Vite + React app. `npx wrangler deploy` (run from this folder, as before)
+  // installs its dependencies and builds it into dist/ first, then uploads dist/ as the assets.
+  "build": {
+    "command": "npm ci --no-audit --no-fund && npm run build"
+  },
   "assets": {
-    "directory": "public",
+    "directory": "dist",
     "binding": "ASSETS"
   },
   "observability": {
