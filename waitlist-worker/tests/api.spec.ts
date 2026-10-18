@@ -167,12 +167,13 @@ test('only same-origin POSTs with a JSON body are accepted', async () => {
   expect(get.status).toBe(405);
   expect(get.headers.get('allow')).toBe('POST');
 
-  for (const headers of [
+  const refused: Record<string, string>[] = [
     { Origin: 'https://evil.example' },
     { Origin: 'http://early.dualmindlab.tech' },
     { Origin: '' },
     { 'Sec-Fetch-Site': 'cross-site' },
-  ]) {
+  ];
+  for (const headers of refused) {
     const response = await call(signupRequest({ email: 'a@b.co' }, { headers }));
     expect(response.status, JSON.stringify(headers)).toBe(403);
     expect(response.db.rows).toEqual([]);
