@@ -18,7 +18,6 @@ const COLUMNS = [
       { label: 'dualmindlab.tech', href: LINKS.company },
       { label: 'GitHub', href: LINKS.github },
       { label: 'Contact', href: LINKS.contact },
-      { label: 'hello@dualmindlab.tech', href: LINKS.email },
     ],
   },
   {
@@ -41,6 +40,9 @@ export function Footer() {
           <p className="mt-4 max-w-[34ch] text-[14px] leading-relaxed text-fg-soft">
             Blind, side-by-side evaluation of AI models, judged by people. Built by DualMind Labs.
           </p>
+          <a href={LINKS.email} className="link-sweep mt-4 inline-block font-mono text-[12px] tracking-[0.04em] text-fg-soft">
+            hello@dualmindlab.tech
+          </a>
         </div>
         {COLUMNS.map(column => (
           <nav key={column.title} aria-label={column.title}>
@@ -53,7 +55,7 @@ export function Footer() {
                     <a
                       href={link.href}
                       {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-                      className="link-sweep inline-flex items-center gap-1 text-[15px] break-all text-fg/90"
+                      className="link-sweep inline-flex items-center gap-1 text-[15px] text-fg/90"
                     >
                       {link.label}
                       {external && (

@@ -53,8 +53,13 @@ export function Leaderboard({ stats }: { stats: ArenaStatsState }) {
             .
           </p>
         ) : (
-          <table className="w-full border-collapse text-left">
+          <table className="w-full table-fixed border-collapse text-left">
             <caption className="sr-only">Top {TOP} models in DualMind Arena by ELO rating</caption>
+            <colgroup>
+              <col className="w-11 sm:w-16" />
+              <col />
+              <col className="w-20 sm:w-32" />
+            </colgroup>
             <thead className="sr-only">
               <tr>
                 <th scope="col">Rank</th>
@@ -66,7 +71,7 @@ export function Leaderboard({ stats }: { stats: ArenaStatsState }) {
               {stats.status === 'loading'
                 ? Array.from({ length: TOP }, (_, row) => (
                     <tr key={row} className="border-b border-line-soft last:border-b-0" aria-hidden="true">
-                      <td className="w-12 py-5 pl-4 sm:w-16 sm:pl-6">
+                      <td className="py-5 pl-4 sm:pl-6">
                         <span className="skeleton block h-4 w-6" />
                       </td>
                       <td className="py-5 pr-3">
@@ -80,7 +85,7 @@ export function Leaderboard({ stats }: { stats: ArenaStatsState }) {
                   ))
                 : stats.data.models.slice(0, TOP).map((model, row) => (
                     <tr key={model.id} className="group border-b border-line-soft transition-colors last:border-b-0 hover:bg-elevated/50">
-                      <td className="w-12 py-5 pl-4 align-top font-mono text-[13px] text-muted tabular-nums sm:w-16 sm:pl-6">
+                      <td className="py-5 pl-4 align-top font-mono text-[13px] text-muted tabular-nums sm:pl-6">
                         {String(model.rank || row + 1).padStart(2, '0')}
                       </td>
                       <td className="py-5 pr-3 align-top">

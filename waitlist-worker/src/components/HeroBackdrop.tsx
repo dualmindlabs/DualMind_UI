@@ -37,10 +37,10 @@ export function HeroBackdrop() {
     lightSpread: 0.5,
     rayLength: 2.4,
     raySharpness: 0.68,
-    glow: 0.7,
+    glow: 0.45,
     haze: 0.12,
     atmosphere: 0.85,
-    intensity: wide ? 1.35 : 1,
+    intensity: wide ? 1.15 : 1,
     fadeDistance: 1.6,
     saturation: 1.15,
     noiseAmount: 0.04,
@@ -67,16 +67,18 @@ export function HeroBackdrop() {
                 raysOrigin={wide ? 'top-center' : 'top-left'}
                 raysColor="#00D9FF"
                 tilt={wide ? -30 : -16}
-                opacity={wide ? 0.85 : 0.6}
+                opacity={wide ? 0.8 : 0.6}
               />
             </div>
             <div className="absolute inset-0 mix-blend-screen">
-              <LightRays {...shared} raysOrigin="top-right" raysColor="#8B5CF6" tilt={wide ? 28 : 16} opacity={wide ? 0.95 : 0.7} />
+              <LightRays {...shared} raysOrigin="top-right" raysColor="#8B5CF6" tilt={wide ? 28 : 16} opacity={wide ? 0.8 : 0.7} />
             </div>
           </div>
         </Suspense>
       )}
 
+      {/* The light source sits just above the page; the nav stays on dark. */}
+      <div className="absolute inset-x-0 top-0 h-40 bg-linear-to-b from-ink/90 via-ink/45 to-transparent" />
       <div className="absolute inset-x-0 bottom-0 h-40 bg-linear-to-b from-transparent to-ink" />
     </div>
   );

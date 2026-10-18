@@ -284,7 +284,7 @@
   /* The giant outlined wordmark at the bottom of the page. */
   .footer-wordmark {
     font-weight: 800;
-    font-size: clamp(4.5rem, 19vw, 17rem);
+    font-size: clamp(3rem, 16.5vw, 14.5rem);
     line-height: 0.8;
     letter-spacing: -0.02em;
     color: transparent;
@@ -321,12 +321,15 @@
     animation: shimmer 1.6s linear infinite;
     border-radius: 6px;
   }
+}
 
-  /* Long model names may break anywhere rather than overflow a phone screen. */
-  .model-name .whitespace-nowrap {
-    white-space: normal;
-    overflow-wrap: anywhere;
-  }
+/*
+ * Long model names may break anywhere rather than overflow a phone screen. Unlayered on purpose:
+ * it has to beat Tailwind's whitespace-nowrap utility, which DecryptedText puts on each word.
+ */
+.model-name .whitespace-nowrap {
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 @property --cta-angle {

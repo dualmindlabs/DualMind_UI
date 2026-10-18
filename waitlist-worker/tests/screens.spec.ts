@@ -85,7 +85,8 @@ test('nothing is wider than the screen, and the model marquee shows', async ({ p
       ...Array.from(document.querySelectorAll('#root > *')),
       ...Array.from(document.querySelectorAll('main > *')),
     ] as HTMLElement[];
-    const culprits = blocks
+    const overflowing = document.documentElement.scrollWidth > width;
+    const culprits = (overflowing ? blocks : [])
       .map(block => {
         const before = block.style.display;
         block.style.display = 'none';

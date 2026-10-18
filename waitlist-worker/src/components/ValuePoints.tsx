@@ -63,7 +63,7 @@ export function ValuePoints() {
                 <Icon className="size-9" />
                 <span className="font-mono text-[11px] tracking-[0.2em] text-muted">0{index + 1}</span>
               </div>
-              <h3 className="mt-10 text-[22px] leading-tight font-medium tracking-[-0.02em] text-fg">{title}</h3>
+              <h3 className="mt-7 text-[22px] md:mt-10 leading-tight font-medium tracking-[-0.02em] text-fg">{title}</h3>
               <p className="mt-3 flex-1 text-[15px] leading-relaxed text-fg-soft">{body}</p>
               <p className="mt-8 border-t border-line-soft pt-4 font-mono text-[11px] tracking-[0.12em] text-muted">{tag}</p>
             </SpotlightCard>
