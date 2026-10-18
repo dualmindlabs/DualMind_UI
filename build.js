@@ -21,7 +21,6 @@ const filesToCopy = [
     'terms.html',
     'theme.js',
     'update-password.html',
-    'waitlist.html',
     'ads.txt',
     '.assetsignore'
 ];
@@ -57,14 +56,8 @@ for (const file of filesToCopy) {
     }
 }
 
-// Sync root waitlist.html to waitlist worker public folder
-const waitlistWorkerPublic = path.join(srcDir, 'waitlist-worker', 'public');
-if (fs.existsSync(path.join(srcDir, 'waitlist.html'))) {
-    fs.mkdirSync(waitlistWorkerPublic, { recursive: true });
-    fs.copyFileSync(path.join(srcDir, 'waitlist.html'), path.join(waitlistWorkerPublic, 'index.html'));
-}
-
-
+// The waitlist page (early.dualmindlab.tech) is its own app in waitlist-worker/, built and
+// deployed from there; it is no longer copied from here.
 
 // Copy directories
 function copyDir(src, dest) {
