@@ -75,11 +75,17 @@ test('nothing is wider than the screen, and the model marquee shows', async ({ p
       .filter(el => el.getBoundingClientRect().right > width + 0.5 && !clipped(el))
       .slice(0, 12)
       .map(el => `${el.tagName.toLowerCase()}[${String(el.getAttribute('class')).slice(0, 80)}] right=${el.getBoundingClientRect().right.toFixed(1)}`);
+    // Elements whose content spills sideways without being clipped, deepest last.
+    const spilling = Array.from(document.querySelectorAll('body *'))
+      .filter(el => el.scrollWidth > el.clientWidth + 1 && getComputedStyle(el).overflowX === 'visible' && el.clientWidth > 0)
+      .slice(-12)
+      .map(el => `${el.tagName.toLowerCase()}[${String(el.getAttribute('class')).slice(0, 70)}] ${el.clientWidth}->${el.scrollWidth}`);
     const canvas = document.createElement('canvas');
     return {
       width,
       scrollWidth: document.documentElement.scrollWidth,
       tooWide,
+      spilling,
       webgl2: !!canvas.getContext('webgl2'),
       heroCanvases: document.querySelectorAll('section canvas').length,
     };

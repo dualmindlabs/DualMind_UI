@@ -34,6 +34,8 @@
   html {
     color-scheme: dark;
     background: var(--color-ink);
+    /* clip on html as well as body: on body alone it is moved to the viewport and body stops clipping. */
+    overflow-x: clip;
     -webkit-text-size-adjust: 100%;
     scroll-padding-top: 24px;
   }
