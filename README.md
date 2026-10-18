@@ -81,7 +81,7 @@ flowchart LR
 - **Boot order**: `config.js` loads first and sets `window.DUALMIND_CONFIG`. `js/auth/supabase-init.js` restores the Supabase session and exposes `window.DualMindAuth` and `window.DualMindAuthReady`. `js/ui/app.js` waits for auth, syncs the user with the API, then renders the app.
 - **API calls** go through the single client in `js/apiInstance.js` (`DualMindApi`), which adds the Supabase bearer token, retries with backoff, supports cancellation and parses SSE streams.
 - **Components** in `components/` talk to the app through `document` CustomEvents (`mode-change`, `chat-submit`, `vote-submit` and so on). The full event and globals reference is in [AGENTS.md](./AGENTS.md).
-- **The worker** serves the files in `dist/`, proxies `/api/*` to the API (and `/api/health` to `/health`), rewrites `/share/*` to the share page, and generates `robots.txt` and `sitemap.xml`. On `master` it also redirects every non-API page request to the waitlist at `early.dualmindlab.tech` while the arena is in pre-launch.
+- **The worker** serves the files in `dist/`, proxies `/api/*` to the API (and `/api/health` to `/health`), rewrites `/share/*` to the share page, and generates `robots.txt` and `sitemap.xml`. While the arena is in pre-launch, `FORCE_WAITLIST` in `worker.js` sends **every** request (all paths, `/api/*` included) to the waitlist at `early.dualmindlab.tech` with a temporary 302; `?preview=dualmind-preview` sets a 30-day cookie that bypasses it and `?preview=off` clears it. Set the constant to `false` to open the arena again.
 
 ## Project structure
 

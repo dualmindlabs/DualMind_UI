@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Rewrote `README.md` with architecture, setup, configuration, deployment and related-project sections.
 - `package.json` now declares the package as `UNLICENSED` to match the proprietary license.
 - ESLint upgraded from 8 to 10. `.eslintrc.json` is replaced by a flat config, `eslint.config.mjs`, with the same rules; ESLint 10's new `no-useless-assignment` rule reports warnings.
+- The arena worker now redirects every request on `arena.dualmindlab.tech` (all paths and methods, including `/`, `/leaderboard/` and `/api/*`) to the waitlist with a 302, behind a single `FORCE_WAITLIST` constant in `worker.js`. `assets.run_worker_first` is on so pages that exist as static files are covered too. A `?preview=dualmind-preview` link sets a 30-day `dm_preview` cookie that skips the redirect; `?preview=off` clears it.
 
 ## 2026-08 (August 2026)
 
