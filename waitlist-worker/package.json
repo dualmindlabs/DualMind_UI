@@ -10,7 +10,7 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build && vite build --ssr src/entry-server.tsx --outDir .ssr && node scripts/prerender.mjs",
+    "build": "tsc -p tsconfig.app.json && vite build && vite build --ssr src/entry-server.tsx --outDir .ssr && node scripts/prerender.mjs",
     "preview": "vite preview --port 4173 --strictPort",
     "typecheck": "tsc -b --pretty",
     "test": "playwright test"
@@ -34,5 +34,8 @@
     "tailwindcss": "4.3.3",
     "typescript": "5.9.3",
     "vite": "7.3.7"
+  },
+  "overrides": {
+    "playwright-core": "1.61.1"
   }
 }

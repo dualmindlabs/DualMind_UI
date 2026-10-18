@@ -50,6 +50,9 @@ jobs:
       - name: Build through the deploy path (wrangler deploy --dry-run)
         run: npx --yes wrangler@4.149.0 deploy --dry-run --outdir "$RUNNER_TEMP/wrangler-out"
 
+      - name: Typecheck the app, config and tests
+        run: npm run typecheck
+
       - name: Check the prerendered page and report bundle sizes
         run: |
           grep -q 'Two models.' dist/index.html
