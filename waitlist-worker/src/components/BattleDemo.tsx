@@ -126,7 +126,7 @@ export function BattleDemo() {
 
       <div
         ref={panelRef}
-        className="mt-12 overflow-hidden rounded-[24px] border border-line bg-surface/80 shadow-[0_40px_120px_-60px_rgb(0_217_255/0.35)]"
+        className="relative mt-12 overflow-hidden rounded-[24px] border border-line bg-surface/80 shadow-[0_40px_120px_-60px_rgb(0_217_255/0.35)]"
         data-testid="battle"
       >
         <div className="flex items-center justify-between border-b border-line-soft px-5 py-3.5 font-mono text-[11px] uppercase tracking-[0.2em] text-muted sm:px-6">

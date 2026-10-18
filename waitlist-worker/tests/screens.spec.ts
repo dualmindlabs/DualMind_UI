@@ -95,9 +95,26 @@ test('nothing is wider than the screen, and the model marquee shows', async ({ p
       })
       .filter(({ without }) => without <= width)
       .map(({ block }) => `${block.tagName.toLowerCase()}#${block.id}[${String(block.getAttribute('class')).slice(0, 50)}]`);
+    // Then walk down from the first culprit to the element that causes it.
+    const path: string[] = [];
+    let node: Element | undefined = culprits.length ? blocks.find(block => culprits[0].startsWith(block.tagName.toLowerCase() + '#' + block.id)) : undefined;
+    for (let depth = 0; node && depth < 25; depth++) {
+      const style = getComputedStyle(node);
+      path.push(`${node.tagName.toLowerCase()}[${String(node.getAttribute('class')).slice(0, 40)}] pos=${style.position} right=${node.getBoundingClientRect().right.toFixed(1)}`);
+      const next: Element | undefined = Array.from(node.children).find(child => {
+        const el = child as HTMLElement;
+        const before = el.style.display;
+        el.style.display = 'none';
+        const fixed = document.documentElement.scrollWidth <= width;
+        el.style.display = before;
+        return fixed;
+      });
+      node = next;
+    }
     const canvas = document.createElement('canvas');
     return {
       culprits,
+      path,
       width,
       scrollWidth: document.documentElement.scrollWidth,
       tooWide,

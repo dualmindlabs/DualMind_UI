@@ -35,7 +35,7 @@ export function Leaderboard({ stats }: { stats: ArenaStatsState }) {
         The leaderboard, <span className="human">right now.</span>
       </SectionHeading>
 
-      <div className="mt-12 overflow-hidden rounded-[24px] border border-line bg-surface/80" data-testid="leaderboard">
+      <div className="relative mt-12 overflow-hidden rounded-[24px] border border-line bg-surface/80" data-testid="leaderboard">
         <div className="flex items-center justify-between border-b border-line-soft px-4 py-3.5 font-mono text-[11px] uppercase tracking-[0.2em] text-muted sm:px-6">
           <span className="inline-flex items-center gap-2">
             {stats.status === 'ready' && <span className="live-dot" aria-hidden="true" />}
