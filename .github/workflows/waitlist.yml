@@ -1,0 +1,94 @@
+name: Waitlist page
+
+# Builds the waitlist app in waitlist-worker/, checks the Wrangler deploy path, runs the
+# Playwright tests (page behaviour with the signup endpoint mocked, plus unit tests of the
+# Worker's /api/signup handler) and uploads desktop and mobile screenshots. It never deploys:
+# deploy-waitlist.yml does.
+
+on:
+  pull_request:
+    branches: [main, master]
+    paths:
+      - 'waitlist-worker/**'
+      - '.github/workflows/waitlist.yml'
+  push:
+    branches: [main, master]
+    paths:
+      - 'waitlist-worker/**'
+      - '.github/workflows/waitlist.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: waitlist-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test-screenshots:
+    name: Build, test and screenshot
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: waitlist-worker
+    env:
+      WRANGLER_SEND_METRICS: 'false'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: waitlist-worker/package-lock.json
+
+      # `wrangler deploy --dry-run` runs the custom build from wrangler.jsonc (npm ci + npm run build)
+      # and bundles the Worker with dist/ as its assets, exactly like a real deploy minus the upload.
+      - name: Build through the deploy path (wrangler deploy --dry-run)
+        run: |
+          npx --yes wrangler@4.149.0 deploy --dry-run --outdir "$RUNNER_TEMP/wrangler-out"
+          # The bundled Worker must include the signup handler.
+          grep -rq 'ON CONFLICT(email) DO NOTHING' "$RUNNER_TEMP/wrangler-out"
+
+      - name: Typecheck the app, config and tests
+        run: npm run typecheck
+
+      - name: Check the prerendered page and report bundle sizes
+        run: |
+          grep -q 'Two models.' dist/index.html
+          grep -q 'id="email"' dist/index.html
+          echo "| File | Size | Gzip |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| --- | ---: | ---: |" >> "$GITHUB_STEP_SUMMARY"
+          for f in dist/index.html dist/assets/*.js dist/assets/*.css; do
+            echo "| \`${f#dist/}\` | $(wc -c < "$f") | $(gzip -9c "$f" | wc -c) |" >> "$GITHUB_STEP_SUMMARY"
+          done
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright tests and capture screenshots
+        run: npx playwright test
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: waitlist-screenshots
+          path: waitlist-worker/screenshots/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            waitlist-worker/playwright-report/
+            waitlist-worker/test-results/
+          retention-days: 7

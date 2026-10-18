@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.ssr/
+.wrangler/
+test-results/
+playwright-report/
+screenshots/
