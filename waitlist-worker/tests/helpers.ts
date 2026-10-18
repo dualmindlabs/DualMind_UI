@@ -6,7 +6,10 @@ import type { Page, TestInfo } from '@playwright/test';
 const here = path.dirname(fileURLToPath(import.meta.url));
 export const STATS_FIXTURE = readFileSync(path.join(here, 'fixtures', 'model-stats.json'), 'utf8');
 export const STATS_URL = 'https://api.dualmindlab.tech/api/arena/model-stats';
-export const STORAGE_KEY = 'dualmind_waitlist';
+/** Where the page remembers the email that joined from this browser (src/lib/waitlist.ts). */
+export const DEVICE_KEY = 'dualmind_waitlist_joined';
+/** Where the old page kept its local-only "signups". */
+export const LEGACY_KEY = 'dualmind_waitlist';
 
 /** Answers the leaderboard API with a saved real response (2026-10-18), or fails it. */
 export async function mockStats(page: Page, mode: 'ok' | 'fail' = 'ok') {
@@ -20,6 +23,37 @@ export async function mockStats(page: Page, mode: 'ok' | 'fail' = 'ok') {
         })
       : route.abort('failed'),
   );
+}
+
+export type SignupMock = { requests: Record<string, unknown>[]; emails: Set<string> };
+
+/**
+ * Stands in for POST /api/signup (server/signup.js), which `vite preview` doesn't serve. Like the
+ * real one, a new email gets 201 {"status":"created"} and a known one 200 {"status":"exists"}.
+ * `status` forces that HTTP status instead (400, 429, 500...); `abort` drops the connection.
+ */
+export async function mockSignup(
+  page: Page,
+  options: { known?: string[]; status?: number; abort?: boolean } = {},
+): Promise<SignupMock> {
+  const mock: SignupMock = { requests: [], emails: new Set(options.known ?? []) };
+  await page.route('**/api/signup', async route => {
+    const body = (route.request().postDataJSON() ?? {}) as Record<string, unknown>;
+    mock.requests.push(body);
+    if (options.abort) return route.abort('failed');
+    if (options.status) {
+      return route.fulfill({ status: options.status, contentType: 'application/json', body: '{"error":"mocked"}' });
+    }
+    const email = String(body.email ?? '').toLowerCase();
+    const exists = mock.emails.has(email);
+    mock.emails.add(email);
+    return route.fulfill({
+      status: exists ? 200 : 201,
+      contentType: 'application/json',
+      body: JSON.stringify({ status: exists ? 'exists' : 'created' }),
+    });
+  });
+  return mock;
 }
 
 /** Waits for web fonts and the entrance animations. */

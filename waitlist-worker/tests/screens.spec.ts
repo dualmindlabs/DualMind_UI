@@ -1,7 +1,8 @@
 import { expect, test } from '@playwright/test';
-import { mockStats, scrollThrough, settle, shotPath } from './helpers';
+import { LEGACY_KEY, mockSignup, mockStats, scrollThrough, settle, shotPath } from './helpers';
 
-// Screenshots for review, at desktop (1440x900) and mobile (360x780) sizes.
+// Screenshots for review, at desktop (1440x900) and mobile (360x780) sizes. The signup endpoint is
+// mocked (helpers.ts): it remembers emails, so a second try with the same one is a duplicate.
 test.beforeEach(async ({ page }) => {
   await mockStats(page);
 });
@@ -12,7 +13,8 @@ test('hero', async ({ page }, testInfo) => {
   await page.screenshot({ path: shotPath(testInfo, '01-hero') });
 });
 
-test('signup states: success, duplicate, invalid', async ({ page }, testInfo) => {
+test('signup states: success, returning visitor, duplicate, invalid', async ({ page }, testInfo) => {
+  await mockSignup(page);
   await page.goto('/');
   await settle(page);
   const input = page.getByLabel('Email address');
@@ -25,6 +27,8 @@ test('signup states: success, duplicate, invalid', async ({ page }, testInfo) =>
 
   await page.reload();
   await settle(page);
+  await expect(page.getByTestId('signup-hint')).toContainText('already joined from this device');
+  await page.screenshot({ path: shotPath(testInfo, '11-returning-visitor') });
   await input.fill('ada@example.com');
   await input.press('Enter');
   await expect(page.locator('#signup-status')).toContainText('already on the list');
@@ -34,6 +38,26 @@ test('signup states: success, duplicate, invalid', async ({ page }, testInfo) =>
   await input.press('Enter');
   await expect(page.locator('#signup-status')).toContainText('Enter a valid email address');
   await page.screenshot({ path: shotPath(testInfo, '05-error') });
+});
+
+test('network error, and an old local-only signup offered again', async ({ page }, testInfo) => {
+  await mockSignup(page, { status: 500 });
+  await page.goto('/');
+  await settle(page);
+  const input = page.getByLabel('Email address');
+  await input.fill('retry@example.com');
+  await input.press('Enter');
+  await expect(page.locator('#signup-status')).toContainText("We couldn't save your spot");
+  await page.waitForTimeout(400);
+  await page.screenshot({ path: shotPath(testInfo, '10-network-error') });
+
+  await page.evaluate(key => {
+    window.localStorage.setItem(key, JSON.stringify(['old@example.com']));
+  }, LEGACY_KEY);
+  await page.reload();
+  await settle(page);
+  await expect(page.getByTestId('signup-hint')).toContainText('Our old page only saved');
+  await page.screenshot({ path: shotPath(testInfo, '12-legacy-signup') });
 });
 
 test('reduced motion', async ({ page }, testInfo) => {

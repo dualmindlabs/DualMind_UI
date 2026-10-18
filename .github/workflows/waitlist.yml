@@ -1,7 +1,9 @@
 name: Waitlist page
 
 # Builds the waitlist app in waitlist-worker/, checks the Wrangler deploy path, runs the
-# Playwright tests and uploads desktop and mobile screenshots. It never deploys.
+# Playwright tests (page behaviour with the signup endpoint mocked, plus unit tests of the
+# Worker's /api/signup handler) and uploads desktop and mobile screenshots. It never deploys:
+# deploy-waitlist.yml does.
 
 on:
   pull_request:
@@ -48,7 +50,10 @@ jobs:
       # `wrangler deploy --dry-run` runs the custom build from wrangler.jsonc (npm ci + npm run build)
       # and bundles the Worker with dist/ as its assets, exactly like a real deploy minus the upload.
       - name: Build through the deploy path (wrangler deploy --dry-run)
-        run: npx --yes wrangler@4.149.0 deploy --dry-run --outdir "$RUNNER_TEMP/wrangler-out"
+        run: |
+          npx --yes wrangler@4.149.0 deploy --dry-run --outdir "$RUNNER_TEMP/wrangler-out"
+          # The bundled Worker must include the signup handler.
+          grep -rq 'ON CONFLICT(email) DO NOTHING' "$RUNNER_TEMP/wrangler-out"
 
       - name: Typecheck the app, config and tests
         run: npm run typecheck
@@ -62,9 +67,6 @@ jobs:
           for f in dist/index.html dist/assets/*.js dist/assets/*.css; do
             echo "| \`${f#dist/}\` | $(wc -c < "$f") | $(gzip -9c "$f" | wc -c) |" >> "$GITHUB_STEP_SUMMARY"
           done
-
-      - name: Build a copy with a (mocked) signup endpoint, for the network-state tests
-        run: VITE_WAITLIST_ENDPOINT=/api/waitlist npx vite build --outDir dist-endpoint && node scripts/prerender.mjs dist-endpoint
 
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium

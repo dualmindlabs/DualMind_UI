@@ -1,10 +1,10 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * Runs against the production build (`npm run build`, served by `vite preview` on 4173) and a
- * second build with a signup endpoint configured (`dist-endpoint`, on 4174), whose endpoint the
- * tests mock. The leaderboard API is mocked with a saved response, so runs are repeatable.
- * Screenshots land in ./screenshots.
+ * Runs against the production build (`npm run build`, served by `vite preview` on 4173). The
+ * signup endpoint (POST /api/signup, which `vite preview` doesn't have) and the leaderboard API
+ * are mocked, so runs are repeatable. tests/api.spec.ts calls the Worker's signup handler
+ * directly, without a browser. Screenshots land in ./screenshots.
  */
 const chromiumArgs = ['--enable-unsafe-swiftshader', '--use-angle=swiftshader', '--ignore-gpu-blocklist'];
 
@@ -38,16 +38,9 @@ export default defineConfig({
       },
     },
   ],
-  webServer: [
-    {
-      command: 'npx vite preview --port 4173 --strictPort',
-      url: 'http://localhost:4173',
-      reuseExistingServer: !process.env.CI,
-    },
-    {
-      command: 'npx vite preview --outDir dist-endpoint --port 4174 --strictPort',
-      url: 'http://localhost:4174',
-      reuseExistingServer: !process.env.CI,
-    },
-  ],
+  webServer: {
+    command: 'npx vite preview --port 4173 --strictPort',
+    url: 'http://localhost:4173',
+    reuseExistingServer: !process.env.CI,
+  },
 });

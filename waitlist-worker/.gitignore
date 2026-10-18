@@ -1,6 +1,5 @@
 node_modules/
 dist/
-dist-endpoint/
 .ssr/
 .wrangler/
 test-results/
