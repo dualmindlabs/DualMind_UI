@@ -1,0 +1,90 @@
+name: Bug report
+description: Something in the arena web app is broken or behaves unexpectedly.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug.
+        **Do not report security vulnerabilities here.** Follow [SECURITY.md](https://github.com/dualmindlabs/DualMind_UI/security/policy) instead.
+        Never paste passwords, tokens, API keys or other secrets into this form.
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: A clear description of the bug.
+      placeholder: When I vote in a battle, the model names are never revealed.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: The exact steps that trigger the bug.
+      placeholder: |
+        1. Go to https://arena.dualmindlab.tech
+        2. Start a battle with the prompt "..."
+        3. Click "A is better"
+        4. See the error
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+      description: What you expected to happen instead.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which part of the app is affected?
+      options:
+        - Battle mode
+        - Arena mode
+        - Direct chat
+        - Streaming or response rendering
+        - Leaderboard
+        - Threads, sharing or export
+        - Sign-in, sign-up or account
+        - Waitlist page
+        - Info and legal pages
+        - Worker, routing or deployment
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: url
+    attributes:
+      label: Page URL
+      description: Where did it happen? Leave out any tokens in the URL.
+      placeholder: https://arena.dualmindlab.tech/leaderboard/
+  - type: input
+    id: environment
+    attributes:
+      label: Browser and device
+      placeholder: Chrome 130 on Windows 11, Safari on iPhone 15
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Console errors or logs
+      description: Copy any errors from the browser console or network tab. This is rendered as code, so no backticks are needed.
+      render: shell
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots or recordings
+      description: Drag and drop images or videos here if they help explain the problem.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched the existing issues and this bug has not been reported yet.
+          required: true
+        - label: I removed passwords, tokens, keys and personal data from this report.
+          required: true

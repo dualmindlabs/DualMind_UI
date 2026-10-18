@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: DualMind documentation
+    url: https://docs.dualmindlab.tech
+    about: How DualMind Arena works, the FAQ and the API reference.
+  - name: Developer documentation
+    url: https://dev-doc.dualmindlab.tech
+    about: Architecture, development setup and deployment guides.
+  - name: Report a security vulnerability
+    url: https://github.com/dualmindlabs/DualMind_UI/security/advisories/new
+    about: Report vulnerabilities privately. Please do not open a public issue.
+  - name: Account help and other questions
+    url: https://docs.dualmindlab.tech/faq
+    about: Check the FAQ, or email support@dualmindlab.tech.

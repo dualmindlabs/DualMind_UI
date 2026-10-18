@@ -1,0 +1,57 @@
+name: Feature request
+description: Suggest an idea or improvement for the arena web app.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the suggestion. Please describe the problem first; there may be more than one way to solve it.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or motivation
+      description: What are you trying to do, and what makes it hard today?
+      placeholder: I want to compare the same two models across several prompts without re-selecting them every time.
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: What would you like to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Other solutions or workarounds you have thought about.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Battle mode
+        - Arena mode
+        - Direct chat
+        - Leaderboard
+        - Threads, sharing or export
+        - Sign-in, sign-up or account
+        - Design and accessibility
+        - Performance
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Mock-ups, screenshots, links or examples from other products.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched the existing issues and this has not been requested yet.
+          required: true

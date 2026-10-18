@@ -1,120 +1,235 @@
-# DualMind Arena — AI Model Battle Platform
+# DualMind Arena — Web App
 
-[![Live Demo](https://img.shields.io/badge/Live-arena.dualmindlab.tech-4AABC2)](https://arena.dualmindlab.tech)
+**Blind, side-by-side AI model battles in the browser: ask once, compare two anonymous answers, vote, and watch the Elo leaderboard move.**
 
-DualMind Arena is a premium AI comparison platform where users run side-by-side battles between language models, vote on the best responses, and explore an open LLM leaderboard.
+[![CI](https://github.com/dualmindlabs/DualMind_UI/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/dualmindlabs/DualMind_UI/actions/workflows/ci.yml)
+[![License: Proprietary](https://img.shields.io/badge/license-Proprietary-red.svg)](./LICENSE)
+[![Live: arena.dualmindlab.tech](https://img.shields.io/badge/live-arena.dualmindlab.tech-4AABC2.svg)](https://arena.dualmindlab.tech)
+[![Docs](https://img.shields.io/badge/docs-docs.dualmindlab.tech-555.svg)](https://docs.dualmindlab.tech)
 
-> **Status:** Active development / pre-launch clean-up. See `docs/CODEBASE_AUDIT.md` for current issues and the [Setup](#setup) section below for the correct way to run the project.
+---
 
-## What it does
+## Contents
 
-- **Battle mode:** Two anonymous models respond to the same prompt; you vote before identities are revealed.
-- **Arena mode:** Pick a model pair and compare responses with names visible.
-- **Direct mode:** One-on-one chat with a single model.
-- **Leaderboard:** Elo ratings and model stats across the community.
-- **Threading, sharing, exports:** Save conversations, share them publicly or via link, export to MD/JSON/CSV/HTML/PDF.
+- [What is this?](#what-is-this)
+- [Features](#features)
+- [Tech stack](#tech-stack)
+- [Architecture](#architecture)
+- [Project structure](#project-structure)
+- [Getting started](#getting-started)
+- [Configuration](#configuration)
+- [Deployment](#deployment)
+- [API endpoints used](#api-endpoints-used)
+- [Related repositories and sites](#related-repositories-and-sites)
+- [Contributing, security and license](#contributing-security-and-license)
 
-## Tech Stack
+## What is this?
 
-| Layer | Tech |
-|-------|------|
-| Frontend | Vanilla JavaScript (ES modules), custom CSS design tokens, Cloudflare Worker static hosting |
-| Auth | Supabase client-side auth (localStorage session) |
-| Backend proxy | Cloudflare Worker (`worker.js`) proxies `/api/*` to an Azure Web API |
-| CSS | Custom design system in `css/tokens.css` — **not** Tailwind |
-| Tests | Playwright (dependency config currently incomplete — see Setup) |
+This repository is the front-end of **DualMind Arena**, the model comparison app built by DualMind Labs. You type a prompt, two models answer it side by side without their names, and you vote for the better answer. Votes feed an Elo rating system that powers a public leaderboard.
 
-## Project Structure
+The app is a static, framework-free web app (HTML, CSS and ES modules). A Cloudflare Worker (`dualmind-arena`) serves it at [arena.dualmindlab.tech](https://arena.dualmindlab.tech). Users sign in with Supabase Auth, and all chat, vote, thread and leaderboard data comes from the DualMind API ([DualMind_Back](https://github.com/dualmindlabs/DualMind_Back)) at `api.dualmindlab.tech`.
 
+## Features
+
+- **Battle mode**: two anonymous models answer the same prompt; you vote before their identities are revealed.
+- **Arena mode**: pick the model pair yourself and compare them with names visible.
+- **Direct mode**: one-on-one chat with a single model.
+- **Streaming responses** over Server-Sent Events, with Markdown rendering, syntax highlighting and DOMPurify sanitising.
+- **Elo leaderboard**: model rankings and stats, as a modal and as a standalone `/leaderboard/` page.
+- **Conversation threads**: saved history in the sidebar, with rename and delete.
+- **Sharing**: make a thread public or link-only and open it in a read-only `/share/` view.
+- **Export**: download a conversation as Markdown, JSON, CSV, HTML or PDF.
+- **Read aloud**: text-to-speech for responses through the API.
+- **Chat input tools**: file attachments, plus code-mode and web-search toggles (today these tune the sampling temperature sent with the request).
+- **Accounts**: Supabase email and password, one-time codes, Google sign-in, password reset and email verification.
+- **Light and dark themes**, responsive layout, and an offline mock mode when the API is unreachable.
+- **Info pages**: about, how it works, models, FAQ, careers, privacy, terms and cookies.
+- **Pre-launch waitlist**: a separate worker (`waitlist-worker/`) serves the waitlist page at `early.dualmindlab.tech`.
+
+## Tech stack
+
+| Layer | Technology |
+| --- | --- |
+| UI | Vanilla JavaScript (ES modules), HTML, custom CSS design tokens (`css/tokens.css`), no framework and no bundler |
+| Rendering helpers | `marked`, `DOMPurify` and `highlight.js`, loaded from CDNs |
+| Auth | Supabase Auth (`@supabase/supabase-js` v2 from a CDN), session in the browser |
+| Hosting | Cloudflare Workers with static assets (`wrangler.jsonc`, `worker.js`) |
+| Feature flags | Cloudflare Flagship binding (`FLAGS`) |
+| Backend | DualMind API (ASP.NET Core), see [DualMind_Back](https://github.com/dualmindlabs/DualMind_Back) |
+| Tooling | Node.js 20, pnpm 10, ESLint 8, Playwright, `serve` for local hosting |
+| CI | GitHub Actions: lint and build ([`ci.yml`](./.github/workflows/ci.yml)) |
+
+## Architecture
+
+```mermaid
+flowchart LR
+    browser([Browser])
+    worker["Cloudflare Worker<br/>dualmind-arena<br/>(worker.js)"]
+    assets[("Static assets<br/>dist/ via ASSETS")]
+    api["DualMind API<br/>api.dualmindlab.tech"]
+    supabase[("Supabase Auth")]
+    waitlist["Waitlist worker<br/>early.dualmindlab.tech"]
+
+    browser --> worker
+    worker -->|"pages, JS, CSS"| assets
+    worker -->|"/api/* proxy"| api
+    worker -.->|"pre-launch redirect"| waitlist
+    browser -->|"REST + SSE"| api
+    browser -->|"sign-in, session"| supabase
 ```
+
+- **Boot order**: `config.js` loads first and sets `window.DUALMIND_CONFIG`. `js/auth/supabase-init.js` restores the Supabase session and exposes `window.DualMindAuth` and `window.DualMindAuthReady`. `js/ui/app.js` waits for auth, syncs the user with the API, then renders the app.
+- **API calls** go through the single client in `js/apiInstance.js` (`DualMindApi`), which adds the Supabase bearer token, retries with backoff, supports cancellation and parses SSE streams.
+- **Components** in `components/` talk to the app through `document` CustomEvents (`mode-change`, `chat-submit`, `vote-submit` and so on). The full event and globals reference is in [AGENTS.md](./AGENTS.md).
+- **The worker** serves the files in `dist/`, proxies `/api/*` to the API (and `/api/health` to `/health`), rewrites `/share/*` to the share page, and generates `robots.txt` and `sitemap.xml`. On `master` it also redirects every non-API page request to the waitlist at `early.dualmindlab.tech` while the arena is in pre-launch.
+
+## Project structure
+
+```text
 DualMind_UI/
-├── index.html                 # Main app shell
-├── config.js                  # Runtime config (loaded synchronously)
-├── worker.js                  # Cloudflare Worker: routing + API proxy
-├── wrangler.jsonc             # Cloudflare Worker config
-├── css/                       # Design tokens + component styles
-├── js/                        # Core application logic
-│   ├── ui/app.js              # Main App class
-│   ├── apiInstance.js         # API singleton
-│   ├── api/                   # API client, services, HTTP core
-│   └── auth/                  # Supabase auth service + init
-├── components/                # Reusable UI components
-├── login/                     # Auth pages
-├── leaderboard/               # Leaderboard standalone page
-├── share/                     # Public shared thread view
-├── docs/                      # Audit, architecture, roadmap
-└── AGENTS.md                  # AI agent / contributor guide
+├── index.html              # Main app shell
+├── config.js               # Runtime config (window.DUALMIND_CONFIG), loaded first
+├── worker.js               # Cloudflare Worker: API proxy, routing, static assets
+├── wrangler.jsonc          # Worker config (dualmind-arena)
+├── build.js                # Copies the deployable files into dist/
+├── components/             # Header, Sidebar, ChatInput, ChatView, modals, share view
+├── js/
+│   ├── ui/app.js           # Main App class: state, modes, streaming, voting, threads
+│   ├── apiInstance.js      # API client singleton
+│   ├── api/                # DualMindApi facade, HttpClient, services, error helpers
+│   ├── auth/               # Supabase auth service and init
+│   ├── chatExport.js       # MD / JSON / CSV / HTML / PDF export
+│   └── leaderboardPage.js  # Standalone leaderboard page
+├── css/                    # Design tokens and component styles
+├── login/, *.html          # Sign-in, sign-up, verification and password pages
+├── leaderboard/, share/    # Standalone leaderboard and shared-thread pages
+├── about/, faq/, models/…  # Static info and legal pages
+├── waitlist-worker/        # Separate worker for the pre-launch waitlist
+├── tests/                  # Playwright end-to-end tests
+├── docs/                   # Codebase audits and UI roadmap
+└── AGENTS.md               # Detailed architecture and contributor guide
 ```
 
-## Setup
+## Getting started
 
-1. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+### Prerequisites
 
-2. **Configure Supabase credentials:**
-   Edit `config.js` and set your own Supabase project values:
-   ```js
-   const envSupabaseUrl = 'https://your-project.supabase.co';
-   const envSupabaseAnonKey = 'your-anon-key';
-   ```
-   > Note: `config.js` runs in the browser, so it cannot read `process.env` or `.env` files directly. Use build-time replacements or Wrangler secrets for production.
+- [Node.js](https://nodejs.org/) 20 (the version CI uses)
+- [pnpm](https://pnpm.io/) 10 (CI installs with the committed `pnpm-lock.yaml`)
+- For the full app locally: the [DualMind API](https://github.com/dualmindlabs/DualMind_Back) running on `http://localhost:5079`
+- For deploys: a Cloudflare account with access to the `dualmind-arena` worker
 
-3. **Run the local dev server:**
-   ```bash
-   npm run dev
-   ```
-   The app will be available at `http://localhost:8000`.
+### Install
 
-4. **Linting (currently needs a small fix):**
-   `package.json` line 9 has an unquoted glob that fails on some shells. Quote the ignore patterns, then run:
-   ```bash
-   npm run lint
-   ```
+```bash
+git clone https://github.com/dualmindlabs/DualMind_UI.git
+cd DualMind_UI
+pnpm install
+```
 
-5. **Tests (currently broken):**
-   Playwright is not installed by default. If you want to run E2E tests:
-   ```bash
-   npm i -D @playwright/test
-   npx playwright install
-   npm run test
-   ```
+### Run
+
+```bash
+pnpm dev        # static server on http://localhost:8000
+```
+
+When the app is served from `localhost`, `config.js` points the API client at the local API instead of production. If the API is unreachable, the arena falls back to its offline mock mode.
+
+### Lint
+
+```bash
+pnpm lint       # ESLint (.eslintrc.json)
+pnpm lint:fix   # ESLint with --fix
+```
+
+### Test
+
+```bash
+pnpm exec playwright install chromium   # once, downloads the browser
+pnpm test                               # Playwright; starts its own server on port 8000
+```
+
+### Build
+
+```bash
+pnpm build      # copies the deployable files into dist/
+```
+
+## Configuration
+
+There is no `.env` file. The browser app reads its settings from `window.DUALMIND_CONFIG`, set in `config.js` (see `config.example.js` for the template). Values set on that object before `config.js` loads take precedence.
+
+| Setting | Description |
+| --- | --- |
+| `apiBaseUrl` / `backendUrl` | Base URL of the DualMind API. Switches to the local API automatically on `localhost`. |
+| `supabase.url` | Supabase project URL used for sign-in. |
+| `supabase.anonKey` | Supabase anon (public) key. Never put a service-role key here. |
+| `supabase.authEmailFunctionUrl` | Supabase Edge Function that sends auth emails. |
+| `supabase.storageBucket` | Supabase Storage bucket for user avatars. |
+| `auth.mode` | `supabase` (sign in directly with Supabase) or `backend`. |
+| `features.streaming`, `features.voting`, `features.threads`, `features.leaderboard` | Feature toggles; all on by default. |
+
+Cloudflare Worker settings:
+
+| Name | Where | Description |
+| --- | --- | --- |
+| `BACKEND_URL` | `dualmind-arena` worker variable (optional) | Origin that `/api/*` requests are proxied to. Defaults to the production API. |
+| `ASSETS` | Binding in `wrangler.jsonc` | Static assets served from `dist/`. |
+| `FLAGS` | Binding in `wrangler.jsonc` | Cloudflare Flagship feature-flag app. |
+| `WISHLIST_ACTIVE` | `dualmind-waitlist` worker variable (optional) | Fallback for the `wishlist-active` flag when no `FLAGS` binding is present. |
 
 ## Deployment
 
-```bash
-npm run deploy
-```
+The arena runs as the Cloudflare Worker **`dualmind-arena`** on the route `arena.dualmindlab.tech/*`.
 
-This runs `npm run build` (copies the curated static set to `dist/`) then `npx wrangler deploy` using `wrangler.jsonc`.
+- **Cloudflare Workers Builds** is connected to this repository and builds the worker from GitHub (it reports as the `Workers Builds: dualmind-arena` check).
+- **Manual deploy** from a machine logged in to Cloudflare:
 
-> There is also a second build script pair (`build-deploy.js` + `wrangler-dist.toml`) that is currently redundant; we are consolidating on `build.js` + `wrangler.jsonc`.
+  ```bash
+  pnpm run deploy   # pnpm build, then npx wrangler deploy (wrangler.jsonc)
+  ```
 
-## API Endpoints (proxied through `/api/`)
+- **Waitlist worker** (`dualmind-waitlist`, served at `early.dualmindlab.tech`): `pnpm build` copies `waitlist.html` into `waitlist-worker/public/`; deploy it with `npx wrangler deploy` from `waitlist-worker/`.
+
+GitHub Actions ([`ci.yml`](./.github/workflows/ci.yml)) runs lint and build on every push and pull request to `master` and uploads `dist/` as an artifact. It does not deploy.
+
+## API endpoints used
+
+All requests go to the DualMind API with the user's Supabase access token as a bearer token.
 
 | Method | Endpoint | Purpose |
-|--------|----------|---------|
+| --- | --- | --- |
 | `POST` | `/api/arena/chat` | Single-model chat |
+| `POST` | `/api/arena/chat/stream` | Single-model chat, streamed (SSE) |
 | `POST` | `/api/arena/dualchat` | Two-model anonymous battle |
 | `POST` | `/api/arena/model-vote` | Submit a vote |
-| `GET`  | `/api/arena/model-stats` | Leaderboard stats |
+| `GET` | `/api/arena/model-stats` | Leaderboard and Elo stats |
+| `GET` | `/api/models`, `/api/models/{id}` | Model catalogue |
+| `GET` `POST` `PATCH` `DELETE` | `/api/threads`, `/api/threads/{id}`, `/api/threads/{id}/messages` | Conversation threads |
+| `POST` | `/api/audio/tts` | Text-to-speech |
+| `POST` `GET` | `/api/users/sync`, `/api/users/me` | User profile sync |
+| `GET` | `/health` (via `/api/health`) | API health check |
 
-## Documentation
+Full API reference: [docs.dualmindlab.tech](https://docs.dualmindlab.tech).
 
-- [`AGENTS.md`](./AGENTS.md) — canonical architecture, file map, event bus, globals, and design-token rules for contributors and AI agents.
-- [`CLAUDE.md`](./CLAUDE.md) — targeted guide for Claude Code / Claude desktop agents.
-- [`docs/CODEBASE_AUDIT.md`](./docs/CODEBASE_AUDIT.md) — current health audit and startup-readiness roadmap.
-- [`docs/DEEP_AUDIT.md`](./docs/DEEP_AUDIT.md) — fine-grained, per-file findings with line numbers.
-- [`admin-email-system/DEPLOYMENT_GUIDE.md`](./admin-email-system/DEPLOYMENT_GUIDE.md) — separate admin panel sub-project.
+## Related repositories and sites
 
-## Contributing
+| Project | Description | Link |
+| --- | --- | --- |
+| **DualMind_UI** (this repo) | Arena web app | [arena.dualmindlab.tech](https://arena.dualmindlab.tech) |
+| [DualMind_Back](https://github.com/dualmindlabs/DualMind_Back) (private) | ASP.NET Core API: chat, battles, votes, Elo, threads, admin | [api.dualmindlab.tech](https://api.dualmindlab.tech/health) |
+| [DualMind_Admin-UI](https://github.com/dualmindlabs/DualMind_Admin-UI) (private) | Admin panel for users, models, providers and votes | [admin.dualmindlab.tech](https://admin.dualmindlab.tech) |
+| [dualmind-claw-gateway](https://github.com/dualmindlabs/dualmind-claw-gateway) (private) | OpenClaw gateway on Cloudflare Workers and Containers | Not public |
+| Documentation | Public user and API docs | [docs.dualmindlab.tech](https://docs.dualmindlab.tech) |
+| Developer docs | Architecture, deployment and development guides | [dev-doc.dualmindlab.tech](https://dev-doc.dualmindlab.tech) |
+| Website | DualMind Labs landing page | [dualmindlab.tech](https://dualmindlab.tech) |
 
-1. Read `AGENTS.md` and `CLAUDE.md`.
-2. Do not import deprecated shims (`js/api-client.js`, `js/auth.js`, `js/auth/api-service.js`).
-3. Keep `window.*` globals minimal and document them if added.
-4. Run lint and verify Playwright tests before submitting PRs.
+## Contributing, security and license
 
-## License
-
-MIT — see [package.json](./package.json).
+- **Contributing**: read [CONTRIBUTING.md](./CONTRIBUTING.md) and the architecture notes in [AGENTS.md](./AGENTS.md). Work happens on `feat/`, `fix/` or `chore/` branches and lands through pull requests.
+- **Code of conduct**: [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) (Contributor Covenant 2.1).
+- **Security**: please do not open public issues for vulnerabilities. Report them privately as described in [SECURITY.md](./SECURITY.md).
+- **Support**: see [SUPPORT.md](./SUPPORT.md).
+- **Changelog**: [CHANGELOG.md](./CHANGELOG.md).
+- **Further reading**: [docs/CODEBASE_AUDIT.md](./docs/CODEBASE_AUDIT.md), [docs/DEEP_AUDIT.md](./docs/DEEP_AUDIT.md) and [docs/UI_ROADMAP.md](./docs/UI_ROADMAP.md).
+- **License**: proprietary. Copyright (c) 2026 DualMind Labs. All rights reserved. See [LICENSE](./LICENSE).
