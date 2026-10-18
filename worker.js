@@ -1,4 +1,83 @@
+// ---------------------------------------------------------------------------
+// Pre-launch: every Arena visitor goes to the waitlist, until the Arena is rebuilt.
+//
+// While FORCE_WAITLIST is true, EVERY request to this worker (all paths, including /,
+// /leaderboard/ and /api/*, and all methods) gets a temporary 302 redirect to
+// https://early.dualmindlab.tech/?ref=arena. The query string is kept, `preview` is dropped, and
+// `ref=arena` is added unless the link already has a `ref`. It is a 302, not a 301, so browsers
+// and search engines don't remember it and switching it off works at once.
+//
+// wrangler.jsonc sets `assets.run_worker_first: true` so that requests for real files such as
+// / and /leaderboard/ reach this code too; without it, Cloudflare serves those files directly.
+//
+// To switch the redirect off: set FORCE_WAITLIST to false and merge to master (Workers Builds
+// deploys it). The Arena then works as before; run_worker_first can stay on, because
+// serveArena() serves the static files itself.
+//
+// Preview bypass, for showing the Arena while it is closed:
+//   https://arena.dualmindlab.tech/?preview=dualmind-preview   sets a `dm_preview` cookie (30 days)
+//   https://arena.dualmindlab.tech/?preview=off                clears it
+// Requests that carry the cookie skip the redirect. The code is not a secret: nothing sensitive
+// is behind it, it only keeps ordinary visitors on the waitlist.
+// ---------------------------------------------------------------------------
+const FORCE_WAITLIST = true;
+const WAITLIST_URL = 'https://early.dualmindlab.tech/';
+const PREVIEW_CODE = 'dualmind-preview';
+const PREVIEW_COOKIE = 'dm_preview';
+const PREVIEW_MAX_AGE = 60 * 60 * 24 * 30; // 30 days, in seconds
+const PREVIEW_COOKIE_ATTRIBUTES = 'Path=/; Secure; HttpOnly; SameSite=Lax';
+
 export default {
+  async fetch(request, env) {
+    if (!FORCE_WAITLIST) {
+      return serveArena(request, env);
+    }
+
+    const url = new URL(request.url);
+    const preview = url.searchParams.get('preview');
+
+    if (preview === 'off') {
+      return waitlistRedirect(url, `${PREVIEW_COOKIE}=; Max-Age=0; ${PREVIEW_COOKIE_ATTRIBUTES}`);
+    }
+
+    if (preview === PREVIEW_CODE) {
+      const response = await serveArena(request, env);
+      const withCookie = new Response(response.body, response);
+      withCookie.headers.append('Set-Cookie', `${PREVIEW_COOKIE}=1; Max-Age=${PREVIEW_MAX_AGE}; ${PREVIEW_COOKIE_ATTRIBUTES}`);
+      withCookie.headers.set('Cache-Control', 'private, no-store');
+      return withCookie;
+    }
+
+    if (hasPreviewCookie(request)) {
+      return serveArena(request, env);
+    }
+
+    return waitlistRedirect(url);
+  },
+};
+
+function hasPreviewCookie(request) {
+  const cookies = request.headers.get('Cookie') || '';
+  return cookies.split(';').some(part => part.trim() === `${PREVIEW_COOKIE}=1`);
+}
+
+function waitlistRedirect(url, setCookie) {
+  const target = new URL(WAITLIST_URL);
+  target.search = url.search;
+  target.searchParams.delete('preview');
+  if (!target.searchParams.has('ref')) {
+    target.searchParams.set('ref', 'arena');
+  }
+  const headers = new Headers({ Location: target.toString(), 'Cache-Control': 'no-store' });
+  if (setCookie) {
+    headers.append('Set-Cookie', setCookie);
+  }
+  return new Response(null, { status: 302, headers });
+}
+
+// The Arena itself: what every request got before the pre-launch redirect, and what preview
+// visitors get now. Unchanged apart from being moved under this name.
+const arena = {
   async fetch(request, env) {
     const url = new URL(request.url);
     const pathname = url.pathname;
@@ -17,18 +96,6 @@ export default {
         status: 204,
         headers: corsHeaders
       });
-    }
-
-
-
-    // Force all non-API traffic to the waitlist worker
-    if (!pathname.startsWith('/api/')) {
-      const redirectUrl = new URL('https://early.dualmindlab.tech/');
-      redirectUrl.search = url.search;
-      if (!redirectUrl.searchParams.has('ref')) {
-        redirectUrl.searchParams.set('ref', 'arena');
-      }
-      return Response.redirect(redirectUrl.toString(), 302);
     }
 
     // API Proxy: Forward /api/* requests to backend server
@@ -294,3 +361,7 @@ Sitemap: https://${domain}/sitemap.xml`, {
     return new Response('Not Found', { status: 404 });
   },
 };
+
+function serveArena(request, env) {
+  return arena.fetch(request, env);
+}

@@ -11,7 +11,10 @@
   ],
   "assets": {
     "directory": "dist",
-    "binding": "ASSETS"
+    "binding": "ASSETS",
+    // Every request runs worker.js first, so the pre-launch redirect (FORCE_WAITLIST in
+    // worker.js) also covers paths that match a static file, such as / and /leaderboard/.
+    "run_worker_first": true
   },
   "flagship": [
     {
