@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Rewrote `README.md` with architecture, setup, configuration, deployment and related-project sections.
 - `package.json` now declares the package as `UNLICENSED` to match the proprietary license.
+- ESLint upgraded from 8 to 10. `.eslintrc.json` is replaced by a flat config, `eslint.config.mjs`, with the same rules; ESLint 10's new `no-useless-assignment` rule reports warnings.
 
 ## 2026-08 (August 2026)
 

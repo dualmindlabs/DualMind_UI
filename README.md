@@ -56,7 +56,7 @@ The app is a static, framework-free web app (HTML, CSS and ES modules). A Cloudf
 | Hosting | Cloudflare Workers with static assets (`wrangler.jsonc`, `worker.js`) |
 | Feature flags | Cloudflare Flagship binding (`FLAGS`) |
 | Backend | DualMind API (ASP.NET Core), see [DualMind_Back](https://github.com/dualmindlabs/DualMind_Back) |
-| Tooling | Node.js 20, pnpm 10, ESLint 8, Playwright, `serve` for local hosting |
+| Tooling | Node.js 20, pnpm 10, ESLint 10, Playwright, `serve` for local hosting |
 | CI | GitHub Actions: lint and build ([`ci.yml`](./.github/workflows/ci.yml)) |
 
 ## Architecture
@@ -138,7 +138,7 @@ When the app is served from `localhost`, `config.js` points the API client at th
 ### Lint
 
 ```bash
-pnpm lint       # ESLint (.eslintrc.json)
+pnpm lint       # ESLint (eslint.config.mjs)
 pnpm lint:fix   # ESLint with --fix
 ```
 
