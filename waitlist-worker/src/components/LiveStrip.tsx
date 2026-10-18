@@ -49,7 +49,7 @@ export function LiveStrip({ stats }: { stats: ArenaStatsState }) {
       </span>
       <span className="basis-full normal-case tracking-[0.04em] sm:basis-auto">
         <span className="mr-2 uppercase tracking-[0.2em]">#1</span>
-        <span className="break-all text-fg">{leader.name}</span>
+        <span className="text-fg [overflow-wrap:anywhere]">{leader.name}</span>
         <span className="text-muted">
           {' '}
           · {Math.round(leader.elo)} ELO · {providerLabel(leader.provider)}

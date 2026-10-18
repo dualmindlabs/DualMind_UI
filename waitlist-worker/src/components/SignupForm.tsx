@@ -90,7 +90,7 @@ export function SignupForm({ refCode }: { refCode: string | null }) {
                 You're on the list.
               </p>
               <p className="mt-0.5 text-[15px] leading-snug text-fg-soft">
-                We'll be in touch at <span className="break-all text-fg">{state.email}</span>. Meanwhile, try a battle
+                We'll be in touch at <span className="text-fg [overflow-wrap:anywhere]">{state.email}</span>. Meanwhile, try a battle
                 below.
               </p>
             </div>
@@ -183,7 +183,7 @@ export function SignupForm({ refCode }: { refCode: string | null }) {
           <>
             <Info className="mt-px size-4 flex-none" />
             <span>
-              <span className="break-all">{state.email}</span> is already on the list. Nothing more to do.
+              <span className="[overflow-wrap:anywhere]">{state.email}</span> is already on the list. Nothing more to do.
             </span>
           </>
         )}

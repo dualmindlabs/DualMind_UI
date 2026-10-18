@@ -121,7 +121,7 @@ export function Leaderboard({ stats }: { stats: ArenaStatsState }) {
         )}
 
         <div className="flex flex-col gap-3 border-t border-line-soft px-4 py-4 font-mono text-[11px] tracking-[0.04em] text-muted sm:flex-row sm:items-center sm:justify-between sm:px-6">
-          <span className="break-all">
+          <span className="[overflow-wrap:anywhere]">
             Source: <span className="text-fg-soft">{STATS_URL.replace('https://', '')}</span>
           </span>
           <span className="flex flex-wrap gap-x-5 gap-y-2">
