@@ -32,7 +32,25 @@ updates:
           - "minor"
           - "patch"
 
-  # Actions used in .github/workflows.
+  # The Arena web app (web/package.json, its own npm lockfile). React Router, Vite and the
+  # Tailwind packages move in lockstep, so minor and patch updates come as one grouped PR.
+  - package-ecosystem: "npm"
+    directory: "/web"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    groups:
+      web-minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
+
+  # Actions used in .github/workflows. The v4 actions (checkout, setup-node, upload-artifact,
+  # pnpm/action-setup) run on Node 20, which GitHub now forces onto Node 24 with a warning; the
+  # open major-bump PRs from this block clear those warnings and are merged separately.
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:

@@ -4,15 +4,16 @@ import { fileURLToPath } from 'node:url';
 
 import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 
+import { IMMUTABLE_CACHE, LEGACY_NO_STORE } from '../../../server/caching.js';
 import {
   HASHED_ASSET_RE,
-  IMMUTABLE_CACHE,
   isHashedAsset,
   isNoindexPath,
   isSpaFallbackRoute,
   serveSpaFallback,
   SPA_FALLBACK_ROUTES,
 } from '../../../server/routing.js';
+import { resetWebManifestCache } from '../../../server/web-manifest.js';
 import worker from '../../../worker.js';
 import { DIST, type FakeAssets, fakeAssets } from './fake-assets';
 
@@ -20,13 +21,13 @@ import { DIST, type FakeAssets, fakeAssets } from './fake-assets';
 // backend: no network, no wrangler. tests/e2e covers the same Worker running in workerd.
 
 const ORIGIN = 'https://arena.dualmindlab.tech';
-const LEGACY_NO_STORE = 'no-store, no-cache, must-revalidate, max-age=0';
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 
 let assets: FakeAssets;
 let backend: Mock<(input: RequestInfo | URL, init?: RequestInit) => Promise<Response>>;
 
 beforeEach(() => {
+  resetWebManifestCache();
   assets = fakeAssets(DIST);
   backend = vi.fn((_input: RequestInfo | URL, _init?: RequestInit) =>
     Promise.resolve(
@@ -115,6 +116,10 @@ describe('web app pages', () => {
     expect(await response.text()).toContain('Design system · DualMind Arena');
     expect(response.headers.get('x-robots-tag')).toBe('noindex, nofollow');
     expect(response.headers.get('x-content-type-options')).toBe('nosniff');
+    // Web pages revalidate (ETag) instead of the legacy no-store, and get the enforced CSP.
+    expect(response.headers.get('cache-control')).toBe('no-cache');
+    expect(response.headers.get('content-security-policy')).toContain("script-src 'self' 'sha256-");
+    expect(response.headers.get('content-security-policy-report-only')).toBeNull();
   });
 
   it('redirects /design to /design/', async () => {
@@ -136,14 +141,19 @@ describe('web app pages', () => {
   });
 });
 
-describe('legacy behaviour is unchanged', () => {
+describe('legacy pages and files', () => {
   it('legacy pages: 200, no-store, security headers', async () => {
     for (const page of ['/', '/leaderboard/', '/about/']) {
       const response = await preview(page);
       expect(response.status, page).toBe(200);
       expect(response.headers.get('cache-control'), page).toBe(LEGACY_NO_STORE);
       expect(response.headers.get('x-frame-options'), page).toBe('DENY');
-      expect(response.headers.get('x-xss-protection'), page).toBe('1; mode=block');
+      // X-XSS-Protection is deprecated and dropped; legacy pages get a report-only CSP.
+      expect(response.headers.get('x-xss-protection'), page).toBeNull();
+      expect(response.headers.get('content-security-policy'), page).toBeNull();
+      expect(response.headers.get('content-security-policy-report-only'), page).toContain(
+        'https://cdn.jsdelivr.net',
+      );
       expect(response.headers.get('x-robots-tag'), page).toBeNull();
     }
   });
@@ -163,7 +173,9 @@ describe('legacy behaviour is unchanged', () => {
     expect(response.status).toBe(200);
     expect(backend).toHaveBeenCalledTimes(1);
     expect(backendUrl()).toBe('https://api.dualmindlab.tech/health');
-    expect(response.headers.get('x-dualmind-proxy-path')).toBe('/health');
+    expect(response.headers.get('x-dualmind-proxy-path')).toBeNull();
+    expect(response.headers.get('x-request-id')).toMatch(/^[0-9a-f-]{36}$/);
+    expect(response.headers.get('access-control-allow-origin')).toBeNull();
   });
 
   it('proxies other /api/* paths with their query, to BACKEND_URL when set', async () => {

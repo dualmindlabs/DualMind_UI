@@ -62,6 +62,41 @@ test('"system" follows prefers-color-scheme', async ({ page }) => {
   );
 });
 
+test('the enforced CSP blocks an injected inline script on /design/', async ({ page }) => {
+  const violations: string[] = [];
+  page.on('console', message => {
+    if (message.type() === 'error') violations.push(message.text());
+  });
+  await page.goto('/design/');
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+  const ran = await page.evaluate(() => {
+    const script = document.createElement('script');
+    script.textContent = 'window.__injected = true;';
+    document.head.append(script);
+    return (window as unknown as { __injected?: boolean }).__injected === true;
+  });
+  expect(ran).toBe(false);
+  expect(violations.some(text => text.includes('Content Security Policy'))).toBe(true);
+});
+
+test('legacy pages raise no CSP report-only violations', async ({ page }) => {
+  const violations: string[] = [];
+  await page.exposeFunction('reportCspViolation', (text: string) => violations.push(text));
+  await page.addInitScript(() => {
+    document.addEventListener('securitypolicyviolation', event => {
+      const report = (window as unknown as { reportCspViolation: (text: string) => void })
+        .reportCspViolation;
+      report(`${location.pathname}: ${event.violatedDirective} ${event.blockedURI}`);
+    });
+  });
+  for (const path of ['/', '/leaderboard/', '/about/', '/how-it-works/', '/login/']) {
+    await page.goto(path);
+    await page.waitForLoadState('load');
+    await page.waitForTimeout(1500);
+  }
+  expect(violations).toEqual([]);
+});
+
 test('keyboard: the skip link comes first and moves focus to the content', async ({ page }) => {
   await page.goto('/design/');
   await page.keyboard.press('Tab');
