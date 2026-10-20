@@ -158,8 +158,8 @@ The auth `.html` rows (`/login-modern.html` to `/login/` and the others in migra
 - **Request ids:** the caller's `X-Request-Id` when it is 8-128 characters of `[A-Za-z0-9._:-]`, otherwise a new UUID. It is sent to the backend and echoed on the response.
 - **No CORS.** The Arena calls its own origin, so the Worker sends no `Access-Control-*` headers and strips the backend's (other sites cannot read API responses through the Arena origin). The old blanket `OPTIONS` 204 is gone; `OPTIONS /api/*` is proxied like any other method. If a cross-origin caller ever needs the proxy, add an explicit allow-list of origins here instead of `*`.
 - No `x-dualmind-proxy-*` debug headers.
-- **Errors:** an upstream failure answers `502 {"error":"bad_gateway","requestId":"…"}`; no response within 30 s answers `504 {"error":"gateway_timeout","requestId":"…"}`. No error text leaks.
-- **Streaming:** bodies stream through untouched. A `text/event-stream` response is never cut once it has started; other bodies must finish within the 30 s.
+- **Errors:** an upstream failure answers `502 {"error":"bad_gateway","requestId":"…"}`; no response within the route's timeout (30 s; 65 s for the model calls `POST /api/arena/dualchat` and `POST /api/arena/chat`) answers `504 {"error":"gateway_timeout","requestId":"…"}`. No error text leaks.
+- **Streaming:** bodies stream through untouched. A `text/event-stream` response is never cut once it has started; other bodies must finish within the route's timeout.
 - `/api/health` maps to the backend's `/health`; `BACKEND_URL` (Worker variable) overrides the backend origin.
 
 ## 7. Quality gates (all in GitHub Actions)
