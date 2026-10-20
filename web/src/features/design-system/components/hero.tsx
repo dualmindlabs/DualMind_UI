@@ -39,7 +39,7 @@ export function Hero() {
           </p>
           <SectionNav className="mt-10 animate-rise [animation-delay:240ms]" />
         </div>
-        <HeroEmblem className="mx-auto hidden w-full max-w-md animate-rise [animation-delay:200ms] lg:block" />
+        <HeroEmblem className="mx-auto hidden w-full max-w-md lg:block" />
       </div>
       <div className="border-t border-line">
         <dl className="mx-auto grid max-w-page grid-cols-2 sm:grid-cols-4">
