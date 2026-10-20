@@ -7,7 +7,7 @@ Companion documents:
 - [screen-inventory.md](./screen-inventory.md): every current screen, URL and known issue
 - [migration-plan.md](./migration-plan.md): architecture, URL map, deploy, tests and the PR-sized slices
 - [new-features.md](./new-features.md): new feature proposals, frontend first
-- [component-catalog.md](./component-catalog.md): 38 component sources for AI websites, their licences, and the final pick list per screen
+- [component-catalog.md](./component-catalog.md): 40 component sources for AI websites, their licences, and the final pick list per screen
 
 This document sets the look, feel and rules for every screen of the new Arena frontend (React + Vite + Tailwind CSS v4, same URLs, Cloudflare Workers, Supabase auth). It builds on the brand that already exists: the [Brand and design tokens](https://dev-doc.dualmindlab.tech/brand) page in the developer docs and the live waitlist at [early.dualmindlab.tech](https://early.dualmindlab.tech) (`waitlist-worker/`), which already uses React Bits and Magic UI on this stack.
 
@@ -206,7 +206,7 @@ Mobile specifics: `100svh` / `dvh` units, safe-area insets on the composer and v
 
 ## 9. Component stack and licenses
 
-The full survey (38 sources, licences, AI-site components and the per-screen pick list) is in [component-catalog.md](./component-catalog.md); this table is the short version. All copied-in source keeps its license file next to it (as `waitlist-worker/src/components/reactbits/LICENSE.md` already does), and each file names its source and our changes.
+The full survey (40 sources, licences, AI-site components and the per-screen pick list) is in [component-catalog.md](./component-catalog.md); this table is the short version. All copied-in source keeps its license file next to it (as `waitlist-worker/src/components/reactbits/LICENSE.md` already does), and each file names its source and our changes.
 
 | Library | License | Role | Decision |
 | --- | --- | --- | --- |

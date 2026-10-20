@@ -1,6 +1,6 @@
 # DualMind Arena redesign: component catalog
 
-Checked on 2026-10-20. This catalog lists the component sources for an AI website that were considered for the Arena redesign (38 sources): their licences, whether their code may be copied into this **public** repository, what they offer for an AI site, and what we pick for each screen.
+Checked on 2026-10-20. This catalog lists the component sources for an AI website that were considered for the Arena redesign (40 sources): their licences, whether their code may be copied into this **public** repository, what they offer for an AI site, and what we pick for each screen.
 
 Companion documents: [design-direction.md](./design-direction.md) (look, rules and the screen-by-screen direction), [migration-plan.md](./migration-plan.md), [screen-inventory.md](./screen-inventory.md), [new-features.md](./new-features.md).
 
