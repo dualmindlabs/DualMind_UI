@@ -232,4 +232,5 @@ Full API reference: [docs.dualmindlab.tech](https://docs.dualmindlab.tech).
 - **Support**: see [SUPPORT.md](./SUPPORT.md).
 - **Changelog**: [CHANGELOG.md](./CHANGELOG.md).
 - **Further reading**: [docs/CODEBASE_AUDIT.md](./docs/CODEBASE_AUDIT.md), [docs/DEEP_AUDIT.md](./docs/DEEP_AUDIT.md) and [docs/UI_ROADMAP.md](./docs/UI_ROADMAP.md).
+- **Redesign plan** (proposal): the move to React + Vite + Tailwind is described in [docs/redesign/](./docs/redesign/): [design direction](./docs/redesign/design-direction.md), [screen inventory](./docs/redesign/screen-inventory.md), [migration plan](./docs/redesign/migration-plan.md) and [new features](./docs/redesign/new-features.md).
 - **License**: proprietary. Copyright (c) 2026 DualMind Labs. All rights reserved. See [LICENSE](./LICENSE).
