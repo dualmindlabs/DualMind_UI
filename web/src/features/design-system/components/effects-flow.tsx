@@ -39,8 +39,8 @@ const steps = [
 export function EffectsFlow() {
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <EffectDemoComposer />
       <EffectDemoAnimatedBeam />
-
       <EffectFrame effect="blur-fade" replay>
         <div className="grid w-full max-w-xs gap-2">
           {['Faster', 'Clearer', 'Funnier'].map((reason, index) => (
@@ -54,7 +54,6 @@ export function EffectsFlow() {
         </div>
       </EffectFrame>
 
-      <EffectDemoComposer />
       <EffectDemoMarquee />
       <EffectDemoLogoLoop />
 

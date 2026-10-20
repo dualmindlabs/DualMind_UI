@@ -87,16 +87,22 @@ describe('PlaceholdersAndVanishInput', () => {
     render(<Composer onSubmit={vi.fn()} />);
     expect(currentExample()).toBe('Explain recursion');
 
-    act(() => vi.advanceTimersByTime(1000));
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
     expect(currentExample()).toBe('Write a haiku');
 
     const field = screen.getByLabelText('Ask both models');
     act(() => field.focus());
-    act(() => vi.advanceTimersByTime(5000));
+    act(() => {
+      vi.advanceTimersByTime(5000);
+    });
     expect(currentExample()).toBe('Write a haiku');
 
     act(() => field.blur());
-    act(() => vi.advanceTimersByTime(1000));
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
     expect(currentExample()).toBe('Plan a trip');
   });
 
@@ -104,7 +110,9 @@ describe('PlaceholdersAndVanishInput', () => {
     setReducedMotion(true);
     vi.useFakeTimers();
     render(<Composer onSubmit={vi.fn()} />);
-    act(() => vi.advanceTimersByTime(5000));
+    act(() => {
+      vi.advanceTimersByTime(5000);
+    });
     expect(currentExample()).toBe('Explain recursion');
   });
 });

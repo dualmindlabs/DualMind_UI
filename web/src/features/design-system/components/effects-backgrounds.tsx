@@ -57,13 +57,13 @@ export function EffectsBackgrounds() {
         <WebGLGate className="absolute inset-0" poster={<SilkPoster />}>
           {({ paused, maxDpr }) => (
             <Silk
-              color="--bg-deep"
+              color="--surface-2"
               sheenColor="--mind-a"
               speed={4}
-              noiseIntensity={1.2}
-              sheen={0.55}
-              depth={0.6}
-              glow={0.3}
+              noiseIntensity={0.9}
+              sheen={0.8}
+              depth={0.55}
+              glow={0.5}
               paused={paused}
               maxDpr={maxDpr}
             />

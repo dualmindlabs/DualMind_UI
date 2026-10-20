@@ -79,9 +79,12 @@ export function EffectsText() {
         </p>
       </EffectFrame>
 
-      <EffectFrame effect="fuzzy-text">
-        <div className="text-muted">
-          <FuzzyText fontSize="clamp(4rem, 12vw, 6rem)">404</FuzzyText>
+      <EffectFrame effect="fuzzy-text" className="sm:col-span-2 xl:col-span-3" stageClassName="min-h-64">
+        <div className="grid justify-items-center gap-3 text-center">
+          <p className="text-muted">
+            <FuzzyText fontSize="clamp(5rem, 16vw, 9rem)">404</FuzzyText>
+          </p>
+          <p className="human-voice text-h3 text-fg-soft">This page lost the vote.</p>
         </div>
       </EffectFrame>
     </div>

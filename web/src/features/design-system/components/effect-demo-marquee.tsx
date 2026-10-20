@@ -19,7 +19,13 @@ export function EffectDemoMarquee() {
 
   return (
     <EffectFrame effect="marquee" stageClassName="flex-col gap-4 px-0">
-      <Marquee pauseOnHover paused={paused} duration={30} repeat={3} className="w-full">
+      <Marquee
+        pauseOnHover
+        paused={paused}
+        duration={30}
+        repeat={3}
+        className="w-full [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]"
+      >
         {prompts.map(prompt => (
           <span
             key={prompt}

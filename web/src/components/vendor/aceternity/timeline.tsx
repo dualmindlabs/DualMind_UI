@@ -63,7 +63,7 @@ export function Timeline({ data, titleAs: Title = 'h3', className }: TimelinePro
       ))}
       <li
         aria-hidden="true"
-        className="pointer-events-none absolute top-0 left-8 h-full w-0.5 overflow-hidden bg-linear-to-b from-transparent via-line to-transparent [mask-image:linear-gradient(to_bottom,transparent_0%,black_10%,black_90%,transparent_100%)]"
+        className="pointer-events-none absolute top-0 left-8 h-full w-0.5 overflow-hidden bg-linear-to-b from-transparent via-line-strong to-transparent [mask-image:linear-gradient(to_bottom,transparent_0%,black_10%,black_90%,transparent_100%)]"
       >
         <m.div
           style={reduce ? {} : { scaleY, opacity }}

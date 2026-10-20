@@ -7,6 +7,7 @@
  *   theme changes; light mode switches with the theme.
  * - `maxDpr` replaces `dpr` (a cap, default 1.5) for components/motion/webgl-gate.tsx, which also
  *   handles reduced motion, so the component no longer reads the media query itself.
+ * - Light mode tuned for our light surfaces: lifted shadows, a softer sheen and finer grain.
  * - Removed click ripples, `variation`, `rotation` and `fade`; named export; no 'use client';
  *   latest props kept in a ref from an effect (React Compiler rules).
  */
@@ -160,14 +161,14 @@ void main() {
   if (uLightMode > 0.5) {
     float fold = smoothstep(0.28, 0.9, pattern);
     float specular = smoothstep(0.72, 0.98, pattern);
-    vec3 shadowColor = uColor * (0.72 - 0.12 * uDepth);
+    vec3 shadowColor = uColor * (0.86 - 0.1 * uDepth);
     vec3 bodyColor = min(uColor * 1.18, vec3(1.0));
     vec3 lightBase = mix(shadowColor, bodyColor, fold) * mix(1.0, relief, 0.6);
-    vec3 tint = mix(uColor, uSheenColor, 0.8);
-    lightBase = mix(lightBase, tint, clamp(specular * 0.6 + shine * 0.3 + bloom * uGlow * 0.2, 0.0, 1.0));
+    vec3 tint = mix(uColor, uSheenColor, 0.55);
+    lightBase = mix(lightBase, tint, clamp(specular * 0.55 + shine * 0.25 + bloom * uGlow * 0.2, 0.0, 1.0));
     float fineNoise = noise(gl_FragCoord.xy * 0.63 + vec2(17.0, 41.0));
     float grainSignal = (rnd + fineNoise - 1.0);
-    float grainStrength = clamp(uNoiseIntensity * 0.038, 0.0, 0.16);
+    float grainStrength = clamp(uNoiseIntensity * 0.02, 0.0, 0.08);
     result = clamp(lightBase + grainSignal * grainStrength, 0.0, 1.0);
   } else {
     float grain = rnd / 15.0 * uNoiseIntensity;
