@@ -145,7 +145,7 @@ Mode changes are dispatched as `mode-change` CustomEvent and handled surgically 
 
 - `leaderboard/index.html` + `js/leaderboardPage.js`
 - `share/index.html` + `components/SharedThreadView.js`
-- `about/`, `careers/`, `faq/`, `how-it-works/`, `models/`, `privacy/`, `terms/`, `cookies/` — static info pages.
+- `about/`, `faq/`, `how-it-works/`, `models/`, `privacy/`, `terms/`, `cookies/` — static info pages.
 
 ### Waitlist sub-project
 
