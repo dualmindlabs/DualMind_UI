@@ -18,7 +18,7 @@ const noRawHtml = {
 const noDefaultExport = {
   selector: 'ExportDefaultDeclaration',
   message:
-    'Use named exports. Only route modules (src/routes, src/app/root.tsx, src/app/routes.ts) export a default.',
+    'Use named exports. Only route modules (src/app/routes, src/app/root.tsx, src/app/routes.ts) export a default.',
 };
 
 export default defineConfig(
@@ -99,7 +99,7 @@ export default defineConfig(
   },
   {
     // Route modules and the React Router app entry are the only default exports.
-    files: ['src/routes/**/*.tsx', 'src/app/root.tsx', 'src/app/routes.ts'],
+    files: ['src/app/routes/**/*.tsx', 'src/app/root.tsx', 'src/app/routes.ts'],
     rules: { 'no-restricted-syntax': ['error', noRawHtml] },
   },
   {

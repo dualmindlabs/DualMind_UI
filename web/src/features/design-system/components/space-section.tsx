@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils/cn';
 
-import { radii, spacing, surfaces } from '../lib/space';
+import { containers, radii, spacing, surfaces } from '../lib/space';
 import { Section } from './section';
 
 export function SpaceSection() {
@@ -41,6 +41,19 @@ export function SpaceSection() {
               </li>
             ))}
           </ul>
+          <h4 className="mt-10 border-t border-line pt-6 text-ui font-semibold text-fg">
+            Containers
+          </h4>
+          <dl className="mt-4 grid gap-x-6 gap-y-4 sm:grid-cols-2">
+            {containers.map(container => (
+              <div key={container.name}>
+                <dt className="font-mono text-ui-sm text-fg">
+                  {container.name} <span className="text-muted">{container.value}</span>
+                </dt>
+                <dd className="text-caption text-muted">{container.use}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
 
         <div className="rounded-lg border border-line bg-surface p-5 shadow-raise sm:p-6">

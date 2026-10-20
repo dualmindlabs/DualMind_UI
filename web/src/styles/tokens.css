@@ -202,7 +202,6 @@
 @theme {
   --animate-rise: dm-rise var(--dur-cinematic) var(--ease-out-expo) both;
   --animate-grow: dm-grow var(--dur-base) var(--ease-out-expo) both;
-  --animate-draw: dm-draw 1200ms var(--ease-in-out) both;
 
   @keyframes dm-rise {
     from {
@@ -214,12 +213,6 @@
   @keyframes dm-grow {
     from {
       transform: scaleX(0);
-    }
-  }
-
-  @keyframes dm-draw {
-    from {
-      stroke-dashoffset: var(--dash, 820);
     }
   }
 }

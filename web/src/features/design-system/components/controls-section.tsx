@@ -58,14 +58,28 @@ export function ControlsSection() {
             Press Tab anywhere on this page: every control shows this ring, 2px in the focus colour
             with a 3px gap (3px wide when more contrast is requested).
           </p>
-          <div className="mt-6 flex flex-wrap items-center gap-5 rounded-md border border-dashed border-line p-5">
-            <span className="inline-flex h-11 items-center rounded-md border border-line-strong px-5 text-ui font-medium text-fg focus-ring-demo">
+          <div className="mt-6 grid gap-5 rounded-md border border-dashed border-line p-5 sm:grid-cols-[auto_minmax(0,1fr)] sm:items-center">
+            <span className="focus-ring-demo inline-flex h-11 items-center justify-center rounded-md border border-line-strong px-5 text-ui font-medium text-fg">
               Focused button
             </span>
-            <span className="inline-flex h-11 min-w-0 flex-1 items-center rounded-sm border border-line-strong bg-surface-2 px-3.5 text-ui text-muted focus-ring-demo">
+            <span className="focus-ring-demo flex h-11 min-w-0 items-center rounded-sm border border-line-strong bg-surface-2 px-3.5 text-ui text-muted">
               Focused field
             </span>
           </div>
+          <dl className="mt-6 grid gap-4 text-ui-sm sm:grid-cols-2">
+            <div>
+              <dt className="eyebrow text-muted">Default</dt>
+              <dd className="mt-1.5 text-fg-soft">
+                2px in <code className="text-caption">--focus</code>, 3px away from the control.
+              </dd>
+            </div>
+            <div>
+              <dt className="eyebrow text-muted">More contrast</dt>
+              <dd className="mt-1.5 text-fg-soft">
+                3px wide; hairlines turn into control borders and nothing is translucent.
+              </dd>
+            </div>
+          </dl>
         </div>
 
         <div className="rounded-lg border border-line bg-surface p-5 shadow-raise sm:p-6 lg:col-span-2">

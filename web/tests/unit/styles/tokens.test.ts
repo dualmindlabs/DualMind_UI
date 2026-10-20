@@ -41,7 +41,7 @@ describe('tokens.css and tokens.ts agree', () => {
   });
 
   it('every hex colour in tokens.css is documented in tokens.ts', () => {
-    const documented = new Set(colorTokens.map(token => token.name));
+    const documented = new Set<string>(colorTokens.map(token => token.name));
     const hexTokens = [...dark.entries()]
       .filter(([, value]) => value.startsWith('#'))
       .map(([name]) => name);

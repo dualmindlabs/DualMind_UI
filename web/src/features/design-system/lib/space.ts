@@ -8,6 +8,13 @@ export const radii: ReadonlyArray<{ name: string; value: string; use: string; cl
     { name: 'full', value: '9999px', use: 'Pills, avatars', className: 'rounded-full' },
   ];
 
+export const containers: ReadonlyArray<{ name: string; value: string; use: string }> = [
+  { name: 'max-w-page', value: '1200px', use: 'Marketing pages' },
+  { name: 'max-w-reading', value: '68ch', use: 'Prose and answers' },
+  { name: 'Gutters', value: '24px / 16px', use: 'Desktop / phones' },
+  { name: 'App header', value: '56px', use: 'Sticky, translucent' },
+];
+
 /** The 4px grid. Tailwind's spacing unit is 4px, so `p-4` is 16px. */
 export const spacing: readonly number[] = [4, 8, 12, 16, 20, 24, 32, 40, 48, 64, 96, 128];
 

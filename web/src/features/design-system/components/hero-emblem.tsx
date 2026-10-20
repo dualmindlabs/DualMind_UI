@@ -2,8 +2,7 @@ import { cn } from '@/lib/utils/cn';
 
 /**
  * Two minds and the verdict between them: Mind A and Mind B as two circles of equal size, the
- * human's terra point where they overlap. Decorative. The circles draw in once on load; with
- * reduced motion they are simply there.
+ * human's terra point where they overlap. Decorative.
  */
 export function HeroEmblem({ className }: { className?: string }) {
   return (
@@ -24,20 +23,8 @@ export function HeroEmblem({ className }: { className?: string }) {
         className="fill-human-tint"
       />
       <g className="fill-none" strokeWidth="1.5" strokeLinecap="round">
-        <circle
-          cx="160"
-          cy="170"
-          r="128"
-          strokeDasharray="805"
-          className="animate-draw stroke-mind-a [--dash:805]"
-        />
-        <circle
-          cx="280"
-          cy="170"
-          r="128"
-          strokeDasharray="805"
-          className="animate-draw stroke-mind-b [--dash:805] [animation-delay:160ms]"
-        />
+        <circle cx="160" cy="170" r="128" className="stroke-mind-a" />
+        <circle cx="280" cy="170" r="128" className="stroke-mind-b" />
         <circle cx="220" cy="170" r="15" className="stroke-human" strokeOpacity="0.5" />
       </g>
       <circle cx="160" cy="170" r="2.5" className="fill-mind-a" />

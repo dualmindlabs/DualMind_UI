@@ -39,9 +39,10 @@ export function Hero() {
           </p>
           <SectionNav className="mt-10 animate-rise [animation-delay:240ms]" />
         </div>
-        <HeroEmblem className="mx-auto hidden w-full max-w-md lg:block" />
+        <HeroEmblem className="mx-auto hidden w-full max-w-md animate-rise [animation-delay:200ms] lg:block" />
       </div>
-      <dl className="mx-auto grid max-w-page grid-cols-2 border-t border-line sm:grid-cols-4">
+      <div className="border-t border-line">
+        <dl className="mx-auto grid max-w-page grid-cols-2 sm:grid-cols-4">
         {stats.map(stat => (
           <div
             key={stat.label}
@@ -54,7 +55,8 @@ export function Hero() {
             </dd>
           </div>
         ))}
-      </dl>
+        </dl>
+      </div>
     </section>
   );
 }

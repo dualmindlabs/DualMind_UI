@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils/cn';
 export function Wordmark({ suffix = 'Arena', className }: { suffix?: string; className?: string }) {
   return (
     <span className={cn('inline-flex items-baseline gap-[0.45em] wordmark', className)}>
-      <span className="text-fg">DualMind</span>
+      <span className="text-fg">DualMind</span>{' '}
       <span className="text-mind-a">{suffix}</span>
     </span>
   );

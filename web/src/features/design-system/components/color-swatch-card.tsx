@@ -23,9 +23,15 @@ export function ColorSwatchCard({ token }: { token: ColorToken }) {
       ) : (
         <div
           aria-hidden="true"
-          className="h-20 border-b border-line"
+          className="flex h-20 items-end border-b border-line px-4 pb-3"
           style={{ backgroundColor: `var(${token.name})` }}
-        />
+        >
+          {token.kind === 'surface' ? (
+            <span className="text-h3 font-semibold text-fg">
+              Aa <span className="text-ui font-normal text-fg-soft">on {token.name}</span>
+            </span>
+          ) : null}
+        </div>
       )}
       <div className="flex flex-1 flex-col p-4">
         <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">

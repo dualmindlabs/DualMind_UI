@@ -90,7 +90,7 @@ export const typeVoices: ReadonlyArray<{
     voice: 'Code',
     family: 'JetBrains Mono Variable',
     use: 'Code blocks and inline code in answers',
-    sample: 'vote(a, b)',
+    sample: 'f(x)',
     className: 'font-code',
   },
 ];
