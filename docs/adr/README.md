@@ -10,6 +10,7 @@ Short records of the decisions that shape the Arena frontend: what was decided, 
 | [0004](./0004-own-battle-state-machine-and-streamdown.md) | Own battle state machine and Streamdown for answers | Accepted |
 | [0005](./0005-workers-builds-deploys-and-previews.md) | Cloudflare Workers Builds deploys, with branch preview URLs | Accepted |
 | [0006](./0006-same-origin-api-proxy.md) | Same-origin `/api` through a hardened Worker proxy | Accepted |
+| [0007](./0007-backend-on-cloudflare.md) | Backend features on Cloudflare at `/api/v2`, with an edge ledger in D1 | Proposed |
 
 ## Writing a new ADR
 
