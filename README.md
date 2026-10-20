@@ -43,7 +43,7 @@ The app is a static, framework-free web app (HTML, CSS and ES modules). A Cloudf
 - **Chat input tools**: file attachments, plus code-mode and web-search toggles (today these tune the sampling temperature sent with the request).
 - **Accounts**: Supabase email and password, one-time codes, Google sign-in, password reset and email verification.
 - **Light and dark themes**, responsive layout, and an offline mock mode when the API is unreachable.
-- **Info pages**: about, how it works, models, FAQ, careers, privacy, terms and cookies.
+- **Info pages**: about, how it works, models, FAQ, privacy, terms and cookies.
 - **Pre-launch waitlist**: a separate worker (`waitlist-worker/`) serves the waitlist page at `early.dualmindlab.tech`.
 
 ## Tech stack

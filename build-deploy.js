@@ -12,7 +12,6 @@ fs.mkdirSync(distDir, { recursive: true });
 const itemsToCopy = [
   'index.html',
   'about',
-  'careers',
   'how-it-works',
   'login',
   'leaderboard',

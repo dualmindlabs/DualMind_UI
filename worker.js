@@ -90,6 +90,13 @@ const arena = {
       'Access-Control-Max-Age': '86400',
     };
 
+    // The copied careers page was removed; send old links to /about/ (permanent, query kept)
+    if (pathname === '/careers' || pathname.startsWith('/careers/')) {
+      const target = new URL('/about/', url);
+      target.search = url.search;
+      return Response.redirect(target.toString(), 301);
+    }
+
     // Handle CORS preflight requests
     if (request.method === 'OPTIONS') {
       return new Response(null, {
@@ -218,12 +225,6 @@ Sitemap: https://${domain}/sitemap.xml`, {
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://${domain}/careers/</loc>
-    <lastmod>2026-01-23</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://${domain}/privacy/</loc>
     <lastmod>2026-01-23</lastmod>
     <changefreq>yearly</changefreq>
@@ -262,16 +263,6 @@ Sitemap: https://${domain}/sitemap.xml`, {
       return new Response(minimalPng, {
         headers: {
           'content-type': 'image/png',
-          'cache-control': 'public, max-age=86400'
-        },
-      });
-    }
-
-    // Ads.txt
-    if (pathname === '/ads.txt') {
-      return new Response('google.com, pub-7046688828386115, DIRECT, f08c47fec0942fa0', {
-        headers: {
-          'content-type': 'text/plain; charset=utf-8',
           'cache-control': 'public, max-age=86400'
         },
       });

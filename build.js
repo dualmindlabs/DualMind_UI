@@ -17,18 +17,15 @@ const filesToCopy = [
     'robots.txt',
     'signup-modern.html',
     'sitemap.xml',
-    'sw.js',
     'terms.html',
     'theme.js',
     'update-password.html',
-    'ads.txt',
     '.assetsignore'
 ];
 
 const foldersToCopy = [
     'about',
     'assets',
-    'careers',
     'components',
     'cookies',
     'css',
