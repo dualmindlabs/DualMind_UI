@@ -92,7 +92,7 @@ DualMind_UI/
 ├── config.js               # Runtime config (window.DUALMIND_CONFIG), loaded first
 ├── web/                    # The new React app (React Router, Vite, Tailwind); see web/README.md
 ├── worker.js               # Cloudflare Worker: waitlist gate, API proxy, routing, static assets
-├── server/routing.js       # Worker helpers: asset caching, SPA fallback routes, noindex
+├── server/                 # Worker modules: API proxy, caching and redirect tables, security headers and CSP
 ├── wrangler.jsonc          # Worker config (dualmind-arena)
 ├── build.js                # Composes dist/: legacy files + the web app's build
 ├── components/             # Header, Sidebar, ChatInput, ChatView, modals, share view

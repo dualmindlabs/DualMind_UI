@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Worker hygiene (redesign slice S1b): security headers on every response (HSTS, nosniff, Referrer-Policy, Permissions-Policy, COOP, X-Frame-Options); an enforced Content-Security-Policy for the web app's pages with sha256 hashes of their inline scripts (computed by `build.js` into `dist/__web-manifest.json`) and a report-only policy for the legacy pages; Cache-Control and legacy redirects as tables in `server/caching.js` and `server/redirects.js` (`/index.html`, the duplicated about and how-it-works folders, `/careers`, `/auth-verify.html` and `/verify.html`, all 301 with the query kept); Dependabot for `web/`.
+
 - The new Arena frontend in `web/` (redesign slice S1): React 19, React Router 8 in framework mode (`ssr: false`, `/design/` prerendered), Vite 8, TypeScript strict and Tailwind CSS 4, with a feature-based `src/` layout and a README per folder. Design tokens for dark and light in `web/src/styles/tokens.css` (contrast checked in tests), self-hosted fonts, a System/Dark/Light theme without a flash, and `useReducedMotion()`. The first page is `/design/`, a living style guide (not indexed).
 - `build.js` composes `dist/` from the legacy files and the web build, and fails on a missing legacy file or sitemap URL, a web file that would replace a legacy one, or an unhashed build file. `.node-version` pins Node 22.
 - The worker caches the web app's hashed `/assets/*` files for a year, sends `X-Robots-Tag: noindex` for `/design/`, and can answer client-only routes with the SPA fallback page (`server/routing.js`).
@@ -21,6 +23,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - GitHub issue forms for bug reports and feature requests, a pull request template, `CODEOWNERS` and a Dependabot configuration for npm and GitHub Actions.
 
 ### Changed
+
+- The `/api/*` proxy forwards only `Authorization`, `Content-Type`, `Accept`, `Accept-Language` and `X-Request-Id` (generated when missing and echoed on the response), sends no CORS headers, answers upstream failures with `502`/`504` JSON (`bad_gateway`, `gateway_timeout`) instead of the error text, times out after 30 s except for event streams, and no longer adds `x-dualmind-proxy-*` headers. The blanket CORS answer to every `OPTIONS` request is gone. `X-XSS-Protection` is no longer sent.
 
 - CI builds on Node 22 (`.node-version`), because `build.js` now builds the web app. The root ESLint config ignores `web/` and `dist/`.
 
