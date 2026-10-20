@@ -1,8 +1,15 @@
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import { describe, expect, it } from 'vitest';
 
 import { contrastReadings } from '@/features/design-system/lib/token-contrast';
 import { colorTokens, durations, easings, type ThemeName } from '@/styles/tokens';
-import tokensCss from '@/styles/tokens.css?raw';
+
+// Read from disk: Vitest does not process CSS imports.
+const here = path.dirname(fileURLToPath(import.meta.url));
+const tokensCss = readFileSync(path.resolve(here, '../../../src/styles/tokens.css'), 'utf8');
 
 /** Innermost CSS rule blocks (no nested braces), with comments removed. */
 function ruleBlocks(css: string): Array<{ selector: string; declarations: Map<string, string> }> {

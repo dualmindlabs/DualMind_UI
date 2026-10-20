@@ -22,7 +22,7 @@ export function AnswerPane({ side, meta, children }: AnswerPaneProps) {
       aria-labelledby={headingId}
       className="flex min-w-0 flex-col overflow-hidden rounded-lg border border-line bg-surface-2 shadow-raise"
     >
-      <header
+      <div
         className={cn(
           'flex items-center justify-between gap-3 border-b border-line px-4 py-3',
           style.tint,
@@ -35,7 +35,7 @@ export function AnswerPane({ side, meta, children }: AnswerPaneProps) {
           </h4>
         </div>
         <p className="font-mono text-caption text-muted tabular-nums">{meta}</p>
-      </header>
+      </div>
       <div className="max-w-[72ch] space-y-3 px-4 py-4 text-body text-fg">{children}</div>
     </section>
   );
