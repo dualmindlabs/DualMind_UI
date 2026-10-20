@@ -1,12 +1,13 @@
 # DualMind Arena redesign: design direction
 
-Status: **proposal, waiting for approval** (2026-10-20). Nothing in this document is built yet.
+Status: **approved** by Harsh on 2026-10-20. Build started (see migration-plan.md, slice S1).
 
 Companion documents:
 
 - [screen-inventory.md](./screen-inventory.md): every current screen, URL and known issue
 - [migration-plan.md](./migration-plan.md): architecture, URL map, deploy, tests and the PR-sized slices
 - [new-features.md](./new-features.md): new feature proposals, frontend first
+- [component-catalog.md](./component-catalog.md): 38 component sources for AI websites, their licences, and the final pick list per screen
 
 This document sets the look, feel and rules for every screen of the new Arena frontend (React + Vite + Tailwind CSS v4, same URLs, Cloudflare Workers, Supabase auth). It builds on the brand that already exists: the [Brand and design tokens](https://dev-doc.dualmindlab.tech/brand) page in the developer docs and the live waitlist at [early.dualmindlab.tech](https://early.dualmindlab.tech) (`waitlist-worker/`), which already uses React Bits and Magic UI on this stack.
 
@@ -205,7 +206,7 @@ Mobile specifics: `100svh` / `dvh` units, safe-area insets on the composer and v
 
 ## 9. Component stack and licenses
 
-All copied-in source keeps its license file next to it (as `waitlist-worker/src/components/reactbits/LICENSE.md` already does), and each file names its source and our changes.
+The full survey (38 sources, licences, AI-site components and the per-screen pick list) is in [component-catalog.md](./component-catalog.md); this table is the short version. All copied-in source keeps its license file next to it (as `waitlist-worker/src/components/reactbits/LICENSE.md` already does), and each file names its source and our changes.
 
 | Library | License | Role | Decision |
 | --- | --- | --- | --- |
@@ -220,7 +221,11 @@ All copied-in source keeps its license file next to it (as `waitlist-worker/src/
 | [Vaul](https://vaul.emilkowal.ski) | MIT | Mobile drawers | **Use** |
 | [Recharts](https://recharts.org) (via shadcn charts) | MIT | Leaderboard and model charts | **Use** |
 | [TanStack Query](https://tanstack.com/query) | MIT | Server state, caching, retries | **Use** |
-| [Aceternity UI](https://ui.aceternity.com) | Proprietary licence | Similar effects | **Avoid** (unclear terms for free components; React Bits and Magic UI cover the same ground) |
+| [Aceternity UI](https://ui.aceternity.com) | Custom licence (free + Pro) | Hero prompt box (Placeholders And Vanish Input), backgrounds, Glowing Effect, Bento Grid, Timeline | **Use selectively:** free components only, in their own folder with a licence note, never as a kit (component-catalog.md section 2) |
+| [prompt-kit](https://www.prompt-kit.com) | MIT | Prompt input, suggestions, chat container, loaders, thinking bar, feedback bar, code block | **Use** (copied in) |
+| [Motion Primitives](https://motion-primitives.com) | MIT | Text Shimmer, Sliding/Animated Number, Animated Background, Morphing Dialog | **Use** |
+| [Kokonut UI](https://kokonutui.com) | MIT | AI model selector, AI loading states, diff review patterns | **Use selectively** |
+| [Tremor](https://tremor.so) | Apache-2.0 | Bar List, Tracker, Spark Chart for the leaderboard | **Use selectively** |
 | Vercel AI Elements registry | Apache-2.0 | Chat components | **Avoid as a dependency** (being folded into shadcn by end of Nov 2026; assumes Next.js + AI SDK). Use shadcn's AI patterns as visual reference |
 | [assistant-ui](https://www.assistant-ui.com) | MIT | Chat runtime + primitives | **Not now** (thread-centric; two synchronized panes and voting would fight its runtime) |
 
@@ -237,9 +242,9 @@ The Arena is not a normal chat. It needs two **synchronized** answer panes, a vo
 | assistant-ui | Polished primitives, stop/regenerate/branching, external-store runtime for custom backends | One runtime per thread; running two in lockstep with a shared vote is undocumented; heavy abstraction |
 | Vercel AI SDK `useChat` + AI Elements | Parallel `useChat` instances are fine; good components | Our API does not emit the AI SDK stream protocol, so we'd write a transport; AI Elements registry is being deprecated and assumes Next.js |
 | prompt-kit | Light shadcn-style pieces | Small project; unverified Tailwind v4 status |
-| **Own state machine + Streamdown + shadcn AI patterns** | Exact fit for the battle flow; small; we own it; easy to test | We write the hook (about 150 lines) and a few components |
+| **Own state machine + Streamdown + prompt-kit pieces + shadcn AI patterns** | Exact fit for the battle flow; small; we own it; easy to test | We write the hook (about 150 lines), the battle layout, vote bar and reveal |
 
-**Pick: own state machine.** A `useBattle()` hook (typed, unit-tested) drives this flow:
+**Pick: own state machine,** with prompt-kit pieces (Prompt Input, Chat Container, Loader, Thinking Bar, Feedback Bar, copied in) for the chat parts. A `useBattle()` hook (typed, unit-tested) drives this flow:
 
 ```
 idle -> submitting -> answering(A, B) -> awaiting_vote -> voting -> revealed
@@ -264,7 +269,7 @@ idle -> submitting -> answering(A, B) -> awaiting_vote -> voting -> revealed
 
 ## 12. Screen-by-screen direction
 
-Each screen lists its signature element and the concrete components. "RB" = React Bits, "MU" = Magic UI, "sh" = shadcn/ui.
+Each screen lists its signature element and the concrete components. "RB" = React Bits, "MU" = Magic UI, "sh" = shadcn/ui. The final pick list per screen, including Aceternity UI, prompt-kit, Motion Primitives, Kokonut UI and Tremor pieces, is the table in [component-catalog.md](./component-catalog.md) section 3; where the two differ, the catalog wins.
 
 ### Global shell
 
@@ -276,7 +281,7 @@ Each screen lists its signature element and the concrete components. "RB" = Reac
 ### Landing: `/` when signed out
 
 - **Signature:** the hero. Background RB **Light Rays** in two crossing beams, cyan and violet (brand continuity with the waitlist), on `--bg-deep`, static poster on phones and reduced motion.
-- Headline with RB **Blur Text**: "Two models. One prompt. *You decide.*" (last phrase in Playfair italic, terra in this app's palette), then the real **composer** right in the hero. Typing a prompt and pressing send opens a sign-in sheet, or runs a **demo battle** from recorded real battles (new-features.md, F-2).
+- Headline with RB **Blur Text**: "Two models. One prompt. *You decide.*" (last phrase in Playfair italic, terra in this app's palette), then the real **composer** right in the hero, built on Aceternity's **Placeholders And Vanish Input** (rotating example prompts; the text vanishes into the battle on submit). Typing a prompt and pressing send opens a sign-in sheet, or runs a **demo battle** from recorded real battles (new-features.md, F-2).
 - Under the composer: MU **Animated Beam** draws two beams from the prompt to two answer cards (A cyan, B violet) that play a recorded battle and reveal with RB **Decrypted Text**. This explains the product in five seconds without a paragraph.
 - Live strip: battles, votes and models from the public `model-stats` endpoint with RB **Count Up** (honest fallback copy if the API fails, like the waitlist).
 - RB **Logo Loop** of model providers (monochrome logos, paused on hover and under reduced motion).

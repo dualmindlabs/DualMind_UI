@@ -1,6 +1,6 @@
 # DualMind Arena redesign: migration and architecture plan
 
-Status: **proposal, waiting for approval** (2026-10-20). No code has been written for it yet.
+Status: **approved** by Harsh on 2026-10-20, with the decisions recorded in section 9. Build started with slice S1.
 
 Goal: move the Arena frontend from static HTML + vanilla JS to **React 19 + Vite + TypeScript + Tailwind CSS v4**, page by page, **without breaking any existing URL**, still served by the `dualmind-arena` Cloudflare Worker, still signing in with Supabase. The design rules are in [design-direction.md](./design-direction.md), the current screens and bugs in [screen-inventory.md](./screen-inventory.md), and new features in [new-features.md](./new-features.md).
 
@@ -40,7 +40,7 @@ DualMind_UI/
 │   │   │   └── markdown/        # hardened Streamdown config
 │   │   ├── content/             # copy for info/legal pages, recorded demo battles
 │   │   └── styles/              # tokens.css, base.css, prose.css
-│   ├── public/                  # favicons, og images, self-unregistering sw.js
+│   ├── public/                  # favicons, og images
 │   ├── tests/                   # Playwright e2e, axe, screenshots
 │   ├── react-router.config.ts   # ssr:false + prerender list
 │   ├── vite.config.ts
@@ -72,7 +72,7 @@ DualMind_UI/
 ### Configuration
 
 - `config.js` (runtime global) is replaced by Vite env variables read in `web/app/lib/config.ts`: `VITE_API_BASE_URL`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_SITE_URL`.
-- Values come from **GitHub Actions repository variables** (and Workers Builds variables if that path stays) at build time. Locally, `web/.env.local` (git-ignored) with `web/.env.example` holding placeholders only. No key is copied into new files; the old `config.js` disappears at cutover.
+- Values come from **Workers Builds build variables** (production and previews) and **GitHub Actions repository variables** (CI) at build time. Locally, `web/.env.local` (git-ignored) with `web/.env.example` holding placeholders only. No key is copied into new files; the old `config.js` disappears at cutover.
 - Only public values (Supabase URL and anon key) are ever exposed to the browser. Nothing service-role, ever.
 
 ---
@@ -108,10 +108,10 @@ DualMind_UI/
 | `/signup-modern.html` | `/signup/` | 301 |
 | `/forgot-password.html` | `/forgot-password/` | 301 |
 | `/about/about/`, `/how-it-works/how-it-works/`, `/careers/careers/` | parent page | 301 |
-| `/careers/` | decision for Harsh (see section 9) | 301 to `/about/` or a new page |
+| `/careers/` and everything under it | `/about/` (page removed, decided 2026-10-20) | 301 |
 | `/auth-verify.html`, `/verify.html` (developer diagnostics) | `/` | 301 |
 | `/login`, `/about` and the other slash-less forms | slash form | 301 (Workers assets `auto-trailing-slash`) |
-| `/sw.js` | self-unregistering service worker | 200 |
+| `/sw.js`, `/ads.txt` | removed (decided 2026-10-20) | 404 |
 
 The worker keeps the redirect map as data (`legacyRedirects` object) with a unit test per row. Until a route's slice lands, its old file is still served from `dist/`, so the map only gains rows as slices merge.
 
@@ -144,7 +144,10 @@ The legacy app keeps the current thread in memory only. The new arena adds deep 
 - **Callbacks:**
   - `/auth-callback.html`: waits for `detectSessionInUrl`, reads `type` (`signup`, `email_confirmation`, `recovery`), sends recovery to `/update-password.html` with the hash, others to `?redirect` or `/`. Fixes today's broken import (screen-inventory.md 3.7).
   - OAuth returns to the bare origin `/`, which runs the same detection.
-- **Supabase dashboard:** add `https://arena.dualmindlab.tech/**` (and the preview origin) to the redirect allow-list **before** the auth slice merges; keep all old entries. This needs Harsh (dashboard access).
+- **Supabase dashboard (Harsh, before S6 merges):** production redirect targets do not change (`/auth-callback.html`, `/update-password.html` and the bare origin stay). Add these to Authentication > URL Configuration > Redirect URLs and keep every existing entry; Site URL stays `https://arena.dualmindlab.tech`:
+  - `https://arena.dualmindlab.tech/**` (covers the new clean paths and `?redirect=` returns)
+  - `https://*-dualmind-arena.creharsh.workers.dev/**` (Workers Builds preview URLs, so sign-in can be tested on PR previews)
+  - `http://localhost:5173/**` (local development)
 - **Welcome email** edge function (`email-wel-safe`) keeps its contract (bearer token + `apikey`, 30 s debounce).
 - **Tokens and XSS:** the session stays in `localStorage` (Supabase's model for SPAs). The mitigation is removing third-party scripts and enforcing a strict CSP (section 5).
 
@@ -202,16 +205,16 @@ Headers:
 
 - `pnpm build` at the root runs `pnpm --filter web build` (React Router build into `web/build/client`), then `node build.js`, which:
   1. copies the legacy allowlist into `dist/` as today (minus routes already migrated);
-  2. copies `web/build/client` over it (new HTML at the same paths, hashed `/assets/*`, `404.html`, `sw.js`);
+  2. copies `web/build/client` over it (new HTML at the same paths, hashed `/assets/*`, `404.html`; the SPA fallback is renamed so it never replaces the legacy `index.html`);
   3. writes `dist/legacy/app.html` from `index.html` while the legacy arena still exists;
   4. fails the build if a migrated route still has a legacy file, or if any sitemap URL is missing from `dist/`.
 - `wrangler.jsonc` keeps `assets.directory = dist`, `run_worker_first: true`, and adds `html_handling` and `not_found_handling`. The uncommitted local `observability` edit (missing comma) is left to Harsh; it is not part of these PRs.
 
 ### Deploy path
 
-- **Today:** Cloudflare Workers Builds deploys `dualmind-arena` from `master` (the last builds have been unreliable, KNOWN_ISSUES.md #10).
-- **Proposed (decision for Harsh):** deploy from GitHub Actions like the waitlist does (`deploy-arena.yml`: build, `wrangler deploy`, smoke-check the live site), reusing the existing `CLOUDFLARE_API_TOKEN` secret, plus **per-PR preview versions** (`wrangler versions upload --preview-alias pr-<n>`) so every PR gets a clickable preview URL (with the preview cookie). Workers Builds would then be disconnected in the dashboard to avoid double deploys.
-- Node 22 in CI (Vite 7, React Router v8 and supabase-js current all support it).
+- **Decided (2026-10-20): Cloudflare Workers Builds stays the deploy path**, unchanged. It deploys `dualmind-arena` from `master` and builds every PR branch as the `Workers Builds: dualmind-arena` check, which publishes a **preview alias URL** per branch (`https://<branch-slug>-dualmind-arena.creharsh.workers.dev`). Those previews are the clickable preview of each slice (add `?preview=dualmind-preview` once to pass the waitlist gate). No dashboard settings are changed.
+- Because the dashboard build command is not changed, the root build is self-contained: `node build.js` installs and builds `web/` itself (skippable with `SKIP_WEB_BUILD=1` in CI), then composes `dist/`. A root `.node-version` pins Node 22 for Workers Builds.
+- Node 22 in CI as well.
 
 ### Cutover (slice S13)
 
@@ -248,7 +251,7 @@ Size: S = under a day, M = 1-3 days, L = 3-5 days of focused work.
 | S1 | Foundation | `web/` scaffold (Vite, React 19.2, TS strict, Tailwind v4, React Router v8 SPA + prerender spike), `tokens.css`, fonts, theme (system/dark/light, no flash), `/design/` style guide page, root build composition, Worker asset caching + SPA fallback, `web.yml` (typecheck, lint, unit, build, screenshots, axe) | S0 approved | M |
 | S2 | UI kit and shell | shadcn/ui primitives (Base UI), Header, Footer, MobileNav, ThemeToggle, CommandPalette shell, Wordmark SVG, toasts, motion utilities (`useReducedMotion`, WebGL gate with poster fallback), vendored React Bits and Magic UI with license files, prose styles; all shown on `/design/` | S1 | M |
 | S3 | **Landing** (`/` signed out) | Hero (Light Rays, Blur Text, composer), Animated Beam battle explainer with recorded battles, live strip, Logo Loop, how it works, top-5 preview, closing CTA, signed-in handoff to the legacy app, OG image, Lighthouse gate | S2 | L |
-| S4 | Info, legal, 404 | `/about/`, `/how-it-works/`, `/faq/`, `/privacy/`, `/terms/`, `/cookies/`, `404`, careers decision, meta + OG + structured data, sitemap/robots from the route table, duplicate-URL redirects | S2 | M |
+| S4 | Info, legal, 404 | `/about/`, `/how-it-works/`, `/faq/`, `/privacy/`, `/terms/`, `/cookies/`, `404`, policy text that still mentions ads or analytics rewritten, meta + OG + structured data, sitemap/robots from the route table, duplicate-URL redirects | S2 | M |
 | S5 | API client and data layer | Typed client, Zod schemas, errors, TanStack Query setup, vote queue, SSE parser, hardened Worker `/api` proxy, unit + Worker tests | S1 | M |
 | S6 | Auth | `/login/`, `/signup/`, `/forgot-password/`, `/update-password.html`, `/auth-callback.html`, AuthProvider, session migration, guards, `?redirect=`, legacy auth redirects, OTP and OAuth UI | S2, S5 | L |
 | S7 | Leaderboard and models | Public `/leaderboard/` and `/models/` with podium, table, filters, search, detail sheet with charts, provisional flags | S2, S5 | M |
@@ -257,7 +260,7 @@ Size: S = under a day, M = 1-3 days, L = 3-5 days of focused work.
 | S10 | Side by side and Direct | Named pair mode, Direct mode with real SSE streaming, stop, copy, read aloud via the fixed TTS route | S9 | M |
 | S11 | Share | Share dialog (visibility), `/share/<id>` read-only view with reveal applied, per-share meta, Worker route fix | S5, S9 | M |
 | S12 | Settings and export | `/settings/` (profile, theme, default mode, shortcuts, reduced motion override), export md/json/csv/html/pdf | S8 | M |
-| S13 | Cutover and cleanup | Remove legacy files, `config.js`, CDN deps, overlay build; self-unregistering `sw.js`; enforce CSP; update README, AGENTS.md, CLAUDE.md | S3-S12 | M |
+| S13 | Cutover and cleanup | Remove legacy files, `config.js`, CDN deps, overlay build; enforce CSP; update README, AGENTS.md, CLAUDE.md | S3-S12 | M |
 | S14 | Quality pass | Visual baselines, Lighthouse budgets on all public routes, manual screen-reader audit, bundle trimming, final screenshots for the portfolio | S13 | M |
 | S15 | Shared tokens (optional) | Move tokens and fonts to `packages/tokens`, consume from `waitlist-worker` | S13 | S |
 
@@ -296,13 +299,15 @@ flowchart LR
 
 ## 9. Risks and decisions
 
-### Decisions needed from Harsh
+### Decisions (Harsh, 2026-10-20)
 
-1. **URL policy:** clean canonical paths (`/login/`, `/signup/`, `/forgot-password/`) with 301s from the old `.html` URLs (recommended), or identical paths only. Supabase email targets stay in place either way.
-2. **Ads and third-party scripts:** remove the `monetag` meta tag, `ads.txt` and the `3nbf4.com` import in `sw.js` (recommended: a CV showcase gains nothing from them, and they weaken security and the CSP).
-3. **Careers page:** it currently holds another company's page copy with 16 fake openings. Recommended: remove it and 301 `/careers/` to `/about/`.
-4. **Deploys:** move Arena deploys to GitHub Actions with per-PR preview URLs and disconnect Workers Builds (needs a dashboard change), or keep Workers Builds.
-5. **Supabase allow-list:** add the new paths and preview origin before S6 (dashboard access).
+| # | Question | Decision |
+| --- | --- | --- |
+| 1 | URL policy | **Clean canonical paths** `/login/`, `/signup/`, `/forgot-password/` with permanent redirects from the old `.html` URLs. `/auth-callback.html` and `/update-password.html` (Supabase email targets) stay at their current addresses |
+| 2 | Ads and third-party scripts | **Removed:** `monetag` meta tag, `ads.txt`, `sw.js` (separate small PR, ahead of S1) |
+| 3 | Careers page | **Removed;** `/careers/` and everything under it redirects to `/about/` |
+| 4 | Deploys | **Keep Cloudflare Workers Builds.** No Actions-based deploy, no dashboard changes. Previews come from Workers Builds preview URLs |
+| 5 | Supabase allow-list | Harsh adds the URLs listed in section 4 before the auth slice (S6) merges |
 
 ### Risks
 
