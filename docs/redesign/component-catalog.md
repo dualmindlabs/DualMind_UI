@@ -2,7 +2,7 @@
 
 Checked on 2026-10-20. This catalog lists the component sources for an AI website that were considered for the Arena redesign (40 sources): their licences, whether their code may be copied into this **public** repository, what they offer for an AI site, and what we pick for each screen.
 
-Companion documents: [design-direction.md](./design-direction.md) (look, rules and the screen-by-screen direction), [migration-plan.md](./migration-plan.md), [screen-inventory.md](./screen-inventory.md), [new-features.md](./new-features.md).
+Companion documents: [design-direction.md](./design-direction.md) (look, rules and the screen-by-screen direction), [migration-plan.md](./migration-plan.md), [screen-inventory.md](./screen-inventory.md), [new-features.md](./new-features.md), [licences.md](./licences.md) (licence policy and inventory), [buy-list.md](./buy-list.md) (ranked paid kits).
 
 How it was checked: licence files and terms pages were fetched from each project (links in section 5); repository data (stars, last push) came from GitHub. Anything that could not be confirmed on a fetched page is marked "(unverified)" in section 5. Licences change, so re-check a source's licence before copying a new component from it.
 
@@ -73,16 +73,16 @@ No kit provides a two-pane battle layout, a blind vote bar or a reveal. We build
 
 ## 2. Licence rules for this repository
 
-The repository is public, so every copied component is published. Rules:
+The repository is public for now (decision of 2026-10-20), so every copied component is published. The policy, the inventory of restricted-free code and the swap plans are in [licences.md](./licences.md); paid kits are ranked in [buy-list.md](./buy-list.md). Rules:
 
-1. **Permissive (MIT, Apache-2.0, ISC):** copy freely. Keep the copyright and licence text: one `LICENSE.md` per vendor folder (`web/app/components/<vendor>/LICENSE.md`) and a header comment in each file naming the source URL and what we changed.
+1. **Permissive (MIT, Apache-2.0, ISC):** copy freely. Keep the copyright and licence text: one `LICENSE.md` per vendor folder (`web/src/components/vendor/<source>/LICENSE.md`) and a header comment in each file naming the source URL and what we changed.
 2. **MIT + Commons Clause (React Bits, Animate UI):** allowed as part of this website. Keep the notice, never publish the components as a kit, registry or template, never sell them. This is the setup the waitlist app already uses.
-3. **Aceternity UI (custom licence):** Harsh asked for it to be considered, so it is in, with care:
+3. **Aceternity UI (custom licence):** use the best free components where they are best. Keep them in `web/src/components/vendor/aceternity/` with a `LICENSE-NOTES.md`, listed in [licences.md](./licences.md).
    - The licence page ([ui.aceternity.com/licence](https://ui.aceternity.com/licence)) allows use in unlimited personal and commercial projects and needs no attribution. It forbids redistributing "the Item ... or its source files, regardless of modifications" and reselling components as a template or library. The FAQ ([pricing](https://ui.aceternity.com/pricing)) says the only restriction on free components is not reselling or redistributing them "as a competing template or component library".
-   - What is unclear: the licence never says whether a public GitHub repo of a website counts as redistributing source files.
-   - Our pattern: **free components only**, in `web/app/components/aceternity/` with a `LICENSE-NOTES.md` that links the licence and lists each component, adapted to our tokens, never exported as a kit, no Pro blocks. Only a handful of pieces (listed in section 3).
-   - Recommended (Harsh, optional): a short email to support@aceternity.com asking for a written OK for a public portfolio repository. Until then we keep the Aceternity count small so swapping is cheap.
-4. **21st.dev:** each component has its author's licence; check it before copying. The site's terms ask for a visible link back and author credit, which the credits section (rule 6) covers.
+   - What is unclear: the licence never says whether a public GitHub repo of a website counts as redistributing source files. Harsh accepted this risk on 2026-10-20; every Aceternity piece has a swap plan in licences.md.
+   - Free components only, adapted to our tokens, never exported as a kit, no Pro blocks.
+   - Optional: a short email to support@aceternity.com asking for a written OK for a public portfolio repository.
+4. **21st.dev:** each component has its author's licence; check it before copying and keep it in `web/src/components/vendor/twentyfirst/` with the author's licence noted. The site's terms ask for a visible link back and author credit, which the credits section (rule 6) covers.
 5. **Never copy:** anything Pro or paid (Aceternity Pro, Magic UI Pro, Cult UI agent blocks, Kokonut Pro, ReUI Pro, Hover.dev Pro, Skiper UI), shadcnblocks (licence forbids public repos), Origin UI / coss ui (AGPL-3.0).
 6. **Credits:** a "Built with" section on `/about/` (and `web/THIRD_PARTY_NOTICES.md`) lists every source with a link. It satisfies the credit rules above and shows reviewers the craft behind the site.
 
