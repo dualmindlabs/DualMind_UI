@@ -57,7 +57,7 @@ web/src/components/
 
 | Class | Sources | Rule |
 | --- | --- | --- |
-| **Permissive** (MIT, Apache-2.0, ISC, OFL for fonts) | shadcn/ui, Magic UI (free), Motion Primitives, prompt-kit, Kokonut UI (free), Tremor, Streamdown, Evil Charts, Smooth UI, Animata, Uiverse, Spectrum UI, Lucide, Motion, Sonner, cmdk, Vaul, Recharts, TanStack Query, Radix UI, Fontsource fonts (OFL) | Copy freely. Keep the copyright notice and header comment. Credit on `/about/`. |
+| **Permissive** (MIT, Apache-2.0, ISC, OFL for fonts) | shadcn/ui, Magic UI (free), Motion Primitives, prompt-kit, Kokonut UI (free), Tremor, Streamdown, Evil Charts, Smooth UI, Animata, Uiverse, Spectrum UI, Base UI, class-variance-authority, input-otp, Lucide, Motion, Sonner, cmdk, Recharts, TanStack Query, Radix UI, Fontsource fonts (OFL) | Copy freely. Keep the copyright notice and header comment. Credit on `/about/`. |
 | **Restricted-free** | See the table below | Allowed on this website. Lives in `vendor/<source>/`. Listed in section 4. Never published as a kit, template or registry. |
 | **Never** | Any paid or Pro tier (Aceternity UI Pro, Magic UI Pro, Cult UI paid agent blocks, Kokonut UI Pro, ReUI Pro, Hover.dev Pro, Skiper UI Premium, React Bits Pro, Tailwind Plus), shadcnblocks, anything AGPL (Origin UI / coss ui) | Do not copy. See the [buy list](./buy-list.md). |
 
@@ -114,7 +114,8 @@ Status values: **planned** (in the catalog, not yet written), **in use** (code e
 | Magic UI | MIT | [LICENSE](https://github.com/magicuidesign/magicui/blob/main/LICENSE.md) | BorderBeam | `waitlist-worker/src/components/magicui/` | Own CSS conic-gradient border | in use (waitlist-worker) |
 | Magic UI | MIT | as above | Border Beam (`border-beam.tsx`), Shine Border (`shine-border.tsx`), Animated Beam (`animated-beam.tsx`), Marquee (`marquee.tsx`), Blur Fade (`blur-fade.tsx`), Number Ticker (`number-ticker.tsx`) | `web/src/components/vendor/magicui/`; `/design/` today; Arena generating state, leaderboard #1, landing "how a battle works", share page next | Motion equivalents, own CSS | in use (/design/) |
 | Magic UI | MIT | as above | Code Comparison | Diff view (F-4) | Own | planned |
-| shadcn/ui | MIT | [LICENSE](https://github.com/shadcn-ui/ui/blob/main/LICENSE.md) | Primitives, Command, Sidebar, Data Table, Chart, Input OTP, Tabs, Accordion, Dialog, Sheet | Everywhere | Radix UI directly | planned (slice S1) |
+| shadcn/ui (Base UI flavour, `base-vega` registry) | MIT | [LICENSE](https://github.com/shadcn-ui/ui/blob/main/LICENSE.md) | Accordion, Avatar, Badge, Button, Card, Checkbox, Command, Dialog, Drawer, Dropdown Menu, Field, Input, Input OTP, Kbd, Label, Popover, Radio Group, Scroll Area, Select, Separator, Sheet, Skeleton, Sonner, Switch, Tabs, Textarea, Toggle, Toggle Group, Tooltip (adapted to our tokens; `web/src/components/ui/LICENSE.md`) | `web/src/components/ui/`, the site shell, `/design/` | Base UI directly (the primitives already sit on it) | in use (slice S2) |
+| shadcn/ui | MIT | as above | Sidebar, Data Table, Chart | Arena sidebar, leaderboard | Base UI directly; Recharts | planned |
 | Motion Primitives | MIT | [LICENCE](https://github.com/ibelick/motion-primitives/blob/main/LICENCE.md) | Text Shimmer (`text-shimmer.tsx`), Animated Background (`animated-background.tsx`), Sliding Number (`sliding-number.tsx`), Border Trail (`border-trail.tsx`) | `web/src/components/vendor/motion-primitives/`; `/design/` today; Arena, header, leaderboard next | Own with Motion | in use (/design/) |
 | Motion Primitives | MIT | as above | Text Effect, Morphing Dialog | Arena reveal (alternate), Models | Own with Motion | planned |
 | prompt-kit | MIT | [LICENSE](https://github.com/ibelick/prompt-kit/blob/main/LICENSE) | Prompt Input, Chat Container, Scroll Button, Thinking Bar, Feedback Bar, Code Block | Arena composer and panes | Own with shadcn | planned |
@@ -122,7 +123,7 @@ Status values: **planned** (in the catalog, not yet written), **in use** (code e
 | Tremor Raw | Apache-2.0 | [LICENSE](https://github.com/tremorlabs/tremor-npm/blob/main/LICENSE) | Bar List, Tracker, Spark Chart | Leaderboard | shadcn Chart | planned |
 | Streamdown | Apache-2.0 | [LICENSE](https://github.com/vercel/streamdown/blob/main/LICENSE) | Streaming markdown | Answer panes | react-markdown | planned |
 
-Lucide, Motion, Sonner, cmdk, Vaul, Recharts, TanStack Query, Radix UI and Fontsource fonts are npm dependencies (not vendored); they are credited on `/about/` and in `web/THIRD_PARTY_NOTICES.md`.
+Base UI, class-variance-authority, Lucide, Motion, Sonner, cmdk, input-otp, Recharts, TanStack Query and Fontsource fonts are npm dependencies (not vendored); they are credited on `/about/` and in `web/THIRD_PARTY_NOTICES.md`.
 
 ---
 
