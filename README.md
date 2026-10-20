@@ -50,14 +50,15 @@ The app is a static, framework-free web app (HTML, CSS and ES modules). A Cloudf
 
 | Layer | Technology |
 | --- | --- |
-| UI | Vanilla JavaScript (ES modules), HTML, custom CSS design tokens (`css/tokens.css`), no framework and no bundler |
+| UI (legacy) | Vanilla JavaScript (ES modules), HTML, custom CSS design tokens (`css/tokens.css`), no framework and no bundler |
+| UI (new, `web/`) | React 19, React Router 8 (framework mode, pages prerendered at build time), Vite 8, TypeScript (strict), Tailwind CSS 4 with the tokens in `web/src/styles/tokens.css`; replacing the legacy pages slice by slice ([docs/architecture.md](./docs/architecture.md)) |
 | Rendering helpers | `marked`, `DOMPurify` and `highlight.js`, loaded from CDNs |
 | Auth | Supabase Auth (`@supabase/supabase-js` v2 from a CDN), session in the browser |
 | Hosting | Cloudflare Workers with static assets (`wrangler.jsonc`, `worker.js`) |
 | Feature flags | Cloudflare Flagship binding (`FLAGS`) |
 | Backend | DualMind API (ASP.NET Core), see [DualMind_Back](https://github.com/dualmindlabs/DualMind_Back) |
-| Tooling | Node.js 20, pnpm 10, ESLint 10, Playwright, `serve` for local hosting |
-| CI | GitHub Actions: lint and build ([`ci.yml`](./.github/workflows/ci.yml)) |
+| Tooling | Node.js 22 (`.node-version`), pnpm 10 at the root and npm in `web/`, ESLint, Prettier, Vitest, Playwright, Wrangler |
+| CI | GitHub Actions: root lint and the composed build ([`ci.yml`](./.github/workflows/ci.yml)); the web app's checks, end-to-end tests and screenshots ([`web.yml`](./.github/workflows/web.yml)) |
 
 ## Architecture
 
@@ -89,9 +90,11 @@ flowchart LR
 DualMind_UI/
 ├── index.html              # Main app shell
 ├── config.js               # Runtime config (window.DUALMIND_CONFIG), loaded first
-├── worker.js               # Cloudflare Worker: API proxy, routing, static assets
+├── web/                    # The new React app (React Router, Vite, Tailwind); see web/README.md
+├── worker.js               # Cloudflare Worker: waitlist gate, API proxy, routing, static assets
+├── server/routing.js       # Worker helpers: asset caching, SPA fallback routes, noindex
 ├── wrangler.jsonc          # Worker config (dualmind-arena)
-├── build.js                # Copies the deployable files into dist/
+├── build.js                # Composes dist/: legacy files + the web app's build
 ├── components/             # Header, Sidebar, ChatInput, ChatView, modals, share view
 ├── js/
 │   ├── ui/app.js           # Main App class: state, modes, streaming, voting, threads
@@ -106,7 +109,7 @@ DualMind_UI/
 ├── about/, faq/, models/…  # Static info and legal pages
 ├── waitlist-worker/        # Pre-launch waitlist: Vite + React app and its worker
 ├── tests/                  # Playwright end-to-end tests
-├── docs/                   # Codebase audits and UI roadmap
+├── docs/                   # Architecture, ADRs, the redesign plan and codebase audits
 └── AGENTS.md               # Detailed architecture and contributor guide
 ```
 
@@ -152,8 +155,10 @@ pnpm test                               # Playwright; starts its own server on p
 ### Build
 
 ```bash
-pnpm build      # copies the deployable files into dist/
+pnpm build      # node build.js: builds web/, copies the legacy files and composes dist/
 ```
+
+`build.js` installs and builds the React app in `web/` itself (set `SKIP_WEB_BUILD=1` if it is built already), so the same command works locally, in CI and in Cloudflare Workers Builds. Working on the React app: see [`web/README.md`](./web/README.md).
 
 ## Configuration
 
@@ -182,7 +187,7 @@ Cloudflare Worker settings:
 
 The arena runs as the Cloudflare Worker **`dualmind-arena`** on the route `arena.dualmindlab.tech/*`.
 
-- **Cloudflare Workers Builds** is connected to this repository and builds the worker from GitHub (it reports as the `Workers Builds: dualmind-arena` check).
+- **Cloudflare Workers Builds** is connected to this repository and builds the worker from GitHub (it reports as the `Workers Builds: dualmind-arena` check). It deploys `master` and publishes a preview alias URL for every other branch (`https://<branch-slug>-dualmind-arena.creharsh.workers.dev`; add `?preview=dualmind-preview` once to pass the waitlist gate). See [ADR 0005](./docs/adr/0005-workers-builds-deploys-and-previews.md).
 - **Manual deploy** from a machine logged in to Cloudflare:
 
   ```bash
@@ -191,7 +196,7 @@ The arena runs as the Cloudflare Worker **`dualmind-arena`** on the route `arena
 
 - **Waitlist worker** (`dualmind-waitlist`, served at `early.dualmindlab.tech`): a Vite + React app in `waitlist-worker/` whose worker also stores signups in the D1 database `dualmind-waitlist`. GitHub Actions ([`deploy-waitlist.yml`](./.github/workflows/deploy-waitlist.yml)) deploys it on every push to `master` that touches `waitlist-worker/`, or by hand with `gh workflow run deploy-waitlist.yml`; it needs the `CLOUDFLARE_API_TOKEN` repository secret. See [`waitlist-worker/README.md`](./waitlist-worker/README.md).
 
-GitHub Actions ([`ci.yml`](./.github/workflows/ci.yml)) runs lint and build on every push and pull request to `master` and uploads `dist/` as an artifact. It does not deploy.
+GitHub Actions ([`ci.yml`](./.github/workflows/ci.yml)) runs lint and build on every push and pull request to `master` and uploads `dist/` as an artifact; [`web.yml`](./.github/workflows/web.yml) checks and tests the web app. Neither deploys the Arena.
 
 ## API endpoints used
 

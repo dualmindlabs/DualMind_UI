@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- The new Arena frontend in `web/` (redesign slice S1): React 19, React Router 8 in framework mode (`ssr: false`, `/design/` prerendered), Vite 8, TypeScript strict and Tailwind CSS 4, with a feature-based `src/` layout and a README per folder. Design tokens for dark and light in `web/src/styles/tokens.css` (contrast checked in tests), self-hosted fonts, a System/Dark/Light theme without a flash, and `useReducedMotion()`. The first page is `/design/`, a living style guide (not indexed).
+- `build.js` composes `dist/` from the legacy files and the web build, and fails on a missing legacy file or sitemap URL, a web file that would replace a legacy one, or an unhashed build file. `.node-version` pins Node 22.
+- The worker caches the web app's hashed `/assets/*` files for a year, sends `X-Robots-Tag: noindex` for `/design/`, and can answer client-only routes with the SPA fallback page (`server/routing.js`).
+- `web.yml` workflow: typecheck, ESLint, Prettier, Vitest (unit and worker tests), then Playwright against the composed site served by the real worker in `wrangler dev`, with axe in both themes and screenshots (`web-screenshots` artifact). `web-lockfile.yml` resolves `web/package-lock.json` in CI.
+- `docs/architecture.md` and architecture decision records in `docs/adr/`.
+
 - Redesigned waitlist page at `early.dualmindlab.tech`, rebuilt as a prerendered Vite + React + Tailwind app in `waitlist-worker/`: a headline reveal, crossing WebGL spotlights, a hands-on demo battle, the live top five from the public leaderboard API and a marquee of the Arena's models, using React Bits and Magic UI components. A `Waitlist page` workflow builds it, runs Playwright tests and uploads desktop and mobile screenshots.
 - Real waitlist signups: the waitlist worker answers `POST /api/signup` and stores emails in the Cloudflare D1 database `dualmind-waitlist` (schema in `waitlist-worker/migrations/`), with email validation, a honeypot field, a 2 KB body limit, a same-origin check and a per-IP rate limit. Until now the page only saved emails in the visitor's own browser, so none reached the team; the form now offers to send such an old local signup for real.
 - `deploy-waitlist.yml` workflow: applies D1 migrations and deploys the waitlist worker on pushes to `master` that touch `waitlist-worker/`, or by hand. Needs the `CLOUDFLARE_API_TOKEN` secret.
@@ -15,6 +21,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - GitHub issue forms for bug reports and feature requests, a pull request template, `CODEOWNERS` and a Dependabot configuration for npm and GitHub Actions.
 
 ### Changed
+
+- CI builds on Node 22 (`.node-version`), because `build.js` now builds the web app. The root ESLint config ignores `web/` and `dist/`.
 
 - `build.js` no longer copies `waitlist.html` into `dist/` or into the waitlist worker, and the old single-file `waitlist.html` is removed.
 - Rewrote `README.md` with architecture, setup, configuration, deployment and related-project sections.
