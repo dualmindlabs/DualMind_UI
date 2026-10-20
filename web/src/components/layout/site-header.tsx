@@ -1,0 +1,153 @@
+import type { CSSProperties } from 'react';
+import { useLocation } from 'react-router';
+
+import { CommandPaletteTrigger } from '@/components/layout/command-palette-trigger';
+import { Emblem } from '@/components/layout/emblem';
+import { MobileNav } from '@/components/layout/mobile-nav';
+import { SiteNav } from '@/components/layout/site-nav';
+import { ThemeToggle } from '@/components/layout/theme-toggle';
+import { Wordmark } from '@/components/layout/wordmark';
+import { buttonVariants } from '@/components/ui/button';
+import { useScrolled } from '@/hooks/use-scrolled';
+import { signInLink } from '@/lib/site/links';
+import { cn } from '@/lib/utils/cn';
+
+export interface SiteHeaderProps {
+  /**
+   * `marketing`: transparent at the top of the page, it condenses into a floating pill once the
+   * page scrolls. `app`: a compact 56px bar for the arena and other app pages.
+   */
+  variant?: 'marketing' | 'app';
+  /** Marketing only: let the first section run under the header (heroes). */
+  overlay?: boolean;
+  /** `sticky` on real pages; `static` for previews on the style guide. */
+  position?: 'sticky' | 'static';
+  /** Marketing only: show the condensed pill regardless of scroll (previews). */
+  condensed?: boolean;
+  /** The current path for the active link; defaults to the router's location. */
+  activePath?: string;
+  /** The navigation landmark's name; give previews their own. */
+  navLabel?: string;
+  /** `false` renders a plain <div> instead of the page's <header> landmark (previews). */
+  landmark?: boolean;
+  className?: string;
+}
+
+/**
+ * Where the condensed pill sits, in container units of the header's row (100cqw), so previews
+ * in narrower frames work too: the content moves inward by --nav-shift (transform only, nothing
+ * re-lays out) while the pill fades and settles in behind it. Inspired by the behaviour of
+ * Aceternity UI's Resizable Navbar, written from scratch.
+ */
+const pillGeometry = {
+  '--pill-w': 'min(100cqw - 1rem, 64rem)',
+  '--nav-shift': 'max(0px, (100cqw - 0.5rem - min(100cqw - 1rem, 64rem)) / 2)',
+} as CSSProperties;
+
+function HomeLink({ className }: { className?: string }) {
+  return (
+    <a
+      href="/"
+      aria-label="DualMind Arena, home"
+      className={cn(
+        'pointer-events-auto inline-flex shrink-0 items-center gap-2.5 rounded-sm',
+        className,
+      )}
+    >
+      <Emblem className="hidden size-6 sm:block" />
+      <Wordmark title={null} className="h-3 sm:h-3.5" />
+    </a>
+  );
+}
+
+/** The site header: home link, main navigation, command palette, theme, sign in, phone menu. */
+export function SiteHeader({
+  variant = 'marketing',
+  overlay = false,
+  position = 'sticky',
+  condensed,
+  activePath,
+  navLabel = 'Main',
+  landmark = true,
+  className,
+}: SiteHeaderProps) {
+  const Root = landmark ? 'header' : 'div';
+  const location = useLocation();
+  const scrolled = useScrolled(8);
+  const path = activePath ?? location.pathname;
+
+  const actions = (
+    <>
+      <CommandPaletteTrigger appearance="icon" className="lg:hidden" />
+      <CommandPaletteTrigger appearance="pill" className="hidden lg:inline-flex" />
+      <ThemeToggle compact className="hidden lg:inline-flex" />
+      <a
+        href={signInLink.href}
+        className={cn(
+          buttonVariants({ variant: variant === 'app' ? 'outline' : 'primary', size: 'sm' }),
+          'hidden rounded-full sm:inline-flex',
+        )}
+      >
+        {signInLink.label}
+      </a>
+      <MobileNav activePath={path} label={navLabel} className="lg:hidden" />
+    </>
+  );
+
+  if (variant === 'app') {
+    return (
+      <Root
+        data-slot="site-header"
+        data-variant="app"
+        className={cn(
+          'z-40 h-14 border-b border-line bg-glass backdrop-blur-md',
+          position === 'sticky' && 'sticky top-0',
+          className,
+        )}
+      >
+        <div className="flex h-full items-center gap-3 px-4 sm:px-6">
+          <HomeLink />
+          <span aria-hidden="true" className="mx-2 hidden h-5 w-px bg-line lg:block" />
+          <SiteNav activePath={path} label={navLabel} size="sm" className="hidden lg:block" />
+          <div className="ml-auto flex items-center gap-1.5">{actions}</div>
+        </div>
+      </Root>
+    );
+  }
+
+  const isCondensed = condensed ?? scrolled;
+
+  return (
+    <Root
+      data-slot="site-header"
+      data-variant="marketing"
+      data-condensed={isCondensed ? '' : undefined}
+      style={pillGeometry}
+      className={cn(
+        // The bar is see-through at the top: only its controls (and the pill) take clicks.
+        'group/header pointer-events-none z-40 h-16',
+        position === 'sticky' && 'sticky top-0',
+        overlay && '-mb-16',
+        className,
+      )}
+    >
+      <div className="@container relative mx-auto flex h-full max-w-page items-center">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-2 left-1/2 w-(--pill-w) -translate-x-1/2 scale-x-[1.04] scale-y-110 rounded-full border border-line bg-glass opacity-0 shadow-raise-strong backdrop-blur-md transition-[opacity,scale] duration-(--dur-slow) ease-out-expo group-data-condensed/header:pointer-events-auto group-data-condensed/header:scale-100 group-data-condensed/header:opacity-100"
+        />
+        <div className="relative flex w-full items-center gap-3 px-4 lg:grid lg:grid-cols-[1fr_auto_1fr]">
+          <HomeLink className="transition-[translate] duration-(--dur-slow) ease-out-expo lg:justify-self-start lg:group-data-condensed/header:translate-x-(--nav-shift)" />
+          <SiteNav
+            activePath={path}
+            label={navLabel}
+            className="pointer-events-auto hidden lg:block"
+          />
+          <div className="pointer-events-auto ml-auto flex items-center gap-1.5 transition-[translate] duration-(--dur-slow) ease-out-expo lg:justify-self-end lg:group-data-condensed/header:-translate-x-(--nav-shift)">
+            {actions}
+          </div>
+        </div>
+      </div>
+    </Root>
+  );
+}

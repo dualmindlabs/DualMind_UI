@@ -17,6 +17,7 @@ import {
   ScrollRestoration,
 } from 'react-router';
 
+import { AppProviders } from '@/components/layout/app-providers';
 import { ThemeScript } from '@/components/layout/theme-script';
 import { Wordmark } from '@/components/layout/wordmark';
 import { backgrounds } from '@/styles/tokens';
@@ -34,6 +35,7 @@ export const links: Route.LinksFunction = () => [
   },
   { rel: 'preload', href: dmMonoLatin, as: 'font', type: 'font/woff2', crossOrigin: 'anonymous' },
   { rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml' },
+  { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
 ];
 
 export function Layout({ children }: { children: ReactNode }) {
@@ -64,7 +66,11 @@ export function Layout({ children }: { children: ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  return (
+    <AppProviders>
+      <Outlet />
+    </AppProviders>
+  );
 }
 
 /** Shown by the SPA fallback page (dist/__spa-fallback.html) until the route's code loads. */
@@ -76,7 +82,7 @@ export function HydrateFallback() {
       data-spa-fallback
     >
       <p className="flex flex-col items-center gap-4">
-        <Wordmark className="text-ui" />
+        <Wordmark className="h-4" />
         <span className="eyebrow text-muted">Loading</span>
       </p>
     </div>
@@ -95,7 +101,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
 
   return (
     <main className="mx-auto grid min-h-svh max-w-page content-center gap-6 px-4 sm:px-6">
-      <Wordmark className="text-ui" />
+      <Wordmark className="h-4" />
       <h1 className="text-h1 font-medium">
         {notFound ? '404. ' : 'Error. '}
         <span className="human-voice text-human">{title}</span>
