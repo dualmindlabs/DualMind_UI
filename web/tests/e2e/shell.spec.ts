@@ -225,7 +225,9 @@ for (const viewport of viewports) {
       await page
         .locator('#components')
         .screenshot({ path: name('components'), animations: 'disabled', style: hideHeader });
-      await page.locator('#shell').screenshot({ path: name('shell'), animations: 'disabled', style: hideHeader });
+      await page
+        .locator('#shell')
+        .screenshot({ path: name('shell'), animations: 'disabled', style: hideHeader });
       await page
         .locator('footer')
         .last()

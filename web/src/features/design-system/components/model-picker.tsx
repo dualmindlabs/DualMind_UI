@@ -76,7 +76,10 @@ export function ModelPicker() {
                     <Check
                       aria-hidden="true"
                       strokeWidth={2.25}
-                      className={cn('text-mind-a', model === item.name ? 'opacity-100' : 'opacity-0')}
+                      className={cn(
+                        'text-mind-a',
+                        model === item.name ? 'opacity-100' : 'opacity-0',
+                      )}
                     />
                     {item.name}
                     <CommandShortcut className="tabular-nums">
