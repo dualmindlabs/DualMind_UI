@@ -1,0 +1,225 @@
+/*
+ * Long-form text: info pages (/about/, /how-it-works/, /faq/) and legal pages (/privacy/,
+ * /terms/, /cookies/). Apply `prose` to the element that wraps the rendered HTML or JSX:
+ *
+ *   <article className="prose">...</article>
+ *
+ * Tokens only, no effects (design-direction.md section 12, "Legal"). Selectors are wrapped in
+ * :where() so utilities on a child still win. `not-prose` opts a block out (a card, a demo).
+ */
+
+@utility prose {
+  max-width: var(--container-reading);
+  color: var(--fg-soft);
+  font-size: var(--text-body);
+  line-height: 1.75;
+  overflow-wrap: break-word;
+
+  /* Vertical rhythm: blocks are separated by space above, never below. */
+  & :where(p, ul, ol, dl, blockquote, pre, table, figure, hr, details):not(
+      :where(.not-prose, .not-prose *)
+    ) {
+    margin-block: 1.25em 0;
+  }
+
+  & :where(:first-child):not(:where(.not-prose, .not-prose *)) {
+    margin-top: 0;
+  }
+
+  /* Headings: the machine voice, tight and balanced. */
+  & :where(h2, h3, h4):not(:where(.not-prose, .not-prose *)) {
+    color: var(--fg);
+    font-weight: 500;
+    text-wrap: balance;
+    scroll-margin-top: 6rem;
+  }
+
+  & :where(h2):not(:where(.not-prose, .not-prose *)) {
+    margin-top: 2.25em;
+    font-size: var(--text-h2);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+
+  & :where(h3):not(:where(.not-prose, .not-prose *)) {
+    margin-top: 1.9em;
+    font-size: var(--text-h3);
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+  }
+
+  & :where(h4):not(:where(.not-prose, .not-prose *)) {
+    margin-top: 1.6em;
+    font-size: var(--text-body);
+    font-weight: 600;
+  }
+
+  & :where(h2 + *, h3 + *, h4 + *):not(:where(.not-prose, .not-prose *)) {
+    margin-top: 0.6em;
+  }
+
+  /* An eyebrow above a heading (Last updated, Section 3...). */
+  & :where(.prose-eyebrow):not(:where(.not-prose, .not-prose *)) {
+    display: block;
+    margin-bottom: 0.75rem;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+
+  & :where(p.lead):not(:where(.not-prose, .not-prose *)) {
+    color: var(--fg);
+    font-size: var(--text-h3);
+    line-height: 1.55;
+  }
+
+  & :where(strong, b):not(:where(.not-prose, .not-prose *)) {
+    color: var(--fg);
+    font-weight: 600;
+  }
+
+  /* Links: Mind A, with an underline that is always there (not colour alone). */
+  & :where(a):not(:where(.not-prose, .not-prose *)) {
+    color: var(--mind-a);
+    text-decoration-line: underline;
+    text-decoration-color: color-mix(in oklab, var(--mind-a) 45%, transparent);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.22em;
+    transition: text-decoration-color var(--dur-fast) var(--ease-out-expo);
+  }
+
+  & :where(a:hover):not(:where(.not-prose, .not-prose *)) {
+    text-decoration-color: currentColor;
+  }
+
+  /* Lists */
+  & :where(ul, ol):not(:where(.not-prose, .not-prose *)) {
+    padding-left: 1.4em;
+  }
+
+  & :where(ul):not(:where(.not-prose, .not-prose *)) {
+    list-style-type: disc;
+  }
+
+  & :where(ol):not(:where(.not-prose, .not-prose *)) {
+    list-style-type: decimal;
+  }
+
+  & :where(li):not(:where(.not-prose, .not-prose *)) {
+    margin-top: 0.45em;
+    padding-left: 0.3em;
+  }
+
+  & :where(li)::marker {
+    color: var(--muted);
+  }
+
+  & :where(ol > li)::marker {
+    font-family: var(--font-mono);
+    font-size: 0.875em;
+  }
+
+  & :where(dt):not(:where(.not-prose, .not-prose *)) {
+    margin-top: 1em;
+    color: var(--fg);
+    font-weight: 600;
+  }
+
+  & :where(dd):not(:where(.not-prose, .not-prose *)) {
+    margin-top: 0.3em;
+    margin-left: 0;
+  }
+
+  /* Quotes and asides: the human voice gets the terra rule. */
+  & :where(blockquote):not(:where(.not-prose, .not-prose *)) {
+    padding-left: 1.1em;
+    border-left: 2px solid var(--human);
+    color: var(--fg);
+  }
+
+  & :where(hr):not(:where(.not-prose, .not-prose *)) {
+    margin-block: 2.5em;
+    border: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  /* Code */
+  & :where(code):not(:where(pre code, .not-prose, .not-prose *)) {
+    padding: 0.12em 0.36em;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+    color: var(--fg);
+    font-size: 0.875em;
+  }
+
+  & :where(pre):not(:where(.not-prose, .not-prose *)) {
+    overflow-x: auto;
+    padding: 1em 1.15em;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    color: var(--fg);
+    font-size: 0.875em;
+    line-height: 1.6;
+  }
+
+  & :where(kbd):not(:where(.not-prose, .not-prose *)) {
+    padding: 0.1em 0.4em;
+    border: 1px solid var(--line-strong);
+    border-bottom-width: 2px;
+    border-radius: var(--radius-sm);
+    color: var(--fg);
+    font-size: 0.8125em;
+  }
+
+  /* Tables: tabular numbers, hairlines, no zebra stripes. */
+  & :where(table):not(:where(.not-prose, .not-prose *)) {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--text-ui-sm);
+    font-variant-numeric: tabular-nums;
+  }
+
+  & :where(th):not(:where(.not-prose, .not-prose *)) {
+    padding: 0.6em 0.75em;
+    border-bottom: 1px solid var(--line-strong);
+    color: var(--fg);
+    font-weight: 600;
+    text-align: left;
+  }
+
+  & :where(td):not(:where(.not-prose, .not-prose *)) {
+    padding: 0.6em 0.75em;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+
+  & :where(figcaption):not(:where(.not-prose, .not-prose *)) {
+    margin-top: 0.75em;
+    color: var(--muted);
+    font-size: var(--text-caption);
+  }
+
+  & :where(img, video):not(:where(.not-prose, .not-prose *)) {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--radius-lg);
+  }
+
+  & :where(details):not(:where(.not-prose, .not-prose *)) {
+    padding: 0.75em 1em;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+  }
+
+  & :where(summary):not(:where(.not-prose, .not-prose *)) {
+    color: var(--fg);
+    font-weight: 500;
+    cursor: pointer;
+  }
+}

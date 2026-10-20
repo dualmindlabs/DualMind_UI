@@ -36,6 +36,8 @@
     /* Depth: a 1px inner highlight in dark mode, soft shadows in light mode. */
     --raise: inset 0 1px 0 rgb(255 255 255 / 0.04);
     --raise-strong: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 24px 48px -24px rgb(0 0 0 / 0.6);
+    /* Behind dialogs, sheets and drawers. */
+    --scrim: rgb(5 6 8 / 0.72);
   }
 
   /* Light, when the system asks for it and nothing was chosen */
@@ -62,6 +64,7 @@
       --on-accent: #ffffff;
       --raise: 0 1px 2px rgb(20 22 27 / 0.06), 0 8px 24px -12px rgb(20 22 27 / 0.12);
       --raise-strong: 0 1px 2px rgb(20 22 27 / 0.06), 0 24px 48px -20px rgb(20 22 27 / 0.22);
+      --scrim: rgb(20 22 27 / 0.32);
     }
   }
 
@@ -88,6 +91,7 @@
     --on-accent: #ffffff;
     --raise: 0 1px 2px rgb(20 22 27 / 0.06), 0 8px 24px -12px rgb(20 22 27 / 0.12);
     --raise-strong: 0 1px 2px rgb(20 22 27 / 0.06), 0 24px 48px -20px rgb(20 22 27 / 0.22);
+    --scrim: rgb(20 22 27 / 0.32);
   }
 
   /* Derived tokens: the same formula in every theme, so they are declared once. */
@@ -100,6 +104,11 @@
     --human-tint: color-mix(in oklab, var(--human) 10%, var(--surface));
     /* Translucent surface: only the sticky header and the floating composer use it. */
     --glass: color-mix(in oklab, var(--bg) 80%, transparent);
+    /* Interaction washes: hover and pressed states on any surface, in both themes. */
+    --hover: color-mix(in oklab, var(--fg) 6%, transparent);
+    --pressed: color-mix(in oklab, var(--fg) 10%, transparent);
+    /* A raised surface under the pointer (secondary buttons, open triggers). */
+    --surface-3: color-mix(in oklab, var(--fg) 6%, var(--surface-2));
     --focus-width: 2px;
     --focus-offset: 3px;
 
@@ -152,9 +161,9 @@
   --text-ui-sm--line-height: 1.45;
   --text-caption: 0.8125rem;
   --text-caption--line-height: 1.4;
-  --text-label: 0.6875rem;
+  --text-label: 0.75rem;
   --text-label--line-height: 1.2;
-  --text-label--letter-spacing: 0.26em;
+  --text-label--letter-spacing: 0.22em;
 
   /* Radius (section 5): chips and inputs, buttons, cards and panes, composer and dialogs. */
   --radius-sm: 6px;
@@ -194,8 +203,41 @@
   --color-focus: var(--focus);
   --color-on-accent: var(--on-accent);
   --color-glass: var(--glass);
+  --color-hover: var(--hover);
+  --color-pressed: var(--pressed);
+  --color-surface-3: var(--surface-3);
+  --color-scrim: var(--scrim);
   --shadow-raise: var(--raise);
   --shadow-raise-strong: var(--raise-strong);
+
+  /*
+   * shadcn/ui names, mapped onto the tokens above, so registry code and vendored components that
+   * use them (bg-background, text-foreground, border-border, ring-ring...) pick up our palette
+   * without edits. Our own components use the token names. `muted` stays ours (a text colour):
+   * when copying shadcn code, rewrite its `bg-muted` to `bg-surface-2` and `bg-accent` to `bg-hover`.
+   */
+  --color-background: var(--bg);
+  --color-foreground: var(--fg);
+  --color-card: var(--surface);
+  --color-card-foreground: var(--fg);
+  --color-popover: var(--surface-2);
+  --color-popover-foreground: var(--fg);
+  --color-primary: var(--mind-a);
+  --color-primary-foreground: var(--on-accent);
+  --color-secondary: var(--surface-2);
+  --color-secondary-foreground: var(--fg);
+  --color-muted-foreground: var(--muted);
+  --color-accent: var(--hover);
+  --color-accent-foreground: var(--fg);
+  --color-destructive: var(--bad);
+  --color-border: var(--line);
+  --color-input: var(--line-strong);
+  --color-ring: var(--focus);
+  --color-chart-1: var(--mind-a);
+  --color-chart-2: var(--mind-b);
+  --color-chart-3: var(--human);
+  --color-chart-4: var(--ok);
+  --color-chart-5: var(--warn);
 }
 
 /* Keyframes for the animate-* utilities. Only transform and opacity move (section 6). */
@@ -213,6 +255,15 @@
   @keyframes dm-grow {
     from {
       transform: scaleX(0);
+    }
+  }
+
+  /* The fake caret of the one-time-code input. */
+  --animate-caret: dm-caret 1.1s steps(1, end) infinite;
+
+  @keyframes dm-caret {
+    50% {
+      opacity: 0;
     }
   }
 }

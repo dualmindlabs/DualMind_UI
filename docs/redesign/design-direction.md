@@ -131,7 +131,7 @@ Scale (rem at 16px; display sizes are fluid with `clamp()`):
 | H3 | 1.25rem / 1.3 | Cards, panes |
 | Body | 1rem / 1.65 | Answers and prose (max 72ch per pane) |
 | UI | 0.875-0.9375rem / 1.45 | Controls, sidebar, tables |
-| Label | 0.6875rem / 1.2, DM Mono, tracking 0.26em, uppercase | Eyebrows and badges |
+| Label | 0.75rem (12px) / 1.2, DM Mono 500, tracking 0.22em, uppercase | Eyebrows, badges and keyboard hints |
 
 Rules: `text-wrap: balance` on headings and `pretty` on paragraphs; `font-variant-numeric: tabular-nums` for Elo, counts, timings and tables; never below 12px; answers stay at 16px on phones.
 
@@ -195,7 +195,7 @@ Rules:
 
 | Screen | Phone (< 768) | Tablet (768-1023) | Desktop (>= 1024) |
 | --- | --- | --- | --- |
-| Header | Wordmark + menu button (Vaul drawer) | Full nav, condensed | Full nav, account menu |
+| Header | Wordmark + menu button (bottom drawer) | Full nav, condensed | Full nav, account menu |
 | Arena empty state | Composer pinned to bottom, suggestions as a horizontal scroller | Centered composer | Centered composer, sidebar visible |
 | Battle | A / B segmented tabs with swipe (CSS scroll-snap), sticky vote bar | Side by side, 50/50 | Side by side, optional sidebar |
 | Sidebar | Drawer | Drawer or rail | Panel, collapsible to rail |
@@ -220,7 +220,7 @@ Licence policy, the vendored-code inventory and the paid-kit buy list: [licences
 | [Lucide](https://lucide.dev) | ISC | Icons (already the docs' icon set), 1.75px stroke | **Use** |
 | [Sonner](https://sonner.emilkowal.ski) | MIT | Toasts | **Use** |
 | [cmdk](https://cmdk.paco.me) | MIT | Command palette | **Use** |
-| [Vaul](https://vaul.emilkowal.ski) | MIT | Mobile drawers | **Use** |
+| [Base UI](https://base-ui.com) Drawer | MIT | Mobile drawers with swipe to dismiss (through shadcn/ui's Base UI drawer) | **Use.** Replaces Vaul, which is unmaintained (decided in slice S2) |
 | [Recharts](https://recharts.org) (via shadcn charts) | MIT | Leaderboard and model charts | **Use** |
 | [TanStack Query](https://tanstack.com/query) | MIT | Server state, caching, retries | **Use** |
 | [Aceternity UI](https://ui.aceternity.com) | Custom licence (free + Pro) | Hero prompt box (Placeholders And Vanish Input), backgrounds, Glowing Effect, Bento Grid, Timeline | **Use selectively:** free components only, in their own folder with a licence note, never as a kit (component-catalog.md section 2) |
