@@ -79,6 +79,23 @@ jobs:
       - name: Unit and Worker tests (Vitest)
         run: npm test
 
+      # Coverage of the typed API client (src/lib/api and its config), in the job summary.
+      - name: API client coverage
+        run: |
+          npx vitest run --project unit tests/unit/lib/api tests/unit/config/api.test.ts \
+            --coverage.enabled --coverage.provider=v8 \
+            --coverage.include='src/lib/api/**' --coverage.include='src/config/api.ts' \
+            --coverage.reporter=text --coverage.reporter=json-summary \
+            --coverage.reportsDirectory=coverage/api
+          node -e '
+            const total = require("./coverage/api/coverage-summary.json").total;
+            const row = ["statements", "branches", "functions", "lines"]
+              .map(key => `${total[key].pct}% (${total[key].covered}/${total[key].total})`);
+            console.log("### API client coverage (src/lib/api)\n");
+            console.log("| Statements | Branches | Functions | Lines |\n| ---: | ---: | ---: | ---: |");
+            console.log(`| ${row.join(" | ")} |`);
+          ' >> "$GITHUB_STEP_SUMMARY"
+
       # When formatting or fixable lint rules fail, offer the fix as a patch:
       #   gh run download <run-id> -n web-autofix && git apply web-autofix.patch
       - name: Prepare an autofix patch
