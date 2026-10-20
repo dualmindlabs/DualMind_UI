@@ -9,8 +9,12 @@
 //      next to the legacy images, and React Router's SPA fallback as dist/__spa-fallback.html
 //      (it is written as index.html while / is not prerendered, and must not replace the legacy
 //      dist/index.html).
-//   4. Check the result: every legacy file and every sitemap URL is in dist/, no web file
+//   4. Write dist/__web-manifest.json for the Worker: the web app's pages, the sha256 hashes of
+//      their inline scripts (the enforced Content-Security-Policy allows exactly these) and extra
+//      connect-src origins (the Supabase project from VITE_SUPABASE_URL, once auth lands).
+//   5. Check the result: every legacy file and every sitemap URL is in dist/, no web file
 //      replaced a legacy one, and every hashed file matches the Worker's immutable-cache pattern.
+const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
@@ -150,6 +154,7 @@ for (const file of legacyFiles) {
 const webFiles = listFiles(webClientDir).filter(file => !file.startsWith('.vite/'));
 const hasOwnFallback = webFiles.includes(SPA_FALLBACK_FILE);
 let spaFallbackSource = null;
+const webHtmlTargets = [];
 
 for (const file of webFiles) {
     let target = file;
@@ -169,13 +174,70 @@ for (const file of webFiles) {
 
     fs.mkdirSync(path.dirname(path.join(distDir, target)), { recursive: true });
     fs.copyFileSync(path.join(webClientDir, file), path.join(distDir, target));
+    if (target.endsWith('.html')) {
+        webHtmlTargets.push(target);
+    }
 }
 
 if (!spaFallbackSource) {
     fail('the web build has no SPA fallback page (index.html or __spa-fallback.html).');
 }
 
-// 4. Check the composed output.
+// 4. The web manifest (read by worker.js through server/web-manifest.js).
+const WEB_MANIFEST_FILE = '__web-manifest.json';
+if (legacySet.has(WEB_MANIFEST_FILE)) {
+    fail(`${WEB_MANIFEST_FILE} is reserved for the web manifest.`);
+}
+
+// The URL a page is served at: design/index.html -> /design/, __spa-fallback.html -> /__spa-fallback.
+function pageUrl(file) {
+    if (file === 'index.html') return '/';
+    if (file.endsWith('/index.html')) return `/${file.slice(0, -'index.html'.length)}`;
+    return `/${file.slice(0, -'.html'.length)}`;
+}
+
+// Inline <script> elements (no src): the CSP allows each one by the sha256 of its exact text.
+function inlineScriptHashes(html) {
+    const hashes = [];
+    for (const match of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)) {
+        const [, attributes, content] = match;
+        if (/\bsrc\s*=/i.test(attributes) || content.length === 0) continue;
+        hashes.push(crypto.createHash('sha256').update(content, 'utf8').digest('base64'));
+    }
+    return hashes;
+}
+
+// The Supabase project the web app talks to, from the build environment (slice S6 sets it).
+function connectSrcFromEnv() {
+    const raw = (process.env.VITE_SUPABASE_URL || '').trim();
+    if (!raw) return [];
+    let url;
+    try {
+        url = new URL(raw);
+    } catch {
+        fail(`VITE_SUPABASE_URL is not a URL: ${raw}`);
+    }
+    if (url.protocol !== 'https:') {
+        fail(`VITE_SUPABASE_URL must use https: ${raw}`);
+    }
+    return [url.origin, `wss://${url.host}`];
+}
+
+const scriptHashes = new Set();
+for (const target of webHtmlTargets) {
+    for (const hash of inlineScriptHashes(fs.readFileSync(path.join(distDir, target), 'utf8'))) {
+        scriptHashes.add(hash);
+    }
+}
+const webManifest = {
+    version: 1,
+    pages: webHtmlTargets.map(pageUrl).sort(),
+    scriptHashes: [...scriptHashes].sort(),
+    connectSrc: connectSrcFromEnv(),
+};
+fs.writeFileSync(path.join(distDir, WEB_MANIFEST_FILE), `${JSON.stringify(webManifest, null, 2)}\n`);
+
+// 5. Check the composed output.
 for (const file of legacyFiles) {
     if (!fs.existsSync(path.join(distDir, file))) {
         fail(`legacy file ${file} is missing from dist/.`);
@@ -209,3 +271,4 @@ for (const urlPath of new Set(sitemapUrls)) {
 
 const webPages = webFiles.filter(file => file.endsWith('.html')).length;
 console.log(`\nFrontend built to /dist successfully: ${legacyFiles.length} legacy files, ${webFiles.length} web files (${webPages} HTML), SPA fallback from web/build/client/${spaFallbackSource} at dist/${SPA_FALLBACK_FILE}.`);
+console.log(`Web manifest: ${webManifest.pages.join(', ')}; ${webManifest.scriptHashes.length} inline script hashes for the CSP; connect-src extras: ${webManifest.connectSrc.join(' ') || 'none'}.`);
