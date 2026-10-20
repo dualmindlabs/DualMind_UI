@@ -1,0 +1,21 @@
+name: tmp-fmt
+on:
+  push:
+    branches: [feat/info-content]
+jobs:
+  fmt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci --no-audit --no-fund
+        working-directory: web
+      - run: npx prettier --write src/features/info tests/unit/features/info
+        working-directory: web
+      - run: git diff > /tmp/fmt.patch; wc -l /tmp/fmt.patch
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fmt-patch
+          path: /tmp/fmt.patch
