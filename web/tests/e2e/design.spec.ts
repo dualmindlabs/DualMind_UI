@@ -157,10 +157,16 @@ for (const viewport of viewports) {
       await storeTheme(page, mode.theme);
       await page.goto('/design/');
       await settle(page);
-      await page.screenshot({ path: shotPath(`design-${viewport.name}-${mode.name}-fold`) });
+      // The entrance animations have finished by now; `animations: 'disabled'` pins their end
+      // state, because Chromium can drop animated layers from full-page captures.
+      await page.screenshot({
+        path: shotPath(`design-${viewport.name}-${mode.name}-fold`),
+        animations: 'disabled',
+      });
       await page.screenshot({
         path: shotPath(`design-${viewport.name}-${mode.name}-full`),
         fullPage: true,
+        animations: 'disabled',
       });
     });
   }
