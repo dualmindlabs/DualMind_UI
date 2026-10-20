@@ -91,7 +91,7 @@ export {
 export type { UserProfile } from './schemas/users';
 
 // Streaming
-export { readChatStream, readSseStream, type SseMessage,SseParser } from './sse';
+export { readChatStream, readSseStream, type SseMessage, SseParser } from './sse';
 
 // Vote queue
 export {
