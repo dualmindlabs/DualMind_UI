@@ -16,7 +16,8 @@
   overflow-wrap: break-word;
 
   /* Vertical rhythm: blocks are separated by space above, never below. */
-  & :where(p, ul, ol, dl, blockquote, pre, table, figure, hr, details):not(
+  &
+    :where(p, ul, ol, dl, blockquote, pre, table, figure, hr, details):not(
       :where(.not-prose, .not-prose *)
     ) {
     margin-block: 1.25em 0;

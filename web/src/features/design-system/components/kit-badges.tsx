@@ -15,16 +15,16 @@ export function KitBadges() {
       description="Mind A and Mind B always carry their letter, and keep their side. After the reveal the badge takes the model's name and keeps the role for screen readers."
     >
       <KitState label="Roles">
-        <RoleBadge role="a" />
-        <RoleBadge role="b" />
-        <RoleBadge role="human" />
+        <RoleBadge who="a" />
+        <RoleBadge who="b" />
+        <RoleBadge who="human" />
       </KitState>
       <KitState label="Roles after the reveal, small and letter only">
-        <RoleBadge role="a" label="Model Atlas" size="sm" />
-        <RoleBadge role="b" label="Model Borealis" size="sm" />
-        <RoleBadge role="a" letterOnly />
-        <RoleBadge role="b" letterOnly />
-        <RoleBadge role="human" letterOnly />
+        <RoleBadge who="a" label="Model Atlas" size="sm" />
+        <RoleBadge who="b" label="Model Borealis" size="sm" />
+        <RoleBadge who="a" letterOnly />
+        <RoleBadge who="b" letterOnly />
+        <RoleBadge who="human" letterOnly />
       </KitState>
       <KitState label="Labels and status">
         <Badge>Beta</Badge>

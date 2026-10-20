@@ -1,6 +1,11 @@
 import { ArrowUpRight } from 'lucide-react';
 
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { buttonVariants } from '@/components/ui/button';
 import {
@@ -93,7 +98,7 @@ export function KitDisplay() {
         </Card>
 
         <div className="rounded-lg border border-line bg-bg">
-          <p className="eyebrow border-b border-line px-4 py-3 text-muted">Top ten</p>
+          <p className="border-b border-line px-4 py-3 eyebrow text-muted">Top ten</p>
           <ScrollArea className="h-48">
             <ol className="grid gap-px p-2">
               {models.map(([name, elo], index) => (

@@ -1,6 +1,11 @@
 import { Field, GroupField } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from '@/components/ui/input-otp';
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSeparator,
+  InputOTPSlot,
+} from '@/components/ui/input-otp';
 import {
   Select,
   SelectContent,
@@ -33,7 +38,9 @@ export function KitFields() {
     >
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         <Field label="Share title" description="Shown when you share a battle.">
-          {control => <Input {...control} name="share-title" placeholder="Two takes on recursion" />}
+          {control => (
+            <Input {...control} name="share-title" placeholder="Two takes on recursion" />
+          )}
         </Field>
         <Field label="Model search" description="Pinned focus ring, for the review.">
           {control => (
@@ -46,13 +53,15 @@ export function KitFields() {
             />
           )}
         </Field>
-        <Field
-          label="Contact address"
-          required
-          error="Enter a full address, like ada@example.com."
-        >
+        <Field label="Contact address" required error="Enter a full address, like ada@example.com.">
           {control => (
-            <Input {...control} name="contact" type="email" autoComplete="off" defaultValue="ada@" />
+            <Input
+              {...control}
+              name="contact"
+              type="email"
+              autoComplete="off"
+              defaultValue="ada@"
+            />
           )}
         </Field>
         <Field label="Workspace" description="Set by your team, read only here.">

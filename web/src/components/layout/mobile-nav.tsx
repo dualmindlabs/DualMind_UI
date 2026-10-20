@@ -24,9 +24,9 @@ export interface MobileNavProps {
   className?: string;
 }
 
-const smallLinks = footerColumns.flatMap(column => column.links).filter(link =>
-  ['/about/', '/faq/', '/privacy/', '/terms/'].includes(link.href),
-);
+const smallLinks = footerColumns
+  .flatMap(column => column.links)
+  .filter(link => ['/about/', '/faq/', '/privacy/', '/terms/'].includes(link.href));
 
 /**
  * The phone menu: a button that opens a bottom drawer (swipe down, Esc or the close button to

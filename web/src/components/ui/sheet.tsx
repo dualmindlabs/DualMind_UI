@@ -57,7 +57,11 @@ export function SheetContent({
 
 export function SheetHeader({ className, ...props }: ComponentProps<'div'>) {
   return (
-    <div data-slot="sheet-header" className={cn('grid gap-1.5 p-6 pr-14 pb-0', className)} {...props} />
+    <div
+      data-slot="sheet-header"
+      className={cn('grid gap-1.5 p-6 pr-14 pb-0', className)}
+      {...props}
+    />
   );
 }
 

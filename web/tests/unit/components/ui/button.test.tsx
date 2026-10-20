@@ -82,10 +82,7 @@ describe('Button', () => {
   it('submits a form only when asked to', async () => {
     const onSubmit = vi.fn((event: SubmitEvent) => event.preventDefault());
     render(
-      <form
-        aria-label="Vote form"
-        onSubmit={event => onSubmit(event.nativeEvent as SubmitEvent)}
-      >
+      <form aria-label="Vote form" onSubmit={event => onSubmit(event.nativeEvent)}>
         <Button>Plain</Button>
         <Button type="submit">Send</Button>
       </form>,

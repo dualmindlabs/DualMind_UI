@@ -52,7 +52,7 @@ test.describe('header and command palette (desktop)', () => {
       await expect(nav.getByRole('link', { name, exact: true })).toBeFocused();
     }
     await page.keyboard.press('Tab');
-    const trigger = banner.getByRole('button', { name: 'Search and commands' });
+    const trigger = banner.getByRole('button', { name: /^Search/ });
     await expect(trigger).toBeFocused();
     await expect(trigger).toHaveAttribute('aria-keyshortcuts', 'Control+K Meta+K');
 
@@ -210,9 +210,14 @@ for (const viewport of viewports) {
       await settle(page);
       const name = (part: string) => shotPath(`shell-${viewport.name}-${mode.name}-${part}`);
 
-      await page.locator('#components').screenshot({ path: name('components'), animations: 'disabled' });
+      await page
+        .locator('#components')
+        .screenshot({ path: name('components'), animations: 'disabled' });
       await page.locator('#shell').screenshot({ path: name('shell'), animations: 'disabled' });
-      await page.locator('footer').last().screenshot({ path: name('footer'), animations: 'disabled' });
+      await page
+        .locator('footer')
+        .last()
+        .screenshot({ path: name('footer'), animations: 'disabled' });
 
       // The header after scrolling: the condensed pill over the page.
       await page.locator('#colour').scrollIntoViewIfNeeded();

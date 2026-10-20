@@ -34,8 +34,8 @@ export function SiteFooter({ status, navLabel = 'Footer', className }: SiteFoote
             <Wordmark title={null} className="h-3.5" />
           </a>
           <p className="max-w-[36ch] text-ui-sm text-muted">
-            Two anonymous models answer the same prompt. You pick the better one, then see who
-            wrote it. Every vote moves the public leaderboard.
+            Two anonymous models answer the same prompt. You pick the better one, then see who wrote
+            it. Every vote moves the public leaderboard.
           </p>
           {status ? <div data-slot="footer-status">{status}</div> : null}
         </div>

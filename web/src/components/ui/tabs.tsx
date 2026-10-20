@@ -71,7 +71,8 @@ export function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
         'relative inline-flex h-9 shrink-0 cursor-pointer items-center justify-center gap-1.5 px-3.5 text-ui-sm font-medium whitespace-nowrap text-muted transition-colors duration-(--dur-fast) ease-out-expo select-none pointer-coarse:h-11',
         'hover:text-fg data-active:text-fg data-disabled:pointer-events-none data-disabled:opacity-50',
         "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-        variant === 'segment' && 'h-8 rounded-full focus-visible:outline-offset-1 pointer-coarse:h-10',
+        variant === 'segment' &&
+          'h-8 rounded-full focus-visible:outline-offset-1 pointer-coarse:h-10',
         variant === 'line' && 'rounded-sm',
         className,
       )}

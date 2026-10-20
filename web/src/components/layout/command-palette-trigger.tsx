@@ -23,7 +23,6 @@ export function CommandPaletteTrigger({
   const { setOpen } = useCommandPalette();
   const modifier = useModifierKey();
   const shared = {
-    'aria-label': 'Search and commands',
     'aria-haspopup': 'dialog',
     'aria-keyshortcuts': 'Control+K Meta+K',
     onClick: () => setOpen(true),
@@ -31,12 +30,20 @@ export function CommandPaletteTrigger({
 
   if (appearance === 'icon') {
     return (
-      <Button variant="ghost" size="icon-sm" className={className} {...shared}>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        aria-label="Search and commands"
+        className={className}
+        {...shared}
+      >
         <Search aria-hidden="true" strokeWidth={1.75} />
       </Button>
     );
   }
 
+  // The name comes from the content ("Search Ctrl K"), so it always contains the visible text;
+  // "Search" is read out even where only the shortcut is shown.
   return (
     <Button
       variant="secondary"
@@ -48,8 +55,8 @@ export function CommandPaletteTrigger({
       {...shared}
     >
       <Search aria-hidden="true" strokeWidth={1.75} />
-      <span className="hidden flex-1 text-left font-normal xl:inline">Search</span>
-      <KbdGroup aria-hidden="true">
+      <span className="flex-1 text-left font-normal max-xl:sr-only">Search</span>
+      <KbdGroup>
         <Kbd>{modifier === 'Cmd' ? '⌘' : 'Ctrl'}</Kbd>
         <Kbd>K</Kbd>
       </KbdGroup>

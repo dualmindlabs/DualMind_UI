@@ -7,8 +7,8 @@ describe('RoleBadge', () => {
   it('shows Mind A and Mind B with their letters, not colour alone', () => {
     const { container } = render(
       <>
-        <RoleBadge role="a" />
-        <RoleBadge role="b" />
+        <RoleBadge who="a" />
+        <RoleBadge who="b" />
       </>,
     );
     const [a, b] = container.querySelectorAll('[data-slot="role-badge"]');
@@ -19,19 +19,19 @@ describe('RoleBadge', () => {
   });
 
   it('calls the human "You"', () => {
-    render(<RoleBadge role="human" />);
+    render(<RoleBadge who="human" />);
     expect(screen.getByText('You')).toBeInTheDocument();
   });
 
   it('keeps the role for screen readers when a model name replaces it', () => {
-    const { container } = render(<RoleBadge role="b" label="Model Borealis" />);
+    const { container } = render(<RoleBadge who="b" label="Model Borealis" />);
     const badge = container.querySelector('[data-slot="role-badge"]');
     expect(badge).toHaveTextContent('Model Borealis (Mind B)');
     expect(screen.getByText('(Mind B)', { exact: false })).toHaveClass('sr-only');
   });
 
   it('letter-only badges show the letter and still say the role', () => {
-    const { container } = render(<RoleBadge role="a" letterOnly />);
+    const { container } = render(<RoleBadge who="a" letterOnly />);
     const badge = container.querySelector('[data-slot="role-badge"]');
     expect(badge).toHaveTextContent('AMind A');
     expect(screen.getByText('A')).toHaveAttribute('aria-hidden', 'true');
@@ -39,7 +39,7 @@ describe('RoleBadge', () => {
   });
 
   it('a letter-only human badge reads "You"', () => {
-    render(<RoleBadge role="human" letterOnly />);
+    render(<RoleBadge who="human" letterOnly />);
     expect(screen.getByText('You')).not.toHaveAttribute('aria-hidden');
   });
 });

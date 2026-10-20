@@ -24,9 +24,9 @@ export function RadioGroupItem({ className, ...props }: RadioPrimitive.Root.Prop
     <RadioPrimitive.Root
       data-slot="radio-group-item"
       className={cn(
-        'peer relative flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-full border border-line-strong bg-surface-2 transition-[border-color] duration-(--dur-fast) ease-out-expo hit-area',
+        'peer hit-area relative flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-full border border-line-strong bg-surface-2 transition-[border-color] duration-(--dur-fast) ease-out-expo',
         'hover:border-fg-soft data-checked:border-mind-a',
-        'data-disabled:cursor-not-allowed data-disabled:opacity-50 aria-invalid:border-bad',
+        'aria-invalid:border-bad data-disabled:cursor-not-allowed data-disabled:opacity-50',
         className,
       )}
       {...props}

@@ -11,7 +11,12 @@
  * important information.
  */
 import { CircleAlert, CircleCheck, Info, LoaderCircle, TriangleAlert, X } from 'lucide-react';
-import { type ExternalToast, toast as sonnerToast, Toaster as Sonner, type ToasterProps } from 'sonner';
+import {
+  type ExternalToast,
+  toast as sonnerToast,
+  Toaster as Sonner,
+  type ToasterProps,
+} from 'sonner';
 
 import { useTheme } from '@/hooks/use-theme';
 

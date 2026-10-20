@@ -46,7 +46,11 @@ export function DialogCornerClose({ className }: { className?: string }) {
     <DialogPrimitive.Close
       data-slot="dialog-close"
       render={
-        <Button variant="ghost" size="icon-sm" className={cn('absolute top-3 right-3', className)} />
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          className={cn('absolute top-3 right-3', className)}
+        />
       }
     >
       <X aria-hidden="true" strokeWidth={1.75} />

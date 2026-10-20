@@ -40,7 +40,7 @@ describe('CommandPalette', () => {
 
   it('opens from the header trigger, which names the shortcut', async () => {
     renderWithShell(<CommandPaletteTrigger />);
-    const trigger = screen.getByRole('button', { name: 'Search and commands' });
+    const trigger = screen.getByRole('button', { name: /^Search/ });
     expect(trigger).toHaveAttribute('aria-keyshortcuts', 'Control+K Meta+K');
     fireEvent.click(trigger);
     await waitFor(() => {

@@ -19,7 +19,7 @@ export function Avatar({
       data-size={size}
       className={cn(
         'group/avatar relative inline-flex shrink-0 rounded-full bg-surface-2 ring-1 ring-line select-none',
-        'data-[size=sm]:size-7 data-[size=md]:size-9 data-[size=lg]:size-12',
+        'data-[size=lg]:size-12 data-[size=md]:size-9 data-[size=sm]:size-7',
         className,
       )}
       {...props}
@@ -69,7 +69,10 @@ export function AvatarGroup({ className, ...props }: ComponentProps<'div'>) {
   return (
     <div
       data-slot="avatar-group"
-      className={cn('flex -space-x-2 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:ring-bg', className)}
+      className={cn(
+        'flex -space-x-2 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:ring-bg',
+        className,
+      )}
       {...props}
     />
   );

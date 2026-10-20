@@ -57,7 +57,9 @@ export function CommandDialog({
           )}
         >
           <DialogPrimitive.Title className="sr-only">{title}</DialogPrimitive.Title>
-          <DialogPrimitive.Description className="sr-only">{description}</DialogPrimitive.Description>
+          <DialogPrimitive.Description className="sr-only">
+            {description}
+          </DialogPrimitive.Description>
           {children}
         </DialogPrimitive.Popup>
       </DialogPrimitive.Portal>
@@ -100,7 +102,10 @@ export function CommandList({ className, ...props }: ComponentProps<typeof Comma
   );
 }
 
-export function CommandEmpty({ className, ...props }: ComponentProps<typeof CommandPrimitive.Empty>) {
+export function CommandEmpty({
+  className,
+  ...props
+}: ComponentProps<typeof CommandPrimitive.Empty>) {
   return (
     <CommandPrimitive.Empty
       data-slot="command-empty"
@@ -110,7 +115,10 @@ export function CommandEmpty({ className, ...props }: ComponentProps<typeof Comm
   );
 }
 
-export function CommandGroup({ className, ...props }: ComponentProps<typeof CommandPrimitive.Group>) {
+export function CommandGroup({
+  className,
+  ...props
+}: ComponentProps<typeof CommandPrimitive.Group>) {
   return (
     <CommandPrimitive.Group
       data-slot="command-group"
@@ -124,12 +132,14 @@ export function CommandGroup({ className, ...props }: ComponentProps<typeof Comm
   );
 }
 
-export function CommandSeparator({
-  className,
-  ...props
-}: ComponentProps<typeof CommandPrimitive.Separator>) {
+/**
+ * A hairline between groups. Decorative: an ARIA listbox may only contain options and groups, so
+ * this is hidden from assistive tech instead of using cmdk's role="separator".
+ */
+export function CommandSeparator({ className, ...props }: ComponentProps<'div'>) {
   return (
-    <CommandPrimitive.Separator
+    <div
+      aria-hidden="true"
       data-slot="command-separator"
       className={cn('-mx-2 my-1 h-px bg-line', className)}
       {...props}

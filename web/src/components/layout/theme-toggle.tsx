@@ -39,7 +39,7 @@ export function ThemeToggle({ className, compact = false }: ThemeToggleProps) {
           key={value}
           title={compact ? `${label} theme` : undefined}
           className={cn(
-            'relative inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-full text-ui-sm text-muted focus-ring-within transition-colors duration-(--dur-fast) ease-out-expo hit-area hover:text-fg has-checked:bg-surface-2 has-checked:text-fg has-checked:shadow-raise',
+            'hit-area relative inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-full text-ui-sm text-muted focus-ring-within transition-colors duration-(--dur-fast) ease-out-expo hover:text-fg has-checked:bg-surface-2 has-checked:text-fg has-checked:shadow-raise',
             compact ? 'size-7' : 'h-8 min-w-8 px-2 sm:px-3',
           )}
         >

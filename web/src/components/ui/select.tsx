@@ -22,7 +22,10 @@ export function SelectValue({ className, ...props }: SelectPrimitive.Value.Props
   return (
     <SelectPrimitive.Value
       data-slot="select-value"
-      className={cn('flex min-w-0 flex-1 truncate text-left data-placeholder:text-muted', className)}
+      className={cn(
+        'flex min-w-0 flex-1 truncate text-left data-placeholder:text-muted',
+        className,
+      )}
       {...props}
     />
   );
@@ -40,7 +43,7 @@ export function SelectTrigger({
       data-size={size}
       className={cn(
         'relative flex w-full min-w-0 cursor-pointer items-center justify-between gap-2 rounded-sm border border-line-strong bg-surface-2 pr-3 pl-3.5 text-left text-body whitespace-nowrap text-fg transition-[border-color,background-color] duration-(--dur-fast) ease-out-expo select-none hover:border-fg-soft sm:text-ui',
-        'data-popup-open:border-fg-soft data-disabled:cursor-not-allowed data-disabled:border-line data-disabled:text-muted aria-invalid:border-bad',
+        'aria-invalid:border-bad data-disabled:cursor-not-allowed data-disabled:border-line data-disabled:text-muted data-popup-open:border-fg-soft',
         'data-[size=md]:h-11 data-[size=sm]:h-9 data-[size=sm]:text-ui-sm',
         "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         className,
@@ -105,7 +108,7 @@ export function SelectLabel({ className, ...props }: SelectPrimitive.GroupLabel.
   return (
     <SelectPrimitive.GroupLabel
       data-slot="select-label"
-      className={cn('eyebrow px-2.5 pt-2 pb-1.5 text-muted', className)}
+      className={cn('px-2.5 pt-2 pb-1.5 eyebrow text-muted', className)}
       {...props}
     />
   );

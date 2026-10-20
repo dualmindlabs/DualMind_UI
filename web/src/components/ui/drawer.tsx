@@ -102,7 +102,7 @@ export function DrawerSwipeHandle({ className, ...props }: ComponentProps<'div'>
         'relative z-10 flex shrink-0 cursor-grab active:cursor-grabbing',
         'group-data-[swipe-axis=y]/drawer-popup:h-6 group-data-[swipe-axis=y]/drawer-popup:w-full group-data-[swipe-axis=y]/drawer-popup:items-center group-data-[swipe-axis=y]/drawer-popup:justify-center',
         'group-data-[swipe-axis=x]/drawer-popup:h-full group-data-[swipe-axis=x]/drawer-popup:w-4 group-data-[swipe-axis=x]/drawer-popup:items-center group-data-[swipe-axis=x]/drawer-popup:justify-center',
-        'group-data-[swipe-direction=up]/drawer-popup:order-last group-data-[swipe-direction=left]/drawer-popup:order-last',
+        'group-data-[swipe-direction=left]/drawer-popup:order-last group-data-[swipe-direction=up]/drawer-popup:order-last',
         'after:block after:shrink-0 after:rounded-full after:bg-line-strong group-data-[swipe-axis=x]/drawer-popup:after:h-16 group-data-[swipe-axis=x]/drawer-popup:after:w-1 group-data-[swipe-axis=y]/drawer-popup:after:h-1 group-data-[swipe-axis=y]/drawer-popup:after:w-12',
         className,
       )}
@@ -137,7 +137,7 @@ export function DrawerContent({ className, children, ...props }: DrawerPrimitive
             // Bleed: the surface continues past the edge while it springs.
             'after:pointer-events-none after:absolute after:bg-surface-2 data-[swipe-axis=x]:after:inset-y-0 data-[swipe-axis=x]:after:w-(--bleed) data-[swipe-axis=y]:after:inset-x-0 data-[swipe-axis=y]:after:h-(--bleed) data-[swipe-direction=down]:after:top-full data-[swipe-direction=left]:after:right-full data-[swipe-direction=right]:after:left-full data-[swipe-direction=up]:after:bottom-full',
             // Sizing.
-            '[--drawer-content-height:var(--drawer-height,auto)] data-[swipe-axis=x]:[--drawer-content-width:85%] data-[swipe-axis=x]:sm:[--drawer-content-width:24rem] data-[swipe-axis=y]:[--drawer-content-max-height:calc(100dvh-4rem)] data-[swipe-axis=y]:data-snap-points:[--drawer-content-height:100dvh]',
+            '[--drawer-content-height:var(--drawer-height,auto)] data-[swipe-axis=x]:[--drawer-content-width:85%] data-[swipe-axis=y]:[--drawer-content-max-height:calc(100dvh-4rem)] data-[swipe-axis=y]:data-snap-points:[--drawer-content-height:100dvh] data-[swipe-axis=x]:sm:[--drawer-content-width:24rem]',
             // Stack of nested drawers.
             '[--bleed:3rem] [--peek:1rem] [--stack-height:var(--drawer-frontmost-height,var(--drawer-height,0px))] [--stack-peek-offset:max(0px,calc((var(--nested-drawers)-var(--stack-progress))*var(--peek)))] [--stack-progress:clamp(0,var(--drawer-swipe-progress),1)] [--stack-scale-base:max(0,calc(1-(var(--nested-drawers)*var(--stack-step))))] [--stack-scale:clamp(0,calc(var(--stack-scale-base)+(var(--stack-step)*var(--stack-progress))),1)] [--stack-shrink:calc(1-var(--stack-scale))] [--stack-step:0.05]',
             // Enter, exit and swipe.

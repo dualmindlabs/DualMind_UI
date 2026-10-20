@@ -76,7 +76,7 @@ export function DropdownMenuLabel({ className, ...props }: MenuPrimitive.GroupLa
   return (
     <MenuPrimitive.GroupLabel
       data-slot="dropdown-menu-label"
-      className={cn('eyebrow px-2.5 pt-2 pb-1.5 text-muted', className)}
+      className={cn('px-2.5 pt-2 pb-1.5 eyebrow text-muted', className)}
       {...props}
     />
   );

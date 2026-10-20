@@ -38,7 +38,8 @@ const roleStyles: Record<
 };
 
 export interface RoleBadgeProps {
-  role: BattleRole;
+  /** Which role: Mind A (`a`), Mind B (`b`) or the person voting (`human`). */
+  who: BattleRole;
   /** Replaces the role name, for example the model's name after the reveal. */
   label?: ReactNode;
   /** Only the letter (or "You"), with the role name for screen readers. */
@@ -48,7 +49,7 @@ export interface RoleBadgeProps {
 }
 
 export function RoleBadge({
-  role,
+  who: role,
   label,
   letterOnly = false,
   size = 'md',
@@ -89,7 +90,9 @@ export function RoleBadge({
       data-role={role}
       className={cn(
         'inline-flex w-fit shrink-0 items-center rounded-full border font-medium whitespace-nowrap',
-        size === 'md' ? 'h-7 gap-2 pr-3 pl-0.5 text-ui-sm' : 'h-6 gap-1.5 pr-2.5 pl-0.5 text-caption',
+        size === 'md'
+          ? 'h-7 gap-2 pr-3 pl-0.5 text-ui-sm'
+          : 'h-6 gap-1.5 pr-2.5 pl-0.5 text-caption',
         role === 'human' && (size === 'md' ? 'pl-2.5' : 'pl-2'),
         style.badge,
         className,

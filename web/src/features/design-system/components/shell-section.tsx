@@ -50,8 +50,8 @@ export function ShellSection() {
       }
       lead={
         <p>
-          The header this page uses is the real one: transparent over the hero, a floating pill
-          once you scroll. The arena gets a compact bar. The footer below is the real footer too.
+          The header this page uses is the real one: transparent over the hero, a floating pill once
+          you scroll. The arena gets a compact bar. The footer below is the real footer too.
         </p>
       }
     >

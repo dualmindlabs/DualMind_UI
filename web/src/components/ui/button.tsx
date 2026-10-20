@@ -31,7 +31,8 @@ export const buttonVariants = cva(
           'bg-human text-on-accent shadow-raise hover:bg-[color-mix(in_oklab,var(--human)_86%,var(--fg))]',
         secondary:
           'border-line bg-surface-2 text-fg shadow-raise hover:border-line-strong hover:bg-surface-3 aria-expanded:bg-surface-3',
-        ghost: 'text-fg-soft hover:bg-hover hover:text-fg aria-expanded:bg-hover aria-expanded:text-fg',
+        ghost:
+          'text-fg-soft hover:bg-hover hover:text-fg aria-expanded:bg-hover aria-expanded:text-fg',
         outline:
           'border-line-strong text-fg hover:border-fg-soft hover:bg-hover aria-expanded:border-fg-soft aria-expanded:bg-hover',
         destructive:
@@ -106,7 +107,7 @@ export function Button({
       ) : null}
       <span
         className={cn(
-          'inline-flex min-w-0 flex-1 items-center justify-[inherit] gap-[inherit]',
+          'justify-[inherit] inline-flex min-w-0 flex-1 items-center gap-[inherit]',
           loading && 'opacity-0',
         )}
       >
