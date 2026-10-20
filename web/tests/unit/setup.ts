@@ -12,8 +12,8 @@ Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
 });
 
 // jsdom leaves out a few browser APIs that the UI kit's libraries call: Sonner reads
-// matchMedia for the system theme, Base UI measures with ResizeObserver and cmdk scrolls the
-// selected item into view. Inert stand-ins keep component tests close to the real page; tests
+// matchMedia for the system theme, Base UI measures with ResizeObserver and reads
+// getAnimations, and cmdk scrolls the selected item into view. Inert stand-ins keep component tests close to the real page; tests
 // that need a working matchMedia (use-reduced-motion) install their own.
 if (typeof window.matchMedia !== 'function') {
   Object.defineProperty(window, 'matchMedia', {
@@ -43,6 +43,11 @@ if (typeof globalThis.ResizeObserver === 'undefined') {
 
 if (typeof Element.prototype.scrollIntoView !== 'function') {
   Element.prototype.scrollIntoView = () => {};
+}
+
+// Base UI waits for running animations (scroll area thumbs, popups) before it updates state.
+if (typeof Element.prototype.getAnimations !== 'function') {
+  Element.prototype.getAnimations = () => [];
 }
 
 afterEach(() => {
