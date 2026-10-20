@@ -68,6 +68,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { isThemePreference } from '@/lib/theme/theme';
 
 import { KitCard, KitState } from './kit-card';
+import { ModelPicker } from './model-picker';
 
 /**
  * Dialog, sheet, drawer, menu, popover and tooltip. All trap or manage focus, close on Esc and
@@ -79,8 +80,8 @@ export function KitOverlays() {
   return (
     <KitCard
       title="Overlays"
-      source="@/components/ui/dialog, sheet, drawer, dropdown-menu, popover, tooltip"
-      description="Open each one with the keyboard too: focus moves in, Esc closes, and focus returns to the button that opened it."
+      source="@/components/ui/dialog, sheet, drawer, dropdown-menu, popover, tooltip, command"
+      description="Open each one with the keyboard too: focus moves in, Esc closes, and focus returns to the button that opened it. The model picker is the command list in a popover: type to filter, arrows to move, Enter to pick."
       className="lg:col-span-2"
     >
       <div className="flex flex-wrap gap-x-8 gap-y-6">
@@ -235,6 +236,10 @@ export function KitOverlays() {
               How voting works <Kbd>?</Kbd>
             </TooltipContent>
           </Tooltip>
+        </KitState>
+
+        <KitState label="Model picker">
+          <ModelPicker />
         </KitState>
       </div>
     </KitCard>

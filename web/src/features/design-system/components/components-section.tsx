@@ -1,7 +1,6 @@
 import { KitBadges } from './kit-badges';
 import { KitButtons } from './kit-buttons';
 import { KitChoices } from './kit-choices';
-import { KitCommand } from './kit-command';
 import { KitDisplay } from './kit-display';
 import { KitFields } from './kit-fields';
 import { KitOverlays } from './kit-overlays';
@@ -33,7 +32,6 @@ export function ComponentsSection() {
         <KitTabs />
         <KitOverlays />
         <KitBadges />
-        <KitCommand />
         <KitDisplay />
       </div>
     </Section>

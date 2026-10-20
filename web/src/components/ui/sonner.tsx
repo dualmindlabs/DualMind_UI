@@ -54,8 +54,10 @@ export function Toaster(props: ToasterProps) {
             'ml-2 inline-flex h-8 shrink-0 cursor-pointer items-center rounded-md bg-mind-a px-3 text-ui-sm font-medium text-on-accent transition-colors duration-(--dur-fast) hover:bg-[color-mix(in_oklab,var(--mind-a)_86%,var(--fg))]',
           cancelButton:
             'ml-2 inline-flex h-8 shrink-0 cursor-pointer items-center rounded-md px-3 text-ui-sm font-medium text-fg-soft hover:bg-hover hover:text-fg',
+          // Sonner's own (unlayered) CSS colours the close button in every mode, so these win
+          // with !important.
           closeButton:
-            'absolute top-2.5 right-2.5 grid size-7 cursor-pointer place-items-center rounded-md text-muted transition-colors duration-(--dur-fast) hover:bg-hover hover:text-fg',
+            'absolute top-2.5 right-2.5 grid size-7 cursor-pointer place-items-center rounded-md border-0! bg-transparent! text-muted! transition-colors duration-(--dur-fast) hover:bg-hover! hover:text-fg!',
         },
       }}
       {...props}

@@ -44,7 +44,12 @@ export function Toggle({
   return (
     <TogglePrimitive
       data-slot="toggle"
-      className={cn(toggleVariants({ variant, size }), className)}
+      className={cn(
+        toggleVariants({ variant, size }),
+        // On its own, a pressed toggle also takes the Mind A tint, so it reads at a glance.
+        'data-pressed:border-mind-a/45 data-pressed:bg-mind-a-tint data-pressed:text-mind-a',
+        className,
+      )}
       {...props}
     />
   );

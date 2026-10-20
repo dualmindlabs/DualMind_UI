@@ -114,6 +114,16 @@ test.describe('header and command palette (desktop)', () => {
     await expect(header).not.toHaveAttribute('data-condensed');
   });
 
+  test('the model picker filters and picks with the keyboard', async ({ page }) => {
+    await page.goto('/design/');
+    await settle(page, 300);
+    await page.getByRole('button', { name: /Atlas 2/ }).click();
+    await expect(page.getByRole('combobox')).toBeFocused();
+    await page.keyboard.type('bore');
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('button', { name: /Borealis/ })).toBeVisible();
+  });
+
   test('a toast appears in the polite Notifications live region', async ({ page }) => {
     await page.goto('/design/');
     await settle(page, 300);
@@ -209,15 +219,17 @@ for (const viewport of viewports) {
       await page.goto('/design/');
       await settle(page);
       const name = (part: string) => shotPath(`shell-${viewport.name}-${mode.name}-${part}`);
+      // Section captures scroll the page; keep the sticky page header out of them.
+      const hideHeader = 'header[data-slot="site-header"] { visibility: hidden !important; }';
 
       await page
         .locator('#components')
-        .screenshot({ path: name('components'), animations: 'disabled' });
-      await page.locator('#shell').screenshot({ path: name('shell'), animations: 'disabled' });
+        .screenshot({ path: name('components'), animations: 'disabled', style: hideHeader });
+      await page.locator('#shell').screenshot({ path: name('shell'), animations: 'disabled', style: hideHeader });
       await page
         .locator('footer')
         .last()
-        .screenshot({ path: name('footer'), animations: 'disabled' });
+        .screenshot({ path: name('footer'), animations: 'disabled', style: hideHeader });
 
       // The header after scrolling: the condensed pill over the page.
       await page.locator('#colour').scrollIntoViewIfNeeded();

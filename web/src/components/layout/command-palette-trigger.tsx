@@ -49,7 +49,7 @@ export function CommandPaletteTrigger({
       variant="secondary"
       size="sm"
       className={cn(
-        'justify-start gap-2 rounded-full pr-1.5 pl-3 text-muted hover:text-fg xl:w-52',
+        'justify-start gap-2 rounded-full pr-1.5 pl-3 text-muted hover:text-fg xl:w-44',
         className,
       )}
       {...shared}

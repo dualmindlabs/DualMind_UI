@@ -40,8 +40,8 @@ export interface SiteHeaderProps {
  * Aceternity UI's Resizable Navbar, written from scratch.
  */
 const pillGeometry = {
-  '--pill-w': 'min(100cqw - 1rem, 64rem)',
-  '--nav-shift': 'max(0px, (100cqw - 0.5rem - min(100cqw - 1rem, 64rem)) / 2)',
+  '--pill-w': 'min(100cqw - 1rem, 68rem)',
+  '--nav-shift': 'max(0px, (100cqw - 1.5rem - min(100cqw - 1rem, 68rem)) / 2)',
 } as CSSProperties;
 
 function HomeLink({ className }: { className?: string }) {
@@ -55,7 +55,7 @@ function HomeLink({ className }: { className?: string }) {
       )}
     >
       <Emblem className="hidden size-6 sm:block" />
-      <Wordmark title={null} className="h-3 sm:h-3.5" />
+      <Wordmark title={null} className="h-3" />
     </a>
   );
 }
@@ -136,14 +136,16 @@ export function SiteHeader({
           aria-hidden="true"
           className="pointer-events-none absolute inset-y-2 left-1/2 w-(--pill-w) -translate-x-1/2 scale-x-[1.04] scale-y-110 rounded-full border border-line bg-glass opacity-0 shadow-raise-strong backdrop-blur-md transition-[opacity,scale] duration-(--dur-slow) ease-out-expo group-data-condensed/header:pointer-events-auto group-data-condensed/header:scale-100 group-data-condensed/header:opacity-100"
         />
-        <div className="relative flex w-full items-center gap-3 px-4 lg:grid lg:grid-cols-[1fr_auto_1fr]">
-          <HomeLink className="transition-[translate] duration-(--dur-slow) ease-out-expo lg:justify-self-start lg:group-data-condensed/header:translate-x-(--nav-shift)" />
-          <SiteNav
-            activePath={path}
-            label={navLabel}
-            className="pointer-events-auto hidden lg:block"
-          />
-          <div className="pointer-events-auto ml-auto flex items-center gap-1.5 transition-[translate] duration-(--dur-slow) ease-out-expo lg:justify-self-end lg:group-data-condensed/header:-translate-x-(--nav-shift)">
+        <div className="relative flex w-full items-center gap-3 px-4 sm:px-6">
+          <div className="flex items-center gap-8 transition-[translate] duration-(--dur-slow) ease-out-expo lg:group-data-condensed/header:translate-x-(--nav-shift)">
+            <HomeLink />
+            <SiteNav
+              activePath={path}
+              label={navLabel}
+              className="pointer-events-auto hidden lg:block"
+            />
+          </div>
+          <div className="pointer-events-auto ml-auto flex items-center gap-1.5 transition-[translate] duration-(--dur-slow) ease-out-expo lg:group-data-condensed/header:-translate-x-(--nav-shift)">
             {actions}
           </div>
         </div>
