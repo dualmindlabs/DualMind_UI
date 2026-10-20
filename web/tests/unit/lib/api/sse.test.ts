@@ -1,4 +1,6 @@
 import { readFileSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
@@ -12,8 +14,12 @@ import {
 
 import { byteStream, collect, rejectionOf } from './helpers';
 
+// Resolved as a path: in the jsdom environment the global URL is not Node's, so fs rejects it.
 const fixture = readFileSync(
-  new URL('../../../fixtures/api/chat-stream.sse.txt', import.meta.url),
+  path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)),
+    '../../../fixtures/api/chat-stream.sse.txt',
+  ),
   'utf8',
 );
 
