@@ -2,7 +2,7 @@
 
 The new Arena frontend: React 19 + React Router 8 (framework mode, prerendered) + Vite + TypeScript + Tailwind CSS 4. It grows page by page next to the legacy static site; both are composed into one `dist/` and served by the `dualmind-arena` Worker. Architecture: [docs/architecture.md](../docs/architecture.md). Plan: [docs/redesign/migration-plan.md](../docs/redesign/migration-plan.md).
 
-Today it serves one page: **`/design/`**, the living style guide (not indexed by search engines).
+Today it serves one page: **`/design/`**, the living style guide (not indexed by search engines), including the effects gallery (section 07): every vendored effect with its source, licence and reduced-motion version.
 
 ## Commands
 
@@ -29,10 +29,11 @@ web/
 ├── src/
 │   ├── app/            # root.tsx, routes.ts (the route table) and routes/ (one thin module per URL)
 │   ├── features/       # one folder per domain; design-system/ today; import through index.ts
-│   ├── components/     # ui/ primitives, layout/ shell, motion/ wrappers, vendor/ third-party code
+│   ├── components/     # ui/ primitives, layout/ shell, motion/ wrappers (WebGLGate...), vendor/ effects
 │   ├── hooks/          # use-theme, use-reduced-motion
-│   ├── lib/            # utils/ (cn, contrast), theme/, api/ (S5), supabase/ (S6)
-│   ├── styles/         # tokens.css (the token source), base.css, app.css, tokens.ts
+│   ├── lib/            # utils/ (cn, contrast, css-color), theme/, motion/ (WebGL policy), api/ (S5), supabase/ (S6)
+│   ├── content/        # typed data shared by features: credits.ts ("Built with")
+│   ├── styles/         # tokens.css (the token source), base.css, effects.css, app.css, tokens.ts
 │   ├── config/         # env.ts: typed, validated VITE_ variables
 │   └── types/          # env.d.ts
 ├── public/             # favicon.svg
@@ -68,8 +69,8 @@ The Worker (`../worker.js`, helpers in `../server/routing.js`) caches `/assets/<
 
 ## CI, screenshots and the preview
 
-- **`.github/workflows/web.yml`** runs on every PR that touches `web/`, the Worker or the build: the check job (typecheck, lint, format, Vitest) and the e2e job (`node build.js`, `wrangler dev`, Playwright with axe in both themes and an overflow check at 320 px).
-- **Screenshots:** the e2e job uploads `web-screenshots` (`/design/` at 1440x900 and 390x844, dark, light and reduced motion, above the fold and full page). Download them with `gh run download <run-id> -n web-screenshots`.
+- **`.github/workflows/web.yml`** runs on every PR that touches `web/`, the Worker or the build: the check job (typecheck, lint, format, Vitest) and the e2e job (`node build.js`, a bundle report that also fails if the WebGL effects or Motion's features stop being separate lazy chunks, `wrangler dev`, Playwright with axe in both themes and an overflow check at 320 px).
+- **Screenshots:** the e2e job uploads `web-screenshots` (`/design/` at 1440x900 and 390x844, dark, light and reduced motion, above the fold and full page, plus the effects gallery as `effects-*.png` with a close-up of the WebGL frames as `effects-*-webgl.png`). Download them with `gh run download <run-id> -n web-screenshots`.
 - **Autofix:** when formatting or a fixable lint rule fails, the check job uploads `web-autofix` with a patch (`git apply web-autofix.patch`).
 - **Lockfile without a local install:** `.github/workflows/web-lockfile.yml` runs on PRs that change `package.json` and uploads `web-lockfile` (the resolved `package-lock.json` plus an autofix patch).
 - **Live preview:** the `Workers Builds: dualmind-arena` check on the PR links a preview alias URL; add `/design/?preview=dualmind-preview`.
