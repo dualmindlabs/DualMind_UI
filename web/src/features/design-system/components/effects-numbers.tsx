@@ -14,13 +14,23 @@ export function EffectsNumbers() {
             <div>
               <dt className="eyebrow text-muted">Battles</dt>
               <dd className="mt-2 text-h2 font-medium text-fg">
-                <CountUp to={48210} separator="," duration={1.8} trigger={run === 0 ? 'view' : 'load'} />
+                <CountUp
+                  to={48210}
+                  separator=","
+                  duration={1.8}
+                  trigger={run === 0 ? 'view' : 'load'}
+                />
               </dd>
             </div>
             <div>
               <dt className="eyebrow text-muted">Top Elo</dt>
               <dd className="mt-2 text-h2 font-medium text-mind-a">
-                <CountUp to={1342} from={1000} duration={1.8} trigger={run === 0 ? 'view' : 'load'} />
+                <CountUp
+                  to={1342}
+                  from={1000}
+                  duration={1.8}
+                  trigger={run === 0 ? 'view' : 'load'}
+                />
               </dd>
             </div>
           </dl>

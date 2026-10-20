@@ -140,12 +140,17 @@ export function LogoLoop({
       const dt = last ? Math.min(0.05, (now - last) / 1000) : 1 / 60;
       last = now;
       const halted =
-        s.stopped || !visible || document.hidden || state.focused || (s.pauseOnHover && state.hovered);
+        s.stopped ||
+        !visible ||
+        document.hidden ||
+        state.focused ||
+        (s.pauseOnHover && state.hovered);
       const goal = halted ? 0 : s.speed;
       state.velocity += (goal - state.velocity) * (1 - Math.exp(-dt / SMOOTH_TAU));
       if (Math.abs(goal - state.velocity) < 0.05) state.velocity = goal;
       if (state.period > 0) {
-        state.offset = (((state.offset + state.velocity * dt) % state.period) + state.period) % state.period;
+        state.offset =
+          (((state.offset + state.velocity * dt) % state.period) + state.period) % state.period;
       }
       track.style.transform = `translate3d(${(-state.offset).toFixed(2)}px, 0, 0)`;
       if (state.velocity !== 0 || goal !== 0) raf = requestAnimationFrame(frame);

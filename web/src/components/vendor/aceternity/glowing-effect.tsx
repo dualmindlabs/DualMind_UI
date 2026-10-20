@@ -157,7 +157,7 @@ export function GlowingEffect({
             'rounded-[inherit]',
             'after:absolute after:inset-[calc(-1*var(--glowingeffect-border-width))] after:rounded-[inherit] after:content-[""]',
             'after:[border:var(--glowingeffect-border-width)_solid_transparent]',
-            'after:[background:var(--gradient)] after:[background-attachment:fixed]',
+            'after:[background-attachment:fixed] after:[background:var(--gradient)]',
             'after:opacity-(--active) after:transition-opacity after:duration-300',
             'after:[mask-clip:padding-box,border-box]',
             'after:[mask-composite:intersect]',

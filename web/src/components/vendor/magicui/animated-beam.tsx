@@ -147,7 +147,10 @@ export function AnimatedBeam({
               <stop style={{ stopColor: `var(${gradientStartColor})`, stopOpacity: 0 }} />
               <stop style={{ stopColor: `var(${gradientStartColor})` }} />
               <stop offset="32.5%" style={{ stopColor: `var(${gradientStopColor})` }} />
-              <stop offset="100%" style={{ stopColor: `var(${gradientStopColor})`, stopOpacity: 0 }} />
+              <stop
+                offset="100%"
+                style={{ stopColor: `var(${gradientStopColor})`, stopOpacity: 0 }}
+              />
             </m.linearGradient>
           </defs>
         </>

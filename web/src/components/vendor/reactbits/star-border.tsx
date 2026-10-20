@@ -78,7 +78,14 @@ function outline(width: number, height: number, radius: number): Shape {
     { length: down, x: 0, y: height - r, dx: 0, dy: -1, angle: null },
     { length: arc, x: r, y: r, dx: 0, dy: 0, angle: Math.PI },
   ];
-  return { r, segments, total: Math.max(1, segments.reduce((sum, item) => sum + item.length, 0)) };
+  return {
+    r,
+    segments,
+    total: Math.max(
+      1,
+      segments.reduce((sum, item) => sum + item.length, 0),
+    ),
+  };
 }
 
 function pointAt(shape: Shape, distance: number): [number, number] {

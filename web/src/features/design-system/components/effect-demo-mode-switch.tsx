@@ -33,7 +33,7 @@ export function EffectDemoModeSwitch() {
               <label
                 key={option.id}
                 data-id={option.id}
-                className="h-9 cursor-pointer items-center rounded-full px-3.5 text-ui-sm font-medium text-fg-soft transition-colors duration-(--dur-fast) focus-ring-within data-[checked=true]:text-fg"
+                className="h-9 cursor-pointer items-center rounded-full px-3.5 text-ui-sm font-medium text-fg-soft focus-ring-within transition-colors duration-(--dur-fast) data-[checked=true]:text-fg"
               >
                 <input
                   type="radio"

@@ -43,7 +43,7 @@ export function BorderTrail({
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none absolute inset-0 rounded-[inherit] border border-transparent [mask-clip:padding-box,border-box] [mask-composite:intersect] [mask-image:linear-gradient(transparent,transparent),linear-gradient(#000,#000)]"
+      className="pointer-events-none absolute inset-0 rounded-[inherit] border border-transparent [mask-image:linear-gradient(transparent,transparent),linear-gradient(#000,#000)] [mask-composite:intersect] [mask-clip:padding-box,border-box]"
     >
       <div style={trail} className={cn('absolute aspect-square animate-orbit', className)} />
     </div>

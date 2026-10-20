@@ -46,7 +46,12 @@ function decimalPlaces(value: number): number {
 
 function formatNumber(
   value: number,
-  { decimals, separator, prefix, suffix }: { decimals: number; separator: string; prefix: string; suffix: string },
+  {
+    decimals,
+    separator,
+    prefix,
+    suffix,
+  }: { decimals: number; separator: string; prefix: string; suffix: string },
 ): string {
   const fixed = Math.abs(value).toFixed(decimals);
   const [whole = '0', fraction] = fixed.split('.');

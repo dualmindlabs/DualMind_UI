@@ -1,9 +1,9 @@
+import { TextShimmer } from '@/components/vendor/motion-primitives/text-shimmer';
 import { BlurText } from '@/components/vendor/reactbits/blur-text';
 import { DecryptedText } from '@/components/vendor/reactbits/decrypted-text';
 import { FuzzyText } from '@/components/vendor/reactbits/fuzzy-text';
 import { ShinyText } from '@/components/vendor/reactbits/shiny-text';
 import { TextType } from '@/components/vendor/reactbits/text-type';
-import { TextShimmer } from '@/components/vendor/motion-primitives/text-shimmer';
 
 import { EffectFrame } from './effect-frame';
 

@@ -201,11 +201,7 @@ export function PlaceholdersAndVanishInput({
   return (
     <form
       onSubmit={handleSubmit}
-      className={cn(
-        'relative mx-auto w-full max-w-xl',
-        hideLabel ? '' : 'grid gap-2',
-        className,
-      )}
+      className={cn('relative mx-auto w-full max-w-xl', hideLabel ? '' : 'grid gap-2', className)}
     >
       <label htmlFor={inputId} className={hideLabel ? 'sr-only' : 'text-ui-sm font-medium text-fg'}>
         {label}

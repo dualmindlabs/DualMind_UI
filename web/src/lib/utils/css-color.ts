@@ -64,9 +64,7 @@ export function isLightScheme(element: Element): boolean {
 export function subscribeColorScheme(onChange: () => void): () => void {
   const root = document.documentElement;
   const observer =
-    typeof MutationObserver === 'undefined'
-      ? null
-      : new MutationObserver(() => onChange());
+    typeof MutationObserver === 'undefined' ? null : new MutationObserver(() => onChange());
   observer?.observe(root, { attributes: true, attributeFilter: ['data-theme'] });
   const media =
     typeof window.matchMedia === 'function'

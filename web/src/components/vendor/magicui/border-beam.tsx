@@ -59,7 +59,7 @@ export function BorderBeam({
     <div
       aria-hidden="true"
       style={{ borderWidth }}
-      className="pointer-events-none absolute inset-0 rounded-[inherit] border-transparent [mask-clip:padding-box,border-box] [mask-composite:intersect] [mask-image:linear-gradient(transparent,transparent),linear-gradient(#000,#000)]"
+      className="pointer-events-none absolute inset-0 rounded-[inherit] border-transparent [mask-image:linear-gradient(transparent,transparent),linear-gradient(#000,#000)] [mask-composite:intersect] [mask-clip:padding-box,border-box]"
     >
       <div style={beam} className={cn('absolute aspect-square animate-orbit', className)} />
     </div>

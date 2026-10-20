@@ -66,7 +66,7 @@ export function Timeline({ data, titleAs: Title = 'h3', className }: TimelinePro
         className="pointer-events-none absolute top-0 left-8 h-full w-0.5 overflow-hidden bg-linear-to-b from-transparent via-line to-transparent [mask-image:linear-gradient(to_bottom,transparent_0%,black_10%,black_90%,transparent_100%)]"
       >
         <m.div
-          style={reduce ? undefined : { scaleY, opacity }}
+          style={reduce ? {} : { scaleY, opacity }}
           className="absolute inset-0 origin-top rounded-full bg-linear-to-t from-mind-b via-mind-a to-transparent"
         />
       </li>

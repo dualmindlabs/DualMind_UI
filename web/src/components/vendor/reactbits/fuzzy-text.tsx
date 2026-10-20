@@ -228,7 +228,11 @@ export function FuzzyText({
   const fontStyle: CSSProperties = { fontSize, fontWeight, lineHeight: 1 };
 
   return (
-    <span ref={rootRef} className={cn('group/fuzzy relative inline-block', className)} style={fontStyle}>
+    <span
+      ref={rootRef}
+      className={cn('group/fuzzy relative inline-block', className)}
+      style={fontStyle}
+    >
       <span className="sr-only">{text}</span>
       <span aria-hidden="true" className="inline-block group-data-[ready=true]/fuzzy:hidden">
         {text}

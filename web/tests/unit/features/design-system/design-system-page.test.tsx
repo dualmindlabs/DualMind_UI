@@ -69,10 +69,9 @@ describe('DesignSystemPage', () => {
       const credit = credits.find(item => item.id === effect.source);
       expect(credit?.uses, effect.name).toContain(effect.name);
       const frame = screen.getByRole('figure', { name: effect.name });
-      expect(within(frame).getByRole('link', { name: new RegExp(credit?.name ?? '') })).toHaveAttribute(
-        'href',
-        effect.url,
-      );
+      expect(
+        within(frame).getByRole('link', { name: new RegExp(credit?.name ?? '') }),
+      ).toHaveAttribute('href', effect.url);
     }
   });
 

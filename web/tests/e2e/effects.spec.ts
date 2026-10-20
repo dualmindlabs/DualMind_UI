@@ -42,15 +42,13 @@ async function visitEffects(page: Page) {
 }
 
 async function gateStates(page: Page) {
-  return page
-    .locator('#effects [data-webgl]')
-    .evaluateAll(gates =>
-      gates.map(gate => ({
-        state: gate.getAttribute('data-webgl'),
-        reason: gate.getAttribute('data-webgl-reason'),
-        canvas: gate.querySelector('canvas') !== null,
-      })),
-    );
+  return page.locator('#effects [data-webgl]').evaluateAll(gates =>
+    gates.map(gate => ({
+      state: gate.getAttribute('data-webgl'),
+      reason: gate.getAttribute('data-webgl-reason'),
+      canvas: gate.querySelector('canvas') !== null,
+    })),
+  );
 }
 
 test('effects: every effect renders without console errors; WebGL runs behind its gate', async ({
@@ -81,7 +79,9 @@ test('effects: reduced motion keeps every WebGL effect on its static poster', as
   for (const gate of gates) {
     expect(gate).toEqual({ state: 'static', reason: 'reduced-motion', canvas: false });
   }
-  await expect(page.getByRole('status').filter({ hasText: 'Your system asks for reduced motion' })).toBeVisible();
+  await expect(
+    page.getByRole('status').filter({ hasText: 'Your system asks for reduced motion' }),
+  ).toBeVisible();
   expect(errors).toEqual([]);
 });
 
@@ -155,7 +155,9 @@ test('effects: nothing sticks out at 360 px once every effect has loaded', async
         return box.width > 0 && box.right > limit && !clipped(element);
       })
       .slice(0, 5)
-      .map(element => `${element.tagName.toLowerCase()}.${element.className.toString().slice(0, 60)}`);
+      .map(
+        element => `${element.tagName.toLowerCase()}.${element.className.toString().slice(0, 60)}`,
+      );
   });
   expect(offenders).toEqual([]);
 });

@@ -29,7 +29,8 @@ describe('vendored components', () => {
   it.each(sources)('%s has a licence file', source => {
     const folder = path.join(vendorDir, source);
     expect(
-      existsSync(path.join(folder, 'LICENSE.md')) || existsSync(path.join(folder, 'LICENSE-NOTES.md')),
+      existsSync(path.join(folder, 'LICENSE.md')) ||
+        existsSync(path.join(folder, 'LICENSE-NOTES.md')),
     ).toBe(true);
   });
 

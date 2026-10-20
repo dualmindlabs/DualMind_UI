@@ -1,5 +1,5 @@
-import { BlurFade } from '@/components/vendor/magicui/blur-fade';
 import { Timeline } from '@/components/vendor/aceternity/timeline';
+import { BlurFade } from '@/components/vendor/magicui/blur-fade';
 
 import { EffectDemoAnimatedBeam } from './effect-demo-animated-beam';
 import { EffectDemoComposer } from './effect-demo-composer';

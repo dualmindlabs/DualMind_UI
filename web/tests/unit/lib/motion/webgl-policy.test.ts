@@ -8,8 +8,8 @@ import {
   resetWebGL2Support,
   SMALL_TOUCH_SCREEN_QUERY,
   supportsWebGL2,
-  type WebGLEnvironment,
   webglBlockReason,
+  type WebGLEnvironment,
 } from '@/lib/motion/webgl-policy';
 
 const capable: WebGLEnvironment = {
@@ -81,7 +81,8 @@ describe('readWebGLEnvironment', () => {
   it('reads Save-Data from the connection and from prefers-reduced-data', () => {
     const probe = vi.fn(() => true);
     expect(
-      readWebGLEnvironment(fakeWindow({ saveData: true }), { reducedMotion: false, probe }).saveData,
+      readWebGLEnvironment(fakeWindow({ saveData: true }), { reducedMotion: false, probe })
+        .saveData,
     ).toBe(true);
     expect(
       readWebGLEnvironment(fakeWindow({ matching: [REDUCED_DATA_QUERY] }), {

@@ -115,29 +115,41 @@ export function DecryptedText({
     const random = () => glyphs[Math.floor(Math.random() * glyphs.length)] ?? '';
     const paint = () =>
       setFrame({
-        shown: letters.map((char, index) =>
-          isSpace(char) || done.has(index) ? char : random(),
-        ),
+        shown: letters.map((char, index) => (isSpace(char) || done.has(index) ? char : random())),
         revealed: letters.map((char, index) => isSpace(char) || done.has(index)),
       });
 
-    timerRef.current = setInterval(() => {
-      iteration += 1;
-      if (sequential) {
-        const next = order[done.size];
-        if (next !== undefined) done.add(next);
-      } else if (iteration >= maxIterations) {
-        order.forEach(index => done.add(index));
-      }
-      paint();
-      if (done.size >= order.length) {
-        clearInterval(timerRef.current);
-        completeRef.current?.();
-      }
-    }, Math.max(16, speed));
+    timerRef.current = setInterval(
+      () => {
+        iteration += 1;
+        if (sequential) {
+          const next = order[done.size];
+          if (next !== undefined) done.add(next);
+        } else if (iteration >= maxIterations) {
+          order.forEach(index => done.add(index));
+        }
+        paint();
+        if (done.size >= order.length) {
+          clearInterval(timerRef.current);
+          completeRef.current?.();
+        }
+      },
+      Math.max(16, speed),
+    );
 
     return () => clearInterval(timerRef.current);
-  }, [reduce, hydrated, ready, runs, text, characters, revealDirection, sequential, maxIterations, speed]);
+  }, [
+    reduce,
+    hydrated,
+    ready,
+    runs,
+    text,
+    characters,
+    revealDirection,
+    sequential,
+    maxIterations,
+    speed,
+  ]);
 
   const shown = reduce ? revealedFrame(chars) : frame;
 

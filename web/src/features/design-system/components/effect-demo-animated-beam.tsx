@@ -17,7 +17,10 @@ export function EffectDemoAnimatedBeam() {
 
   return (
     <EffectFrame effect="animated-beam">
-      <div ref={containerRef} className="relative flex w-full max-w-xs items-center justify-between">
+      <div
+        ref={containerRef}
+        className="relative flex w-full max-w-xs items-center justify-between"
+      >
         <div ref={promptRef} className={node}>
           <MessageSquareText aria-hidden="true" className="size-5 text-human" strokeWidth={1.75} />
         </div>

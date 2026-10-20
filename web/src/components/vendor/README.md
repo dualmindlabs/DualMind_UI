@@ -2,12 +2,12 @@
 
 Third-party component code copied into this repository, one folder per source. Every piece is listed in the inventory in [docs/redesign/licences.md](../../../../docs/redesign/licences.md) and credited in [`src/content/credits.ts`](../../content/credits.ts).
 
-| Folder | Source | Licence | Licence file |
-| --- | --- | --- | --- |
-| `reactbits/` | [React Bits](https://reactbits.dev) | MIT + Commons Clause | `LICENSE.md` |
-| `magicui/` | [Magic UI](https://magicui.design) | MIT | `LICENSE.md` |
-| `motion-primitives/` | [Motion Primitives](https://motion-primitives.com) | MIT | `LICENSE.md` |
-| `aceternity/` | [Aceternity UI](https://ui.aceternity.com) (free tier) | Custom | `LICENSE-NOTES.md` |
+| Folder               | Source                                                 | Licence              | Licence file       |
+| -------------------- | ------------------------------------------------------ | -------------------- | ------------------ |
+| `reactbits/`         | [React Bits](https://reactbits.dev)                    | MIT + Commons Clause | `LICENSE.md`       |
+| `magicui/`           | [Magic UI](https://magicui.design)                     | MIT                  | `LICENSE.md`       |
+| `motion-primitives/` | [Motion Primitives](https://motion-primitives.com)     | MIT                  | `LICENSE.md`       |
+| `aceternity/`        | [Aceternity UI](https://ui.aceternity.com) (free tier) | Custom               | `LICENSE-NOTES.md` |
 
 **Rules**
 

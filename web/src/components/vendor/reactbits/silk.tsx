@@ -344,7 +344,13 @@ export function Silk({
     let last = 0;
     let visible = true;
 
-    const setShared = (uniforms: Uniforms, width: number, height: number, s: Settings, unfold: number) => {
+    const setShared = (
+      uniforms: Uniforms,
+      width: number,
+      height: number,
+      s: Settings,
+      unfold: number,
+    ) => {
       gl.uniform2f(uniforms.uView ?? null, width, height);
       gl.uniform1f(uniforms.uScale ?? null, s.scale);
       gl.uniform1f(uniforms.uTime ?? null, state.flow - INTRO_RUSH * (1 - unfold));

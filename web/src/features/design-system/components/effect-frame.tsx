@@ -98,7 +98,9 @@ export function EffectFrame({
               <span className="sr-only"> licence (opens in a new tab)</span>
             </a>
           </li>
-          {effect.webgl ? <li className={cn(badge, 'border-mind-a/40 text-mind-a')}>WebGL, gated</li> : null}
+          {effect.webgl ? (
+            <li className={cn(badge, 'border-mind-a/40 text-mind-a')}>WebGL, gated</li>
+          ) : null}
         </ul>
         <p className="text-caption text-muted">
           <span className="text-fg-soft">Reduced motion:</span> {effect.reduced}

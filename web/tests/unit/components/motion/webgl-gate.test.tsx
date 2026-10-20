@@ -67,7 +67,8 @@ function mockIntersectionObserver() {
           const entries = observer.elements.map(
             target => ({ isIntersecting, target }) as IntersectionObserverEntry,
           );
-          if (entries.length) observer.callback(entries, observer as unknown as IntersectionObserver);
+          if (entries.length)
+            observer.callback(entries, observer as unknown as IntersectionObserver);
         }
       });
     },
@@ -86,12 +87,12 @@ function setWebGL2(available: boolean) {
 
 const REDUCED = '(prefers-reduced-motion: reduce)';
 
-function renderGate(effect = vi.fn((props: WebGLEffectProps) => (
-  <div data-testid="effect" data-paused={String(props.paused)} data-dpr={props.maxDpr} />
-))) {
-  const view = render(
-    <WebGLGate poster={<div data-testid="poster" />}>{effect}</WebGLGate>,
-  );
+function renderGate(
+  effect = vi.fn((props: WebGLEffectProps) => (
+    <div data-testid="effect" data-paused={String(props.paused)} data-dpr={props.maxDpr} />
+  )),
+) {
+  const view = render(<WebGLGate poster={<div data-testid="poster" />}>{effect}</WebGLGate>);
   const gate = view.container.firstElementChild as HTMLElement;
   return { ...view, gate, effect };
 }
@@ -194,7 +195,9 @@ describe('WebGLGate', () => {
     const io = mockIntersectionObserver();
     render(
       <ReducedMotionScope reduce>
-        <WebGLGate poster={<div data-testid="poster" />}>{() => <div data-testid="effect" />}</WebGLGate>
+        <WebGLGate poster={<div data-testid="poster" />}>
+          {() => <div data-testid="effect" />}
+        </WebGLGate>
       </ReducedMotionScope>,
     );
     io.report(true);

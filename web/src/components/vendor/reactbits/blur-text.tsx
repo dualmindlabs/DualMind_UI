@@ -12,14 +12,7 @@
  *   effects, loops, hover and click replays and colour fades. `as` sets the element.
  * - Screen readers get the whole text once (visually hidden); the animated pieces are hidden.
  */
-import {
-  type CSSProperties,
-  type ElementType,
-  Fragment,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import { type CSSProperties, type ElementType, Fragment, useEffect, useRef, useState } from 'react';
 
 import { useHydrated } from '@/hooks/use-hydrated';
 import { useShouldReduceMotion } from '@/hooks/use-should-reduce-motion';

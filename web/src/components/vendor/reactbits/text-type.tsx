@@ -111,7 +111,10 @@ export function TextType({
   ]);
 
   return (
-    <Tag className={cn('inline whitespace-pre-wrap', className)} aria-hidden={decorative || undefined}>
+    <Tag
+      className={cn('inline whitespace-pre-wrap', className)}
+      aria-hidden={decorative || undefined}
+    >
       {decorative ? null : <span className="sr-only">{sentences.join(' ')}</span>}
       <span aria-hidden="true">
         {characters.slice(0, shownCount).join('')}

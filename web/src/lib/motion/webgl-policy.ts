@@ -12,11 +12,7 @@
  */
 
 export type WebGLBlockReason =
-  | 'reduced-motion'
-  | 'save-data'
-  | 'low-memory'
-  | 'small-touch-screen'
-  | 'no-webgl2';
+  'reduced-motion' | 'save-data' | 'low-memory' | 'small-touch-screen' | 'no-webgl2';
 
 export interface WebGLEnvironment {
   reducedMotion: boolean;
@@ -89,7 +85,10 @@ export function resetWebGL2Support(): void {
  */
 export function readWebGLEnvironment(
   win: Window,
-  { reducedMotion, probe = supportsWebGL2 }: { reducedMotion: boolean; probe?: (doc: Document) => boolean },
+  {
+    reducedMotion,
+    probe = supportsWebGL2,
+  }: { reducedMotion: boolean; probe?: (doc: Document) => boolean },
 ): WebGLEnvironment {
   const hints = win.navigator as Navigator & NavigatorHints;
   const env: WebGLEnvironment = {

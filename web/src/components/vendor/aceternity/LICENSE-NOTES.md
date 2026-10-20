@@ -7,12 +7,12 @@ Licence: custom, at <https://ui.aceternity.com/licence> (checked 2026-10-20). Ac
 
 Every file in this folder is a **free** component, copied from the public registry at `https://ui.aceternity.com/registry/<name>.json`, which serves without an account. Nothing here comes from Aceternity UI Pro (`pro.aceternity.com`), templates or blocks, and nothing paid may be added.
 
-| Component | File | Registry URL |
-| --- | --- | --- |
+| Component                     | File                                | Registry URL                                                          |
+| ----------------------------- | ----------------------------------- | --------------------------------------------------------------------- |
 | Placeholders And Vanish Input | `placeholders-and-vanish-input.tsx` | https://ui.aceternity.com/registry/placeholders-and-vanish-input.json |
-| Glowing Effect | `glowing-effect.tsx` | https://ui.aceternity.com/registry/glowing-effect.json |
-| Bento Grid | `bento-grid.tsx` | https://ui.aceternity.com/registry/bento-grid.json |
-| Timeline | `timeline.tsx` | https://ui.aceternity.com/registry/timeline.json |
+| Glowing Effect                | `glowing-effect.tsx`                | https://ui.aceternity.com/registry/glowing-effect.json                |
+| Bento Grid                    | `bento-grid.tsx`                    | https://ui.aceternity.com/registry/bento-grid.json                    |
+| Timeline                      | `timeline.tsx`                      | https://ui.aceternity.com/registry/timeline.json                      |
 
 ## What the licence says
 
