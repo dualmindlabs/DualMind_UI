@@ -14,7 +14,7 @@ import {
   SPA_FALLBACK_ROUTES,
 } from '../../../server/routing.js';
 import worker from '../../../worker.js';
-import { DIST, type FakeAssets,fakeAssets } from './fake-assets';
+import { DIST, type FakeAssets, fakeAssets } from './fake-assets';
 
 // The Arena Worker (../../../worker.js) in Node, with a fake static-assets binding and a fake
 // backend: no network, no wrangler. tests/e2e covers the same Worker running in workerd.
@@ -168,9 +168,7 @@ describe('legacy behaviour is unchanged', () => {
 
   it('proxies other /api/* paths with their query, to BACKEND_URL when set', async () => {
     await preview('/api/arena/models?limit=5', { env: { BACKEND_URL: 'https://backend.test' } });
-    expect(backendUrl()).toBe(
-      'https://backend.test/api/arena/models?limit=5',
-    );
+    expect(backendUrl()).toBe('https://backend.test/api/arena/models?limit=5');
   });
 
   it('redirects the removed careers page to /about/', async () => {

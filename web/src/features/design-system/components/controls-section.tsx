@@ -59,10 +59,10 @@ export function ControlsSection() {
             with a 3px gap (3px wide when more contrast is requested).
           </p>
           <div className="mt-6 grid gap-5 rounded-md border border-dashed border-line p-5 sm:grid-cols-[auto_minmax(0,1fr)] sm:items-center">
-            <span className="focus-ring-demo inline-flex h-11 items-center justify-center rounded-md border border-line-strong px-5 text-ui font-medium text-fg">
+            <span className="inline-flex h-11 items-center justify-center rounded-md border border-line-strong px-5 text-ui font-medium text-fg focus-ring-demo">
               Focused button
             </span>
-            <span className="focus-ring-demo flex h-11 min-w-0 items-center rounded-sm border border-line-strong bg-surface-2 px-3.5 text-ui text-muted">
+            <span className="flex h-11 min-w-0 items-center rounded-sm border border-line-strong bg-surface-2 px-3.5 text-ui text-muted focus-ring-demo">
               Focused field
             </span>
           </div>

@@ -8,17 +8,17 @@ Today it serves one page: **`/design/`**, the living style guide (not indexed by
 
 Node 22.22 or newer (see `../.node-version`). Run them in `web/`.
 
-| Command | What it does |
-| --- | --- |
-| `npm ci` | Install the exact dependencies from `package-lock.json` |
-| `npm run dev` | Dev server with hot reload (`react-router dev`), http://localhost:5173/design |
-| `npm run build` | Production build into `build/client` (prerenders `/design/`) |
-| `npm run typecheck` | Generate route types and run `tsc` |
-| `npm run lint` / `npm run lint:fix` | ESLint (type-aware), with or without fixes |
-| `npm run format` / `npm run format:check` | Prettier, with the Tailwind class sorter |
-| `npm test` | Vitest: unit tests (`tests/unit`) and Worker tests (`tests/worker`) |
-| `npm run test:e2e` | Playwright against the composed site; run `node build.js` at the repo root first |
-| `npm run check` | typecheck + lint + format check + tests |
+| Command                                   | What it does                                                                     |
+| ----------------------------------------- | -------------------------------------------------------------------------------- |
+| `npm ci`                                  | Install the exact dependencies from `package-lock.json`                          |
+| `npm run dev`                             | Dev server with hot reload (`react-router dev`), http://localhost:5173/design    |
+| `npm run build`                           | Production build into `build/client` (prerenders `/design/`)                     |
+| `npm run typecheck`                       | Generate route types and run `tsc`                                               |
+| `npm run lint` / `npm run lint:fix`       | ESLint (type-aware), with or without fixes                                       |
+| `npm run format` / `npm run format:check` | Prettier, with the Tailwind class sorter                                         |
+| `npm test`                                | Vitest: unit tests (`tests/unit`) and Worker tests (`tests/worker`)              |
+| `npm run test:e2e`                        | Playwright against the composed site; run `node build.js` at the repo root first |
+| `npm run check`                           | typecheck + lint + format check + tests                                          |
 
 On a small machine, skip all of this: push the branch and let GitHub Actions run it (see below).
 

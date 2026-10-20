@@ -43,18 +43,18 @@ export function Hero() {
       </div>
       <div className="border-t border-line">
         <dl className="mx-auto grid max-w-page grid-cols-2 sm:grid-cols-4">
-        {stats.map(stat => (
-          <div
-            key={stat.label}
-            className="border-line px-4 py-5 odd:border-r sm:border-r sm:px-6 sm:last:border-r-0 [&:nth-child(-n+2)]:border-b sm:[&:nth-child(-n+2)]:border-b-0"
-          >
-            <dt className="eyebrow text-muted">{stat.label}</dt>
-            <dd className="mt-2 flex items-baseline gap-2">
-              <span className="text-h2 font-medium tabular-nums">{stat.value}</span>
-              <span className="text-caption text-muted">{stat.detail}</span>
-            </dd>
-          </div>
-        ))}
+          {stats.map(stat => (
+            <div
+              key={stat.label}
+              className="border-line px-4 py-5 odd:border-r sm:border-r sm:px-6 sm:last:border-r-0 [&:nth-child(-n+2)]:border-b sm:[&:nth-child(-n+2)]:border-b-0"
+            >
+              <dt className="eyebrow text-muted">{stat.label}</dt>
+              <dd className="mt-2 flex items-baseline gap-2">
+                <span className="text-h2 font-medium tabular-nums">{stat.value}</span>
+                <span className="text-caption text-muted">{stat.detail}</span>
+              </dd>
+            </div>
+          ))}
         </dl>
       </div>
     </section>
