@@ -31,7 +31,7 @@ export function VoteBar() {
           >
             <span className="flex min-w-0 items-center gap-2">
               {item.id === 'a' || item.id === 'b' ? (
-                <MindBadge role={item.id} className="size-5 text-caption" />
+                <MindBadge side={item.id} className="size-5 text-caption" />
               ) : null}
               <span className="truncate">{item.label}</span>
             </span>

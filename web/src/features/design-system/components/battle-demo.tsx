@@ -11,12 +11,12 @@ export function BattleDemo() {
         <p className="text-body text-fg">{demoBattle.prompt}</p>
       </div>
       <div className="mt-3 grid gap-3 md:grid-cols-2">
-        <AnswerPane role="a" meta={demoBattle.a.meta}>
+        <AnswerPane side="a" meta={demoBattle.a.meta}>
           {demoBattle.a.paragraphs.map(text => (
             <p key={text}>{text}</p>
           ))}
         </AnswerPane>
-        <AnswerPane role="b" meta={demoBattle.b.meta}>
+        <AnswerPane side="b" meta={demoBattle.b.meta}>
           {demoBattle.b.paragraphs.map(text => (
             <p key={text}>{text}</p>
           ))}
@@ -26,8 +26,8 @@ export function BattleDemo() {
         <VoteBar />
       </div>
       <figcaption className="mt-4 border-t border-line pt-4 text-caption text-muted">
-        Static demo. Both panes use identical type and surfaces; only the letter, the position and
-        a 10% tint tell them apart.
+        Static demo. Both panes use identical type and surfaces; only the letter, the position and a
+        10% tint tell them apart.
       </figcaption>
     </figure>
   );

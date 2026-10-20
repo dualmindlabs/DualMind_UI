@@ -15,7 +15,9 @@ export function SectionNav({ className }: { className?: string }) {
                 'transition-colors duration-(--dur-fast) ease-out-expo hover:border-line-strong hover:text-fg',
               )}
             >
-              <span className="font-mono text-caption text-mind-a tabular-nums">{section.index}</span>
+              <span className="font-mono text-caption text-mind-a tabular-nums">
+                {section.index}
+              </span>
               {section.title}
             </a>
           </li>

@@ -16,8 +16,8 @@ export function TypeSection() {
       lead={
         <p>
           Bricolage Grotesque carries the machine voice, Playfair Display italic the human one, DM
-          Mono the labels and JetBrains Mono the code. All self-hosted through Fontsource, with
-          the two critical files preloaded.
+          Mono the labels and JetBrains Mono the code. All self-hosted through Fontsource, with the
+          two critical files preloaded.
         </p>
       }
     >
@@ -52,22 +52,28 @@ export function TypeSection() {
           </caption>
           <thead>
             <tr className="border-b border-line">
-              <th scope="col" className="eyebrow px-2 py-3 sm:px-4 font-medium text-muted">
+              <th scope="col" className="px-2 py-3 eyebrow font-medium text-muted sm:px-4">
                 Rank
               </th>
-              <th scope="col" className="eyebrow px-2 py-3 sm:px-4 font-medium text-muted">
+              <th scope="col" className="px-2 py-3 eyebrow font-medium text-muted sm:px-4">
                 Model
               </th>
-              <th scope="col" className="eyebrow px-2 py-3 sm:px-4 text-right font-medium text-muted">
+              <th
+                scope="col"
+                className="px-2 py-3 text-right eyebrow font-medium text-muted sm:px-4"
+              >
                 Elo
               </th>
               <th
                 scope="col"
-                className="eyebrow px-2 py-3 text-right font-medium text-muted max-sm:hidden sm:px-4"
+                className="px-2 py-3 text-right eyebrow font-medium text-muted max-sm:hidden sm:px-4"
               >
                 Battles
               </th>
-              <th scope="col" className="eyebrow px-2 py-3 sm:px-4 text-right font-medium text-muted">
+              <th
+                scope="col"
+                className="px-2 py-3 text-right eyebrow font-medium text-muted sm:px-4"
+              >
                 Win rate
               </th>
             </tr>
@@ -75,11 +81,13 @@ export function TypeSection() {
           <tbody className="divide-y divide-line tabular-nums">
             {leaderboardSample.map(row => (
               <tr key={row.rank}>
-                <td className="px-2 py-3 sm:px-4 font-mono text-muted">{row.rank}</td>
-                <td className="px-2 py-3 sm:px-4 font-medium text-fg">{row.model}</td>
-                <td className="px-2 py-3 sm:px-4 text-right text-fg">{row.elo}</td>
-                <td className="px-2 py-3 text-right text-fg-soft max-sm:hidden sm:px-4">{row.battles}</td>
-                <td className="px-2 py-3 sm:px-4 text-right text-fg-soft">{row.winRate}</td>
+                <td className="px-2 py-3 font-mono text-muted sm:px-4">{row.rank}</td>
+                <td className="px-2 py-3 font-medium text-fg sm:px-4">{row.model}</td>
+                <td className="px-2 py-3 text-right text-fg sm:px-4">{row.elo}</td>
+                <td className="px-2 py-3 text-right text-fg-soft max-sm:hidden sm:px-4">
+                  {row.battles}
+                </td>
+                <td className="px-2 py-3 text-right text-fg-soft sm:px-4">{row.winRate}</td>
               </tr>
             ))}
           </tbody>

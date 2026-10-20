@@ -7,8 +7,14 @@ import type { Role } from '../types';
  * The A / B letter that goes with every model colour (colour is never the only signal).
  * Decorative next to a visible label such as "Answer A".
  */
-export function MindBadge({ role, className }: { role: Exclude<Role, 'human'>; className?: string }) {
-  const style = roleStyles[role];
+export function MindBadge({
+  side,
+  className,
+}: {
+  side: Exclude<Role, 'human'>;
+  className?: string;
+}) {
+  const style = roleStyles[side];
   return (
     <span
       aria-hidden="true"

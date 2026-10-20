@@ -31,7 +31,7 @@ export function ThemeToggle({ className }: { className?: string }) {
       {OPTIONS.map(({ value, label, icon: Icon }) => (
         <label
           key={value}
-          className="focus-ring-within relative inline-flex h-8 min-w-8 cursor-pointer items-center justify-center gap-1.5 rounded-full px-2 text-ui-sm text-muted transition-colors duration-(--dur-fast) ease-out-expo hover:text-fg has-checked:bg-surface-2 has-checked:text-fg has-checked:shadow-raise sm:px-3"
+          className="relative inline-flex h-8 min-w-8 cursor-pointer items-center justify-center gap-1.5 rounded-full px-2 text-ui-sm text-muted focus-ring-within transition-colors duration-(--dur-fast) ease-out-expo hover:text-fg has-checked:bg-surface-2 has-checked:text-fg has-checked:shadow-raise sm:px-3"
         >
           <input
             type="radio"

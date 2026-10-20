@@ -10,7 +10,7 @@ export function DesignHeader() {
             <Wordmark className="text-ui-sm sm:text-ui" />
           </a>
           <span aria-hidden="true" className="hidden h-4 w-px bg-line sm:block" />
-          <span className="eyebrow hidden text-muted sm:inline">Design system</span>
+          <span className="hidden eyebrow text-muted sm:inline">Design system</span>
         </div>
         <ThemeToggle />
       </div>

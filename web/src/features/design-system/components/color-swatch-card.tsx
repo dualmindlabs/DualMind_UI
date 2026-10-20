@@ -36,7 +36,7 @@ export function ColorSwatchCard({ token }: { token: ColorToken }) {
         <dl className="mt-auto space-y-2 pt-4">
           {themes.map(theme => (
             <div key={theme} className="grid grid-cols-[3.25rem_minmax(0,1fr)] items-start gap-2">
-              <dt className="eyebrow pt-1 text-muted">{theme}</dt>
+              <dt className="pt-1 eyebrow text-muted">{theme}</dt>
               <dd className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-ui-sm">
                 <span
                   aria-hidden="true"

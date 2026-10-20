@@ -18,9 +18,7 @@ describe('parseConfig', () => {
   });
 
   it('rejects values that are not http(s) URLs', () => {
-    expect(() => parseConfig({ VITE_SITE_URL: 'arena.dualmindlab.tech' })).toThrow(
-      /absolute URL/,
-    );
+    expect(() => parseConfig({ VITE_SITE_URL: 'arena.dualmindlab.tech' })).toThrow(/absolute URL/);
     expect(() => parseConfig({ VITE_SITE_URL: 'javascript:alert(1)' })).toThrow(/http or https/);
   });
 });

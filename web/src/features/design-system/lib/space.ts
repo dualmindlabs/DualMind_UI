@@ -15,5 +15,9 @@ export const surfaces: ReadonlyArray<{ token: string; use: string; className: st
   { token: '--bg-deep', use: 'Hero and footer', className: 'bg-bg-deep' },
   { token: '--bg', use: 'Page', className: 'bg-bg' },
   { token: '--surface', use: 'Cards and panes', className: 'bg-surface shadow-raise' },
-  { token: '--surface-2', use: 'Menus and composer', className: 'bg-surface-2 shadow-raise-strong' },
+  {
+    token: '--surface-2',
+    use: 'Menus and composer',
+    className: 'bg-surface-2 shadow-raise-strong',
+  },
 ];

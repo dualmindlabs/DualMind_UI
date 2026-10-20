@@ -50,7 +50,9 @@ export function fakeAssets(files: Record<string, string>): FakeAssets {
       if (path.endsWith('/')) {
         response = has(`${path}index.html`) ? serve(`${path}index.html`) : notFound();
       } else if (path.endsWith('/index.html')) {
-        response = has(path) ? redirect(path.slice(0, -'index.html'.length), url.search) : notFound();
+        response = has(path)
+          ? redirect(path.slice(0, -'index.html'.length), url.search)
+          : notFound();
       } else if (path.endsWith('.html')) {
         response = has(path) ? redirect(path.slice(0, -'.html'.length), url.search) : notFound();
       } else if (has(path)) {

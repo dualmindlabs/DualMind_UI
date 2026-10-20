@@ -76,15 +76,17 @@ export default defineConfig(
       'no-restricted-imports': [
         'error',
         {
+          paths: [
+            {
+              name: '@/components/ui',
+              message: 'components/ui has no barrel: import each primitive from its own file.',
+            },
+          ],
           patterns: [
             {
               group: ['@/features/*/*'],
               message:
                 'Import a feature through its public API (@/features/<name>), not its internals.',
-            },
-            {
-              group: ['@/components/ui', '@/components/ui/index'],
-              message: 'components/ui has no barrel: import each primitive from its own file.',
             },
             {
               group: ['../../*'],

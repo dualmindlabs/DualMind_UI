@@ -5,14 +5,14 @@ import { roleStyles } from '../lib/roles';
 import type { Role } from '../types';
 
 interface RoleCardProps {
-  role: Role;
+  side: Role;
   token: `--${string}`;
   meaning: string;
   rule: string;
 }
 
-export function RoleCard({ role, token, meaning, rule }: RoleCardProps) {
-  const style = roleStyles[role];
+export function RoleCard({ side, token, meaning, rule }: RoleCardProps) {
+  const style = roleStyles[side];
   return (
     <li className="relative flex flex-col overflow-hidden rounded-lg border border-line bg-surface p-5 shadow-raise">
       <span aria-hidden="true" className={cn('absolute inset-x-0 top-0 h-0.5', style.fill)} />

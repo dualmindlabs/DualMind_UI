@@ -3,7 +3,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { useReducedMotion } from '@/hooks/use-reduced-motion';
 
-const originalMatchMedia = window.matchMedia;
+// Read without binding: jsdom has no matchMedia, so this is undefined.
+const originalMatchMedia: unknown = Reflect.get(window, 'matchMedia');
 
 function setMatchMedia(value: unknown) {
   Object.defineProperty(window, 'matchMedia', { configurable: true, writable: true, value });

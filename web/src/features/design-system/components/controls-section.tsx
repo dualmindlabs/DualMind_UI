@@ -18,9 +18,8 @@ export function ControlsSection() {
       }
       lead={
         <p>
-          Buttons, fields and the focus ring. Every control has a real label, a visible focus
-          state, a target of at least 24 by 24 pixels (44 on touch layouts) and borders that
-          reach 3:1.
+          Buttons, fields and the focus ring. Every control has a real label, a visible focus state,
+          a target of at least 24 by 24 pixels (44 on touch layouts) and borders that reach 3:1.
         </p>
       }
     >
@@ -56,14 +55,14 @@ export function ControlsSection() {
         <div className="rounded-lg border border-line bg-surface p-5 shadow-raise sm:p-6">
           <h3 className="text-h3 font-semibold">Focus</h3>
           <p className="mt-1 text-ui-sm text-fg-soft">
-            Press Tab anywhere on this page: every control shows this ring, 2px in the focus
-            colour with a 3px gap (3px wide when more contrast is requested).
+            Press Tab anywhere on this page: every control shows this ring, 2px in the focus colour
+            with a 3px gap (3px wide when more contrast is requested).
           </p>
           <div className="mt-6 flex flex-wrap items-center gap-5 rounded-md border border-dashed border-line p-5">
-            <span className="focus-ring-demo inline-flex h-11 items-center rounded-md border border-line-strong px-5 text-ui font-medium text-fg">
+            <span className="inline-flex h-11 items-center rounded-md border border-line-strong px-5 text-ui font-medium text-fg focus-ring-demo">
               Focused button
             </span>
-            <span className="focus-ring-demo inline-flex h-11 min-w-0 flex-1 items-center rounded-sm border border-line-strong bg-surface-2 px-3.5 text-ui text-muted">
+            <span className="inline-flex h-11 min-w-0 flex-1 items-center rounded-sm border border-line-strong bg-surface-2 px-3.5 text-ui text-muted focus-ring-demo">
               Focused field
             </span>
           </div>
@@ -82,7 +81,13 @@ export function ControlsSection() {
             </Field>
             <Field label="Email" error="Enter a full email address, like ada@example.com.">
               {control => (
-                <Input {...control} name="email" type="email" autoComplete="email" defaultValue="ada@" />
+                <Input
+                  {...control}
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  defaultValue="ada@"
+                />
               )}
             </Field>
             <Field

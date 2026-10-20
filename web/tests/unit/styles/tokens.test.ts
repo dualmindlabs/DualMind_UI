@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import { contrastReadings } from '@/features/design-system/lib/token-contrast';
-import tokensCss from '@/styles/tokens.css?raw';
 import { colorTokens, durations, easings, type ThemeName } from '@/styles/tokens';
+import tokensCss from '@/styles/tokens.css?raw';
 
 /** Innermost CSS rule blocks (no nested braces), with comments removed. */
 function ruleBlocks(css: string): Array<{ selector: string; declarations: Map<string, string> }> {
@@ -67,9 +67,7 @@ describe('every colour token meets its WCAG contrast target', () => {
 
   it.each(cases)('%s in %s', (_name, themeName, token) => {
     for (const reading of contrastReadings(token, themeName)) {
-      expect(reading.passes, `${reading.ratio.toFixed(2)}:1 against ${reading.against}`).toBe(
-        true,
-      );
+      expect(reading.passes, `${reading.ratio.toFixed(2)}:1 against ${reading.against}`).toBe(true);
     }
   });
 });

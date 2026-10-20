@@ -1,11 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  contrastRatio,
-  formatRatio,
-  gradeContrast,
-  relativeLuminance,
-} from '@/lib/utils/contrast';
+import { contrastRatio, formatRatio, gradeContrast, relativeLuminance } from '@/lib/utils/contrast';
 
 describe('contrast', () => {
   it('computes WCAG relative luminance', () => {

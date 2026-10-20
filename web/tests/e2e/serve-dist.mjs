@@ -56,7 +56,9 @@ config.main = path.join(repoRoot, config.main);
 config.assets = { ...config.assets, directory: path.join(repoRoot, config.assets.directory) };
 
 if (!existsSync(path.join(config.assets.directory, 'design', 'index.html'))) {
-  console.error('serve-dist: dist/design/index.html is missing. Run `node build.js` at the repo root first.');
+  console.error(
+    'serve-dist: dist/design/index.html is missing. Run `node build.js` at the repo root first.',
+  );
   process.exit(1);
 }
 

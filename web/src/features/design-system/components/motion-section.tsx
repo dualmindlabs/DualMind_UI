@@ -16,13 +16,14 @@ export function MotionSection() {
       id="motion"
       title={
         <>
-          Motion that explains, <span className="human-voice text-human">then gets out of the way.</span>
+          Motion that explains,{' '}
+          <span className="human-voice text-human">then gets out of the way.</span>
         </>
       }
       lead={
         <p>
-          Motion shows what is happening: sending, generating, revealing, ranking. It is never
-          there to look busy, and every effect has a reduced-motion version.
+          Motion shows what is happening: sending, generating, revealing, ranking. It is never there
+          to look busy, and every effect has a reduced-motion version.
         </p>
       }
     >

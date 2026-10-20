@@ -21,7 +21,7 @@ describe('src/ conventions', () => {
   it('uses kebab-case file and folder names', () => {
     const offenders = entries.filter(entry => {
       const name = entry.split('/').pop() ?? '';
-      if (name === 'README.md') return false;
+      if (['README.md', 'LICENSE.md', 'LICENSE-NOTES.md'].includes(name)) return false;
       const stem = name.replace(/(\.d)?\.(tsx?|css|md)$/, '');
       return !kebab.test(stem);
     });

@@ -98,7 +98,10 @@ test('no horizontal overflow at 320 and 360 px', async ({ page }) => {
           return box.width > 0 && box.right > limit && !clipped(element);
         })
         .slice(0, 5)
-        .map(element => `${element.tagName.toLowerCase()}.${element.className.toString().slice(0, 60)}`);
+        .map(
+          element =>
+            `${element.tagName.toLowerCase()}.${element.className.toString().slice(0, 60)}`,
+        );
     });
     expect(offenders, `${width}px`).toEqual([]);
   }

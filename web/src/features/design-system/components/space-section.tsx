@@ -14,8 +14,8 @@ export function SpaceSection() {
       }
       lead={
         <p>
-          A 4px grid, five radii and depth from luminance steps plus 1px hairlines, not blur.
-          Dark mode lifts surfaces with an inner highlight; light mode uses soft shadows.
+          A 4px grid, five radii and depth from luminance steps plus 1px hairlines, not blur. Dark
+          mode lifts surfaces with an inner highlight; light mode uses soft shadows.
         </p>
       }
     >

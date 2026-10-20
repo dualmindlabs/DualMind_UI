@@ -14,7 +14,7 @@ import {
   SPA_FALLBACK_ROUTES,
 } from '../../../server/routing.js';
 import worker from '../../../worker.js';
-import { DIST, fakeAssets, type FakeAssets } from './fake-assets';
+import { DIST, type FakeAssets,fakeAssets } from './fake-assets';
 
 // The Arena Worker (../../../worker.js) in Node, with a fake static-assets binding and a fake
 // backend: no network, no wrangler. tests/e2e covers the same Worker running in workerd.
@@ -42,6 +42,14 @@ beforeEach(() => {
 afterEach(() => {
   vi.unstubAllGlobals();
 });
+
+/** The URL of the first request the fake backend received. */
+function backendUrl(): string {
+  const input = backend.mock.calls[0]?.[0];
+  if (input instanceof Request) return input.url;
+  if (input instanceof URL) return input.href;
+  return input ?? '';
+}
 
 function call(
   pathAndQuery: string,
@@ -154,13 +162,15 @@ describe('legacy behaviour is unchanged', () => {
     const response = await preview('/api/health');
     expect(response.status).toBe(200);
     expect(backend).toHaveBeenCalledTimes(1);
-    expect(String(backend.mock.calls[0]?.[0])).toBe('https://api.dualmindlab.tech/health');
+    expect(backendUrl()).toBe('https://api.dualmindlab.tech/health');
     expect(response.headers.get('x-dualmind-proxy-path')).toBe('/health');
   });
 
   it('proxies other /api/* paths with their query, to BACKEND_URL when set', async () => {
     await preview('/api/arena/models?limit=5', { env: { BACKEND_URL: 'https://backend.test' } });
-    expect(String(backend.mock.calls[0]?.[0])).toBe('https://backend.test/api/arena/models?limit=5');
+    expect(backendUrl()).toBe(
+      'https://backend.test/api/arena/models?limit=5',
+    );
   });
 
   it('redirects the removed careers page to /about/', async () => {

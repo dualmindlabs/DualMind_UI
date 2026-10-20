@@ -23,13 +23,12 @@ export function ColorSection() {
       lead={
         <>
           <p>
-            Every colour is a token with a dark and a light value; components never use a hex
-            code. The swatch shows the theme you are in, the rows show both. Ratios use the WCAG
-            2.x formula against each theme&apos;s page background.
+            Every colour is a token with a dark and a light value; components never use a hex code.
+            The swatch shows the theme you are in, the rows show both. Ratios use the WCAG 2.x
+            formula against each theme&apos;s page background.
           </p>
           <p className="mt-4 text-ui-sm text-muted">
-            Text needs 4.5:1, control borders and fills 3:1. Hairlines and surfaces are
-            decorative.
+            Text needs 4.5:1, control borders and fills 3:1. Hairlines and surfaces are decorative.
           </p>
         </>
       }

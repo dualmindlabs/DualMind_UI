@@ -1,4 +1,4 @@
-import { contrastRatio, type ContrastGrade, gradeContrast } from '@/lib/utils/contrast';
+import { type ContrastGrade, contrastRatio, gradeContrast } from '@/lib/utils/contrast';
 import {
   backgrounds,
   type ColorToken,

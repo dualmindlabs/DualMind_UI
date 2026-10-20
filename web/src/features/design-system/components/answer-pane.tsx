@@ -7,15 +7,15 @@ import type { Role } from '../types';
 import { MindBadge } from './mind-badge';
 
 interface AnswerPaneProps {
-  role: Exclude<Role, 'human'>;
+  side: Exclude<Role, 'human'>;
   meta: string;
   children: ReactNode;
 }
 
 /** One side of a battle: a labelled region with an A/B header on a 10% role tint. */
-export function AnswerPane({ role, meta, children }: AnswerPaneProps) {
+export function AnswerPane({ side, meta, children }: AnswerPaneProps) {
   const headingId = useId();
-  const style = roleStyles[role];
+  const style = roleStyles[side];
 
   return (
     <section
@@ -29,7 +29,7 @@ export function AnswerPane({ role, meta, children }: AnswerPaneProps) {
         )}
       >
         <div className="flex items-center gap-2.5">
-          <MindBadge role={role} />
+          <MindBadge side={side} />
           <h4 id={headingId} className={cn('text-ui font-semibold', style.text)}>
             Answer {style.letter}
           </h4>

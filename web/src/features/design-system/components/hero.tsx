@@ -22,11 +22,11 @@ export function Hero() {
     >
       <div
         aria-hidden="true"
-        className="dot-grid pointer-events-none absolute inset-0 -z-10 [mask-image:radial-gradient(ellipse_70%_60%_at_70%_35%,black,transparent)]"
+        className="pointer-events-none absolute inset-0 -z-10 dot-grid [mask-image:radial-gradient(ellipse_70%_60%_at_70%_35%,black,transparent)]"
       />
       <div className="mx-auto grid max-w-page items-center gap-12 px-4 pt-14 pb-14 sm:px-6 md:pt-20 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:pt-24 lg:pb-20">
         <div className="min-w-0">
-          <p className="eyebrow animate-rise text-muted">
+          <p className="animate-rise eyebrow text-muted">
             DualMind Arena <span aria-hidden="true">/</span> Design system{' '}
             <span aria-hidden="true">/</span> v0.1
           </p>

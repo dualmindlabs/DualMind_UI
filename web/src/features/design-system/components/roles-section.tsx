@@ -22,7 +22,13 @@ export function RolesSection() {
     >
       <ul className="grid gap-4 md:grid-cols-3">
         {roleDetails.map(detail => (
-          <RoleCard key={detail.role} {...detail} />
+          <RoleCard
+            key={detail.role}
+            side={detail.role}
+            token={detail.token}
+            meaning={detail.meaning}
+            rule={detail.rule}
+          />
         ))}
       </ul>
       <div className="mt-10">

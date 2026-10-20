@@ -1,15 +1,12 @@
 # src/components/motion
 
-Animated effects and the wrappers that make them safe to use. Empty in slice S1; slice S2 adds the first pieces.
+Our own motion wrappers, the pieces that make effects safe to use: a reduced-motion gate (renders the still version when `useReducedMotion()` is true and remounts the effect when the setting flips) and the WebGL gate with a static poster fallback (phones, low memory, Save-Data, no WebGL2). Empty in slice S1; slice S2 adds them.
 
-**Layout**
-
-- One folder per source: `reactbits/`, `magicui/`, `motion-primitives/`, `aceternity/`... Each keeps its licence text (`LICENSE.md`, or `LICENSE-NOTES.md` for Aceternity) and every file starts with a comment naming the source URL and what we changed. Licence rules: [docs/redesign/component-catalog.md](../../../../docs/redesign/component-catalog.md#2-licence-rules-for-this-repository) and [ADR 0003](../../../../docs/adr/0003-shadcn-base-ui-and-vendored-effects.md).
-- Wrappers at the top level of this folder, such as a reduced-motion gate and the WebGL gate with a poster fallback.
+Third-party effect code does not go here: it lives in `components/vendor/<source>/` with its licence (see `vendor/README.md`).
 
 **Rules**
 
-- Every effect reads `useReducedMotion()` (`@/hooks/use-reduced-motion`) and has a still version.
-- Animate only `transform`, `opacity` and `filter`; at most one WebGL background per page.
+- Every effect has a still version and reads `useReducedMotion()` (`@/hooks/use-reduced-motion`).
+- Animate only `transform`, `opacity` and `filter`; at most one WebGL background per page, never behind the answer panes.
 
 Owner: @harshbhx

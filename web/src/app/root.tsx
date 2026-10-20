@@ -5,10 +5,17 @@ import '@fontsource/dm-mono/500.css';
 import '@fontsource-variable/jetbrains-mono/wght.css';
 import '@/styles/app.css';
 
-import bricolageLatin from '@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-opsz-normal.woff2?url';
 import dmMonoLatin from '@fontsource/dm-mono/files/dm-mono-latin-500-normal.woff2?url';
+import bricolageLatin from '@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-opsz-normal.woff2?url';
 import type { ReactNode } from 'react';
-import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration } from 'react-router';
+import {
+  isRouteErrorResponse,
+  Links,
+  Meta,
+  Outlet,
+  Scripts,
+  ScrollRestoration,
+} from 'react-router';
 
 import { ThemeScript } from '@/components/layout/theme-script';
 import { Wordmark } from '@/components/layout/wordmark';
@@ -18,7 +25,13 @@ import type { Route } from './+types/root';
 
 export const links: Route.LinksFunction = () => [
   // The two files every page needs above the fold: body text and labels.
-  { rel: 'preload', href: bricolageLatin, as: 'font', type: 'font/woff2', crossOrigin: 'anonymous' },
+  {
+    rel: 'preload',
+    href: bricolageLatin,
+    as: 'font',
+    type: 'font/woff2',
+    crossOrigin: 'anonymous',
+  },
   { rel: 'preload', href: dmMonoLatin, as: 'font', type: 'font/woff2', crossOrigin: 'anonymous' },
   { rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml' },
 ];
@@ -31,11 +44,7 @@ export function Layout({ children }: { children: ReactNode }) {
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <meta name="color-scheme" content="dark light" />
-        <meta
-          name="theme-color"
-          content={backgrounds.dark}
-          media="(prefers-color-scheme: dark)"
-        />
+        <meta name="theme-color" content={backgrounds.dark} media="(prefers-color-scheme: dark)" />
         <meta
           name="theme-color"
           content={backgrounds.light}
@@ -61,7 +70,11 @@ export default function App() {
 /** Shown by the SPA fallback page (dist/__spa-fallback.html) until the route's code loads. */
 export function HydrateFallback() {
   return (
-    <div className="grid min-h-svh place-items-center bg-bg-deep" aria-busy="true" data-spa-fallback>
+    <div
+      className="grid min-h-svh place-items-center bg-bg-deep"
+      aria-busy="true"
+      data-spa-fallback
+    >
       <p className="flex flex-col items-center gap-4">
         <Wordmark className="text-ui" />
         <span className="eyebrow text-muted">Loading</span>

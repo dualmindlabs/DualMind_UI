@@ -14,7 +14,8 @@ const root = () => document.documentElement;
 function runThemeScript() {
   // The script runs inline in <head>; here it runs against jsdom's document.
   // eslint-disable-next-line @typescript-eslint/no-implied-eval -- the fixed inline script under test
-  new Function(THEME_SCRIPT)();
+  const script = new Function(THEME_SCRIPT) as () => void;
+  script();
 }
 
 describe('theme script (runs before the first paint)', () => {
