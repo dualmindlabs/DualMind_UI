@@ -157,7 +157,7 @@ The legacy app keeps the current thread in memory only. The new arena adds deep 
 
 ### Typed client (`web/app/lib/api/`)
 
-- Same endpoints as today (see README "API endpoints used"). Function surface: `getHealth`, `listModels`, `getModel`, `startBattle`, `sendChat`, `streamChat`, `vote`, `getLeaderboard`, `listThreads`, `createThread`, `getThread`, `listThreadMessages`, `renameThread`, `deleteThread`, `setThreadVisibility`, `getSharedThread`, `syncUser`, `getMe`, `textToSpeech`.
+- Same endpoints as today (see README "API endpoints used"). The full contract (types, errors, streaming format, known issues) is in [docs/api/endpoints.md](../api/endpoints.md). Function surface: `getHealth`, `listModels`, `getModel`, `startBattle`, `sendChat`, `streamChat`, `vote`, `getLeaderboard`, `listThreads`, `createThread`, `getThread`, `listThreadMessages`, `renameThread`, `deleteThread`, `setThreadVisibility`, `getSharedThread`, `syncUser`, `getMe`, `textToSpeech`.
 - Zod schemas normalise responses (camelCase and snake_case, `{items}` or arrays) into one typed shape.
 - `fetch` with `AbortController`, timeouts and typed errors (`AuthError`, `RateLimitError` with `Retry-After`, `ValidationError`, `NetworkError`, `ApiError`).
 - **No automatic retries for `POST` battle and chat calls** (today they retry and can create duplicate battles). GETs retry through TanStack Query.

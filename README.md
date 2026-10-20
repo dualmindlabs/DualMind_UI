@@ -210,7 +210,7 @@ All requests go to the DualMind API with the user's Supabase access token as a b
 | `POST` `GET` | `/api/users/sync`, `/api/users/me` | User profile sync |
 | `GET` | `/health` (via `/api/health`) | API health check |
 
-Full API reference: [docs.dualmindlab.tech](https://docs.dualmindlab.tech).
+Full API reference: [docs.dualmindlab.tech](https://docs.dualmindlab.tech). Contract details for every call (types, errors, streaming, known issues): [`docs/api/endpoints.md`](./docs/api/endpoints.md).
 
 ## Related repositories and sites
 
