@@ -118,7 +118,7 @@ test.describe('header and command palette (desktop)', () => {
     await page.goto('/design/');
     await settle(page, 300);
     await page.getByRole('button', { name: /Atlas 2/ }).click();
-    await expect(page.getByRole('combobox')).toBeFocused();
+    await expect(page.getByRole('combobox', { name: 'Pick a model for Mind A' })).toBeFocused();
     await page.keyboard.type('bore');
     await page.keyboard.press('Enter');
     await expect(page.getByRole('button', { name: /Borealis/ })).toBeVisible();
