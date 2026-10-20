@@ -16,8 +16,8 @@ The legacy app calls `api.dualmindlab.tech` cross-origin. The Worker already pro
   - every request carries an id: the caller's `X-Request-Id` if it is 8-128 characters of `[A-Za-z0-9._:-]`, otherwise a new UUID; it goes to the backend and is echoed on the response;
   - no CORS: the Worker sends no `Access-Control-*` headers, strips the backend's, and no longer answers every `OPTIONS` with a 204 (`OPTIONS /api/*` is proxied like other methods);
   - no `x-dualmind-proxy-*` headers;
-  - upstream failure: `502 {"error":"bad_gateway","requestId"}`; no response within 30 s: `504 {"error":"gateway_timeout","requestId"}`; no error details;
-  - bodies stream straight through; a `text/event-stream` response is never cut once it has started, other bodies must finish within the 30 s;
+  - upstream failure: `502 {"error":"bad_gateway","requestId"}`; no response within the route's timeout (30 s; 65 s for `/api/arena/dualchat` and `/api/arena/chat`): `504 {"error":"gateway_timeout","requestId"}`; no error details;
+  - bodies stream straight through; a `text/event-stream` response is never cut once it has started, other bodies must finish within that timeout;
   - `/api/health` still maps to the backend's `/health`.
 - The typed client (`web/src/lib/api/`, slice S5) owns schemas, errors and request ids; `POST` battle and chat calls are never retried automatically.
 

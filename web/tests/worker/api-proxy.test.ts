@@ -3,8 +3,11 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   backendPathFor,
   FORWARDED_REQUEST_HEADERS,
+  MODEL_CALL_TIMEOUT_MS,
   proxyApi,
   sanitizeRequestId,
+  UPSTREAM_TIMEOUT_MS,
+  upstreamTimeoutFor,
 } from '../../../server/api-proxy.js';
 import worker from '../../../worker.js';
 import { DIST, fakeAssets } from './fake-assets';
@@ -198,6 +201,15 @@ describe('response side', () => {
     const text = await response.text();
     expect(JSON.parse(text)).toEqual({ error: 'bad_gateway', requestId: 'failure-id-0001' });
     expect(text).not.toContain('ECONNREFUSED');
+  });
+
+  it('model calls get a longer timeout than other calls', () => {
+    expect(upstreamTimeoutFor('/api/arena/dualchat')).toBe(MODEL_CALL_TIMEOUT_MS);
+    expect(upstreamTimeoutFor('/api/arena/chat')).toBe(MODEL_CALL_TIMEOUT_MS);
+    expect(upstreamTimeoutFor('/api/arena/chat/stream')).toBe(UPSTREAM_TIMEOUT_MS);
+    expect(upstreamTimeoutFor('/api/threads')).toBe(UPSTREAM_TIMEOUT_MS);
+    expect(upstreamTimeoutFor('/api/health')).toBe(UPSTREAM_TIMEOUT_MS);
+    expect(MODEL_CALL_TIMEOUT_MS).toBeGreaterThan(60_000);
   });
 
   it('no answer within the timeout: 504', async () => {

@@ -8,13 +8,23 @@
 //   strips the backend's, so other sites cannot read API responses through arena.dualmindlab.tech.
 //   OPTIONS requests are proxied like any other method.
 // - Upstream failure: 502 {"error":"bad_gateway","requestId"}; no upstream response within
-//   30 s: 504 {"error":"gateway_timeout","requestId"}. No error details leak.
+//   the route's timeout: 504 {"error":"gateway_timeout","requestId"}. No error details leak.
+//   The timeout is 30 s, except for the calls that wait on model answers (a battle runs two
+//   models in parallel), which get 65 s so the client's own 60 s timeout fires first.
 // - Bodies stream through untouched. Server-sent events (text/event-stream) are never cut by
 //   the timeout once the stream has started; other responses must finish within it.
 // - /api/health maps to the backend's /health.
 
 export const DEFAULT_BACKEND_URL = 'https://api.dualmindlab.tech';
 export const UPSTREAM_TIMEOUT_MS = 30_000;
+export const MODEL_CALL_TIMEOUT_MS = 65_000;
+/** Non-streaming calls that wait for model output. */
+export const MODEL_CALL_PATHS = Object.freeze(['/api/arena/dualchat', '/api/arena/chat']);
+
+/** @param {string} pathname */
+export function upstreamTimeoutFor(pathname) {
+  return MODEL_CALL_PATHS.includes(pathname) ? MODEL_CALL_TIMEOUT_MS : UPSTREAM_TIMEOUT_MS;
+}
 export const FORWARDED_REQUEST_HEADERS = Object.freeze([
   'authorization',
   'content-type',
@@ -60,10 +70,11 @@ function errorResponse(status, error, requestId) {
 export async function proxyApi(request, env, options = {}) {
   const {
     fetchImpl = fetch,
-    timeoutMs = UPSTREAM_TIMEOUT_MS,
+    timeoutMs: timeoutOverride,
     newId = () => crypto.randomUUID(),
   } = options;
   const url = new URL(request.url);
+  const timeoutMs = timeoutOverride ?? upstreamTimeoutFor(url.pathname);
   const backend = env?.BACKEND_URL || DEFAULT_BACKEND_URL;
   const target = new URL(backendPathFor(url.pathname) + url.search, backend);
   const requestId = sanitizeRequestId(request.headers.get('x-request-id')) ?? newId();
