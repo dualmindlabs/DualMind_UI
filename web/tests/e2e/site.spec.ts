@@ -124,7 +124,9 @@ test('legacy pages: report-only CSP, no-store, no X-XSS-Protection', async ({ re
   for (const page of ['/', '/leaderboard/', '/about/']) {
     const headers = (await request.get(page, withCookie)).headers();
     expect(headers['content-security-policy'], page).toBeUndefined();
-    expect(headers['content-security-policy-report-only'], page).toContain('https://cdn.jsdelivr.net');
+    expect(headers['content-security-policy-report-only'], page).toContain(
+      'https://cdn.jsdelivr.net',
+    );
     expect(headers['cache-control'], page).toBe(LEGACY_NO_STORE);
     expect(headers['strict-transport-security'], page).toBeTruthy();
     expect(headers['x-xss-protection'], page).toBeUndefined();
@@ -183,4 +185,3 @@ test('/api/health goes through the hardened proxy', async ({ request }) => {
   expect(headers['x-dualmind-proxy-backend']).toBeUndefined();
   expect(headers['strict-transport-security']).toBeTruthy();
 });
-

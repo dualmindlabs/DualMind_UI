@@ -9,8 +9,8 @@
 // A fake backend on the next port answers /api/* for the proxy tests: it echoes the method, path
 // and headers it received, and adds the headers the Worker must strip (BACKEND_URL points at it).
 import { spawn } from 'node:child_process';
-import http from 'node:http';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import http from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -73,7 +73,9 @@ const backend = http.createServer((request, response) => {
     'access-control-allow-origin': '*',
     'x-dualmind-proxy-backend': 'should-be-stripped',
   });
-  response.end(JSON.stringify({ method: request.method, path: request.url, headers: request.headers }));
+  response.end(
+    JSON.stringify({ method: request.method, path: request.url, headers: request.headers }),
+  );
 });
 backend.listen(backendPort, '127.0.0.1');
 config.vars = { ...(config.vars ?? {}), BACKEND_URL: `http://127.0.0.1:${backendPort}` };

@@ -71,12 +71,21 @@ describe('the legacy report-only CSP', () => {
 
   it('matches what the legacy pages load today', () => {
     expect(policy.get('script-src')).toEqual(
-      expect.arrayContaining(["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net', 'https://unpkg.com']),
+      expect.arrayContaining([
+        "'self'",
+        "'unsafe-inline'",
+        'https://cdn.jsdelivr.net',
+        'https://unpkg.com',
+      ]),
     );
     expect(policy.get('style-src')).toContain('https://fonts.googleapis.com');
     expect(policy.get('font-src')).toContain('https://fonts.gstatic.com');
     expect(policy.get('connect-src')).toEqual(
-      expect.arrayContaining(['https://api.dualmindlab.tech', 'https://*.supabase.co', 'wss://*.supabase.co']),
+      expect.arrayContaining([
+        'https://api.dualmindlab.tech',
+        'https://*.supabase.co',
+        'wss://*.supabase.co',
+      ]),
     );
     expect(policy.get('frame-ancestors')).toEqual(["'none'"]);
   });
@@ -135,7 +144,9 @@ describe('headers on real responses', () => {
     const response = await get('/design/', files);
     expect(response.status).toBe(200);
     expect(response.headers.get('content-security-policy')).toBeNull();
-    expect(response.headers.get('content-security-policy-report-only')).toContain("script-src 'self'");
+    expect(response.headers.get('content-security-policy-report-only')).toContain(
+      "script-src 'self'",
+    );
   });
 
   it('legacy page: report-only legacy policy', async () => {
@@ -147,7 +158,13 @@ describe('headers on real responses', () => {
   });
 
   it('files, redirects and 404s get the base headers but no CSP', async () => {
-    for (const path of ['/assets/root-AbCd_123.js', '/assets/logo.png', '/design', '/careers', '/nope']) {
+    for (const path of [
+      '/assets/root-AbCd_123.js',
+      '/assets/logo.png',
+      '/design',
+      '/careers',
+      '/nope',
+    ]) {
       const response = await get(path);
       expect(response.headers.get('x-content-type-options'), path).toBe('nosniff');
       expect(response.headers.get('x-frame-options'), path).toBe('DENY');
