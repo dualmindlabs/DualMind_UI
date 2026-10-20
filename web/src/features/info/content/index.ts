@@ -4,18 +4,17 @@ export { faqContent } from './faq';
 export { howItWorksContent } from './how-it-works';
 export { privacyContent } from './privacy';
 export { termsContent } from './terms';
-
-export { MAX_DESCRIPTION_LENGTH } from './types';
-export type {
-  Block,
-  CalloutBlock,
-  DefinitionListBlock,
-  FaqItemBlock,
-  Heading,
-  ListBlock,
-  PageContent,
-  PageSlug,
-  ParagraphBlock,
-  Section,
-  StepsBlock,
+export {
+  type Block,
+  type CalloutBlock,
+  type DefinitionListBlock,
+  type FaqItemBlock,
+  type Heading,
+  type ListBlock,
+  MAX_DESCRIPTION_LENGTH,
+  type PageContent,
+  type PageSlug,
+  type ParagraphBlock,
+  type Section,
+  type StepsBlock,
 } from './types';

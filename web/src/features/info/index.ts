@@ -3,10 +3,10 @@ import {
   cookiesContent,
   faqContent,
   howItWorksContent,
+  type PageContent,
   privacyContent,
   termsContent,
 } from './content';
-import type { PageContent } from './content';
 
 export * from './content';
 

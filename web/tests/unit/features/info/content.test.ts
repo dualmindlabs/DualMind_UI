@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { MAX_DESCRIPTION_LENGTH, infoPages } from '@/features/info';
-import type { Block, PageContent } from '@/features/info';
+import { type Block, infoPages, MAX_DESCRIPTION_LENGTH, type PageContent } from '@/features/info';
 
 function blockText(block: Block): string[] {
   switch (block.type) {
