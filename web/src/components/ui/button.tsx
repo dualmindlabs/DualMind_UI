@@ -12,7 +12,7 @@ import type { MouseEvent } from 'react';
 
 import { cn } from '@/lib/utils/cn';
 
-export const buttonVariants = cva(
+const buttonCva = cva(
   [
     'group/button relative inline-flex shrink-0 cursor-pointer items-center justify-center rounded-md border border-transparent font-medium whitespace-nowrap select-none hit-area',
     'transition-[background-color,border-color,color,box-shadow,scale] duration-(--dur-fast) ease-out-expo active:not-data-loading:scale-[0.98]',
@@ -57,8 +57,16 @@ export const buttonVariants = cva(
   },
 );
 
-export type ButtonVariant = NonNullable<VariantProps<typeof buttonVariants>['variant']>;
-export type ButtonSize = NonNullable<VariantProps<typeof buttonVariants>['size']>;
+export type ButtonVariant = NonNullable<VariantProps<typeof buttonCva>['variant']>;
+export type ButtonSize = NonNullable<VariantProps<typeof buttonCva>['size']>;
+
+/**
+ * The button classes for a variant and size, conflicts resolved (a variant's border colour wins
+ * over the base's transparent border). Use it to style links and Base UI triggers as buttons.
+ */
+export function buttonVariants(options?: { variant?: ButtonVariant; size?: ButtonSize }): string {
+  return cn(buttonCva(options));
+}
 
 export type ButtonProps = ButtonPrimitive.Props & {
   variant?: ButtonVariant;
