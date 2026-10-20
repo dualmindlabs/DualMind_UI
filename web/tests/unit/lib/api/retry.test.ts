@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { ApiError, type ApiErrorKind, DEFAULT_RETRY_POLICY, retryDelay, shouldRetry } from '@/lib/api';
+import {
+  ApiError,
+  type ApiErrorKind,
+  DEFAULT_RETRY_POLICY,
+  retryDelay,
+  shouldRetry,
+} from '@/lib/api';
 import { isIdempotent, resolveRetryPolicy } from '@/lib/api/http/retry';
 
 const error = (kind: ApiErrorKind, extra: { status?: number; retryAfterMs?: number } = {}) =>
@@ -15,12 +21,16 @@ describe('retry policy', () => {
       maxRetryAfterMs: 20_000,
     });
     expect(Object.isFrozen(DEFAULT_RETRY_POLICY)).toBe(true);
-    expect(resolveRetryPolicy({ maxRetries: 0 })).toEqual({ ...DEFAULT_RETRY_POLICY, maxRetries: 0 });
+    expect(resolveRetryPolicy({ maxRetries: 0 })).toEqual({
+      ...DEFAULT_RETRY_POLICY,
+      maxRetries: 0,
+    });
   });
 
   it('only treats GET as idempotent', () => {
     expect(isIdempotent('GET')).toBe(true);
-    for (const method of ['POST', 'PATCH', 'DELETE'] as const) expect(isIdempotent(method)).toBe(false);
+    for (const method of ['POST', 'PATCH', 'DELETE'] as const)
+      expect(isIdempotent(method)).toBe(false);
   });
 
   it('retries transient errors at most twice', () => {
@@ -32,7 +42,14 @@ describe('retry policy', () => {
   });
 
   it('never retries client errors, aborts or unreadable answers', () => {
-    for (const kind of ['aborted', 'auth', 'forbidden', 'not_found', 'validation', 'bad_response'] as const) {
+    for (const kind of [
+      'aborted',
+      'auth',
+      'forbidden',
+      'not_found',
+      'validation',
+      'bad_response',
+    ] as const) {
       expect(shouldRetry(error(kind), 0), kind).toBe(false);
     }
     expect(shouldRetry(error('server', { status: 501 }), 0)).toBe(false);
@@ -57,7 +74,9 @@ describe('retry policy', () => {
 
   it('waits at least as long as Retry-After', () => {
     const policy = { ...DEFAULT_RETRY_POLICY, baseDelayMs: 100 };
-    expect(retryDelay(0, error('rate_limited', { retryAfterMs: 4000 }), policy, () => 1)).toBe(4000);
+    expect(retryDelay(0, error('rate_limited', { retryAfterMs: 4000 }), policy, () => 1)).toBe(
+      4000,
+    );
     expect(retryDelay(0, error('rate_limited', { retryAfterMs: 10 }), policy, () => 1)).toBe(100);
   });
 });

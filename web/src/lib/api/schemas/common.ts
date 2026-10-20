@@ -24,7 +24,9 @@ export function pickFirst(raw: Record<string, unknown>, keys: readonly string[])
   return undefined;
 }
 
-type AliasMap<S extends z.ZodObject> = Partial<Record<keyof S['shape'] & string, readonly string[]>>;
+type AliasMap<S extends z.ZodObject> = Partial<
+  Record<keyof S['shape'] & string, readonly string[]>
+>;
 
 /**
  * Wraps an object schema so each field is read from its camelCase name, then its snake_case
@@ -64,7 +66,9 @@ export const optionalNumber = numeric.nullish().transform(value => value ?? null
 export const optionalString = z
   .string()
   .nullish()
-  .transform(value => (value === undefined || value === null || value.trim() === '' ? null : value));
+  .transform(value =>
+    value === undefined || value === null || value.trim() === '' ? null : value,
+  );
 
 /** A boolean, also accepted as "true"/"false" or 1/0; missing means `fallback`. */
 export function flag(fallback: boolean) {
@@ -83,11 +87,11 @@ export function flag(fallback: boolean) {
  * drift shows up in tests and logs instead of silently thinning the list.
  */
 export function listOf<T extends z.ZodType>(item: T) {
-  return z.preprocess((input: unknown) => {
-    if (Array.isArray(input)) return input;
+  return z.preprocess((input: unknown): unknown => {
+    if (Array.isArray(input)) return input as unknown[];
     if (isRecord(input)) {
-      if (Array.isArray(input.items)) return input.items;
-      if (Array.isArray(input.data)) return input.data;
+      if (Array.isArray(input.items)) return input.items as unknown[];
+      if (Array.isArray(input.data)) return input.data as unknown[];
     }
     return input;
   }, z.array(item));

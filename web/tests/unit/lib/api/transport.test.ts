@@ -4,13 +4,7 @@ import { z } from 'zod';
 import { ApiError, type RequestEvent, type ResponseEvent } from '@/lib/api';
 import { createTransport, type TransportOptions } from '@/lib/api/http/transport';
 
-import {
-  hangingFetch,
-  jsonResponse,
-  rejectionOf,
-  scriptedFetch,
-  UUID_V4,
-} from './helpers';
+import { hangingFetch, jsonResponse, rejectionOf, scriptedFetch, UUID_V4 } from './helpers';
 
 const anything = z.unknown();
 const fast = { baseDelayMs: 1, maxDelayMs: 2 };
@@ -48,7 +42,9 @@ describe('requests', () => {
 
   it('sends the token and a JSON body on an authenticated POST', async () => {
     const { fetch, calls } = scriptedFetch(jsonResponse({ ok: true }));
-    const transport = transportWith(fetch, { getAccessToken: async () => '  jwt-123  ' });
+    const transport = transportWith(fetch, {
+      getAccessToken: () => Promise.resolve('  jwt-123  '),
+    });
 
     await transport.json({
       method: 'POST',
@@ -68,7 +64,10 @@ describe('requests', () => {
     const transport = transportWith(fetch, { baseUrl: 'http://localhost:5079/' });
     expect(transport.baseUrl).toBe('http://localhost:5079');
 
-    await transport.json({ ...get('/api/threads'), query: { limit: 20, cursor: undefined, q: 'a b' } });
+    await transport.json({
+      ...get('/api/threads'),
+      query: { limit: 20, cursor: undefined, q: 'a b' },
+    });
     expect(calls[0]?.url).toBe('http://localhost:5079/api/threads?limit=20&q=a+b');
   });
 
@@ -97,7 +96,7 @@ describe('requests', () => {
 
   it('uses the global fetch at call time when none is given', async () => {
     const transport = createTransport();
-    const stub = vi.fn(async () => jsonResponse({ stubbed: true }));
+    const stub = vi.fn(() => Promise.resolve(jsonResponse({ stubbed: true })));
     vi.stubGlobal('fetch', stub);
     await expect(transport.json(get())).resolves.toEqual({ stubbed: true });
     expect(stub).toHaveBeenCalledOnce();
@@ -105,11 +104,21 @@ describe('requests', () => {
 });
 
 describe('tokens', () => {
-  const required = { method: 'GET', path: '/api/models', auth: 'required', schema: anything } as const;
+  const required = {
+    method: 'GET',
+    path: '/api/models',
+    auth: 'required',
+    schema: anything,
+  } as const;
   const optional = { ...required, auth: 'optional' } as const;
 
   it('fails a required call locally when there is no token', async () => {
-    for (const getAccessToken of [undefined, () => null, () => '', async () => undefined]) {
+    for (const getAccessToken of [
+      undefined,
+      () => null,
+      () => '',
+      () => Promise.resolve(undefined),
+    ]) {
       const { fetch } = scriptedFetch(jsonResponse({}));
       const error = await rejectionOf(transportWith(fetch, { getAccessToken }).json(required));
       expect(error).toMatchObject({ kind: 'auth', code: 'NO_ACCESS_TOKEN', path: '/api/models' });
@@ -295,7 +304,12 @@ describe('retries', () => {
   it.each(['POST', 'PATCH', 'DELETE'] as const)('never retries a %s', async method => {
     const { fetch } = statuses(503);
     const error = await rejectionOf(
-      transportWith(fetch).json({ method, path: '/api/arena/dualchat', auth: 'none', schema: anything }),
+      transportWith(fetch).json({
+        method,
+        path: '/api/arena/dualchat',
+        auth: 'none',
+        schema: anything,
+      }),
     );
     expect(error).toMatchObject({ kind: 'server', status: 503 });
     expect(fetch).toHaveBeenCalledOnce();
@@ -303,7 +317,9 @@ describe('retries', () => {
 
   it('does not retry a GET when the call opts out (TanStack Query retries instead)', async () => {
     const { fetch } = statuses(503);
-    await expect(transportWith(fetch).json(get(), { retry: false })).rejects.toBeInstanceOf(ApiError);
+    await expect(transportWith(fetch).json(get(), { retry: false })).rejects.toBeInstanceOf(
+      ApiError,
+    );
     expect(fetch).toHaveBeenCalledOnce();
   });
 
@@ -323,7 +339,9 @@ describe('retries', () => {
   });
 
   it('gives up at once when Retry-After is longer than the cap', async () => {
-    const { fetch } = scriptedFetch(jsonResponse({}, { status: 429, headers: { 'retry-after': '120' } }));
+    const { fetch } = scriptedFetch(
+      jsonResponse({}, { status: 429, headers: { 'retry-after': '120' } }),
+    );
     const error = await rejectionOf(transportWith(fetch).json(get()));
     expect(error).toMatchObject({ kind: 'rate_limited', retryAfterMs: 120_000 });
     expect(fetch).toHaveBeenCalledOnce();
@@ -395,7 +413,9 @@ describe('binary and streaming calls', () => {
       kind: 'bad_response',
       code: 'UNEXPECTED_CONTENT',
     });
-    const empty = scriptedFetch(new Response(new Uint8Array(), { headers: { 'content-type': 'audio/wav' } }));
+    const empty = scriptedFetch(
+      new Response(new Uint8Array(), { headers: { 'content-type': 'audio/wav' } }),
+    );
     await expect(transportWith(empty.fetch).blob(speech)).rejects.toMatchObject({
       code: 'UNEXPECTED_CONTENT',
     });

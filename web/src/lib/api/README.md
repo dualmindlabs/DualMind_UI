@@ -43,18 +43,18 @@ Tests live in `web/tests/unit/lib/api/`; recorded and synthetic response bodies 
 
 Every failure is an `ApiError` with a `kind`:
 
-| Kind | From | Retryable |
-| --- | --- | --- |
-| `network` | fetch rejected (offline, DNS, dropped connection); a stream that ended early | yes |
-| `timeout` | client timeout, 408, the Worker's 504, a quiet stream | yes |
-| `aborted` | the caller's signal | no |
-| `auth` | 401, no token for a `required` call | no |
-| `forbidden` | 403 | no |
-| `not_found` | 404, 410 | no |
-| `validation` | 400, 422 and other 4xx; local input checks (`INVALID_ARGUMENT`) | no |
-| `rate_limited` | 429 (`retryAfterMs` from `Retry-After`) | yes |
-| `server` | 5xx except 504 (501 is never retried); `ai.error` events and bodies | yes |
-| `bad_response` | invalid JSON, a body that fails its schema (`SCHEMA_MISMATCH`, with the issues in `details`), a redirect, an unexpected content type | no |
+| Kind           | From                                                                                                                                 | Retryable |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------ | --------- |
+| `network`      | fetch rejected (offline, DNS, dropped connection); a stream that ended early                                                         | yes       |
+| `timeout`      | client timeout, 408, the Worker's 504, a quiet stream                                                                                | yes       |
+| `aborted`      | the caller's signal                                                                                                                  | no        |
+| `auth`         | 401, no token for a `required` call                                                                                                  | no        |
+| `forbidden`    | 403                                                                                                                                  | no        |
+| `not_found`    | 404, 410                                                                                                                             | no        |
+| `validation`   | 400, 422 and other 4xx; local input checks (`INVALID_ARGUMENT`)                                                                      | no        |
+| `rate_limited` | 429 (`retryAfterMs` from `Retry-After`)                                                                                              | yes       |
+| `server`       | 5xx except 504 (501 is never retried); `ai.error` events and bodies                                                                  | yes       |
+| `bad_response` | invalid JSON, a body that fails its schema (`SCHEMA_MISMATCH`, with the issues in `details`), a redirect, an unexpected content type | no        |
 
 `status` (0 without a response), `code` (from the body, or a default per kind), `message` (for developers), `requestId`, `correlationId`, `retryAfterMs` and `details` complete it; `toJSON()` is safe to log. The normaliser (`parseErrorBody`) reads every body shape the API and the Worker send: arena `{ object: "ai.error", code, message }`, `{ success: false, error, code }`, the Worker's `{ error: "bad_gateway" | "gateway_timeout", requestId }`, the legacy Worker 502, ASP.NET ProblemDetails, the proposed nested `{ error: { code, message } }`, and empty bodies. An `ai.error` body with status 200 is an error too.
 

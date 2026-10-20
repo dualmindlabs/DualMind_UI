@@ -11,9 +11,9 @@ export {
   createApiClientFromEnv,
   MOCK_ACCESS_TOKEN,
 } from './client';
-export { DEFAULT_TIMEOUT_MS } from './http/transport';
 export { DEFAULT_RETRY_POLICY, retryDelay, shouldRetry } from './http/retry';
 export { TIMEOUTS } from './http/timeouts';
+export { DEFAULT_TIMEOUT_MS } from './http/transport';
 export type {
   AccessTokenProvider,
   AuthMode,
@@ -80,8 +80,8 @@ export type { Health } from './schemas/health';
 export type { ModelStat } from './schemas/leaderboard';
 export { KNOWN_PROVIDERS, type ModelSummary } from './schemas/models';
 export {
-  THREAD_MODES,
   type Thread,
+  THREAD_MODES,
   type ThreadMessage,
   type ThreadMode,
   VISIBILITIES,
@@ -91,7 +91,7 @@ export {
 export type { UserProfile } from './schemas/users';
 
 // Streaming
-export { readChatStream, readSseStream, SseParser, type SseMessage } from './sse';
+export { readChatStream, readSseStream, type SseMessage,SseParser } from './sse';
 
 // Vote queue
 export {
@@ -135,9 +135,4 @@ export {
   threadQuery,
   threadsQuery,
 } from './query/queries';
-export {
-  createQueryClient,
-  queryRetry,
-  queryRetryDelay,
-  STALE_TIMES,
-} from './query/query-client';
+export { createQueryClient, queryRetry, queryRetryDelay, STALE_TIMES } from './query/query-client';

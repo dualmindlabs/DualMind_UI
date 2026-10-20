@@ -35,7 +35,9 @@ const vote = (comparisonId: string, voteChoice: VoteInput['voteChoice'] = 'left'
 
 function setup(overrides: Partial<VoteQueueOptions> = {}) {
   const { storage, data } = memoryStorage();
-  const send = vi.fn<(vote: VoteInput) => Promise<unknown>>(async () => ({ success: true }));
+  const send = vi.fn<(vote: VoteInput) => Promise<unknown>>(() =>
+    Promise.resolve({ success: true }),
+  );
   const events = new EventTarget();
   let online = true;
   let clock = Date.parse('2026-10-20T12:00:00Z');
@@ -74,7 +76,11 @@ describe('submit', () => {
     await expect(queue.submit({ ...vote('c-1'), voteDurationMs: 1200 })).resolves.toEqual({
       status: 'sent',
     });
-    expect(send).toHaveBeenCalledWith({ comparisonId: 'c-1', voteChoice: 'left', voteDurationMs: 1200 });
+    expect(send).toHaveBeenCalledWith({
+      comparisonId: 'c-1',
+      voteChoice: 'left',
+      voteDurationMs: 1200,
+    });
     expect(data.size).toBe(0);
   });
 
@@ -122,7 +128,10 @@ describe('submit', () => {
     const { queue, send } = setup();
     expect(queue.enqueue(vote('c-1', 'left'))).toBe(true);
     expect(queue.enqueue(vote('c-1', 'right'))).toBe(false);
-    await expect(queue.submit(vote('c-1', 'right'))).resolves.toEqual({ status: 'queued', error: null });
+    await expect(queue.submit(vote('c-1', 'right'))).resolves.toEqual({
+      status: 'queued',
+      error: null,
+    });
     expect(send).not.toHaveBeenCalled();
     expect(queue.list()).toMatchObject([{ comparisonId: 'c-1', voteChoice: 'left' }]);
   });
@@ -330,7 +339,7 @@ describe('storage', () => {
   });
 
   it('uses localStorage and window by default', async () => {
-    const send = vi.fn(async () => ({ success: true }));
+    const send = vi.fn(() => Promise.resolve({ success: true }));
     const queue = createVoteQueue({ send });
     queue.enqueue(vote('a'));
     expect(window.localStorage.getItem(VOTE_QUEUE_STORAGE_KEY)).toContain('"comparisonId":"a"');

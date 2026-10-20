@@ -24,7 +24,8 @@ export interface ApiClientOptions extends TransportOptions {
 
 /** The whole DualMind API, one function per endpoint (see docs/api/endpoints.md, "Client mapping"). */
 export interface ApiClient
-  extends HealthEndpoints,
+  extends
+    HealthEndpoints,
     ModelEndpoints,
     ArenaEndpoints,
     LeaderboardEndpoints,

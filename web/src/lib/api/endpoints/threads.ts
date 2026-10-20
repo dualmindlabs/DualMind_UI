@@ -3,15 +3,15 @@ import type { CallOptions } from '../http/types';
 import { pathSegment } from '../http/url';
 import { type MutationResult, mutationResultSchema } from '../schemas/common';
 import {
-  THREAD_MODES,
   type Thread,
-  type ThreadMessage,
+  THREAD_MODES,
   threadListSchema,
+  type ThreadMessage,
   threadMessageListSchema,
   type ThreadMode,
   threadSchema,
-  type Visibility,
   VISIBILITIES,
+  type Visibility,
   type VisibilityResult,
   visibilityResultSchema,
 } from '../schemas/threads';
@@ -149,7 +149,12 @@ export function createThreadEndpoints(transport: Transport): ThreadEndpoints {
 
     deleteThread: async (threadId, options) =>
       await transport.json(
-        { method: 'DELETE', path: threadPath(threadId), auth: 'required', schema: mutationResultSchema },
+        {
+          method: 'DELETE',
+          path: threadPath(threadId),
+          auth: 'required',
+          schema: mutationResultSchema,
+        },
         options,
       ),
 
@@ -170,7 +175,12 @@ export function createThreadEndpoints(transport: Transport): ThreadEndpoints {
       const [thread, messages] = await Promise.all([
         transport.json({ method: 'GET', path, auth: 'none', schema: threadSchema }, options),
         transport.json(
-          { method: 'GET', path: `${path}/messages`, auth: 'none', schema: threadMessageListSchema },
+          {
+            method: 'GET',
+            path: `${path}/messages`,
+            auth: 'none',
+            schema: threadMessageListSchema,
+          },
           options,
         ),
       ]);

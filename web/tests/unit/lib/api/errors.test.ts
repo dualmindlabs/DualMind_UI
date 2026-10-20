@@ -26,8 +26,10 @@ import {
 
 import errors from '../../../fixtures/api/errors.json';
 
-const error = (kind: ApiErrorKind, extra: Partial<ConstructorParameters<typeof ApiError>[0]> = {}) =>
-  new ApiError({ kind, message: `a ${kind} error`, ...extra });
+const error = (
+  kind: ApiErrorKind,
+  extra: Partial<ConstructorParameters<typeof ApiError>[0]> = {},
+) => new ApiError({ kind, message: `a ${kind} error`, ...extra });
 
 describe('kindFromStatus', () => {
   it.each([

@@ -238,7 +238,10 @@ export function parseErrorBody(body: unknown): ParsedErrorBody {
  * Parses `Retry-After` (delay in seconds, or an HTTP date) into milliseconds from `now`.
  * Returns undefined when the header is missing or invalid.
  */
-export function parseRetryAfter(value: string | null | undefined, now = Date.now()): number | undefined {
+export function parseRetryAfter(
+  value: string | null | undefined,
+  now = Date.now(),
+): number | undefined {
   if (value === null || value === undefined) return undefined;
   const trimmed = value.trim();
   if (trimmed === '') return undefined;
@@ -271,7 +274,8 @@ export function errorFromResponse({
   const kind = kindFromStatus(status);
   const parsed = parseErrorBody(body);
   const details =
-    parsed.details ?? (typeof body === 'string' && body !== '' ? { body: body.slice(0, 300) } : undefined);
+    parsed.details ??
+    (typeof body === 'string' && body !== '' ? { body: body.slice(0, 300) } : undefined);
   return new ApiError({
     kind,
     status,
@@ -352,15 +356,29 @@ export function getUserMessage(error: unknown): string {
 /** Wraps anything thrown into an ApiError (already-normalised errors pass through). */
 export function toApiError(
   error: unknown,
-  context: { requestId?: string | undefined; method?: string | undefined; path?: string | undefined } = {},
+  context: {
+    requestId?: string | undefined;
+    method?: string | undefined;
+    path?: string | undefined;
+  } = {},
 ): ApiError {
   if (error instanceof ApiError) return error;
   const name = isErrorLike(error) ? error.name : undefined;
   if (name === 'AbortError') {
-    return new ApiError({ kind: 'aborted', message: 'The request was aborted', cause: error, ...context });
+    return new ApiError({
+      kind: 'aborted',
+      message: 'The request was aborted',
+      cause: error,
+      ...context,
+    });
   }
   if (name === 'TimeoutError') {
-    return new ApiError({ kind: 'timeout', message: 'The request timed out', cause: error, ...context });
+    return new ApiError({
+      kind: 'timeout',
+      message: 'The request timed out',
+      cause: error,
+      ...context,
+    });
   }
   // fetch rejects with a TypeError for offline, DNS, CORS and dropped connections.
   if (error instanceof TypeError) {
@@ -372,5 +390,10 @@ export function toApiError(
     });
   }
   const message = error instanceof Error ? error.message : String(error);
-  return new ApiError({ kind: 'network', message: message || 'Unknown error', cause: error, ...context });
+  return new ApiError({
+    kind: 'network',
+    message: message || 'Unknown error',
+    cause: error,
+    ...context,
+  });
 }

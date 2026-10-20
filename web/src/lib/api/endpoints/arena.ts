@@ -90,7 +90,8 @@ function chatBody(input: ChatInput) {
   return compact({
     prompt: requireText(input.prompt, 'prompt'),
     model: input.model === undefined || input.model.trim() === '' ? 'auto' : input.model,
-    maxTokens: optionalPositiveInt(input.maxTokens, 'maxTokens', MAX_TOKENS_LIMIT) ?? DEFAULT_MAX_TOKENS,
+    maxTokens:
+      optionalPositiveInt(input.maxTokens, 'maxTokens', MAX_TOKENS_LIMIT) ?? DEFAULT_MAX_TOKENS,
     system: input.system,
     threadId: input.threadId,
     temperature: input.temperature,

@@ -36,9 +36,7 @@ export interface QueuedVote {
   lastError: string | null;
 }
 
-export type VoteSubmitResult =
-  | { status: 'sent' }
-  | { status: 'queued'; error: ApiError | null };
+export type VoteSubmitResult = { status: 'sent' } | { status: 'queued'; error: ApiError | null };
 
 export interface FlushResult {
   sent: number;
@@ -109,7 +107,8 @@ function defaultStorage(): StorageLike | null {
 export function createVoteQueue(options: VoteQueueOptions): VoteQueue {
   const storage = options.storage === undefined ? defaultStorage() : options.storage;
   const isOnline =
-    options.isOnline ?? (() => (typeof navigator === 'undefined' ? true : navigator.onLine !== false));
+    options.isOnline ??
+    (() => (typeof navigator === 'undefined' ? true : navigator.onLine !== false));
   const eventTarget =
     options.eventTarget === undefined
       ? typeof window === 'undefined'

@@ -60,7 +60,7 @@ describe('createApiClient', () => {
   });
 
   it('builds the app client from the env config (same-origin, no mock in tests)', async () => {
-    const stub = vi.fn(async () => jsonResponse({ status: 'healthy' }));
+    const stub = vi.fn(() => Promise.resolve(jsonResponse({ status: 'healthy' })));
     vi.stubGlobal('fetch', stub);
     const api = createApiClientFromEnv({ getAccessToken: () => null });
     expect(api.baseUrl).toBe('');
@@ -104,7 +104,11 @@ describe('request bodies', () => {
     const { fetch, calls } = scriptedFetch(jsonResponse({ success: true }));
     const api = createApiClient({ fetch, getAccessToken: token });
     await api.vote({ comparisonId: 'c-1', voteChoice: 'both-bad', voteDurationMs: -5.7 });
-    expect(calls[0]?.body).toEqual({ comparisonId: 'c-1', voteChoice: 'both-bad', voteDurationMs: 0 });
+    expect(calls[0]?.body).toEqual({
+      comparisonId: 'c-1',
+      voteChoice: 'both-bad',
+      voteDurationMs: 0,
+    });
     await expect(
       api.vote({ comparisonId: 'c-1', voteChoice: 'maybe' as 'left' }),
     ).rejects.toMatchObject({ kind: 'validation', code: 'INVALID_ARGUMENT' });
@@ -146,7 +150,11 @@ describe('request bodies', () => {
     const api = createApiClient({ fetch, getAccessToken: token });
     await api.getSharedThread('t-1');
     await api.getThread('t-1');
-    expect(calls.map(call => call.headers.get('authorization'))).toEqual([null, null, 'Bearer jwt']);
+    expect(calls.map(call => call.headers.get('authorization'))).toEqual([
+      null,
+      null,
+      'Bearer jwt',
+    ]);
   });
 
   it('textToSpeech calls the real route, not /api/audio/tts', async () => {
@@ -210,7 +218,10 @@ describe('streamChat edge cases', () => {
     const consume = async () => {
       for await (const event of api.streamChat({ prompt: 'Hi' })) void event;
     };
-    await expect(consume()).rejects.toMatchObject({ kind: 'bad_response', code: 'SCHEMA_MISMATCH' });
+    await expect(consume()).rejects.toMatchObject({
+      kind: 'bad_response',
+      code: 'SCHEMA_MISMATCH',
+    });
     await expect(consume()).rejects.toMatchObject({ kind: 'bad_response', code: 'EMPTY_STREAM' });
   });
 

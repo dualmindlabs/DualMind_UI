@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { answerSchema, battleSchema, streamEventSchema, voteResultSchema } from '@/lib/api/schemas/arena';
+import {
+  answerSchema,
+  battleSchema,
+  streamEventSchema,
+  voteResultSchema,
+} from '@/lib/api/schemas/arena';
 import { listOf, mutationResultSchema, numeric, toSnakeCase } from '@/lib/api/schemas/common';
 import { featureFlagSchema } from '@/lib/api/schemas/flags';
 import { healthSchema } from '@/lib/api/schemas/health';
@@ -69,7 +74,10 @@ describe('common helpers', () => {
   it('reads an empty mutation body as success', () => {
     expect(mutationResultSchema.parse(null)).toEqual({ success: true, message: null });
     expect(mutationResultSchema.parse('')).toEqual({ success: true, message: null });
-    expect(mutationResultSchema.parse(mutation)).toEqual({ success: true, message: 'Thread updated' });
+    expect(mutationResultSchema.parse(mutation)).toEqual({
+      success: true,
+      message: 'Thread updated',
+    });
     expect(mutationResultSchema.parse({ success: 'false', message: '' })).toEqual({
       success: false,
       message: null,
@@ -90,7 +98,10 @@ describe('health (recorded)', () => {
   });
 
   it('reports anything but "healthy" as not healthy', () => {
-    expect(healthSchema.parse({ status: 'degraded' })).toMatchObject({ healthy: false, version: null });
+    expect(healthSchema.parse({ status: 'degraded' })).toMatchObject({
+      healthy: false,
+      version: null,
+    });
     expect(healthSchema.safeParse({}).success).toBe(false);
   });
 });
@@ -164,9 +175,16 @@ describe('leaderboard (recorded model-stats with duplicate casing)', () => {
   });
 
   it('rejects rows without the fields a ranking needs', () => {
-    expect(modelStatSchema.safeParse({ modelName: 'x', providerName: 'y', eloScore: 1, eloRank: 1 }).success).toBe(false);
-    expect(modelStatSchema.safeParse({ ...modelStats.items[0], eloRank: 0, elo_rank: 0 }).success).toBe(false);
-    expect(modelStatSchema.safeParse({ ...modelStats.items[0], winRate: 140, win_rate: 140 }).success).toBe(false);
+    expect(
+      modelStatSchema.safeParse({ modelName: 'x', providerName: 'y', eloScore: 1, eloRank: 1 })
+        .success,
+    ).toBe(false);
+    expect(
+      modelStatSchema.safeParse({ ...modelStats.items[0], eloRank: 0, elo_rank: 0 }).success,
+    ).toBe(false);
+    expect(
+      modelStatSchema.safeParse({ ...modelStats.items[0], winRate: 140, win_rate: 140 }).success,
+    ).toBe(false);
   });
 });
 
@@ -298,7 +316,12 @@ describe('threads', () => {
 
   it('normalises messages, including the caller vote', () => {
     const [first, second] = threadMessageListSchema.parse(threadMessages);
-    expect(first).toMatchObject({ messageId: 'm-1', position: 0, voteChoice: 'left', hasVoted: true });
+    expect(first).toMatchObject({
+      messageId: 'm-1',
+      position: 0,
+      voteChoice: 'left',
+      hasVoted: true,
+    });
     expect(second).toEqual({
       messageId: 'm-2',
       threadId: thread.threadId,

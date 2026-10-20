@@ -15,10 +15,7 @@ export type AuthMode = 'required' | 'optional' | 'none';
  * so a refreshed session is picked up between retries. Wired to Supabase in slice S6.
  */
 export type AccessTokenProvider = () =>
-  | string
-  | null
-  | undefined
-  | Promise<string | null | undefined>;
+  string | null | undefined | Promise<string | null | undefined>;
 
 /** The subset of `fetch` the client uses; the mock adapter implements the same signature. */
 export type FetchLike = (input: string, init: RequestInit) => Promise<Response>;

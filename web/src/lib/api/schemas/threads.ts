@@ -1,14 +1,7 @@
 import { z } from 'zod';
 
 import { VOTE_CHOICES } from './arena';
-import {
-  count,
-  flag,
-  listOf,
-  optionalNumber,
-  optionalString,
-  withAliases,
-} from './common';
+import { count, flag, listOf, optionalNumber, optionalString, withAliases } from './common';
 
 export const THREAD_MODES = ['battle', 'arena', 'direct'] as const;
 export type ThreadMode = (typeof THREAD_MODES)[number];
@@ -56,7 +49,11 @@ export const threadMessageSchema = withAliases(
     model1TimeMs: optionalNumber,
     model2TimeMs: optionalNumber,
     comparisonId: optionalString,
-    voteChoice: z.enum(VOTE_CHOICES).nullish().catch(null).transform(value => value ?? null),
+    voteChoice: z
+      .enum(VOTE_CHOICES)
+      .nullish()
+      .catch(null)
+      .transform(value => value ?? null),
     hasVoted: flag(false),
     createdAt: optionalString,
   }),

@@ -7,8 +7,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
   type ApiClient,
-  apiKeys,
   ApiError,
+  apiKeys,
   createApiClient,
   createQueryClient,
   createThreadMutation,
@@ -136,7 +136,9 @@ describe('query builders (against the mock)', () => {
     expect(shared).toBeDefined();
     const view = await queryClient.fetchQuery(sharedThreadQuery(api, shared?.threadId ?? ''));
     expect(view.thread.threadId).toBe(shared?.threadId);
-    expect(queryClient.getQueryData(apiKeys.threads.detail(shared?.threadId ?? ''))).toBeUndefined();
+    expect(
+      queryClient.getQueryData(apiKeys.threads.detail(shared?.threadId ?? '')),
+    ).toBeUndefined();
   });
 });
 
@@ -145,7 +147,9 @@ describe('mutation builders (against the mock)', () => {
     const { client: queryClient, api } = setup();
     const battle = await mutate(queryClient, startBattleMutation(api), { prompt: 'Hi' });
     expect(battle.comparisonId).toBeTruthy();
-    await expect(mutate(queryClient, sendChatMutation(api), { prompt: 'Hi' })).resolves.toMatchObject({
+    await expect(
+      mutate(queryClient, sendChatMutation(api), { prompt: 'Hi' }),
+    ).resolves.toMatchObject({
       text: expect.stringContaining('Demo mode') as unknown,
     });
     await expect(
@@ -153,7 +157,10 @@ describe('mutation builders (against the mock)', () => {
     ).resolves.toHaveProperty('size', 844);
     const queue = createVoteQueue({ send: vote => api.vote(vote), storage: null });
     await expect(
-      mutate(queryClient, voteMutation(queue), { comparisonId: battle.comparisonId, voteChoice: 'left' }),
+      mutate(queryClient, voteMutation(queue), {
+        comparisonId: battle.comparisonId,
+        voteChoice: 'left',
+      }),
     ).resolves.toEqual({ status: 'sent' });
   });
 
@@ -165,7 +172,9 @@ describe('mutation builders (against the mock)', () => {
     const created = await mutate(queryClient, createThreadMutation(api, queryClient), {
       title: 'New',
     });
-    expect(queryClient.getQueryData<Thread>(apiKeys.threads.detail(created.threadId))).toEqual(created);
+    expect(queryClient.getQueryData<Thread>(apiKeys.threads.detail(created.threadId))).toEqual(
+      created,
+    );
     expect(queryClient.getQueryState(listKey)?.isInvalidated).toBe(true);
 
     await queryClient.fetchQuery(threadsQuery(api));
@@ -217,9 +226,9 @@ describe('mutation builders (against the mock)', () => {
     const queryClient = createQueryClient();
     const startBattle = vi.fn(() => Promise.reject(new ApiError({ kind: 'server', message: 'x' })));
     const api = { startBattle } as unknown as ApiClient;
-    await expect(mutate(queryClient, startBattleMutation(api), { prompt: 'Hi' })).rejects.toBeInstanceOf(
-      ApiError,
-    );
+    await expect(
+      mutate(queryClient, startBattleMutation(api), { prompt: 'Hi' }),
+    ).rejects.toBeInstanceOf(ApiError);
     expect(startBattle).toHaveBeenCalledOnce();
   });
 });

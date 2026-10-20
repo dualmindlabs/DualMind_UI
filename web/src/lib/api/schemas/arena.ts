@@ -63,8 +63,14 @@ export const answerSchema = z.preprocess(
   withAliases(
     z.object({
       text: z.string(),
-      model: answerModelSchema.nullish().catch(null).transform(value => value ?? null),
-      usage: usageSchema.nullish().catch(null).transform(value => value ?? null),
+      model: answerModelSchema
+        .nullish()
+        .catch(null)
+        .transform(value => value ?? null),
+      usage: usageSchema
+        .nullish()
+        .catch(null)
+        .transform(value => value ?? null),
       finishReason: optionalString.catch(null),
       responseTimeMs: optionalNumber.catch(null),
       timestamp: optionalString.catch(null),
@@ -127,7 +133,10 @@ const streamDoneSchema = withAliases(
   z.object({
     object: z.literal('ai.stream.done'),
     finishReason: optionalString,
-    usage: usageSchema.nullish().catch(null).transform(value => value ?? null),
+    usage: usageSchema
+      .nullish()
+      .catch(null)
+      .transform(value => value ?? null),
   }),
 );
 

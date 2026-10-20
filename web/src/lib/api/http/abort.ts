@@ -4,7 +4,10 @@ import { ApiError } from '../errors';
  * Makes `controller` abort when `signal` does. Returns a function that removes the listener;
  * call it when the request settles so long-lived signals do not collect listeners.
  */
-export function linkSignal(signal: AbortSignal | undefined, controller: AbortController): () => void {
+export function linkSignal(
+  signal: AbortSignal | undefined,
+  controller: AbortController,
+): () => void {
   if (signal === undefined) return () => undefined;
   if (signal.aborted) {
     controller.abort(signal.reason);

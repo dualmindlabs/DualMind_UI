@@ -2,7 +2,13 @@ import { readFileSync } from 'node:fs';
 
 import { describe, expect, it } from 'vitest';
 
-import { ApiError, type ChatStreamEvent, readChatStream, readSseStream, SseParser } from '@/lib/api';
+import {
+  ApiError,
+  type ChatStreamEvent,
+  readChatStream,
+  readSseStream,
+  SseParser,
+} from '@/lib/api';
 
 import { byteStream, collect, rejectionOf } from './helpers';
 
@@ -170,7 +176,10 @@ describe('readChatStream', () => {
   });
 
   it('fails on an event that is not JSON or not a known shape', async () => {
-    for (const body of ['data: {"object":"ai.stream.delta"\n\n', 'data: {"object":"ai.stream.delta"}\n\n']) {
+    for (const body of [
+      'data: {"object":"ai.stream.delta"\n\n',
+      'data: {"object":"ai.stream.delta"}\n\n',
+    ]) {
       const { stream } = byteStream([body]);
       await expect(collect(readChatStream(stream)), body).rejects.toMatchObject({
         kind: 'bad_response',

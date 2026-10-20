@@ -56,7 +56,10 @@ export function hangingFetch() {
 }
 
 /** A byte stream from string or byte chunks; `cancelled` turns true when the reader cancels it. */
-export function byteStream(chunks: readonly (string | Uint8Array)[], options: { hang?: boolean } = {}) {
+export function byteStream(
+  chunks: readonly (string | Uint8Array)[],
+  options: { hang?: boolean } = {},
+) {
   const encoder = new TextEncoder();
   const state = { cancelled: false };
   let index = 0;

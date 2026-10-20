@@ -213,7 +213,11 @@ export async function* readChatStream(
     } catch (cause) {
       throw invalidEvent(data, context, cause);
     }
-    if (isRecord(json) && typeof json.object === 'string' && !KNOWN_STREAM_OBJECTS.has(json.object)) {
+    if (
+      isRecord(json) &&
+      typeof json.object === 'string' &&
+      !KNOWN_STREAM_OBJECTS.has(json.object)
+    ) {
       continue;
     }
     const parsed = streamEventSchema.safeParse(json);

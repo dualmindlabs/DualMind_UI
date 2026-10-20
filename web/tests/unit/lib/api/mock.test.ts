@@ -55,7 +55,9 @@ describe('mock adapter parity: every endpoint function works against it', () => 
   });
 
   it('leaderboard, normalised like the recorded live response', async () => {
-    await expect(mockClient().getLeaderboard()).resolves.toEqual(leaderboardSchema.parse(modelStats));
+    await expect(mockClient().getLeaderboard()).resolves.toEqual(
+      leaderboardSchema.parse(modelStats),
+    );
   });
 
   it('battle: two labelled demo answers from two different models, then one vote', async () => {
@@ -88,11 +90,13 @@ describe('mock adapter parity: every endpoint function works against it', () => 
     });
     expect(battle.agent1.model?.displayName).toBe(first?.displayName);
     expect(battle.agent2.model?.displayName).toBe(second?.displayName);
-    await expect(api.startBattle({ prompt: 'Hi', model1: 'x', model2: 'y' })).rejects.toMatchObject({
-      kind: 'validation',
-      code: 'INVALID_REQUEST',
-      message: 'Unknown model id',
-    });
+    await expect(api.startBattle({ prompt: 'Hi', model1: 'x', model2: 'y' })).rejects.toMatchObject(
+      {
+        kind: 'validation',
+        code: 'INVALID_REQUEST',
+        message: 'Unknown model id',
+      },
+    );
   });
 
   it('chat and streamed chat', async () => {
@@ -114,7 +118,11 @@ describe('mock adapter parity: every endpoint function works against it', () => 
     expect(seeded).toHaveLength(2);
 
     const created = await api.createThread({ title: '  Cheetah vs falcon  ', mode: 'battle' });
-    expect(created).toMatchObject({ title: 'Cheetah vs falcon', visibility: 'private', messageCount: 0 });
+    expect(created).toMatchObject({
+      title: 'Cheetah vs falcon',
+      visibility: 'private',
+      messageCount: 0,
+    });
     expect((await api.listThreads({ limit: 1 })).map(thread => thread.threadId)).toEqual([
       created.threadId,
     ]);
@@ -126,14 +134,18 @@ describe('mock adapter parity: every endpoint function works against it', () => 
       { promptText: 'Fastest animal?', voteChoice: 'tie', hasVoted: true, position: 0 },
     ]);
 
-    await expect(api.renameThread({ threadId: created.threadId, title: 'Renamed' })).resolves.toEqual({
+    await expect(
+      api.renameThread({ threadId: created.threadId, title: 'Renamed' }),
+    ).resolves.toEqual({
       success: true,
       message: 'Thread updated',
     });
     expect((await api.getThread(created.threadId)).title).toBe('Renamed');
 
     // Private: the public share view is refused.
-    await expect(api.getSharedThread(created.threadId)).rejects.toMatchObject({ kind: 'forbidden' });
+    await expect(api.getSharedThread(created.threadId)).rejects.toMatchObject({
+      kind: 'forbidden',
+    });
     await expect(
       api.setThreadVisibility({ threadId: created.threadId, visibility: 'unlisted' }),
     ).resolves.toEqual({ success: true, message: 'Visibility updated', visibility: 'unlisted' });
@@ -237,7 +249,10 @@ describe('mock scenarios (x-mock-scenario header)', () => {
     const seen: string[] = [];
     const error = await rejectionOf(
       (async () => {
-        for await (const event of mockClient().streamChat({ prompt: 'x' }, scenario('stream-error'))) {
+        for await (const event of mockClient().streamChat(
+          { prompt: 'x' },
+          scenario('stream-error'),
+        )) {
           if (event.type === 'delta') seen.push(event.text);
         }
       })(),

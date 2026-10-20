@@ -22,7 +22,9 @@ describe('parseApiConfig', () => {
 
   it('rejects base URLs that are relative, not http(s), or carry a query', () => {
     expect(() => parseApiConfig({ VITE_API_BASE_URL: '/api' })).toThrow(/absolute URL/);
-    expect(() => parseApiConfig({ VITE_API_BASE_URL: 'ftp://example.dev' })).toThrow(/http or https/);
+    expect(() => parseApiConfig({ VITE_API_BASE_URL: 'ftp://example.dev' })).toThrow(
+      /http or https/,
+    );
     expect(() => parseApiConfig({ VITE_API_BASE_URL: 'https://example.dev/?x=1' })).toThrow(
       /query or a hash/,
     );

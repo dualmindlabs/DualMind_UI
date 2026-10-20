@@ -178,7 +178,8 @@ function sseBody(
   });
 }
 
-const frame = (data: unknown) => `data: ${typeof data === 'string' ? data : JSON.stringify(data)}\n\n`;
+const frame = (data: unknown) =>
+  `data: ${typeof data === 'string' ? data : JSON.stringify(data)}\n\n`;
 
 function parseBody(body: RequestInit['body']): Record<string, unknown> | 'invalid' {
   if (body === undefined || body === null) return {};
@@ -232,7 +233,12 @@ export function createMockFetch(options: MockOptions = {}): FetchLike {
     return [MOCK_MODELS[first], MOCK_MODELS[(first + 1) % MOCK_MODELS.length]] as const;
   }
 
-  function wireAnswer(answer: string, model: (typeof MOCK_MODELS)[number], prompt: string, ms: number) {
+  function wireAnswer(
+    answer: string,
+    model: (typeof MOCK_MODELS)[number],
+    prompt: string,
+    ms: number,
+  ) {
     const promptTokens = Math.ceil(prompt.length / 4);
     const completionTokens = Math.ceil(answer.length / 4);
     return {
@@ -240,7 +246,11 @@ export function createMockFetch(options: MockOptions = {}): FetchLike {
       success: true,
       message: answer,
       output: { type: 'message', content: [{ type: 'output_text', text: answer }] },
-      model: { name: model.modelName, displayName: model.displayName, provider: model.providerName },
+      model: {
+        name: model.modelName,
+        displayName: model.displayName,
+        provider: model.providerName,
+      },
       prompt,
       selectionMode: 'random',
       responseTimeMs: ms,
@@ -421,7 +431,11 @@ export function createMockFetch(options: MockOptions = {}): FetchLike {
             frame({
               object: 'ai.stream.done',
               finishReason: 'stop',
-              usage: { promptTokens, completionTokens, totalTokens: promptTokens + completionTokens },
+              usage: {
+                promptTokens,
+                completionTokens,
+                totalTokens: promptTokens + completionTokens,
+              },
             }),
             frame('[DONE]'),
           ],
@@ -435,8 +449,10 @@ export function createMockFetch(options: MockOptions = {}): FetchLike {
       handle: ({ body }) => {
         const comparisonId = text(body.comparisonId);
         const choice = text(body.voteChoice);
-        if (comparisonId === '') return failure(400, 'comparisonId is required', 'VALIDATION_ERROR');
-        if (!VOTE_CHOICES.has(choice)) return failure(400, 'Invalid vote choice', 'VALIDATION_ERROR');
+        if (comparisonId === '')
+          return failure(400, 'comparisonId is required', 'VALIDATION_ERROR');
+        if (!VOTE_CHOICES.has(choice))
+          return failure(400, 'Invalid vote choice', 'VALIDATION_ERROR');
         if (votes.has(comparisonId)) {
           return failure(400, 'A vote was already recorded for this battle', 'DUPLICATE_VOTE');
         }
