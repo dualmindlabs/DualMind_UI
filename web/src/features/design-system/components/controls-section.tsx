@@ -27,27 +27,27 @@ export function ControlsSection() {
         <div className="rounded-lg border border-line bg-surface p-5 shadow-raise sm:p-6">
           <h3 className="text-h3 font-semibold">Buttons</h3>
           <p className="mt-1 text-ui-sm text-fg-soft">
-            Primary for the main action, terra for the human&apos;s own action, ghost for the rest.
+            Primary for the main action, human (terra) for your own action, outline for the rest. The full set is in Components below.
           </p>
           <div className="mt-6 flex flex-wrap items-center gap-3">
             <Button>
               Start a battle
               <ArrowRight aria-hidden="true" className="size-4" strokeWidth={2} />
             </Button>
-            <Button variant="terra">
+            <Button variant="human">
               <Check aria-hidden="true" className="size-4" strokeWidth={2} />
               Cast your vote
             </Button>
-            <Button variant="ghost">View leaderboard</Button>
+            <Button variant="outline">View leaderboard</Button>
             <Button disabled>Unavailable</Button>
           </div>
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <Button size="sm">Small primary</Button>
-            <Button size="sm" variant="terra">
-              Small terra
+            <Button size="sm" variant="human">
+              Small human
             </Button>
-            <Button size="sm" variant="ghost">
-              Small ghost
+            <Button size="sm" variant="outline">
+              Small outline
             </Button>
           </div>
         </div>
@@ -88,7 +88,7 @@ export function ControlsSection() {
             Labels above, hints below, errors linked to the field so screen readers announce them.
           </p>
           <div className="mt-6 grid gap-6 md:grid-cols-2">
-            <Field label="Display name" hint="Shown on the battles you share.">
+            <Field label="Display name" description="Shown on the battles you share.">
               {control => (
                 <Input {...control} name="display-name" autoComplete="nickname" placeholder="Ada" />
               )}
@@ -106,7 +106,7 @@ export function ControlsSection() {
             </Field>
             <Field
               label="Prompt"
-              hint="Both models get exactly this text. Ctrl + Enter sends it."
+              description="Both models get exactly this text. Ctrl + Enter sends it."
               className="md:col-span-2"
             >
               {control => (
