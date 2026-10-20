@@ -61,7 +61,7 @@ Keep each commit focused on one logical change.
 
 ## Local setup and checks
 
-Requirements: Node.js 20 and pnpm 10.
+Requirements: Node.js 22 (`.node-version`) and pnpm 10. `pnpm build` runs `node build.js`, which also installs and builds `web/`.
 
 ```bash
 pnpm install          # install dev dependencies
@@ -81,6 +81,43 @@ Code conventions (from [AGENTS.md](./AGENTS.md)):
 - Use the CSS variables in `css/tokens.css`; no hard-coded brand colours.
 - Sanitise any user or model content before it reaches `innerHTML` (DOMPurify or the escape helpers).
 - No `console.log` in production paths.
+
+## The web app (`web/`)
+
+The new React frontend lives in `web/` and is replacing the legacy pages slice by slice (see [docs/architecture.md](./docs/architecture.md) and [docs/redesign/migration-plan.md](./docs/redesign/migration-plan.md)). It has its own npm project.
+
+Requirements: Node.js 22.22 or newer (`.node-version`).
+
+```bash
+cd web
+npm ci                # install from package-lock.json
+npm run dev           # dev server, http://localhost:5173/design
+npm run check         # typecheck + lint + Prettier check + Vitest
+cd .. && node build.js && cd web   # compose dist/ (legacy + web build)
+npx playwright install chromium    # once
+npm run test:e2e      # Playwright against dist/ served by the real Worker
+```
+
+GitHub Actions runs all of this on every pull request (`web.yml`), uploads screenshots as the `web-screenshots` artifact, and offers a `web-autofix` patch when formatting or a fixable lint rule fails. If you cannot install dependencies locally, change `web/package.json` and let `web-lockfile.yml` resolve the lockfile for you.
+
+Conventions (details in each `web/src/*/README.md` and in [docs/architecture.md](./docs/architecture.md#8-conventions)):
+
+- Files and folders in kebab-case; one React component per file, PascalCase named export; hooks are `use-*.ts`.
+- Only route modules (`src/app/routes/`, `root.tsx`, `routes.ts`) have a default export.
+- Import features through `@/features/<name>` only; no deep imports, no barrel in `components/ui`.
+- Colours, type and spacing through the token utilities from `src/styles/tokens.css`; no hex values, no default Tailwind palette.
+- No `dangerouslySetInnerHTML`; no new `window` globals.
+- Third-party component code goes in `src/components/vendor/<source>/` with its licence file.
+- Tests live under `web/tests/` (`unit/`, `worker/`, `e2e/`).
+
+### Web PR checklist
+
+- [ ] `web.yml` is green: typecheck, lint, format, unit, Worker and e2e tests, axe in both themes.
+- [ ] Screenshots from the `web-screenshots` artifact checked (desktop and mobile, dark and light, reduced motion), and linked in the PR.
+- [ ] The page was opened on the Workers Builds preview (`?preview=dualmind-preview`).
+- [ ] Every URL the slice touches still answers as before (or redirects as planned); new client-only routes are in `SPA_FALLBACK_ROUTES`.
+- [ ] Copied third-party code has its licence file and a header comment, and is listed in `docs/redesign/licences.md`.
+- [ ] Docs updated: the folder READMEs, `docs/architecture.md` or an ADR if a decision changed.
 
 ## Pull requests
 

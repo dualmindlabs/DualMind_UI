@@ -4,6 +4,9 @@ import js from '@eslint/js';
 import globals from 'globals';
 
 export default [
+  // web/ is the React app with its own ESLint config (web/eslint.config.mjs, named .mjs so the
+  // root `*/*.js` lint glob never picks it up); dist/ is build output.
+  { ignores: ['web/**', 'dist/**'] },
   js.configs.recommended,
   {
     languageOptions: {

@@ -1,0 +1,10 @@
+node_modules/
+build/
+.react-router/
+.wrangler/
+tests/.tmp/
+screenshots/
+playwright-report/
+test-results/
+.env
+.env.local

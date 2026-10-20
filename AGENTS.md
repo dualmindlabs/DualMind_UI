@@ -16,7 +16,8 @@ cd admin-email-system && ...notify_on_complete # separate admin panel sub-projec
 npm run lint:fix         # Auto-fix lint issues (same broken glob — fix package.json first)
 npm run test             # Playwright tests — BROKEN: @playwright/test not in devDependencies
 npm run validate         # lint + test — BROKEN for both reasons above
-npm run build            # Copy files to ./dist via build.js
+npm run build            # node build.js: builds web/ (npm ci + react-router build), then composes ./dist
+cd web && npm run check  # New React app: typecheck, lint, Prettier, Vitest (see web/README.md)
 npm run deploy           # build + npx wrangler deploy (uses wrangler.jsonc)
 node build-deploy.js     # Alternative build script with a different file set
 ```
@@ -393,6 +394,17 @@ Cached models are stored in `window._DUALMIND_MODELS` after first fetch.
 
 ---
 
+## New web app (`web/`)
+
+The redesign moves pages from the legacy files to a React app in `web/` (React 19, React Router 8 framework mode with `ssr: false` + prerender, Vite 8, TypeScript strict, Tailwind CSS 4). Read [docs/architecture.md](./docs/architecture.md) and [web/README.md](./web/README.md) before working there.
+
+- `build.js` composes `dist/`: legacy allowlist first, then `web/build/client` on top. React Router's SPA fallback becomes `dist/__spa-fallback.html`; a web file may only replace a legacy file listed in `replacedByWeb`.
+- `worker.js` imports helpers from `server/routing.js`: immutable caching for `/assets/<name>-<hash>.<ext>`, `SPA_FALLBACK_ROUTES` (empty until slice S5), `X-Robots-Tag: noindex` for `/design/`.
+- Structure: `web/src/{app,features,components,hooks,lib,styles,config,types}`; every folder has a README with its rules. Tokens live only in `web/src/styles/tokens.css`.
+- **No window globals in `web/`.** State lives in modules, hooks and providers; the legacy globals listed above must not be used or extended from the new app.
+- No `dangerouslySetInnerHTML` (ESLint enforces it); third-party component code goes in `web/src/components/vendor/<source>/` with its licence.
+- Heavy work (installs, builds, tests, browsers) runs in GitHub Actions (`web.yml`); download screenshots with `gh run download <id> -n web-screenshots`.
+
 ## Tests
 
 Playwright config exists at `playwright.config.js`, test file at `tests/auth-flow-redesign.spec.js`.
@@ -440,3 +452,4 @@ When modifying code:
 5. Keep `window` globals minimal; if you need a global, document it in the Window Globals table above.
 6. Sanitize any HTML that touches user or AI content (`DOMPurify` is already imported in `index.html`).
 7. Update this file whenever you change file paths, global variables, event names, or major patterns.
+8. New UI work goes into `web/` (see "New web app" above), not into the legacy files, unless it is a fix for a page that has not moved yet.

@@ -18,6 +18,8 @@ Goal: move the Arena frontend from static HTML + vanilla JS to **React 19 + Vite
 
 ## 2. Target architecture
 
+> The structure as built (feature-based `web/src`, conventions, build and deploy) is described in [docs/architecture.md](../architecture.md), with the decisions in [docs/adr/](../adr/README.md).
+
 ```text
 DualMind_UI/
 ├── web/                         # NEW: the React app (pnpm workspace package)

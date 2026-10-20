@@ -20,10 +20,11 @@ jobs:
         with:
           version: 10
 
+      # Node 22 (from .node-version): build.js now builds the web app, which needs it.
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: .node-version
           cache: 'pnpm'
 
       - name: Install dependencies
@@ -32,6 +33,8 @@ jobs:
       - name: Lint codebase
         run: pnpm run lint
 
+      # The same self-contained build Cloudflare Workers Builds runs: installs and builds web/,
+      # then composes dist/ from the legacy files and the web build (see build.js).
       - name: Build project
         run: node build.js
 

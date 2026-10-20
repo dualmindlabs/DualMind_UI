@@ -20,6 +20,14 @@
 // Requests that carry the cookie skip the redirect. The code is not a secret: nothing sensitive
 // is behind it, it only keeps ordinary visitors on the waitlist.
 // ---------------------------------------------------------------------------
+import {
+  IMMUTABLE_CACHE,
+  isHashedAsset,
+  isNoindexPath,
+  isSpaFallbackRoute,
+  serveSpaFallback,
+} from './server/routing.js';
+
 const FORCE_WAITLIST = true;
 const WAITLIST_URL = 'https://early.dualmindlab.tech/';
 const PREVIEW_CODE = 'dualmind-preview';
@@ -146,6 +154,15 @@ const arena = {
             ...corsHeaders
           }
         });
+      }
+    }
+
+    // Client-only routes of the new web app (web/): React Router's SPA fallback page with
+    // status 200. The list in server/routing.js is empty until the first such route lands.
+    if ((request.method === 'GET' || request.method === 'HEAD') && isSpaFallbackRoute(pathname)) {
+      const fallback = await serveSpaFallback(request, env);
+      if (fallback) {
+        return fallback;
       }
     }
 
@@ -287,10 +304,18 @@ Sitemap: https://${domain}/sitemap.xml`, {
         const isJson = lower.endsWith('.json');
         const isImage = lower.endsWith('.png') || lower.endsWith('.jpg') || lower.endsWith('.jpeg') || lower.endsWith('.webp') || lower.endsWith('.gif') || lower.endsWith('.svg') || lower.endsWith('.ico');
 
-        if (isHtml || isJs || isCss || isJson) {
+        if (isHashedAsset(pathname)) {
+          // Vite build output of web/ (/assets/<name>-<hash>.<ext>): the name changes with the
+          // content, so browsers and the edge may keep it for a year.
+          response.headers.set('cache-control', IMMUTABLE_CACHE);
+        } else if (isHtml || isJs || isCss || isJson) {
           response.headers.set('cache-control', 'no-store, no-cache, must-revalidate, max-age=0');
         } else if (isImage) {
           response.headers.set('cache-control', 'public, max-age=31536000, immutable');
+        }
+
+        if (isNoindexPath(pathname)) {
+          response.headers.set('X-Robots-Tag', 'noindex, nofollow');
         }
 
         return response;

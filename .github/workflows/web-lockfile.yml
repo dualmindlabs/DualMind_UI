@@ -1,0 +1,71 @@
+name: Web lockfile and autofix
+
+# Helper for changing web/ without a local npm install (for example from a small VM): resolves
+# web/package-lock.json from web/package.json, applies Prettier and ESLint autofixes, and uploads
+# both as the `web-lockfile` artifact. It never pushes. To use the result:
+#   gh run download <run-id> -n web-lockfile -D /tmp/web-lockfile
+#   cp /tmp/web-lockfile/package-lock.json web/ && git apply /tmp/web-lockfile/web-autofix.patch
+# Runs on pull requests that change web/package.json, and by hand (Actions > Run workflow).
+
+on:
+  pull_request:
+    paths:
+      - 'web/package.json'
+      - '.github/workflows/web-lockfile.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lockfile:
+    name: Resolve the lockfile and apply autofixes
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: web
+
+    steps:
+      - name: Checkout the branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+
+      - name: Resolve and install (npm install)
+        run: npm install --no-audit --no-fund
+
+      - name: Apply Prettier and ESLint autofixes
+        run: |
+          npx --no-install react-router typegen || true
+          npx --no-install prettier --write . > /dev/null || true
+          npx --no-install eslint . --fix || true
+
+      - name: Collect the lockfile and the patch
+        run: |
+          out="$RUNNER_TEMP/web-lockfile"
+          mkdir -p "$out"
+          cp package-lock.json "$out/"
+          git diff --binary -- . ':(exclude)package-lock.json' > "$out/web-autofix.patch"
+          {
+            echo "### web lockfile and autofix"
+            echo
+            if git ls-files --error-unmatch package-lock.json > /dev/null 2>&1; then
+              echo "- package-lock.json changed: $(git diff --quiet -- package-lock.json && echo no || echo yes)"
+            else
+              echo "- package-lock.json is new"
+            fi
+            echo "- Autofix patch: $(grep -c '^diff --git' "$out/web-autofix.patch" || true) files"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-lockfile
+          path: ${{ runner.temp }}/web-lockfile/
+          retention-days: 7
