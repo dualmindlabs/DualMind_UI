@@ -44,11 +44,18 @@ export const howItWorksContent: PageContent = {
         {
           type: 'definitions',
           items: [
-            { term: 'A is better', description: 'The answer on the left is clearly the better one.' },
-            { term: 'B is better', description: 'The answer on the right is clearly the better one.' },
+            {
+              term: 'A is better',
+              description: 'The answer on the left is clearly the better one.',
+            },
+            {
+              term: 'B is better',
+              description: 'The answer on the right is clearly the better one.',
+            },
             {
               term: 'Tie',
-              description: 'Both answers are about equally good. A tie counts as half a win for each model.',
+              description:
+                'Both answers are about equally good. A tie counts as half a win for each model.',
             },
             {
               term: 'Both are bad',

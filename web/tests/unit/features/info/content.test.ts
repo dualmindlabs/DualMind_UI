@@ -50,13 +50,16 @@ describe('info page content', () => {
     expect(new Set(slugs).size).toBe(slugs.length);
   });
 
-  it.each(infoPages.map(page => [page.slug, page] as const))('%s has a title and intro', (_slug, page) => {
-    expect(page.title.trim()).not.toBe('');
-    expect(page.eyebrow.trim()).not.toBe('');
-    expect(page.heading.text.trim()).not.toBe('');
-    expect(page.intro.trim()).not.toBe('');
-    expect(page.sections.length).toBeGreaterThan(0);
-  });
+  it.each(infoPages.map(page => [page.slug, page] as const))(
+    '%s has a title and intro',
+    (_slug, page) => {
+      expect(page.title.trim()).not.toBe('');
+      expect(page.eyebrow.trim()).not.toBe('');
+      expect(page.heading.text.trim()).not.toBe('');
+      expect(page.intro.trim()).not.toBe('');
+      expect(page.sections.length).toBeGreaterThan(0);
+    },
+  );
 
   it.each(infoPages.map(page => [page.slug, page] as const))(
     '%s has a description of at most the allowed length',
@@ -66,12 +69,15 @@ describe('info page content', () => {
     },
   );
 
-  it.each(infoPages.map(page => [page.slug, page] as const))('%s has unique kebab-case section ids', (_slug, page) => {
-    const ids = page.sections.map(section => section.id);
-    expect(new Set(ids).size).toBe(ids.length);
-    for (const id of ids) expect(id).toMatch(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
-    for (const section of page.sections) expect(section.blocks.length).toBeGreaterThan(0);
-  });
+  it.each(infoPages.map(page => [page.slug, page] as const))(
+    '%s has unique kebab-case section ids',
+    (_slug, page) => {
+      const ids = page.sections.map(section => section.id);
+      expect(new Set(ids).size).toBe(ids.length);
+      for (const id of ids) expect(id).toMatch(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
+      for (const section of page.sections) expect(section.blocks.length).toBeGreaterThan(0);
+    },
+  );
 
   it('gives each legal page a summary callout and the update date', () => {
     for (const slug of ['privacy', 'terms', 'cookies']) {
@@ -86,7 +92,8 @@ describe('info page content', () => {
 
   it('has 12 to 16 FAQ questions', () => {
     const faq = infoPages.find(page => page.slug === 'faq');
-    const questions = faq?.sections.flatMap(s => s.blocks).filter(block => block.type === 'faq') ?? [];
+    const questions =
+      faq?.sections.flatMap(s => s.blocks).filter(block => block.type === 'faq') ?? [];
     expect(questions.length).toBeGreaterThanOrEqual(12);
     expect(questions.length).toBeLessThanOrEqual(16);
   });

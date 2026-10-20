@@ -61,7 +61,8 @@ export const cookiesContent: PageContent = {
             },
             {
               term: 'theme (local storage)',
-              description: 'Whether you chose the dark theme, the light theme or the system setting.',
+              description:
+                'Whether you chose the dark theme, the light theme or the system setting.',
             },
             {
               term: 'Model choices (local storage)',

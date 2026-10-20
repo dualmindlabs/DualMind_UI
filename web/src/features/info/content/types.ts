@@ -65,12 +65,7 @@ export interface DefinitionListBlock {
 }
 
 export type Block =
-  | ParagraphBlock
-  | ListBlock
-  | CalloutBlock
-  | FaqItemBlock
-  | StepsBlock
-  | DefinitionListBlock;
+  ParagraphBlock | ListBlock | CalloutBlock | FaqItemBlock | StepsBlock | DefinitionListBlock;
 
 /** A titled part of a page. `id` is unique within the page and is used for anchors. */
 export interface Section {

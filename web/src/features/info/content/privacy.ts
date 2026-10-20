@@ -115,8 +115,7 @@ export const privacyContent: PageContent = {
             },
             {
               term: 'Cloudflare',
-              description:
-                'Hosting and delivery of this site, and the database for the waitlist.',
+              description: 'Hosting and delivery of this site, and the database for the waitlist.',
             },
             {
               term: 'Microsoft Azure',
