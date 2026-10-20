@@ -1,0 +1,11 @@
+{
+  "success": true,
+  "user": {
+    "user_id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+    "email": "ada@example.com",
+    "full_name": "Ada Lovelace",
+    "avatar_url": null,
+    "role": "tester",
+    "energy_balance": "42"
+  }
+}

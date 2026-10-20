@@ -1,0 +1,26 @@
+{
+  "items": [
+    {
+      "modelId": "fdbfca6d-a3d2-4a70-b0ab-426024eb5cd5",
+      "modelName": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+      "displayName": "llama-3.3-70b-instruct-fp8-fast",
+      "providerName": "cloudflare",
+      "isFree": true,
+      "status": "active"
+    },
+    {
+      "modelId": "69a22e49-21bf-4388-88e3-46794e7cbac2",
+      "modelName": "groq/compound-mini",
+      "displayName": "Compound Mini",
+      "providerName": "groq",
+      "isFree": true,
+      "status": "active"
+    },
+    {
+      "model_id": "1fe310c7-24d1-49a5-a042-2e409e009524",
+      "model_name": "gemma-3n-e2b-it",
+      "provider_name": "google",
+      "is_free": "false"
+    }
+  ]
+}

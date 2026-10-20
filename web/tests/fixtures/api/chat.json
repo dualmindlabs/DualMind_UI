@@ -1,0 +1,36 @@
+{
+  "object": "ai.response",
+  "success": true,
+  "message": "Recursion is a function calling itself.",
+  "output": {
+    "type": "message",
+    "content": [
+      {
+        "type": "output_text",
+        "text": "Recursion is "
+      },
+      {
+        "type": "reasoning",
+        "text": "(hidden)"
+      },
+      {
+        "type": "output_text",
+        "text": "a function calling itself."
+      }
+    ]
+  },
+  "model": {
+    "name": "@cf/meta/llama-3.1-70b-instruct",
+    "displayName": "llama-3.1-70b-instruct",
+    "provider": "cloudflare"
+  },
+  "prompt": "Explain recursion",
+  "responseTimeMs": 980,
+  "usage": {
+    "promptTokens": 4,
+    "completionTokens": 8,
+    "totalTokens": 12
+  },
+  "finish_reason": "stop",
+  "timestamp": "2026-10-20T20:42:00.000Z"
+}

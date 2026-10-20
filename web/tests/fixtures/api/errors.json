@@ -1,0 +1,52 @@
+{
+  "aiErrorValidation": {
+    "object": "ai.error",
+    "code": "INVALID_REQUEST",
+    "message": "Prompt is required",
+    "timestamp": "2026-10-20T20:43:00Z"
+  },
+  "aiErrorProvider": {
+    "object": "ai.error",
+    "code": "API_ERROR",
+    "message": "The model provider failed",
+    "timestamp": "2026-10-20T20:43:00Z"
+  },
+  "successFalse": {
+    "success": false,
+    "error": "You do not own this thread",
+    "code": "FORBIDDEN"
+  },
+  "workerBadGateway": {
+    "error": "bad_gateway",
+    "requestId": "3b0e2f7a-5c1d-4e8b-9a6f-0d2c4b8e1f3a"
+  },
+  "workerGatewayTimeout": {
+    "error": "gateway_timeout",
+    "requestId": "3b0e2f7a-5c1d-4e8b-9a6f-0d2c4b8e1f3a"
+  },
+  "legacyWorkerBadGateway": {
+    "success": false,
+    "message": "Backend API Error: fetch failed",
+    "error": "TypeError: fetch failed"
+  },
+  "problemDetails": {
+    "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+    "title": "One or more validation errors occurred.",
+    "status": 400,
+    "errors": {
+      "Prompt": [
+        "The Prompt field is required."
+      ]
+    },
+    "traceId": "00-abc-def-00"
+  },
+  "nestedError": {
+    "error": {
+      "code": "QUOTA_EXCEEDED",
+      "message": "Daily battle limit reached",
+      "details": {
+        "limit": 50
+      }
+    }
+  }
+}

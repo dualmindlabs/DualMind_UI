@@ -1,0 +1,69 @@
+{
+  "success": true,
+  "comparisonId": "5b1c0f7e-2d7a-4a8e-9a43-1f3c7e2b9d10",
+  "agent1": {
+    "object": "ai.response",
+    "success": true,
+    "message": "**Short answer:** review for correctness first, then readability.",
+    "output": {
+      "type": "message",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "**Short answer:** review for correctness first, then readability."
+        }
+      ]
+    },
+    "model": {
+      "name": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+      "displayName": "llama-3.3-70b-instruct-fp8-fast",
+      "provider": "cloudflare"
+    },
+    "prompt": "What makes a good code review?",
+    "selectionMode": "random",
+    "responseTimeMs": 1834,
+    "usage": {
+      "promptTokens": 9,
+      "completionTokens": 15,
+      "totalTokens": 24
+    },
+    "timestamp": "2026-10-20T20:41:38.000Z"
+  },
+  "agent2": {
+    "object": "ai.response",
+    "success": true,
+    "message": "A good review checks behaviour, tests and naming, in that order.",
+    "model": {
+      "name": "groq/compound-mini",
+      "displayName": "Compound Mini",
+      "provider": "groq"
+    },
+    "prompt": "What makes a good code review?",
+    "selectionMode": "random",
+    "response_time_ms": "2210",
+    "usage": {
+      "prompt_tokens": 9,
+      "completion_tokens": 14,
+      "total_tokens": 23
+    },
+    "timestamp": "2026-10-20T20:41:38.400Z"
+  },
+  "arena": {
+    "comparison": {
+      "winnerByLength": "agent1",
+      "winnerByTokens": "agent1",
+      "verdict": "Pending user vote",
+      "userWinner": null,
+      "agent1MessageLength": 65,
+      "agent2MessageLength": 64,
+      "agent1Tokens": 15,
+      "agent2Tokens": 14
+    },
+    "models": {
+      "agent1": "llama-3.3-70b-instruct-fp8-fast",
+      "agent2": "Compound Mini"
+    }
+  },
+  "timestamp": "2026-10-20T20:41:38.500Z",
+  "totalResponseTimeMs": 2210
+}

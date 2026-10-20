@@ -1,0 +1,14 @@
+: keep-alive comment
+
+data: {"object":"ai.stream.delta","delta":{"type":"text","text":"Hel"}}
+
+data: {"object":"ai.stream.delta","delta":{"type":"text","text":"lo, "}}
+
+data: {"object":"ai.stream.start","model":{"name":"future-event"}}
+
+data: {"object":"ai.stream.delta","delta":{"type":"text","text":"wörld 👋"}}
+
+data: {"object":"ai.stream.done","finishReason":"stop","usage":{"promptTokens":9,"completionTokens":4,"totalTokens":13}}
+
+data: [DONE]
+

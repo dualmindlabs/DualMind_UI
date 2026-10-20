@@ -6,3 +6,6 @@ playwright-report/
 test-results/
 screenshots/
 tests/.tmp/
+# Recorded and synthetic API responses: kept byte-for-byte as recorded or written.
+tests/fixtures/
+coverage/

@@ -1,0 +1,36 @@
+{
+  "items": [
+    {
+      "messageId": "m-1",
+      "threadId": "0d3f1c2a-8b7e-4f6a-9c5d-2e1b0a9f8e7d",
+      "position": 0,
+      "promptText": "What makes a good code review?",
+      "model1Name": "llama-3.3-70b-instruct-fp8-fast",
+      "model2Name": "Compound Mini",
+      "model1Response": "**Short answer:** review for correctness first, then readability.",
+      "model2Response": "A good review checks behaviour, tests and naming, in that order.",
+      "model1TimeMs": 1834,
+      "model2TimeMs": 2210,
+      "comparisonId": "5b1c0f7e-2d7a-4a8e-9a43-1f3c7e2b9d10",
+      "voteChoice": "left",
+      "hasVoted": true,
+      "createdAt": "2026-10-19T10:00:00Z"
+    },
+    {
+      "message_id": "m-2",
+      "thread_id": "0d3f1c2a-8b7e-4f6a-9c5d-2e1b0a9f8e7d",
+      "position": "1",
+      "prompt_text": "And for tests?",
+      "model1_name": "llama-3.3-70b-instruct-fp8-fast",
+      "model2_name": "Compound Mini",
+      "model1_response": "Test behaviour, not lines.",
+      "model2_response": null,
+      "model1_time_ms": "912",
+      "model2_time_ms": null,
+      "comparison_id": "9e8d7c6b-5a49-4382-9170-6f5e4d3c2b1a",
+      "vote_choice": null,
+      "has_voted": false,
+      "created_at": "2026-10-19T10:05:00Z"
+    }
+  ]
+}
