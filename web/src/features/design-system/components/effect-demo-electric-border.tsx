@@ -65,7 +65,7 @@ export function EffectDemoElectricBorder() {
             {chosen ? 'Your pick. Mind A was Vega 7.' : 'Pick this answer to see the reveal.'}
           </p>
         </div>
-        <Button size="sm" variant="terra" onClick={choose}>
+        <Button size="sm" variant="human" onClick={choose}>
           {chosen ? 'Replay the reveal' : 'A is better'}
         </Button>
       </div>

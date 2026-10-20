@@ -71,7 +71,7 @@ export function EffectsBorders() {
       <EffectFrame effect="magnet">
         <div className="grid justify-items-center gap-3 text-center">
           <Magnet padding={70} strength={3}>
-            <Button variant="terra">Cast your vote</Button>
+            <Button variant="human">Cast your vote</Button>
           </Magnet>
           <p className="text-caption text-muted">Move the pointer close to the button.</p>
         </div>

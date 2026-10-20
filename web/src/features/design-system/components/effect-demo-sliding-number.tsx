@@ -17,10 +17,10 @@ export function EffectDemoSlidingNumber() {
           <SlidingNumber value={elo} className="text-h2 font-medium text-fg" />
         </p>
         <div className="flex gap-2">
-          <Button size="sm" variant="ghost" onClick={() => setElo(value => value + 16)}>
+          <Button size="sm" variant="outline" onClick={() => setElo(value => value + 16)}>
             Win (+16)
           </Button>
-          <Button size="sm" variant="ghost" onClick={() => setElo(value => value - 12)}>
+          <Button size="sm" variant="outline" onClick={() => setElo(value => value - 12)}>
             Loss (-12)
           </Button>
         </div>
