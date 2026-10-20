@@ -154,6 +154,43 @@ jobs:
             done
           } >> "$GITHUB_STEP_SUMMARY"
 
+      # The WebGL effects and Motion's feature bundles must stay in their own chunks, loaded only
+      # when a page uses them (components/motion/webgl-gate.tsx, motion-provider.tsx).
+      - name: Check that effects are code-split and report the bundle
+        run: |
+          set -euo pipefail
+          gz() { gzip -9c "$1" | wc -c; }
+          total() { local sum=0; for f in "$@"; do sum=$((sum + $(gz "$f"))); done; echo "$sum"; }
+          lazy=()
+          for chunk in light-rays silk electric-border features-dom-animation features-dom-max; do
+            file=$(ls dist/assets/${chunk}-*.js 2>/dev/null | head -n 1 || true)
+            if [ -z "$file" ]; then
+              echo "::error::Expected a separate chunk for ${chunk} in dist/assets"
+              exit 1
+            fi
+            lazy+=("$file")
+          done
+          # Script files the /design/ HTML loads up front (modulepreload and module scripts).
+          eager=$(grep -oE 'assets/[A-Za-z0-9._-]+\.js' dist/design/index.html | sort -u | sed 's#^#dist/#')
+          {
+            echo "### Bundle report"
+            echo
+            echo "| What | Files | Gzip (bytes) |"
+            echo "| --- | ---: | ---: |"
+            echo "| All JavaScript | $(ls dist/assets/*.js | wc -l) | $(total dist/assets/*.js) |"
+            echo "| All CSS | $(ls dist/assets/*.css | wc -l) | $(total dist/assets/*.css) |"
+            echo "| Loaded up front by /design/ | $(echo "$eager" | wc -l) | $(total $eager) |"
+            echo "| Lazy effect chunks (WebGL, Motion features) | ${#lazy[@]} | $(total "${lazy[@]}") |"
+            echo
+            echo "Lazy chunks: $(for f in "${lazy[@]}"; do printf '\`%s\` (%s B) ' "${f#dist/assets/}" "$(gz "$f")"; done)"
+          } >> "$GITHUB_STEP_SUMMARY"
+          for f in "${lazy[@]}"; do
+            if echo "$eager" | grep -qx "$f"; then
+              echo "::error::${f} is loaded up front by /design/; it must stay lazy"
+              exit 1
+            fi
+          done
+
       - name: Install Playwright Chromium
         working-directory: web
         run: npx playwright install --with-deps chromium

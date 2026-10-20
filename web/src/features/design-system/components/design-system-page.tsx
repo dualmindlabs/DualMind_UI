@@ -4,6 +4,7 @@ import { ColorSection } from './color-section';
 import { ControlsSection } from './controls-section';
 import { DesignFooter } from './design-footer';
 import { DesignHeader } from './design-header';
+import { EffectsSection } from './effects-section';
 import { Hero } from './hero';
 import { MotionSection } from './motion-section';
 import { RolesSection } from './roles-section';
@@ -24,6 +25,7 @@ export function DesignSystemPage() {
         <ControlsSection />
         <SpaceSection />
         <MotionSection />
+        <EffectsSection />
       </main>
       <DesignFooter />
     </>

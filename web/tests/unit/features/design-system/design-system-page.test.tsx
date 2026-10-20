@@ -1,7 +1,10 @@
 import { render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 
+import { credits } from '@/content/credits';
 import { DesignSystemPage } from '@/features/design-system';
+import { effects } from '@/features/design-system/lib/effects';
 import { designSections } from '@/features/design-system/lib/sections';
 
 describe('DesignSystemPage', () => {
@@ -54,5 +57,36 @@ describe('DesignSystemPage', () => {
     const email = screen.getByLabelText('Email');
     expect(email).toHaveAttribute('aria-invalid', 'true');
     expect(email).toHaveAccessibleDescription(/Enter a full email address/);
+  });
+
+  it('shows every vendored effect once, credited to its source', () => {
+    const { container } = render(<DesignSystemPage />);
+    const frames = [...container.querySelectorAll('figure[data-effect]')];
+    expect(frames.map(frame => frame.getAttribute('data-effect')).sort()).toEqual(
+      effects.map(effect => effect.id).sort(),
+    );
+    for (const effect of effects) {
+      const credit = credits.find(item => item.id === effect.source);
+      expect(credit?.uses, effect.name).toContain(effect.name);
+      const frame = screen.getByRole('figure', { name: effect.name });
+      expect(
+        within(frame).getByRole('link', { name: new RegExp(credit?.name ?? '') }),
+      ).toHaveAttribute('href', effect.url);
+    }
+  });
+
+  it('previews the reduced-motion versions of the effects', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<DesignSystemPage />);
+    const toggle = screen.getByRole('button', { name: 'Preview reduced motion' });
+    expect(toggle).toHaveAttribute('aria-pressed', 'false');
+    expect(container.querySelector('[data-reduced-motion="true"]')).toBeNull();
+
+    await user.click(toggle);
+    expect(toggle).toHaveAttribute('aria-pressed', 'true');
+    expect(container.querySelector('[data-reduced-motion="true"]')).not.toBeNull();
+    for (const gate of container.querySelectorAll('[data-webgl]')) {
+      expect(gate).toHaveAttribute('data-webgl', 'static');
+    }
   });
 });

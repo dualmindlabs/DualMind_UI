@@ -9,3 +9,5 @@ tests/.tmp/
 # Recorded and synthetic API responses: kept byte-for-byte as recorded or written.
 tests/fixtures/
 coverage/
+# Licence texts are copied verbatim from each source.
+src/components/vendor/**/LICENSE.md
