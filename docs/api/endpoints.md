@@ -76,7 +76,8 @@ The leaderboard modal source comment says model-stats "requires auth". It does n
 | 422 | not used by the API as far as seen; client maps it like 400 | n/a | `ValidationError` | no |
 | 429 | rate limit | unknown shape; `Retry-After` read if present | `RateLimitError` | yes, with the backoff below (the header is read but ignored for delay) |
 | 5xx | provider or server failure | arena routes: `{ object: "ai.error", code: "API_ERROR" or "STREAM_ERROR", message }`; others `{ success: false, error, code }` | `ApiError` | yes |
-| 502 | Worker could not reach the backend | `{ success: false, message: "Backend API Error: ...", error: "<error.toString()>" }` | `ApiError` | yes |
+| 502 | Worker could not reach the backend | `{ error: "bad_gateway", requestId }` since the proxy hardening (#24); before it `{ success: false, message: "Backend API Error: ...", error: "<error.toString()>" }` | `ApiError` | yes |
+| 504 | Worker got no answer from the backend in time (30 s; 65 s for `dualchat` and `chat`, per #30; event streams are never cut) | `{ error: "gateway_timeout", requestId }` | n/a (new) | n/a |
 | network | offline, CORS, DNS | `TypeError` | `NetworkError` | yes |
 
 The error message the UI shows is `data.message || data.error || "Request failed (status)"`. Two error shapes (`message` vs `error`) plus an empty 401 body are why that fallback chain exists.
@@ -503,8 +504,56 @@ Contract tests for the backend phase should use recorded responses from a **loca
 
 ---
 
-## 6. Change log
+## 6. Client mapping
+
+How the typed client in `web/src/lib/api/` (redesign slice S5) implements this contract. Every function is on the object `createApiClient()` returns and takes `CallOptions` (`signal`, `timeoutMs`, `retry`, `headers`) as its last argument. Paths are same-origin (`/api/...` through the Worker); responses go through the Zod schema in the table, which normalises the quirks in section 1 and fails with `bad_response` when a body does not fit. Details: [`web/src/lib/api/README.md`](../../web/src/lib/api/README.md).
+
+Retry policies: **GET** = up to 2 retries on `network`, `timeout` (incl. 408 and the Worker's 504), `429` and `5xx` except 501, exponential backoff from 500 ms with jitter, at least `Retry-After`, no retry when `Retry-After` is over 20 s; done by the transport for direct calls and by the QueryClient for queries, never by both. **Never** = no automatic retry; a retry is a user action.
+
+| Method and path | Function | Schema (output type) | Auth | Timeout | Retry |
+| --- | --- | --- | --- | --- | --- |
+| `GET /api/health` (Worker: `/health`) | `getHealth()` | `healthSchema` (`Health`, adds `healthy`) | none | 5 s | never (a health check reports) |
+| `GET /api/models` | `listModels()` | `modelListSchema` (`ModelSummary[]`) | required | 15 s | GET |
+| `GET /api/models/{id}` | `getModel(id)` | `modelSummarySchema` (`ModelSummary`) | required | 15 s | GET; 404 today (N7) |
+| `POST /api/arena/dualchat` | `startBattle(input)` | `battleSchema` (`Battle`: `comparisonId`, `agent1`, `agent2`, `comparison`) | required | 60 s | never |
+| `POST /api/arena/chat` | `sendChat(input)` | `answerSchema` (`Answer`: `text`, `model`, `usage`, `finishReason`...) | required | 60 s | never |
+| `POST /api/arena/chat/stream` | `streamChat(input)`, async generator | `streamEventSchema` per event (`ChatStreamEvent`) | required | 60 s until headers, then 30 s idle | never |
+| `POST /api/arena/model-vote` | `vote(input)`, or `createVoteQueue().submit()` | `voteResultSchema` (`VoteResult`) | required | 15 s | never; the vote queue resends transient failures on reconnect |
+| `GET /api/arena/model-stats` | `getLeaderboard()` | `leaderboardSchema` (`ModelStat[]`, camelCase only) | none | 15 s | GET |
+| `POST /api/speech/generate` | `textToSpeech(input)` | `audio/*` `Blob` | required | 30 s | never (costs quota) |
+| `GET /api/threads?limit=` | `listThreads({ limit })` | `threadListSchema` (`Thread[]`) | required | 15 s | GET |
+| `POST /api/threads` | `createThread(input)` | `threadSchema` (`Thread`) | required | 15 s | never |
+| `GET /api/threads/{id}` | `getThread(id)` | `threadSchema` (`Thread`) | optional | 15 s | GET |
+| `PATCH /api/threads/{id}` | `renameThread({ threadId, title })` | `mutationResultSchema` (`MutationResult`) | required | 15 s | never |
+| `DELETE /api/threads/{id}` | `deleteThread(id)` | `mutationResultSchema` (`MutationResult`) | required | 15 s | never |
+| `GET /api/threads/{id}/messages` | `listThreadMessages(id)` | `threadMessageListSchema` (`ThreadMessage[]`) | optional | 15 s | GET |
+| `PATCH /api/threads/{id}/visibility` | `setThreadVisibility({ threadId, visibility })` | `visibilityResultSchema` (`VisibilityResult`) | required | 15 s | never |
+| `GET /api/threads/{id}` + `/messages`, without a token | `getSharedThread(id)` | both of the above (`SharedThread`) | none | 15 s | GET |
+| `POST /api/users/sync` | `syncUser(input)` | `userProfileSchema` (`UserProfile`) | required | 15 s | never |
+| `GET /api/users/me` | `getMe()` | `userProfileSchema` (`UserProfile`) | required | 15 s | GET; 404 today (N7) |
+| `GET /api/settings/feature-flag/{key}` | `getFeatureFlag(key)` | `featureFlagSchema` (`FeatureFlag`) | none | 15 s | GET |
+
+Not mapped: `POST /api/audio/tts` (does not exist; replaced by `/api/speech/generate`), `GET /api/version` (404), the legacy `/api/auth/*` routes (unused), and the Supabase calls of section 3.12 (slice S6).
+
+What changes against the legacy client:
+
+- `POST` calls are never retried automatically (the legacy `HttpClient` retried every call, which could create duplicate battles), and the battle and chat timeout is 60 s instead of 30 s.
+- No guest mode: without a user token a protected call fails locally with an `auth` error instead of sending the Supabase anon key.
+- Every request carries an `x-request-id`; errors keep it and the API's `x-correlation-id`.
+- Text to speech calls the real route; the owner's thread read (`getThread`) and `setThreadVisibility` exist, so a shared thread no longer shows as private after a reload.
+- The leaderboard is read without a token and without a sign-in check.
+- The stream parser handles CR/CRLF, partial lines and multi-byte characters across chunks, fails on an unreadable event or a stream that ends without `done`, and has an idle timeout.
+- Redirects are reported (`UNEXPECTED_REDIRECT`) instead of being followed to the waitlist page.
+
+TanStack Query: `createQueryClient()`, `apiKeys`, query builders (`healthQuery`, `modelsQuery`, `modelQuery`, `leaderboardQuery`, `threadsQuery`, `threadQuery`, `threadMessagesQuery`, `sharedThreadQuery`, `meQuery`, `featureFlagQuery`) and mutation builders (`startBattleMutation`, `sendChatMutation`, `voteMutation`, `textToSpeechMutation`, `createThreadMutation`, `renameThreadMutation`, `deleteThreadMutation`, `setThreadVisibilityMutation`, `syncUserMutation`).
+
+The mock adapter (`VITE_API_MOCK=1`, Playwright, unit tests) implements every row above, in the wire format of this document, with error scenarios selected by the `x-mock-scenario` header.
+
+---
+
+## 7. Change log
 
 | Date | Checked against | Change |
 | --- | --- | --- |
+| 2026-10-20 | `b921669` (DualMind_UI `master`) | Section 6, client mapping for the typed client (S5). 502/504 bodies of the hardened Worker proxy in the error table. |
 | 2026-10-20 | `cee9356` (DualMind_UI `master`) | First version. Live `GET` probes: `/health`, `/api/health`, `/api/arena/model-stats`, `/api/settings/feature-flag/public_sharing`, unauthenticated `/api/models` (401) and `/api/users/me` (404). All other behaviour read from code and the published OpenAPI document. |
