@@ -1,0 +1,178 @@
+name: Web app
+
+# The React app in web/ and the composed site the dualmind-arena Worker serves.
+#   check: typecheck, ESLint, Prettier, unit tests and Worker tests (Vitest).
+#   e2e:   `node build.js` (the same self-contained build Cloudflare Workers Builds runs: it
+#          installs and builds web/, then composes dist/ from the legacy files and the web build),
+#          then the real worker.js serves dist/ in `wrangler dev`, and Playwright checks it:
+#          routes and headers, hydration, theme, keyboard, overflow, axe in both themes, and
+#          screenshots uploaded as the `web-screenshots` artifact.
+# Nothing here deploys: Workers Builds deploys master and builds a preview for every branch.
+
+on:
+  pull_request:
+    branches: [main, master]
+    paths:
+      - 'web/**'
+      - 'server/**'
+      - 'worker.js'
+      - 'wrangler.jsonc'
+      - 'build.js'
+      - 'package.json'
+      - '.node-version'
+      - '.github/workflows/web.yml'
+  push:
+    branches: [main, master]
+    paths:
+      - 'web/**'
+      - 'server/**'
+      - 'worker.js'
+      - 'wrangler.jsonc'
+      - 'build.js'
+      - 'package.json'
+      - '.node-version'
+      - '.github/workflows/web.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: web-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  WRANGLER_SEND_METRICS: 'false'
+
+jobs:
+  check:
+    name: Typecheck, lint, format and unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: web
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Typecheck (react-router typegen + tsc)
+        run: npm run typecheck
+
+      - name: Lint (ESLint)
+        run: npm run lint
+
+      - name: Check formatting (Prettier)
+        run: npm run format:check
+
+      - name: Unit and Worker tests (Vitest)
+        run: npm test
+
+      # When formatting or fixable lint rules fail, offer the fix as a patch:
+      #   gh run download <run-id> -n web-autofix && git apply web-autofix.patch
+      - name: Prepare an autofix patch
+        if: failure()
+        run: |
+          npx --no-install prettier --write . > /dev/null 2>&1 || true
+          npx --no-install eslint . --fix > /dev/null 2>&1 || true
+          mkdir -p "$RUNNER_TEMP/autofix"
+          git diff --binary -- . > "$RUNNER_TEMP/autofix/web-autofix.patch"
+          echo "Autofix patch: $(grep -c '^diff --git' "$RUNNER_TEMP/autofix/web-autofix.patch" || true) files" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload the autofix patch
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-autofix
+          path: ${{ runner.temp }}/autofix/
+          if-no-files-found: ignore
+          retention-days: 7
+
+  e2e:
+    name: Composed build, Playwright and screenshots
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Build the composed site (node build.js)
+        run: node build.js
+
+      - name: Check the composed dist/ and report sizes
+        run: |
+          set -euo pipefail
+          test -f dist/design/index.html
+          test -f dist/__spa-fallback.html
+          grep -q 'Two minds' dist/design/index.html
+          grep -q 'noindex' dist/design/index.html
+          # The legacy home page must not be replaced by the SPA fallback.
+          ! grep -q 'data-spa-fallback' dist/index.html
+          {
+            echo "### Web build output"
+            echo
+            echo "| File | Size | Gzip |"
+            echo "| --- | ---: | ---: |"
+            for f in dist/design/index.html dist/__spa-fallback.html $(ls -S dist/assets/*.js dist/assets/*.css); do
+              echo "| \`${f#dist/}\` | $(wc -c < "$f") | $(gzip -9c "$f" | wc -c) |"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Install Playwright Chromium
+        working-directory: web
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright (wrangler dev + Chromium)
+        working-directory: web
+        run: npx playwright test
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-screenshots
+          path: web/screenshots/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: List the screenshots in the job summary
+        if: always()
+        run: |
+          {
+            echo "### Screenshots of /design/"
+            echo
+            echo "Download the \`web-screenshots\` artifact from [this run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifacts):"
+            echo
+            for f in web/screenshots/*.png; do
+              [ -e "$f" ] && echo "- \`$(basename "$f")\`"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            web/playwright-report/
+            web/test-results/
+          retention-days: 7
