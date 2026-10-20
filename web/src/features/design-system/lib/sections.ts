@@ -7,6 +7,7 @@ export const designSections: readonly DesignSection[] = [
   { id: 'controls', index: '04', title: 'Controls', summary: 'Buttons, fields, focus' },
   { id: 'space', index: '05', title: 'Space', summary: 'Radius, spacing, depth' },
   { id: 'motion', index: '06', title: 'Motion', summary: 'Durations and easing' },
+  { id: 'effects', index: '07', title: 'Effects', summary: 'Vendored, gated, accessible' },
 ];
 
 export function getSection(id: string): DesignSection {
