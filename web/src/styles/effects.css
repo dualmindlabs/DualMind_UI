@@ -1,0 +1,143 @@
+/*
+ * Keyframes and helpers for the motion wrappers and the vendored effects
+ * (src/components/motion, src/components/vendor). Values come from tokens.css.
+ *
+ * Only transform, opacity and filter move, with two documented exceptions that repaint a
+ * background on small areas: the text sweeps (shiny text, text shimmer) and the shine border.
+ * Durations that a component sets per instance are read from custom properties
+ * (--marquee-duration, --sweep-duration...), with defaults here.
+ */
+
+@theme {
+  --animate-fade-in: dm-fade-in var(--dur-slow) var(--ease-out-expo) both;
+  --animate-blur-in: dm-blur-in var(--blur-in-duration, var(--dur-cinematic)) var(--ease-out-expo)
+    both;
+  --animate-caret: dm-caret 1.1s steps(1, end) infinite;
+  --animate-marquee: dm-marquee var(--marquee-duration, 40s) linear infinite;
+  --animate-marquee-vertical: dm-marquee-vertical var(--marquee-duration, 40s) linear infinite;
+  --animate-sweep: dm-sweep var(--sweep-duration, 3.5s) var(--ease-in-out) infinite;
+  --animate-shimmer: dm-shimmer var(--shimmer-duration, 2s) linear infinite;
+  --animate-shine: dm-shine var(--shine-duration, 14s) linear infinite;
+  --animate-orbit: dm-orbit var(--orbit-duration, 6s) linear infinite;
+  --animate-placeholder-in: dm-placeholder-in var(--dur-base) var(--ease-out-expo) both;
+  --animate-placeholder-out: dm-placeholder-out var(--dur-base) var(--ease-out-expo) both;
+
+  @keyframes dm-fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  /* Blur Text: blurred and offset, half-way, then sharp. */
+  @keyframes dm-blur-in {
+    from {
+      opacity: 0;
+      filter: blur(var(--blur-in-blur, 10px));
+      transform: translateY(var(--blur-in-offset, -0.6em));
+    }
+    50% {
+      opacity: 0.5;
+      filter: blur(calc(var(--blur-in-blur, 10px) / 2));
+      transform: translateY(calc(var(--blur-in-offset, -0.6em) / -10));
+    }
+    to {
+      opacity: 1;
+      filter: blur(0);
+      transform: none;
+    }
+  }
+
+  /* Text Type caret: on, then off; ends on. */
+  @keyframes dm-caret {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0;
+    }
+  }
+
+  @keyframes dm-marquee {
+    to {
+      transform: translateX(calc(-100% - var(--gap, 1rem)));
+    }
+  }
+
+  @keyframes dm-marquee-vertical {
+    to {
+      transform: translateY(calc(-100% - var(--gap, 1rem)));
+    }
+  }
+
+  /* Shiny Text: the band crosses the text, then rests off to the side for the last 30%. */
+  @keyframes dm-sweep {
+    from {
+      background-position: 130% 0;
+    }
+    70%,
+    to {
+      background-position: -30% 0;
+    }
+  }
+
+  /* Text Shimmer: the highlight runs from right to left, without a rest. */
+  @keyframes dm-shimmer {
+    from {
+      background-position: 100% center;
+    }
+    to {
+      background-position: 0% center;
+    }
+  }
+
+  @keyframes dm-shine {
+    0%,
+    100% {
+      background-position: 0% 0%;
+    }
+    50% {
+      background-position: 100% 100%;
+    }
+  }
+
+  /* Rotating example prompts in the composer: the old one rises out, the new one rises in. */
+  @keyframes dm-placeholder-in {
+    from {
+      opacity: 0;
+      transform: translateY(5px);
+    }
+  }
+
+  @keyframes dm-placeholder-out {
+    to {
+      opacity: 0;
+      transform: translateY(-15px);
+    }
+  }
+
+  /* Border Beam and Border Trail: a light travelling along the border (CSS motion path). */
+  @keyframes dm-orbit {
+    from {
+      offset-distance: var(--orbit-start, 0%);
+    }
+    to {
+      offset-distance: calc(var(--orbit-start, 0%) + 100%);
+    }
+  }
+}
+
+@layer base {
+  /*
+   * A subtree that forces reduced motion (components/motion/reduced-motion-scope.tsx): the same
+   * rule base.css applies for the media query.
+   */
+  [data-reduced-motion='true'] *,
+  [data-reduced-motion='true'] ::before,
+  [data-reduced-motion='true'] ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
