@@ -1,6 +1,5 @@
 import { useState } from 'react';
 
-import { MotionProvider } from '@/components/motion/motion-provider';
 import { ReducedMotionScope } from '@/components/motion/reduced-motion-scope';
 import { useReducedMotion } from '@/hooks/use-reduced-motion';
 
@@ -102,8 +101,7 @@ export function EffectsSection() {
         </>
       }
     >
-      <MotionProvider>
-        <ReducedMotionScope reduce={preview} className="grid gap-16">
+      <ReducedMotionScope reduce={preview} className="grid gap-16">
           {groups.map(group => (
             <div key={group.id} className="grid gap-6">
               <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] md:gap-16">
@@ -113,8 +111,7 @@ export function EffectsSection() {
               {group.content}
             </div>
           ))}
-        </ReducedMotionScope>
-      </MotionProvider>
+      </ReducedMotionScope>
     </Section>
   );
 }

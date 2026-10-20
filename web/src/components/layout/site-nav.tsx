@@ -1,9 +1,13 @@
-import { domMax, LazyMotion, m, MotionConfig } from 'motion/react';
+import { LazyMotion, m, MotionConfig } from 'motion/react';
 import { type FocusEvent, useId, useState } from 'react';
 
 import { isActivePath, primaryNav } from '@/lib/site/links';
 import { cn } from '@/lib/utils/cn';
 import { spring } from '@/styles/tokens';
+
+/** Shared layout animations need Motion's domMax features, loaded as their own chunk. */
+const loadLayoutFeatures = () =>
+  import('@/components/motion/features-dom-max').then(module => module.features);
 
 export interface SiteNavProps {
   /** The current path; the matching link gets aria-current="page" and the underline. */
@@ -29,7 +33,7 @@ export function SiteNav({ activePath, label = 'Main', size = 'md', className }: 
   };
 
   return (
-    <LazyMotion features={domMax} strict>
+    <LazyMotion features={loadLayoutFeatures} strict>
       <MotionConfig reducedMotion="user" transition={spring}>
         <nav aria-label={label} className={className}>
           <ul
