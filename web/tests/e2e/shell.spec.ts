@@ -148,13 +148,13 @@ test.describe('phone menu (390 x 844)', () => {
     await expect(drawer.getByRole('navigation', { name: 'Main' })).toBeVisible();
     await expect(drawer.getByRole('link', { name: 'Sign in' })).toBeVisible();
 
-    // Focus cycles inside the drawer, however often Tab is pressed.
+    // Focus cycles inside the drawer, however often Tab is pressed. At the wrap-around, Base UI's
+    // focus guard takes focus for a moment and hands it back, so poll rather than read once.
+    const focusInside = () =>
+      page.evaluate(() => !!document.activeElement?.closest('[data-testid="mobile-nav"]'));
     for (let step = 0; step < 16; step += 1) {
       await page.keyboard.press('Tab');
-      const inside = await page.evaluate(
-        () => !!document.activeElement?.closest('[data-testid="mobile-nav"]'),
-      );
-      expect(inside, `Tab ${step + 1}`).toBe(true);
+      await expect.poll(focusInside, { message: `Tab ${step + 1}`, timeout: 2000 }).toBe(true);
     }
 
     await page.keyboard.press('Escape');
