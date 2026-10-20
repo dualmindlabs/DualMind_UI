@@ -20,13 +20,31 @@
 // Requests that carry the cookie skip the redirect. The code is not a secret: nothing sensitive
 // is behind it, it only keeps ordinary visitors on the waitlist.
 // ---------------------------------------------------------------------------
+//
+// After the gate, requests go through, in order (docs/architecture.md, "Worker request flow"):
+//   1. /api/*: the same-origin proxy to the DualMind API (server/api-proxy.js)
+//   2. legacy URL redirects, 301 (server/redirects.js)
+//   3. client-only routes of the web app: the SPA fallback page (server/routing.js)
+//   4. the legacy share page, robots.txt, sitemap.xml, og-image.png
+//   5. static files from dist/ with the caching table (server/caching.js)
+// and every response leaves with the security headers and, for HTML, the Content-Security-Policy
+// (server/security-headers.js, with the CSP hashes from dist/__web-manifest.json).
+// ---------------------------------------------------------------------------
+import { proxyApi } from './server/api-proxy.js';
+import { cacheControlFor } from './server/caching.js';
+import { redirectResponse } from './server/redirects.js';
 import {
-  IMMUTABLE_CACHE,
-  isHashedAsset,
   isNoindexPath,
   isSpaFallbackRoute,
   serveSpaFallback,
+  SPA_FALLBACK_PATH,
 } from './server/routing.js';
+import {
+  applySecurityHeaders,
+  LEGACY_CONTENT_SECURITY_POLICY,
+  webContentSecurityPolicy,
+} from './server/security-headers.js';
+import { loadWebManifest } from './server/web-manifest.js';
 
 const FORCE_WAITLIST = true;
 const WAITLIST_URL = 'https://early.dualmindlab.tech/';
@@ -37,32 +55,38 @@ const PREVIEW_COOKIE_ATTRIBUTES = 'Path=/; Secure; HttpOnly; SameSite=Lax';
 
 export default {
   async fetch(request, env) {
-    if (!FORCE_WAITLIST) {
-      return serveArena(request, env);
-    }
-
-    const url = new URL(request.url);
-    const preview = url.searchParams.get('preview');
-
-    if (preview === 'off') {
-      return waitlistRedirect(url, `${PREVIEW_COOKIE}=; Max-Age=0; ${PREVIEW_COOKIE_ATTRIBUTES}`);
-    }
-
-    if (preview === PREVIEW_CODE) {
-      const response = await serveArena(request, env);
-      const withCookie = new Response(response.body, response);
-      withCookie.headers.append('Set-Cookie', `${PREVIEW_COOKIE}=1; Max-Age=${PREVIEW_MAX_AGE}; ${PREVIEW_COOKIE_ATTRIBUTES}`);
-      withCookie.headers.set('Cache-Control', 'private, no-store');
-      return withCookie;
-    }
-
-    if (hasPreviewCookie(request)) {
-      return serveArena(request, env);
-    }
-
-    return waitlistRedirect(url);
+    const response = await handleRequest(request, env);
+    return withSecurityHeaders(request, env, response);
   },
 };
+
+// The pre-launch gate (see the comment at the top).
+async function handleRequest(request, env) {
+  if (!FORCE_WAITLIST) {
+    return serveArena(request, env);
+  }
+
+  const url = new URL(request.url);
+  const preview = url.searchParams.get('preview');
+
+  if (preview === 'off') {
+    return waitlistRedirect(url, `${PREVIEW_COOKIE}=; Max-Age=0; ${PREVIEW_COOKIE_ATTRIBUTES}`);
+  }
+
+  if (preview === PREVIEW_CODE) {
+    const response = await serveArena(request, env);
+    const withCookie = new Response(response.body, response);
+    withCookie.headers.append('Set-Cookie', `${PREVIEW_COOKIE}=1; Max-Age=${PREVIEW_MAX_AGE}; ${PREVIEW_COOKIE_ATTRIBUTES}`);
+    withCookie.headers.set('Cache-Control', 'private, no-store');
+    return withCookie;
+  }
+
+  if (hasPreviewCookie(request)) {
+    return serveArena(request, env);
+  }
+
+  return waitlistRedirect(url);
+}
 
 function hasPreviewCookie(request) {
   const cookies = request.headers.get('Cookie') || '';
@@ -83,81 +107,24 @@ function waitlistRedirect(url, setCookie) {
   return new Response(null, { status: 302, headers });
 }
 
-// The Arena itself: what every request got before the pre-launch redirect, and what preview
-// visitors get now. Unchanged apart from being moved under this name.
+// The Arena itself: what preview visitors get now, and every visitor once the gate is off.
 const arena = {
   async fetch(request, env) {
     const url = new URL(request.url);
     const pathname = url.pathname;
 
-    // CORS headers for API requests
-    const corsHeaders = {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-User-ID',
-      'Access-Control-Max-Age': '86400',
-    };
-
-    // The copied careers page was removed; send old links to /about/ (permanent, query kept)
-    if (pathname === '/careers' || pathname.startsWith('/careers/')) {
-      const target = new URL('/about/', url);
-      target.search = url.search;
-      return Response.redirect(target.toString(), 301);
-    }
-
-    // Handle CORS preflight requests
-    if (request.method === 'OPTIONS') {
-      return new Response(null, {
-        status: 204,
-        headers: corsHeaders
-      });
-    }
-
-    // API Proxy: Forward /api/* requests to backend server
+    // 1. Same-origin API proxy (hardened: header allow-list, request ids, no CORS, timeouts).
     if (pathname.startsWith('/api/')) {
-      const backendUrl = env?.BACKEND_URL || 'https://api.dualmindlab.tech';
-
-      // Map frontend /api/health to backend /health
-      let backendPath = pathname;
-      if (pathname === '/api/health') {
-        backendPath = '/health';
-      }
-
-      const backendRequestUrl = new URL(backendPath + url.search, backendUrl);
-
-      try {
-        const backendResponse = await fetch(backendRequestUrl, {
-          method: request.method,
-          headers: request.headers,
-          body: request.method !== 'GET' && request.method !== 'HEAD' ? request.body : null,
-        });
-
-        const response = new Response(backendResponse.body, backendResponse);
-        Object.keys(corsHeaders).forEach(key => {
-          response.headers.set(key, corsHeaders[key]);
-        });
-
-        response.headers.set('x-dualmind-proxy-backend', backendUrl);
-        response.headers.set('x-dualmind-proxy-path', backendPath);
-
-        return response;
-      } catch (error) {
-        console.error('Worker proxy error:', error);
-        return new Response(JSON.stringify({
-          success: false,
-          message: 'Backend API Error: ' + error.message,
-          error: error.toString()
-        }), {
-          status: 502,
-          headers: {
-            'Content-Type': 'application/json',
-            ...corsHeaders
-          }
-        });
-      }
+      return proxyApi(request, env);
     }
 
-    // Client-only routes of the new web app (web/): React Router's SPA fallback page with
+    // 2. Permanent redirects for legacy URLs, from the table in server/redirects.js.
+    const redirect = redirectResponse(url);
+    if (redirect) {
+      return redirect;
+    }
+
+    // 3. Client-only routes of the new web app (web/): React Router's SPA fallback page with
     // status 200. The list in server/routing.js is empty until the first such route lands.
     if ((request.method === 'GET' || request.method === 'HEAD') && isSpaFallbackRoute(pathname)) {
       const fallback = await serveSpaFallback(request, env);
@@ -166,22 +133,18 @@ const arena = {
       }
     }
 
-    // Handle /share/* routes explicitly for thread sharing
+    // 4. Handle /share/* routes explicitly for thread sharing
     if (pathname.startsWith('/share')) {
       if (env?.ASSETS?.fetch) {
         // Rewrite all /share/* requests to /share/index.html
         const shareUrl = new URL(request.url);
         shareUrl.pathname = '/share/index.html';
 
-        let assetResponse = await env.ASSETS.fetch(new Request(shareUrl, request));
+        const assetResponse = await env.ASSETS.fetch(new Request(shareUrl, request));
 
         if (assetResponse && assetResponse.status !== 404) {
-          const response = new Response(assetResponse.body, assetResponse);
-          response.headers.set('X-Content-Type-Options', 'nosniff');
-          response.headers.set('X-Frame-Options', 'DENY');
-          // Important: Cache control to prevent stale share pages
-          response.headers.set('cache-control', 'no-store, no-cache, must-revalidate');
-          return response;
+          // The caching table keeps share pages out of every cache.
+          return withCaching(request, env, assetResponse, pathname);
         }
       }
     }
@@ -285,40 +248,12 @@ Sitemap: https://${domain}/sitemap.xml`, {
       });
     }
 
-    // Serve static assets from ASSETS binding
+    // 5. Serve static assets from ASSETS binding, with the caching table (server/caching.js)
     if (env?.ASSETS?.fetch) {
       let assetResponse = await env.ASSETS.fetch(request);
 
-      // If asset found, add security headers and return
       if (assetResponse && assetResponse.status !== 404) {
-        const response = new Response(assetResponse.body, assetResponse);
-        response.headers.set('X-Content-Type-Options', 'nosniff');
-        response.headers.set('X-Frame-Options', 'DENY');
-        response.headers.set('X-XSS-Protection', '1; mode=block');
-
-        // Prevent stale deployments being cached (especially JS/CSS/HTML)
-        const lower = pathname.toLowerCase();
-        const isHtml = lower.endsWith('.html') || lower === '/' || lower.endsWith('/');
-        const isJs = lower.endsWith('.js');
-        const isCss = lower.endsWith('.css');
-        const isJson = lower.endsWith('.json');
-        const isImage = lower.endsWith('.png') || lower.endsWith('.jpg') || lower.endsWith('.jpeg') || lower.endsWith('.webp') || lower.endsWith('.gif') || lower.endsWith('.svg') || lower.endsWith('.ico');
-
-        if (isHashedAsset(pathname)) {
-          // Vite build output of web/ (/assets/<name>-<hash>.<ext>): the name changes with the
-          // content, so browsers and the edge may keep it for a year.
-          response.headers.set('cache-control', IMMUTABLE_CACHE);
-        } else if (isHtml || isJs || isCss || isJson) {
-          response.headers.set('cache-control', 'no-store, no-cache, must-revalidate, max-age=0');
-        } else if (isImage) {
-          response.headers.set('cache-control', 'public, max-age=31536000, immutable');
-        }
-
-        if (isNoindexPath(pathname)) {
-          response.headers.set('X-Robots-Tag', 'noindex, nofollow');
-        }
-
-        return response;
+        return withCaching(request, env, assetResponse, pathname);
       }
 
       // Try adding .html extension for clean URLs
@@ -328,12 +263,7 @@ Sitemap: https://${domain}/sitemap.xml`, {
         htmlUrl.pathname = pathname + '.html';
         assetResponse = await env.ASSETS.fetch(new Request(htmlUrl, request));
         if (assetResponse && assetResponse.status !== 404) {
-          const response = new Response(assetResponse.body, assetResponse);
-          response.headers.set('X-Content-Type-Options', 'nosniff');
-          response.headers.set('X-Frame-Options', 'DENY');
-          response.headers.set('X-XSS-Protection', '1; mode=block');
-            response.headers.set('cache-control', 'no-store, no-cache, must-revalidate, max-age=0');
-          return response;
+          return withCaching(request, env, assetResponse, htmlUrl.pathname);
         }
       }
 
@@ -343,11 +273,7 @@ Sitemap: https://${domain}/sitemap.xml`, {
         indexUrl.pathname = pathname.endsWith('/') ? pathname + 'index.html' : pathname + '/index.html';
         assetResponse = await env.ASSETS.fetch(new Request(indexUrl, request));
         if (assetResponse && assetResponse.status !== 404) {
-          const response = new Response(assetResponse.body, assetResponse);
-          response.headers.set('X-Content-Type-Options', 'nosniff');
-          response.headers.set('X-Frame-Options', 'DENY');
-          response.headers.set('X-XSS-Protection', '1; mode=block');
-            return response;
+          return withCaching(request, env, assetResponse, indexUrl.pathname);
         }
       }
     }
@@ -365,8 +291,6 @@ Sitemap: https://${domain}/sitemap.xml`, {
             headers: errorResponse.headers
           });
           response.headers.set('content-type', 'text/html; charset=utf-8');
-          response.headers.set('X-Content-Type-Options', 'nosniff');
-          response.headers.set('X-Frame-Options', 'DENY');
           return response;
         }
       } catch (error) {
@@ -380,4 +304,63 @@ Sitemap: https://${domain}/sitemap.xml`, {
 
 function serveArena(request, env) {
   return arena.fetch(request, env);
+}
+
+function isHtmlResponse(response) {
+  return (response.headers.get('content-type') || '').includes('text/html');
+}
+
+// A file from dist/: Cache-Control from the caching table, and noindex for the style guide.
+// `rulePath` is the path the rules look at (the file that was found, for the clean-URL fallbacks).
+async function withCaching(request, env, assetResponse, rulePath) {
+  const response = new Response(assetResponse.body, assetResponse);
+  const manifest = isHtmlResponse(response) ? await loadWebManifest(request, env) : null;
+  const cacheControl = cacheControlFor({
+    pathname: rulePath,
+    webPage: Boolean(manifest?.pages.has(rulePath)),
+  });
+  if (cacheControl) {
+    response.headers.set('cache-control', cacheControl);
+  }
+  if (isNoindexPath(rulePath)) {
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+  }
+  return response;
+}
+
+// Every response leaves through here: security headers, and the Content-Security-Policy for
+// HTML. Web app pages get the enforced policy with the build's script hashes; if the manifest
+// is missing, they fall back to report-only so a broken build cannot blank the page.
+async function withSecurityHeaders(request, env, response) {
+  const { pathname } = new URL(request.url);
+  const secured = new Response(response.body, response);
+
+  if (response.status >= 300 && response.status < 400) {
+    applySecurityHeaders(secured.headers, { kind: 'other' });
+  } else if (pathname.startsWith('/api/')) {
+    applySecurityHeaders(secured.headers, { kind: 'api' });
+  } else if (isHtmlResponse(response)) {
+    const manifest = await loadWebManifest(request, env);
+    const webPage =
+      Boolean(manifest?.pages.has(pathname)) ||
+      isSpaFallbackRoute(pathname) ||
+      pathname === SPA_FALLBACK_PATH;
+    if (webPage) {
+      applySecurityHeaders(secured.headers, {
+        kind: 'web-page',
+        csp: webContentSecurityPolicy(manifest ?? {}),
+        cspReportOnly: !manifest,
+      });
+    } else {
+      applySecurityHeaders(secured.headers, {
+        kind: 'legacy-page',
+        csp: LEGACY_CONTENT_SECURITY_POLICY,
+        cspReportOnly: true,
+      });
+    }
+  } else {
+    applySecurityHeaders(secured.headers, { kind: 'other' });
+  }
+
+  return secured;
 }

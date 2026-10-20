@@ -5,8 +5,12 @@
 // arena.dualmindlab.tech route and the Flagship binding. This writes a copy without them to
 // tests/.tmp/wrangler.e2e.json; everything else (main, assets, run_worker_first, compatibility
 // date) is taken from the real config, so the tests exercise the deployed setup.
+//
+// A fake backend on the next port answers /api/* for the proxy tests: it echoes the method, path
+// and headers it received, and adds the headers the Worker must strip (BACKEND_URL points at it).
 import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import http from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -62,6 +66,20 @@ if (!existsSync(path.join(config.assets.directory, 'design', 'index.html'))) {
   process.exit(1);
 }
 
+const backendPort = Number(port) + 1;
+const backend = http.createServer((request, response) => {
+  response.writeHead(200, {
+    'content-type': 'application/json',
+    'access-control-allow-origin': '*',
+    'x-dualmind-proxy-backend': 'should-be-stripped',
+  });
+  response.end(
+    JSON.stringify({ method: request.method, path: request.url, headers: request.headers }),
+  );
+});
+backend.listen(backendPort, '127.0.0.1');
+config.vars = { ...(config.vars ?? {}), BACKEND_URL: `http://127.0.0.1:${backendPort}` };
+
 const tmpDir = path.join(webDir, 'tests', '.tmp');
 mkdirSync(tmpDir, { recursive: true });
 const configPath = path.join(tmpDir, 'wrangler.e2e.json');
@@ -88,4 +106,7 @@ const child = spawn(
 for (const signal of ['SIGINT', 'SIGTERM']) {
   process.on(signal, () => child.kill(signal));
 }
-child.on('exit', code => process.exit(code ?? 0));
+child.on('exit', code => {
+  backend.close();
+  process.exit(code ?? 0);
+});

@@ -9,8 +9,6 @@
  */
 export const HASHED_ASSET_RE = /^\/assets\/[^/]+-[A-Za-z0-9_-]{8}\.[a-z0-9]+$/;
 
-export const IMMUTABLE_CACHE = 'public, max-age=31536000, immutable';
-
 /** @param {string} pathname */
 export function isHashedAsset(pathname) {
   return HASHED_ASSET_RE.test(pathname);
@@ -52,11 +50,10 @@ export async function serveSpaFallback(request, env) {
   const asset = await env.ASSETS.fetch(new Request(url, { method: 'GET', headers: request.headers }));
   if (!asset || asset.status !== 200) return null;
 
+  // Security headers and the CSP are added by worker.js for every response.
   const response = new Response(asset.body, { status: 200, headers: asset.headers });
   response.headers.set('content-type', 'text/html; charset=utf-8');
   response.headers.set('cache-control', 'no-cache');
-  response.headers.set('X-Content-Type-Options', 'nosniff');
-  response.headers.set('X-Frame-Options', 'DENY');
   return response;
 }
 
