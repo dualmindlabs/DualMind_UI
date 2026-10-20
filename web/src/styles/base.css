@@ -1,0 +1,137 @@
+/*
+ * Base styles: page defaults, focus ring, selection, text wrapping and the shared label and
+ * human-voice utilities. Values come from tokens.css.
+ */
+
+@layer base {
+  html {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-sans);
+    font-optical-sizing: auto;
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Clip on html as well as body: on body alone it is moved to the viewport. */
+    overflow-x: clip;
+    scroll-padding-top: 5rem;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  body {
+    min-height: 100svh;
+    overflow-x: clip;
+    background: var(--bg);
+    font-size: var(--text-body);
+    line-height: 1.65;
+  }
+
+  *,
+  ::before,
+  ::after {
+    border-color: var(--line);
+  }
+
+  /* One focus ring everywhere: 2px (3px with more contrast), 3px away from the element. */
+  :focus-visible {
+    outline: var(--focus-width) solid var(--focus);
+    outline-offset: var(--focus-offset);
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--mind-a) 32%, transparent);
+    color: var(--fg);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    text-wrap: balance;
+  }
+
+  p,
+  li,
+  dd,
+  figcaption {
+    text-wrap: pretty;
+  }
+
+  code,
+  pre,
+  samp {
+    font-family: var(--font-code);
+  }
+
+  kbd {
+    font-family: var(--font-mono);
+  }
+
+  /* Reduced motion: nothing moves. Components that animate with JS use useReducedMotion(). */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* Eyebrows, badges and keyboard hints: the DM Mono label voice. */
+@utility eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+}
+
+/* The human voice: Playfair Display italic, one phrase per heading at most. */
+@utility human-voice {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+/* The text wordmark: DUALMIND in Bricolage 800 caps; the ARENA suffix is coloured by its parent. */
+@utility wordmark {
+  font-family: var(--font-sans);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+/* Focus ring for a wrapper whose real control is visually hidden (radio cards, toggles). */
+@utility focus-ring-within {
+  &:has(:focus-visible) {
+    outline: var(--focus-width) solid var(--focus);
+    outline-offset: 2px;
+  }
+}
+
+/* The focus ring drawn permanently, for the style guide's focus demo. */
+@utility focus-ring-demo {
+  outline: var(--focus-width) solid var(--focus);
+  outline-offset: var(--focus-offset);
+}
+
+/* A faint dot grid for quiet backgrounds. */
+@utility dot-grid {
+  background-image: radial-gradient(
+    color-mix(in oklab, var(--fg) 13%, transparent) 1px,
+    transparent 1.2px
+  );
+  background-size: 24px 24px;
+}
