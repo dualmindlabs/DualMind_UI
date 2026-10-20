@@ -17,7 +17,11 @@ export function EffectDemoComposer() {
   const [sent, setSent] = useState<string | null>(null);
 
   return (
-    <EffectFrame effect="placeholders-and-vanish-input" className="sm:col-span-2" stageClassName="px-6 sm:px-10">
+    <EffectFrame
+      effect="placeholders-and-vanish-input"
+      className="sm:col-span-2"
+      stageClassName="px-6 sm:px-10"
+    >
       <div className="grid w-full gap-3">
         <PlaceholdersAndVanishInput
           label="Ask both models"

@@ -79,7 +79,11 @@ export function EffectsText() {
         </p>
       </EffectFrame>
 
-      <EffectFrame effect="fuzzy-text" className="sm:col-span-2 xl:col-span-3" stageClassName="min-h-64">
+      <EffectFrame
+        effect="fuzzy-text"
+        className="sm:col-span-2 xl:col-span-3"
+        stageClassName="min-h-64"
+      >
         <div className="grid justify-items-center gap-3 text-center">
           <p className="text-muted">
             <FuzzyText fontSize="clamp(5rem, 16vw, 9rem)">404</FuzzyText>
