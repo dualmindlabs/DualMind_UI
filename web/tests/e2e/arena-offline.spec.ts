@@ -300,6 +300,7 @@ test.describe('a crash inside the arena', () => {
     await mockArena(page);
     await page.addInitScript(() => {
       (window as unknown as { dmCrash: boolean }).dmCrash = false;
+      // eslint-disable-next-line @typescript-eslint/unbound-method -- patched back with .apply
       const real = Number.prototype.toLocaleString;
       Number.prototype.toLocaleString = function (...args: Parameters<typeof real>) {
         if ((window as unknown as { dmCrash: boolean }).dmCrash) throw new Error('forced crash');
@@ -357,7 +358,8 @@ test.describe('offline screenshots', () => {
         await storeTheme(page, theme);
         await mockArena(page);
         await page.addInitScript(() => {
-          const real = Number.prototype.toLocaleString;
+          // eslint-disable-next-line @typescript-eslint/unbound-method -- patched back with .apply
+      const real = Number.prototype.toLocaleString;
           Number.prototype.toLocaleString = function (...args: Parameters<typeof real>) {
             if (window.location.search.includes('thread=')) throw new Error('forced crash');
             return real.apply(this, args);

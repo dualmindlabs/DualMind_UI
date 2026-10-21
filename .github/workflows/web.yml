@@ -105,7 +105,7 @@ jobs:
       # When formatting or fixable lint rules fail, offer the fix as a patch:
       #   gh run download <run-id> -n web-autofix && git apply web-autofix.patch
       - name: Prepare an autofix patch
-        if: failure()
+        if: always() # TEMP-OFFLINE-DEBUG
         run: |
           npx --no-install prettier --write . > /dev/null 2>&1 || true
           npx --no-install eslint . --fix > /dev/null 2>&1 || true
@@ -114,7 +114,7 @@ jobs:
           echo "Autofix patch: $(grep -c '^diff --git' "$RUNNER_TEMP/autofix/web-autofix.patch" || true) files" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload the autofix patch
-        if: failure()
+        if: always() # TEMP-OFFLINE-DEBUG
         uses: actions/upload-artifact@v4
         with:
           name: web-autofix

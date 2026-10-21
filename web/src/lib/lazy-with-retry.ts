@@ -64,16 +64,16 @@ function Nothing(): null {
  * when the chunk cannot be loaded it resolves to a component that renders nothing, so the
  * Suspense fallback or poster stays and nothing throws.
  */
-export function lazyWithRetry<P extends object>(
-  load: () => Promise<{ default: ComponentType<P> }>,
+export function lazyWithRetry<T extends ComponentType<never>>(
+  load: () => Promise<{ default: T }>,
   { silent = false, ...options }: RetryOptions & { silent?: boolean } = {},
-): LazyExoticComponent<ComponentType<P>> {
-  return lazy<ComponentType<P>>(async (): Promise<{ default: ComponentType<P> }> => {
+): LazyExoticComponent<T> {
+  return lazy<T>(async (): Promise<{ default: T }> => {
     try {
       return await importWithRetry(load, options);
     } catch (error) {
       if (!silent) throw error;
-      return { default: Nothing };
+      return { default: Nothing as unknown as T };
     }
   });
 }
