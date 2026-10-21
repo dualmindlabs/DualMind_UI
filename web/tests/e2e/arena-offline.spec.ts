@@ -288,7 +288,9 @@ test.describe('arena offline', () => {
       }),
     );
     await page.goto('/');
-    await expect(page.locator('[data-landing]')).toBeVisible();
+    await expect(
+      page.getByRole('heading', { level: 1, name: /Two models\. One prompt\.\s*You decide\./ }),
+    ).toBeVisible();
     await expect(page.getByTestId('arena')).toHaveCount(0);
   });
 });
