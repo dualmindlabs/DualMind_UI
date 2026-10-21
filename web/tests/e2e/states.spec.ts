@@ -441,24 +441,26 @@ const arenaScenarios: Scenario[] = [
   {
     screen: 'arena',
     state: 'offline-vote-queued',
-    run: async ({ page, context }) => {
+    run: async ({ page }) => {
       await mockArena(page);
       await sendPrompt(page);
       const turn = page.getByTestId('live-turn').first();
       await expect(turn).toHaveAttribute('data-phase', 'awaiting_vote', { timeout: 15_000 });
-      // The phone layout loads a lazy chunk: visit it online so a resize while offline (the
-      // screenshots go from desktop to phone) does not need the network.
-      await page.setViewportSize({ width: VIEWPORTS[1].width, height: VIEWPORTS[1].height });
-      await settle(page, 800);
-      await page.setViewportSize({ width: VIEWPORTS[0].width, height: VIEWPORTS[0].height });
-      await settle(page, 400);
-      await context.setOffline(true);
+      // The browser is only told it is offline (the vote queue reads navigator.onLine). Really
+      // cutting the network breaks the reveal, which lazy-loads a chunk, and a resize to the
+      // phone layout, and those are not what this screenshot is about.
+      await page.evaluate(() => {
+        Object.defineProperty(navigator, 'onLine', { configurable: true, get: () => false });
+      });
       await turn.getByRole('button', { name: /A is better/ }).click();
       await expect(turn.getByTestId('vote-pending')).toBeVisible();
       await expect(turn.getByTestId('vote-pending')).toContainText('Saved offline');
       return {
         focus: turn.getByTestId('vote-pending'),
-        cleanup: () => void context.setOffline(false),
+        cleanup: () =>
+          void page.evaluate(() => {
+            Reflect.deleteProperty(navigator, 'onLine');
+          }),
       };
     },
   },
