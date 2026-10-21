@@ -21,7 +21,7 @@ import {
   isBusy,
   type LiveTurn,
 } from '../lib/battle-machine';
-import { MODE_DETAILS, type ArenaMode } from '../lib/modes';
+import { type ArenaMode, MODE_DETAILS } from '../lib/modes';
 
 /** How long the progressive reveal of a finished answer takes (both panes in parallel). */
 export const REVEAL_MS = 1200;

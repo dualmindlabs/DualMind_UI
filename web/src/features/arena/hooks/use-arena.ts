@@ -2,9 +2,8 @@ import { createContext, type RefObject, useContext } from 'react';
 
 import type { Thread } from '@/lib/api';
 
-import type { BattleApi } from './use-battle';
-
 import type { ArenaMode } from '../lib/modes';
+import type { BattleApi } from './use-battle';
 
 /** The arena's shared state, provided by <ArenaProvider> (components/arena-provider.tsx). */
 export interface ArenaState {
