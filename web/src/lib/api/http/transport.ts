@@ -120,6 +120,16 @@ function isRedirect(response: Response): boolean {
   return response.type === 'opaqueredirect' || (response.status >= 300 && response.status < 400);
 }
 
+/**
+ * Opts in to the proxy's problem+json errors (BE-1) next to the media type the call wants. Pre-
+ * stream errors of event-stream calls are normal responses, so they get it too.
+ */
+export function withProblemJson(accept: string): string {
+  return /application\/problem\+json/i.test(accept)
+    ? accept
+    : `${accept}, application/problem+json;q=0.9`;
+}
+
 async function readErrorBody(response: Response): Promise<unknown> {
   let text: string;
   try {
@@ -240,7 +250,7 @@ export function createTransport(options: TransportOptions = {}): Transport {
     for (const [name, value] of Object.entries(extra ?? {})) {
       if (!RESERVED_HEADERS.has(name.toLowerCase())) headers.set(name, value);
     }
-    headers.set('accept', accept);
+    headers.set('accept', withProblemJson(accept));
     if (spec.body !== undefined) headers.set('content-type', 'application/json');
     if (token !== undefined) headers.set('authorization', `Bearer ${token}`);
     headers.set(REQUEST_ID_HEADER, requestId);

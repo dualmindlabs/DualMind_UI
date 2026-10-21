@@ -292,6 +292,176 @@ describe('response side', () => {
   });
 });
 
+describe('problem+json opt-in (BE-1)', () => {
+  const PROBLEM = 'application/problem+json';
+  const legacyBody = {
+    object: 'ai.error',
+    code: 'INVALID_REQUEST',
+    message: 'prompt is required',
+    timestamp: '2026-10-21T08:30:00Z',
+  };
+  const noLog = () => {};
+
+  it.each([
+    [null, 'no Accept'],
+    ['*/*', '*/*'],
+    ['application/json', 'application/json'],
+    ['application/json, text/plain, */*', 'the legacy app (axios) Accept'],
+    ['application/problem+json;q=0', 'q=0'],
+  ])('without the opt-in (%s: %s) the v1 error is unchanged', async accept => {
+    const bodies = [
+      [400, JSON.stringify(legacyBody), 'application/json'],
+      [401, '', null],
+      [404, '', null],
+      [500, JSON.stringify({ success: false, error: 'NullReferenceException', code: 'X' }), 'application/json'],
+      [502, JSON.stringify({ success: false, message: 'Backend API Error: boom', error: 'TypeError: x' }), 'application/json'],
+    ] as const;
+    for (const [status, text, contentType] of bodies) {
+      const upstream = fakeUpstream(
+        () =>
+          new Response(text === '' ? null : text, {
+            status,
+            headers: {
+              ...(contentType ? { 'content-type': contentType } : {}),
+              'x-correlation-id': 'corr-9',
+              'www-authenticate': 'Bearer',
+            },
+          }),
+      );
+      const response = await proxyApi(
+        apiRequest('/api/arena/dualchat', accept === null ? {} : { headers: { Accept: accept } }),
+        {},
+        { fetchImpl: upstream.fetchImpl, log: noLog, newId: () => 'plain-id-0001' },
+      );
+      expect(response.status).toBe(status);
+      expect(await response.text()).toBe(text);
+      expect(response.headers.get('content-type')).toBe(contentType);
+      expect(response.headers.get('x-correlation-id')).toBe('corr-9');
+      expect(response.headers.get('www-authenticate')).toBe('Bearer');
+      // The only addition on an error status is Vary: Accept.
+      expect(response.headers.get('vary')).toBe('Accept');
+    }
+  });
+
+  it('with the opt-in, keeps the status and request id and sets the problem headers', async () => {
+    const upstream = fakeUpstream(() => json(legacyBody, { status: 400 }));
+    const response = await proxyApi(
+      apiRequest('/api/arena/dualchat', {
+        method: 'POST',
+        body: '{}',
+        headers: { Accept: `application/json, ${PROBLEM}`, 'X-Request-Id': 'problem-id-0001' },
+      }),
+      {},
+      { fetchImpl: upstream.fetchImpl, log: noLog },
+    );
+    expect(response.status).toBe(400);
+    expect(response.headers.get('content-type')).toBe('application/problem+json; charset=utf-8');
+    expect(response.headers.get('vary')).toBe('Accept');
+    expect(response.headers.get('cache-control')).toBe('no-store');
+    expect(response.headers.get('x-request-id')).toBe('problem-id-0001');
+    expect(await response.json()).toEqual({
+      type: 'https://arena.dualmindlab.tech/problems/validation_error',
+      title: 'Invalid request',
+      status: 400,
+      detail: 'prompt is required',
+      instance: '/api/arena/dualchat',
+      requestId: 'problem-id-0001',
+      code: 'INVALID_REQUEST',
+    });
+  });
+
+  it('leaves 2xx JSON and event streams alone, even when opted in', async () => {
+    const ok = await proxyApi(
+      apiRequest('/api/models', { headers: { Accept: PROBLEM } }),
+      {},
+      { fetchImpl: fakeUpstream(() => json({ items: [] })).fetchImpl, log: noLog },
+    );
+    expect(ok.headers.get('content-type')).toBe('application/json');
+    expect(await ok.json()).toEqual({ items: [] });
+
+    // An error status on a stream is not rewritten either.
+    const stream = await proxyApi(
+      apiRequest('/api/arena/chat/stream', { headers: { Accept: PROBLEM } }),
+      {},
+      {
+        fetchImpl: fakeUpstream(
+          () =>
+            new Response('event: error\ndata: {}\n\n', {
+              status: 500,
+              headers: { 'content-type': 'text/event-stream' },
+            }),
+        ).fetchImpl,
+        log: noLog,
+      },
+    );
+    expect(stream.headers.get('content-type')).toBe('text/event-stream');
+    expect(await stream.text()).toBe('event: error\ndata: {}\n\n');
+  });
+
+  it('the Worker 502 and 504 become problems for callers that opted in, v1 bodies otherwise', async () => {
+    const failing = fakeUpstream(() => {
+      throw new TypeError('connect ECONNREFUSED 10.0.0.1:443');
+    });
+    const problem = await proxyApi(
+      apiRequest('/api/models', { headers: { Accept: PROBLEM } }),
+      {},
+      { fetchImpl: failing.fetchImpl, newId: () => 'bad-gateway-0001', log: noLog },
+    );
+    expect(problem.status).toBe(502);
+    expect(problem.headers.get('content-type')).toContain(PROBLEM);
+    const body = await problem.json();
+    expect(body).toMatchObject({
+      type: 'https://arena.dualmindlab.tech/problems/bad_gateway',
+      detail: 'The API could not be reached.',
+      requestId: 'bad-gateway-0001',
+    });
+    expect(JSON.stringify(body)).not.toContain('ECONNREFUSED');
+
+    vi.useFakeTimers();
+    try {
+      const stalled = fakeUpstream(
+        (_url, init) =>
+          new Promise<Response>((_resolve, reject) => {
+            init.signal?.addEventListener('abort', () => reject(new DOMException('x', 'AbortError')));
+          }),
+      );
+      const pending = proxyApi(
+        apiRequest('/api/models', { headers: { Accept: PROBLEM } }),
+        {},
+        { fetchImpl: stalled.fetchImpl, newId: () => 'timeout-id-0001', log: noLog },
+      );
+      await vi.advanceTimersByTimeAsync(UPSTREAM_TIMEOUT_MS);
+      const timeout = await pending;
+      expect(timeout.status).toBe(504);
+      expect(await timeout.json()).toMatchObject({
+        type: 'https://arena.dualmindlab.tech/problems/gateway_timeout',
+        requestId: 'timeout-id-0001',
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+
+    const legacy = await proxyApi(
+      apiRequest('/api/models'),
+      {},
+      { fetchImpl: failing.fetchImpl, newId: () => 'bad-gateway-0002', log: noLog },
+    );
+    expect(await legacy.json()).toEqual({ error: 'bad_gateway', requestId: 'bad-gateway-0002' });
+  });
+
+  it('appends Accept to an existing Vary instead of replacing it', async () => {
+    const upstream = fakeUpstream(
+      () => new Response('', { status: 404, headers: { Vary: 'Origin' } }),
+    );
+    const response = await proxyApi(
+      apiRequest('/api/users/me'),
+      {},
+      { fetchImpl: upstream.fetchImpl, log: noLog },
+    );
+    expect(response.headers.get('vary')).toBe('Origin, Accept');
+  });
+});
+
 describe('through the Worker', () => {
   it('/api/* is proxied with API security headers only', async () => {
     const backend = vi.fn(() =>

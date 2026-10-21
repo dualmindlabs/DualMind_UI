@@ -98,6 +98,53 @@ describe('parseErrorBody (one test per shape in fixtures/api/errors.json)', () =
     });
   });
 
+  it('reads problem+json from the proxy: detail, retained code, errors and request id', () => {
+    const base = 'https://arena.dualmindlab.tech/problems/';
+    expect(
+      parseErrorBody({
+        type: `${base}validation_error`,
+        title: 'Invalid request',
+        status: 400,
+        detail: 'prompt is required',
+        requestId: 'req-12345678',
+        code: 'INVALID_REQUEST',
+        errors: [{ path: 'prompt', message: 'required' }],
+      }),
+    ).toEqual({
+      message: 'prompt is required',
+      code: 'INVALID_REQUEST',
+      details: { errors: [{ path: 'prompt', message: 'required' }], requestId: 'req-12345678' },
+    });
+  });
+
+  it('problem+json without a code falls back to the type slug; the title without a detail', () => {
+    expect(
+      parseErrorBody({
+        type: 'https://arena.dualmindlab.tech/problems/gateway_timeout',
+        title: 'Gateway timeout',
+        status: 504,
+      }),
+    ).toEqual({ message: 'Gateway timeout', code: 'GATEWAY_TIMEOUT', details: undefined });
+  });
+
+  it('problem+json keeps the kind and retryable flag the status gave', () => {
+    const apiError = errorFromResponse({
+      status: 429,
+      headers: new Headers({ 'retry-after': '3' }),
+      body: {
+        type: 'https://arena.dualmindlab.tech/problems/rate_limited',
+        title: 'Too many requests',
+        status: 429,
+        detail: 'Too many requests. Try again later.',
+      },
+    });
+    expect(apiError.kind).toBe('rate_limited');
+    expect(apiError.retryable).toBe(true);
+    expect(apiError.code).toBe('RATE_LIMITED');
+    expect(apiError.retryAfterMs).toBe(3000);
+    expect(apiError.message).toBe('Too many requests. Try again later.');
+  });
+
   it('reads the proposed nested { error: { code, message, details } }', () => {
     expect(parseErrorBody(errors.nestedError)).toEqual({
       message: 'Daily battle limit reached',
