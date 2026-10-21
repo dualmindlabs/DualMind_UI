@@ -150,7 +150,7 @@ test.describe('forced colors', () => {
 
       // Buttons keep an edge when their fill is replaced by system colours.
       const edge = await page.evaluate(() => {
-        const button = document.querySelector('[data-slot="button"], a[class*="h-11"]');
+        const button = document.querySelector('[data-slot="button"]');
         return button ? getComputedStyle(button).borderTopWidth : '1px';
       });
       expect(parseFloat(edge)).toBeGreaterThanOrEqual(1);
