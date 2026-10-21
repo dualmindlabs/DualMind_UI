@@ -22,6 +22,41 @@
       "app_id": "1b260a52-d2dd-4116-a42e-43c9e71fe717"
     }
   ],
+  // Backend add-ons (ADR 0007, docs/backend/resources.md). Each resource has a production and a
+  // preview copy. Workers Builds previews share one config with production, so code picks the
+  // production binding only when the request host is arena.dualmindlab.tech and the *_PREVIEW
+  // binding everywhere else (previews, local runs, tests). Nothing uses these bindings yet; a
+  // route whose binding is missing answers 501 not_enabled.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "dualmind-arena-ledger",
+      "database_id": "19fc71bd-1236-4f5e-af29-c618bc58e2e6",
+      "migrations_dir": "server/migrations"
+    },
+    {
+      "binding": "DB_PREVIEW",
+      "database_name": "dualmind-arena-ledger-preview",
+      "database_id": "f2f963c9-1ed6-499e-b11e-285897228b89",
+      "migrations_dir": "server/migrations"
+    }
+  ],
+  "kv_namespaces": [
+    { "binding": "CACHE", "id": "7906c64bd2ce42ed987eab78490d5ee4" },
+    { "binding": "CACHE_PREVIEW", "id": "915a45a0464a4ea982b9740c9aae03ec" }
+  ],
+  "queues": {
+    // Producers only for now; consumers (with their dead-letter queues arena-events-dlq and
+    // arena-events-preview-dlq) are added together with the queue() handler.
+    "producers": [
+      { "binding": "EVENTS", "queue": "arena-events" },
+      { "binding": "EVENTS_PREVIEW", "queue": "arena-events-preview" }
+    ]
+  },
+  "r2_buckets": [
+    { "binding": "PUBLIC_BUCKET", "bucket_name": "dualmind-arena-public" },
+    { "binding": "PUBLIC_BUCKET_PREVIEW", "bucket_name": "dualmind-arena-public-preview" }
+  ],
   "observability": {
     "logs": {
       "enabled": false,
