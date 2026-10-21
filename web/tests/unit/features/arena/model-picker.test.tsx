@@ -101,17 +101,17 @@ describe('ModelPicker', () => {
 
     const ranked = within(listbox).getByRole('option', { name: /Llama 3\.1 70B Instruct/ });
     expect(ranked).toHaveTextContent('Meta');
-    expect(ranked).toHaveTextContent('#1');
+    expect(ranked).toHaveTextContent('#2');
     // The raw id stays one hover away.
     expect(ranked).toHaveAttribute('title', '@cf/meta/llama-3.1-70b-instruct');
 
-    const unrated = within(listbox).getByRole('option', { name: /Gemma 3n E2B IT/ });
+    const unrated = within(listbox).getByRole('option', { name: /Gemma 3n E4B IT/ });
     expect(unrated).toHaveTextContent('Google');
     expect(unrated).not.toHaveTextContent('#');
 
     await user.click(unrated);
     expect(onChange).toHaveBeenCalledWith(
-      expect.objectContaining({ modelName: 'gemma-3n-e2b-it', rank: null }),
+      expect.objectContaining({ modelName: 'gemma-3n-e4b-it', rank: null }),
     );
   });
 });
