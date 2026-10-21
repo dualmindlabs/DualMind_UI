@@ -7,7 +7,7 @@ import '@/styles/app.css';
 
 import dmMonoLatin from '@fontsource/dm-mono/files/dm-mono-latin-500-normal.woff2?url';
 import bricolageLatin from '@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-opsz-normal.woff2?url';
-import type { ReactNode } from 'react';
+import { type ReactNode, useEffect } from 'react';
 import {
   isRouteErrorResponse,
   Links,
@@ -74,6 +74,10 @@ export function Layout({ children }: { children: ReactNode }) {
 }
 
 export default function App() {
+  // A marker for tests and scripts: React has hydrated, the page is interactive.
+  useEffect(() => {
+    document.documentElement.dataset.hydrated = '';
+  }, []);
   return (
     <AppProviders>
       <Outlet />

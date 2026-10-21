@@ -35,16 +35,18 @@ function stubLeaderboard(answer: 'ok' | 'fail') {
   return fetchMock;
 }
 
+// The sections under the hero are a lazy chunk, so they appear a moment after the hero.
 const demo = () =>
-  screen.getByRole('region', { name: /Recorded demo, answers written for illustration/ });
+  screen.findByRole('region', { name: /Recorded demo, answers written for illustration/ });
 
 describe('LandingPage', () => {
   beforeEach(() => {
     stubLeaderboard('ok');
   });
 
-  it('has one h1, landmarks, a skip link and no skipped heading levels', () => {
+  it('has one h1, landmarks, a skip link and no skipped heading levels', async () => {
     renderLanding();
+    await demo();
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
     expect(
       screen.getByRole('heading', { level: 1, name: /Two models\. One prompt\.\s*You decide\./ }),
@@ -66,7 +68,9 @@ describe('LandingPage', () => {
     await waitFor(() => expect(strip).toHaveAttribute('data-state', 'ready'));
     expect(within(strip).getByText('llama-3.3-70b-instruct-fp8-fast')).toBeInTheDocument();
     expect(within(strip).getByText(/Live from the public leaderboard/)).toBeInTheDocument();
-    expect(screen.getByTestId('model-strip-source')).toHaveTextContent('Live · 53 models');
+    await waitFor(() =>
+      expect(screen.getByTestId('model-strip-source')).toHaveTextContent('Live · 53 models'),
+    );
     const preview = screen.getByTestId('leaderboard-preview');
     expect(within(preview).getByText('#1 right now')).toBeInTheDocument();
     expect(within(preview).getAllByRole('listitem')).toHaveLength(4);
@@ -86,8 +90,10 @@ describe('LandingPage', () => {
       '/leaderboard/',
     );
     for (const value of strip.querySelectorAll('dd')) expect(value.textContent).not.toMatch(/\d/);
-    expect(screen.getByTestId('leaderboard-preview')).toHaveTextContent(
-      'The live leaderboard is not answering right now.',
+    await waitFor(() =>
+      expect(screen.getByTestId('leaderboard-preview')).toHaveTextContent(
+        'The live leaderboard is not answering right now.',
+      ),
     );
     expect(screen.getByTestId('model-strip-source')).toHaveTextContent('List as of 20 Oct 2026');
   });
@@ -95,7 +101,7 @@ describe('LandingPage', () => {
   it('plays the demo with the keyboard: vote, reveal, announce, next', async () => {
     const user = userEvent.setup();
     renderLanding();
-    const region = demo();
+    const region = await demo();
     // The first play (instant here: jsdom has no IntersectionObserver) leaves it ready to vote.
     await waitFor(() => expect(region).toHaveAttribute('data-run', '1'));
     expect(region).toHaveAttribute('data-phase', 'voting');
@@ -137,9 +143,10 @@ describe('LandingPage', () => {
   it('keeps digits typed in the composer out of the vote', async () => {
     const user = userEvent.setup();
     renderLanding();
-    await waitFor(() => expect(demo()).toHaveAttribute('data-run', '1'));
+    const region = await demo();
+    await waitFor(() => expect(region).toHaveAttribute('data-run', '1'));
     await user.type(screen.getByRole('textbox', { name: 'Ask both models' }), '1234');
-    expect(demo()).toHaveAttribute('data-phase', 'voting');
+    expect(region).toHaveAttribute('data-phase', 'voting');
   });
 
   it('answers a typed prompt with a recorded battle and an honest sign-in offer', async () => {
@@ -153,7 +160,8 @@ describe('LandingPage', () => {
       within(note).getByRole('link', { name: 'Sign in to battle real models' }),
     ).toHaveAttribute('href', '/login/');
     expect(screen.getByText(/Playing a recorded demo below\./)).toBeInTheDocument();
-    expect(demo()).toHaveFocus();
+    const region = await demo();
+    await waitFor(() => expect(region).toHaveFocus());
   });
 
   it('plays the matching recorded battle from a chip', async () => {
@@ -161,7 +169,7 @@ describe('LandingPage', () => {
     renderLanding();
     const prompt = DEMO_BATTLES[1]?.prompt ?? '';
     await user.click(screen.getByRole('button', { name: `Play the recorded battle: ${prompt}` }));
-    expect(screen.getByTestId('demo-prompt')).toHaveTextContent(prompt);
+    await waitFor(() => expect(screen.getByTestId('demo-prompt')).toHaveTextContent(prompt));
     expect(screen.queryByTestId('asked-note')).toBeNull();
   });
 });

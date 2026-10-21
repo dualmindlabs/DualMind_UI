@@ -1,8 +1,9 @@
-import { type CSSProperties, lazy, type ReactNode, Suspense } from 'react';
+import { type CSSProperties, lazy, memo, type ReactNode, Suspense } from 'react';
 import { useLocation } from 'react-router';
 
 import { CommandPaletteTrigger } from '@/components/layout/command-palette-trigger';
 import { Emblem } from '@/components/layout/emblem';
+import type { MobileNavProps } from '@/components/layout/mobile-nav';
 import { SiteNav } from '@/components/layout/site-nav';
 import { ThemeToggle } from '@/components/layout/theme-toggle';
 import { Wordmark } from '@/components/layout/wordmark';
@@ -41,6 +42,16 @@ export interface SiteHeaderProps {
 const MobileNav = lazy(() =>
   import('@/components/layout/mobile-nav').then(module => ({ default: module.MobileNav })),
 );
+
+// Memoized so the header re-rendering (scroll, route) does not hand the boundary new props before
+// it has hydrated: React would client-render it and drop the prerendered button.
+const MobileNavSlot = memo(function MobileNavSlot(props: MobileNavProps) {
+  return (
+    <Suspense fallback={null}>
+      <MobileNav {...props} />
+    </Suspense>
+  );
+});
 
 /**
  * Where the condensed pill sits, in container units of the header's row (100cqw), so previews
@@ -107,14 +118,12 @@ export function SiteHeader({
           {signInLink.label}
         </a>
       )}
-      <Suspense fallback={null}>
-        <MobileNav
-          activePath={path}
-          label={navLabel}
-          hideSignIn={account !== undefined}
-          className="lg:hidden"
-        />
-      </Suspense>
+      <MobileNavSlot
+        activePath={path}
+        label={navLabel}
+        hideSignIn={account !== undefined}
+        className="lg:hidden"
+      />
     </>
   );
 
