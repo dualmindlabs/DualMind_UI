@@ -86,7 +86,7 @@ describe('waitlist gate (FORCE_WAITLIST)', () => {
   it('?preview=dualmind-preview serves the Arena and sets the 30-day cookie', async () => {
     const response = await call('/?preview=dualmind-preview');
     expect(response.status).toBe(200);
-    expect(await response.text()).toContain('Legacy arena');
+    expect(await response.text()).toContain('blind battles between AI models');
     expect(response.headers.get('set-cookie')).toBe(
       'dm_preview=1; Max-Age=2592000; Path=/; Secure; HttpOnly; SameSite=Lax',
     );
@@ -122,6 +122,23 @@ describe('web app pages', () => {
     expect(response.headers.get('content-security-policy-report-only')).toBeNull();
   });
 
+  it('serves the prerendered landing page at / with the enforced CSP', async () => {
+    const response = await preview('/');
+    expect(response.status).toBe(200);
+    expect(await response.text()).toContain('blind battles between AI models');
+    expect(response.headers.get('cache-control')).toBe('no-cache');
+    expect(response.headers.get('content-security-policy')).toContain("script-src 'self' 'sha256-");
+    expect(response.headers.get('content-security-policy-report-only')).toBeNull();
+    // Unlike /design/, the landing page is meant for search engines.
+    expect(response.headers.get('x-robots-tag')).toBeNull();
+  });
+
+  it('keeps /index.html as a permanent redirect to the landing page', async () => {
+    const response = await preview('/index.html?ref=x');
+    expect(response.status).toBe(301);
+    expect(response.headers.get('location')).toBe(`${ORIGIN}/?ref=x`);
+  });
+
   it('redirects /design to /design/', async () => {
     const response = await preview('/design');
     expect(response.status).toBe(307);
@@ -143,7 +160,7 @@ describe('web app pages', () => {
 
 describe('legacy pages and files', () => {
   it('legacy pages: 200, no-store, security headers', async () => {
-    for (const page of ['/', '/leaderboard/', '/about/']) {
+    for (const page of ['/legacy-app', '/leaderboard/', '/about/']) {
       const response = await preview(page);
       expect(response.status, page).toBe(200);
       expect(response.headers.get('cache-control'), page).toBe(LEGACY_NO_STORE);
@@ -156,6 +173,22 @@ describe('legacy pages and files', () => {
       );
       expect(response.headers.get('x-robots-tag'), page).toBeNull();
     }
+  });
+
+  it('serves the legacy arena at /legacy-app.html for the signed-in hand-off, query kept', async () => {
+    // Workers static assets serve /legacy-app.html at its clean URL; the browser keeps the hash.
+    const redirect = await preview('/legacy-app.html?code=abc');
+    expect(redirect.status).toBe(307);
+    expect(redirect.headers.get('location')).toBe('/legacy-app?code=abc');
+
+    const response = await preview('/legacy-app?code=abc');
+    expect(response.status).toBe(200);
+    expect(await response.text()).toContain('Legacy arena');
+    expect(response.headers.get('cache-control')).toBe(LEGACY_NO_STORE);
+    expect(response.headers.get('content-security-policy')).toBeNull();
+    expect(response.headers.get('content-security-policy-report-only')).toContain(
+      'https://cdn.jsdelivr.net',
+    );
   });
 
   it('legacy assets keep their headers', async () => {

@@ -8,6 +8,7 @@
  *   Reduced motion stops it through base.css and ReducedMotionScope.
  * - `trigger="view"` only hides text after hydration, when it is still below the fold.
  * - `text` also takes segments, so one phrase can carry its own class (the Playfair voice).
+ * - `startDelay` offsets the whole stagger, so two lines can play one after the other.
  * - Kept the blur effect and the word and letter modes; removed the zoom, tilt, focus and drift
  *   effects, loops, hover and click replays and colour fades. `as` sets the element.
  * - Screen readers get the whole text once (visually hidden); the animated pieces are hidden.
@@ -31,6 +32,8 @@ export interface BlurTextProps {
   direction?: 'top' | 'bottom';
   /** Milliseconds between two pieces. */
   delay?: number;
+  /** Milliseconds before the first piece (for a second line that follows the first). */
+  startDelay?: number;
   /** Seconds for one piece. */
   duration?: number;
   /** Starting blur, in pixels. */
@@ -94,6 +97,7 @@ export function BlurText({
   animateBy = 'words',
   direction = 'top',
   delay = 120,
+  startDelay = 0,
   duration,
   blur = 10,
   trigger = 'load',
@@ -151,7 +155,7 @@ export function BlurText({
               {group.map(piece => {
                 const last = piece.order === lastOrder;
                 const style = {
-                  animationDelay: `${piece.order * delay}ms`,
+                  animationDelay: `${startDelay + piece.order * delay}ms`,
                   '--blur-in-blur': `${blur}px`,
                   '--blur-in-offset': direction === 'top' ? '-0.6em' : '0.6em',
                   ...(duration === undefined ? {} : { '--blur-in-duration': `${duration}s` }),

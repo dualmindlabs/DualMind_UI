@@ -22,9 +22,10 @@ How the DualMind Arena frontend is built, served and organised while it moves fr
                     dist/ (composed by build.js at build time)
           ┌─────────────────────────┴─────────────────────────┐
    legacy files (repo root)                         web/build/client (React app)
-   index.html, leaderboard/, about/,               design/index.html (prerendered),
-   js/, css/, components/, assets/*.png ...        assets/<name>-<hash>.js|css|woff2,
-                                                    __spa-fallback.html, favicon.svg
+   legacy-app.html (copy of index.html),            index.html (/ landing, prerendered),
+   leaderboard/, about/, js/, css/,                 design/index.html (prerendered),
+   components/, assets/*.png ...                    assets/<name>-<hash>.js|css|woff2,
+                                                    __spa-fallback.html, og/, favicon.svg
 ```
 
 - **One Worker, one `dist/`.** Old and new pages live side by side. Each slice moves some URLs to the React app; the others keep serving the legacy files until their slice lands (strangler migration, [ADR 0002](./adr/0002-strangler-migration-composed-dist.md)).
@@ -81,6 +82,8 @@ Every top-level folder of `web/src` has a README with its purpose and rules.
 - **Theme:** `src/lib/theme/theme.ts` owns the preference (`system`, `dark` or `light`, stored in `localStorage['dm.theme']`). An inline script in `<head>` applies it before the first paint (`<html data-theme>`); `useTheme()` reads and changes it with `useSyncExternalStore`, so tabs stay in sync. Tokens in `src/styles/tokens.css` switch on `data-theme` and, for "system", on `prefers-color-scheme`.
 - **Motion:** `useReducedMotion()` follows the OS setting live; `base.css` also stops CSS animations under reduced motion.
 - **API and auth (from slices S5 and S6):** the typed client in `src/lib/api/` calls same-origin `/api/*`, which the Worker proxies to the backend ([ADR 0006](./adr/0006-same-origin-api-proxy.md)); server state goes through TanStack Query (`ApiProvider` in `src/components/layout/`, mounted by `AppProviders`, holds the one client and query cache; features read the client with `useApiClient()`); one Supabase client in `src/lib/supabase/`. Battles run on an own state machine ([ADR 0004](./adr/0004-own-battle-state-machine-and-streamdown.md)).
+- **Landing page and the signed-in hand-off (slice S3):** `/` is the prerendered landing page (`src/features/marketing/`). Until the arena slice (S8) renders the signed-in arena at `/`, the legacy arena lives on as `/legacy-app.html` (build.js copies the legacy `index.html` to the root of `dist/`, so its relative script paths still resolve). The landing route's `handle` asks the root layout for a tiny inline script in `<head>` (`src/lib/session/handoff.ts`, allowed by its CSP hash like every inline script): when `localStorage` holds a Supabase session (`dualmind.auth.supabase` or a supabase-js `sb-<ref>-auth-token` key), or the URL carries Supabase auth parameters (`#access_token=`, `#refresh_token=`, `?code=`, `?token_hash=`, `type=recovery` and the other email link types), it calls `location.replace('/legacy-app.html' + search + hash)` before the first paint, so OAuth returns, email links and signed-in visitors still land in the working app. Workers static assets serve that file at its clean URL `/legacy-app` (a 307 that keeps the query; the browser keeps the hash).
+- **Live data on the landing page:** one TanStack Query request to the public leaderboard (`GET /api/arena/model-stats` through the typed client, the leaderboard page's cache key) feeds the live strip, the model strip and the top-five preview. Battles and votes are derived from it (`src/features/marketing/lib/live-stats.ts`); when the request fails, the page says so and shows no numbers.
 - **Configuration:** `src/config/env.ts` reads `import.meta.env` (only `VITE_` variables reach the bundle), validates it and exports `config`. Public values only.
 
 ## 4. Build
@@ -89,7 +92,7 @@ Every top-level folder of `web/src` has a README with its purpose and rules.
 
 1. **Build the web app:** `npm ci` and `npm run build` in `web/` (`react-router build`, Vite). Skipped with `SKIP_WEB_BUILD=1` when a CI job built it already.
 2. **Copy the legacy allowlist** (the static Arena files) into `dist/`.
-3. **Overlay `web/build/client`:** new pages at their paths, hashed files into `dist/assets/` next to the legacy images. While `/` is not prerendered, React Router writes its SPA fallback as `index.html`; build.js renames it to `dist/__spa-fallback.html` so it never replaces the legacy home page.
+3. **Overlay `web/build/client`:** new pages at their paths, hashed files into `dist/assets/` next to the legacy images. With `/` prerendered (slice S3), React Router writes its SPA fallback as `__spa-fallback.html` and the landing page as `index.html`, which replaces the legacy home page (`replacedByWeb`); the legacy page is first copied to `dist/legacy-app.html` for the signed-in hand-off. The build fails if a `replacedByWeb` file was not written by the web app, or if `dist/index.html` turns out to be the SPA fallback.
 4. **Write `dist/__web-manifest.json`** for the Worker: the web app's pages, the sha256 hashes of their inline scripts (for the CSP, section 6) and extra `connect-src` origins (the Supabase project from `VITE_SUPABASE_URL`, once auth lands in S6).
 5. **Check the result** and fail the build when a legacy file or a sitemap URL is missing, when a web file would replace a legacy one (unless its slice lists it in `replacedByWeb`: today `leaderboard/index.html` and `models/index.html`), or when a file in `assets/` has no content hash.
 
@@ -121,7 +124,7 @@ One table; the first matching row wins, and without a match the Workers static a
 | hashed-build-file | Vite output, `/assets/<name>-<hash>.<ext>` (pattern `HASHED_ASSET_RE`, checked against the build by `build.js`) | `public, max-age=31536000, immutable` |
 | share | `/share` and everything below it (legacy share page) | `no-store, no-cache, must-revalidate` |
 | web-page | HTML pages of the web app (from the manifest) and the SPA fallback | `no-cache`: revalidated on every visit, cheap because Workers static assets send an ETag (a matching `If-None-Match` gets a 304) |
-| legacy-code | legacy HTML (also directory URLs), JS, CSS and JSON | `no-store, no-cache, must-revalidate, max-age=0`, until the cutover |
+| legacy-code | legacy HTML (also directory URLs and clean URLs such as `/legacy-app` or `/login-modern`), JS, CSS and JSON | `no-store, no-cache, must-revalidate, max-age=0`, until the cutover |
 | image | `.png .jpg .jpeg .webp .gif .svg .ico` | `public, max-age=31536000, immutable`, as before |
 
 `/design/` and `/__spa-fallback` also send `X-Robots-Tag: noindex, nofollow`.
@@ -179,8 +182,9 @@ The auth `.html` rows (`/login-modern.html` to `/login/` and the others in migra
 | Format | Prettier with the Tailwind plugin | `web.yml` check |
 | Unit | Vitest + Testing Library (jsdom): theme, hooks, tokens and contrast, components, conventions | `web.yml` check |
 | Worker | Vitest in Node with a fake `ASSETS` binding and a fake upstream: gate, every redirect row, the caching table, security headers and CSP, the manifest, the proxy (header allow-list, request ids, 502, 504, streaming) | `web.yml` check |
-| End to end | Playwright (Chromium) against the composed `dist/` served by the real Worker in `wrangler dev` (with a local fake backend for `/api`): headers and CSP, redirects, the proxy, hydration, theme without flash, keyboard, overflow at 320 px, axe in both themes, zero report-only violations on legacy pages | `web.yml` e2e |
-| Visual | Screenshots at 1440x900 and 390x844 in dark, light and reduced motion (`web-screenshots` artifact) | `web.yml` e2e |
+| End to end | Playwright (Chromium) against the composed `dist/` served by the real Worker in `wrangler dev` (with a local fake backend for `/api` that answers the leaderboard with a recorded response): headers and CSP, redirects, the proxy, hydration, theme without flash, keyboard, overflow at 320 px, axe in both themes, zero report-only violations on legacy pages; on `/`: the prerendered hero and SEO tags, the page without JavaScript, the live strip and its fallback, the demo battle by keyboard, the signed-in hand-off | `web.yml` e2e |
+| Visual | Screenshots of `/` and `/design/` at 1440x900 and 390x844 in dark, light and reduced motion, the landing demo after the reveal, and the rendered Open Graph card (`web-screenshots` artifact) | `web.yml` e2e |
+| Performance | Lighthouse CI on `/` (mobile, three runs, median): accessibility 1, best practices >= 0.95 and SEO 1 fail the job; performance >= 0.9 and at most 180 KB of gzipped JavaScript loaded up front by `/` are the targets and warn for now (the shared shell, React Router, Motion and Zod load about 290 KB up front). `web/lighthouserc.json`, `lighthouse` artifact, scores in the job summary | `web.yml` e2e |
 
 `npm run check` in `web/` runs the first four locally on a machine that can.
 

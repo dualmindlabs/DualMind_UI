@@ -103,8 +103,12 @@ export default defineConfig(
     rules: { 'no-restricted-syntax': ['error', noRawHtml] },
   },
   {
-    // A fixed, build-time string (no user data) that sets the theme before the first paint.
-    files: ['src/components/layout/theme-script.tsx'],
+    // Fixed, build-time strings (no user data) that run in <head> before the first paint: the
+    // theme, and the landing page's signed-in hand-off.
+    files: [
+      'src/components/layout/theme-script.tsx',
+      'src/components/layout/session-handoff-script.tsx',
+    ],
     rules: { 'no-restricted-syntax': ['error', noDefaultExport] },
   },
 );

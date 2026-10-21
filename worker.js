@@ -314,10 +314,12 @@ function isHtmlResponse(response) {
 // `rulePath` is the path the rules look at (the file that was found, for the clean-URL fallbacks).
 async function withCaching(request, env, assetResponse, rulePath) {
   const response = new Response(assetResponse.body, assetResponse);
-  const manifest = isHtmlResponse(response) ? await loadWebManifest(request, env) : null;
+  const html = isHtmlResponse(response);
+  const manifest = html ? await loadWebManifest(request, env) : null;
   const cacheControl = cacheControlFor({
     pathname: rulePath,
     webPage: Boolean(manifest?.pages.has(rulePath)),
+    html,
   });
   if (cacheControl) {
     response.headers.set('cache-control', cacheControl);

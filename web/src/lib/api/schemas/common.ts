@@ -1,5 +1,10 @@
 import { z } from 'zod';
 
+// No `new Function` in Zod: the web app's Content-Security-Policy has no 'unsafe-eval', and
+// Zod's JIT probe would otherwise be reported as a CSP violation on every page that parses a
+// response (the parse falls back to the interpreter either way). Every schema imports this file.
+z.config({ jitless: true });
+
 /**
  * Building blocks for response schemas that normalise what the API sends today
  * (docs/api/endpoints.md, "Response envelope quirks") into one typed shape:

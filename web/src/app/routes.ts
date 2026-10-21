@@ -1,4 +1,4 @@
-import { route, type RouteConfig } from '@react-router/dev/routes';
+import { index, route, type RouteConfig } from '@react-router/dev/routes';
 
 /**
  * The explicit route table: every URL this app serves, mapped to a thin route module in
@@ -7,6 +7,8 @@ import { route, type RouteConfig } from '@react-router/dev/routes';
  * the legacy files in the repo root until their slice lands (docs/redesign/migration-plan.md).
  */
 export default [
+  // The landing page (signed out); signed-in visitors are handed to the legacy arena (S3).
+  index('routes/home.tsx'),
   // Living style guide (noindex).
   route('design', 'routes/design.tsx'),
   // Live rankings and the model directory (slice S7), from the public model-stats API.

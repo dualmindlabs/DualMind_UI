@@ -8,6 +8,9 @@
 //
 // A fake backend on the next port answers /api/* for the proxy tests: it echoes the method, path
 // and headers it received, and adds the headers the Worker must strip (BACKEND_URL points at it).
+// The public leaderboard (GET /api/arena/model-stats) answers with a recorded response instead
+// (tests/fixtures/api/model-stats.board.recorded.json), so the landing page shows real data in the
+// tests, the screenshots and Lighthouse. Tests that need a failure mock it with page.route().
 import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import http from 'node:http';
@@ -66,8 +69,17 @@ if (!existsSync(path.join(config.assets.directory, 'design', 'index.html'))) {
   process.exit(1);
 }
 
+const leaderboard = readFileSync(
+  path.join(webDir, 'tests', 'fixtures', 'api', 'model-stats.board.recorded.json'),
+);
+
 const backendPort = Number(port) + 1;
 const backend = http.createServer((request, response) => {
+  if (request.method === 'GET' && request.url?.startsWith('/api/arena/model-stats')) {
+    response.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+    response.end(leaderboard);
+    return;
+  }
   response.writeHead(200, {
     'content-type': 'application/json',
     'access-control-allow-origin': '*',

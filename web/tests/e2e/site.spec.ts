@@ -57,14 +57,25 @@ test('hashed build files are immutable; legacy files keep their headers', async 
 });
 
 test('legacy pages are still served', async ({ request }) => {
-  for (const page of ['/', '/about/', '/how-it-works/', '/login/']) {
+  for (const page of ['/legacy-app', '/about/', '/how-it-works/', '/login/']) {
     const response = await request.get(page, withCookie);
     expect(response.status(), page).toBe(200);
     expect(response.headers()['content-type'], page).toContain('text/html');
     expect(response.headers()['cache-control'], page).toBe(LEGACY_NO_STORE);
   }
-  // The legacy home page is still the legacy one, not the web app's SPA fallback.
-  expect(await (await request.get('/', withCookie)).text()).not.toContain('data-spa-fallback');
+  // / is the prerendered landing page; the legacy arena lives on at /legacy-app.html.
+  const home = await (await request.get('/', withCookie)).text();
+  expect(home).not.toContain('data-spa-fallback');
+  expect(home).toContain('blind battles between AI models');
+  expect(await (await request.get('/legacy-app', withCookie)).text()).toContain(
+    '<title>DualMind - Battle Arena</title>',
+  );
+});
+
+test('/legacy-app.html redirects to its clean URL and keeps the query', async ({ request }) => {
+  const response = await request.get('/legacy-app.html?code=abc', withCookie);
+  expect([301, 307, 308]).toContain(response.status());
+  expect(response.headers()['location']).toMatch(/\/legacy-app\?code=abc$/);
 });
 
 test('the SPA fallback is in dist under its own name', async ({ request }) => {
@@ -121,7 +132,7 @@ test('/design/: security headers, enforced CSP with script hashes, ETag revalida
 });
 
 test('legacy pages: report-only CSP, no-store, no X-XSS-Protection', async ({ request }) => {
-  for (const page of ['/', '/about/', '/login/']) {
+  for (const page of ['/legacy-app', '/about/', '/login/']) {
     const headers = (await request.get(page, withCookie)).headers();
     expect(headers['content-security-policy'], page).toBeUndefined();
     expect(headers['content-security-policy-report-only'], page).toContain(

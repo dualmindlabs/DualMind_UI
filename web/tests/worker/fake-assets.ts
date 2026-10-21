@@ -70,9 +70,13 @@ export function fakeAssets(files: Record<string, string>): FakeAssets {
   };
 }
 
-/** A small composed dist/: legacy pages and files plus the web app's output. */
+/**
+ * A small composed dist/: legacy pages and files plus the web app's output. Since slice S3 the
+ * landing page is the web app's /index.html, and the legacy arena lives on as /legacy-app.html.
+ */
 export const DIST: Record<string, string> = {
-  '/index.html': '<!doctype html><title>Legacy arena</title>',
+  '/index.html': '<!doctype html><title>DualMind Arena: blind battles between AI models</title>',
+  '/legacy-app.html': '<!doctype html><title>Legacy arena</title>',
   '/leaderboard/index.html': '<!doctype html><title>Legacy leaderboard</title>',
   '/about/index.html': '<!doctype html><title>Legacy about</title>',
   '/assets/logo.png': 'png',
@@ -82,7 +86,7 @@ export const DIST: Record<string, string> = {
   '/__spa-fallback.html': '<!doctype html><title>Loading</title>',
   '/__web-manifest.json': JSON.stringify({
     version: 1,
-    pages: ['/__spa-fallback', '/design/'],
+    pages: ['/', '/__spa-fallback', '/design/'],
     scriptHashes: ['CihokcEcBW4atb/CW/XWsvWwbTjqwQlE9nj9ii5ww5M='],
     connectSrc: [],
   }),
