@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils/cn';
 
 import { useArena } from '../hooks/use-arena';
@@ -21,17 +21,19 @@ function RailButton({
   children: ReactNode;
 }) {
   return (
-    <Tooltip>
-      <TooltipTrigger
-        render={<Button variant="ghost" size="icon-sm" aria-label={label} onClick={onClick} />}
-      >
-        {children}
-      </TooltipTrigger>
-      <TooltipContent side="right">
-        {label}
-        {shortcut ? <kbd className="font-mono text-muted">{shortcut}</kbd> : null}
-      </TooltipContent>
-    </Tooltip>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger
+          render={<Button variant="ghost" size="icon-sm" aria-label={label} onClick={onClick} />}
+        >
+          {children}
+        </TooltipTrigger>
+        <TooltipContent side="right">
+          {label}
+          {shortcut ? <kbd className="font-mono text-muted">{shortcut}</kbd> : null}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
 
