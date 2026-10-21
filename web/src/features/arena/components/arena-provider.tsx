@@ -55,9 +55,12 @@ export function ArenaProvider({ children }: { children: ReactNode }) {
     );
   }, [searchParams, setSearchParams]);
 
-  const announce = useCallback((message: string) => {
-    setAnnouncement(current => ({ id: current.id + 1, message }));
-  }, [setAnnouncement]);
+  const announce = useCallback(
+    (message: string) => {
+      setAnnouncement(current => ({ id: current.id + 1, message }));
+    },
+    [setAnnouncement],
+  );
 
   // A thread created by the first prompt goes into the address, so a reload keeps it.
   const onThreadCreated = useCallback(
