@@ -191,7 +191,7 @@ export function buildProblemBody({ status, type, detail, instance, requestId, ex
     type: `${PROBLEM_TYPE_BASE}${type}`,
     title: entry.title,
     status,
-    detail: status >= 500 ? entry.detail : (detail ?? entry.detail),
+    detail: detail ?? entry.detail,
     instance,
     requestId,
     ...extra,
@@ -229,7 +229,8 @@ async function readUpstreamJson(response) {
       if (done) break;
       total += value.byteLength;
       if (total > MAX_UPSTREAM_BODY_BYTES) {
-        await reader.cancel().catch(() => {});
+        // Not awaited: on a cloned response the cancel settles only when the other branch is read.
+        reader.cancel().catch(() => {});
         return { json: null, empty: false };
       }
       chunks.push(value);

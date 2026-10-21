@@ -37,12 +37,13 @@ function wavFixture(size = 1024) {
 function fakeUpstream(respond: (url: string, init: RequestInit) => Response | Promise<Response>) {
   const calls: Array<{ url: string; init: RequestInit; headers: Headers; body: string }> = [];
   const fetchImpl = (async (url: string, init: RequestInit) => {
-    calls.push({
-      url,
-      init,
-      headers: new Headers(init.headers),
-      body: typeof init.body === 'string' ? init.body : '',
-    });
+    const body =
+      typeof init.body === 'string'
+        ? init.body
+        : init.body instanceof ReadableStream
+          ? await new Response(init.body).text()
+          : '';
+    calls.push({ url, init, headers: new Headers(init.headers), body });
     return respond(url, init);
   }) as unknown as typeof fetch;
   return { calls, fetchImpl };

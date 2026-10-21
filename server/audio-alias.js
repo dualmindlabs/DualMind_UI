@@ -34,7 +34,8 @@ async function readLimited(request, limit) {
     if (done) break;
     total += value.byteLength;
     if (total > limit) {
-      await reader.cancel().catch(() => {});
+      // Not awaited: on a cloned request the cancel only settles once the other branch is read too.
+      reader.cancel().catch(() => {});
       return null;
     }
     chunks.push(value);
@@ -138,7 +139,7 @@ export async function audioFromUpstream(upstream) {
       });
       return { body, contentType: 'audio/wav' };
     }
-    await reader.cancel().catch(() => {});
+    reader.cancel().catch(() => {});
   }
   return null;
 }
