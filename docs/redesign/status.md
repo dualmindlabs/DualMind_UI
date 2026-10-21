@@ -2,12 +2,17 @@
 
 The running log of the Arena redesign: what merged, what is in progress, what comes next. One line per change, newest first, written so it can be copied into Notion as is. Plan and slice numbers: [migration-plan.md](./migration-plan.md) section 8. Things that need Harsh: [needs-harsh.md](./needs-harsh.md).
 
-Last updated: 2026-10-21 09:00 UTC. Definition of done: [startup-grade-checklist.md](./startup-grade-checklist.md).
+Last updated: 2026-10-21 13:55 UTC. Definition of done: [startup-grade-checklist.md](./startup-grade-checklist.md).
 
 ## Merged
 
 | Date (UTC) | PR | What |
 | --- | --- | --- |
+| 2026-10-21 | [#58](https://github.com/dualmindlabs/DualMind_UI/pull/58) | **S11 share:** share dialog (private, unlisted, public), `/share/<id>` page with the reveal applied, per-share link previews injected by the Worker, branded share card; share links work again (KNOWN_ISSUES #3) |
+| 2026-10-21 | [#56](https://github.com/dualmindlabs/DualMind_UI/pull/56) | [UI audit](./ui-audit.md) of every screen with a prioritized fix list and a performance plan |
+| 2026-10-21 | [#53](https://github.com/dualmindlabs/DualMind_UI/pull/53) | **S8 arena B:** blind battles, vote bar (keys 1-4), reveal with names and metrics shown only after the vote, follow-ups, side by side and direct (streaming), offline vote queue; **the new arena is the default** at signed-in `/` (`?arena=legacy` for one release) |
+| 2026-10-21 | [#52](https://github.com/dualmindlabs/DualMind_UI/pull/52) | **S8 arena A:** arena shell, thread history (grouped, searchable, rename, delete), composer with mode switch and model picker, hardened Markdown |
+| 2026-10-21 | [#55](https://github.com/dualmindlabs/DualMind_UI/pull/55) | ADR 0008, [startup-grade checklist](./startup-grade-checklist.md), backend approvals |
 | 2026-10-21 | [#54](https://github.com/dualmindlabs/DualMind_UI/pull/54) | Review of the API repository ([api-repo-review.md](../backend/api-repo-review.md)): data model, endpoints, root causes of the contract problems, migration plan, first .NET PRs |
 | 2026-10-21 | [#51](https://github.com/dualmindlabs/DualMind_UI/pull/51) | **BE-3 rate limits:** per-user limits with IETF RateLimit headers, 429 problem+json with Retry-After, client toast, vote queue respects Retry-After |
 | 2026-10-21 | [#49](https://github.com/dualmindlabs/DualMind_UI/pull/49) | **BE-1 + BE-2:** one problem+json error shape at the proxy (opt-in), working text-to-speech route (KNOWN_ISSUES #7 fixed) |
@@ -40,12 +45,10 @@ Last updated: 2026-10-21 09:00 UTC. Definition of done: [startup-grade-checklist
 
 | Slice | PR | What |
 | --- | --- | --- |
-| S8 A | [#52](https://github.com/dualmindlabs/DualMind_UI/pull/52) (draft) | Arena shell, thread history, composer, mode switch (behind an opt-in flag until B lands) |
-| S8 B | [#53](https://github.com/dualmindlabs/DualMind_UI/pull/53) (draft) | Blind battles, vote, reveal; then the new arena becomes the default at signed-in `/` |
+| Audit fix 1 | [#57](https://github.com/dualmindlabs/DualMind_UI/pull/57) | Landing performance: hero paints first, lazy tooltip and API client, split below-the-fold sections |
 
 ## Next
 
-1. Finish and merge S8 A and B (the arena).
-2. .NET W1 in `DualMind_Back` ([ADR 0008](../adr/0008-features-in-the-dotnet-api.md)): sign-in on write routes, vote validation, honest fallback recording, `comparisonId` up front + idempotency, one error shape. Needs Harsh's go before any deploy.
-3. Edge: BE-4 leaderboard cache, BE-5 developer portal.
-4. Frontend: S10 side by side and direct polish, S11 share, S12 settings, S13 cutover, S14 quality pass (Lighthouse 90+ everywhere).
+1. Remaining audit fix PRs ([ui-audit.md](./ui-audit.md)): fonts and CSS; Lighthouse on six routes plus state screenshots and failing budgets; leaderboard data presentation (display names, provisional handling) plus share cards for leaderboard and models; arena polish (display names on reveal, syntax highlighting, shortcuts overlay); touch targets, auth dead ends, credits page, one tagline.
+2. S12 settings, S13 cutover (legacy files removed, CSP everywhere, build variables for Supabase), i18n readiness, README screenshots.
+3. Backend work is paused by Harsh until he says so (docs for BE-25 to BE-34 are allowed).
