@@ -349,7 +349,7 @@ test.describe('export', () => {
 
     const csv = await download(page, /^CSV/, /Export as CSV/);
     expect(csv.name).toMatch(/\.csv$/);
-    expect(csv.text.replace(/^﻿/, '').split('\r\n')[0]).toMatch(/^thread_id,thread_title,/);
+    expect(csv.text.replace(/^\uFEFF/, '').split('\r\n')[0]).toMatch(/^thread_id,thread_title,/);
 
     const html = await download(page, /^HTML/, /Export as HTML/);
     expect(html.name).toMatch(/\.html$/);
@@ -476,7 +476,10 @@ test.describe('touch', () => {
           const height = Math.max(box.height, extra ? Number.parseFloat(target.height) || 0 : 0);
           return Math.min(width, height) < 43.5;
         })
-        .map(element => `${element.tagName.toLowerCase()} "${(element.textContent ?? '').trim().slice(0, 30)}"`);
+        .map(
+          element =>
+            `${element.tagName.toLowerCase()} "${(element.textContent ?? '').trim().slice(0, 30)}"`,
+        );
     });
     expect(small).toEqual([]);
   });

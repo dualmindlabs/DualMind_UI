@@ -20,7 +20,10 @@ export function shortcutGroupsFor(
       if (keys === 'Enter') return [];
       if (keys === 'Mod+Enter') return [{ ...entry, description: 'Send the prompt' }];
       if (keys === 'Shift+Enter') {
-        return [{ keys: ['Enter'], description: 'New line' }, { ...entry, description: 'New line' }];
+        return [
+          { keys: ['Enter'], description: 'New line' },
+          { ...entry, description: 'New line' },
+        ];
       }
       return [entry];
     });

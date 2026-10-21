@@ -1,6 +1,11 @@
 import { Badge } from '@/components/ui/badge';
 import { Kbd, KbdGroup } from '@/components/ui/kbd';
-import { ARENA_PREFERENCE_KEYS, SHORTCUT_GROUPS, sendKeyFrom, useStoredValue } from '@/features/arena';
+import {
+  ARENA_PREFERENCE_KEYS,
+  sendKeyFrom,
+  SHORTCUT_GROUPS,
+  useStoredValue,
+} from '@/features/arena';
 import { useModifierKey } from '@/hooks/use-modifier-key';
 
 import { displayKeys, shortcutGroupsFor } from '../lib/shortcut-table';

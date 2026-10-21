@@ -8,9 +8,9 @@ import {
   csvRow,
   escapeHtml,
   escapeMarkdownInline,
+  exportFileName,
   type ExportMeta,
   type ExportThread,
-  exportFileName,
   exportTurns,
   formatUtc,
   markdownQuote,
@@ -269,7 +269,7 @@ describe('CSV', () => {
       { thread: thread({ threadId: 't-2', title: 'Empty' }), messages: [] },
     ];
     const text = buildExport('csv', metaFor(entries), entries);
-    expect(text.startsWith('﻿')).toBe(true);
+    expect(text.startsWith('\uFEFF')).toBe(true);
     const lines = text.slice(1).split('\r\n');
     expect(lines[0]).toBe(CSV_COLUMNS.join(','));
     expect(text).toContain('"Commas, ""quotes"""');

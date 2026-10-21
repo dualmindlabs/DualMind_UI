@@ -21,12 +21,8 @@ import { threadsQuery } from '@/lib/api';
 import { cn } from '@/lib/utils/cn';
 
 import { type ExportState, useExport } from '../hooks/use-export';
-import {
-  EXPORT_THREAD_LIMIT,
-  type ExportAccount,
-  type ExportFormat,
-} from '../lib/export-format';
-import { type ChoiceOption, ChoiceCards } from './choice-cards';
+import { EXPORT_THREAD_LIMIT, type ExportAccount, type ExportFormat } from '../lib/export-format';
+import { ChoiceCards,type ChoiceOption } from './choice-cards';
 import { PrintExport, printExport } from './print-export';
 import { SettingsCard, SettingsSection } from './settings-card';
 
@@ -128,7 +124,9 @@ function Outcome({
           </span>
         </p>
         {state.requestId ? (
-          <p className="font-mono text-caption break-all text-muted">Request id {state.requestId}</p>
+          <p className="font-mono text-caption break-all text-muted">
+            Request id {state.requestId}
+          </p>
         ) : null}
         <div>
           <Button variant="secondary" size="sm" onClick={onRetry}>
@@ -152,7 +150,9 @@ function Outcome({
             {state.fileName
               ? `Downloaded ${state.fileName}: ${counts}.`
               : `The print view is ready: ${counts}. In the print dialog, choose “Save as PDF”.`}
-            {state.truncated ? ` Only your ${EXPORT_THREAD_LIMIT} most recent threads are in it.` : ''}
+            {state.truncated
+              ? ` Only your ${EXPORT_THREAD_LIMIT} most recent threads are in it.`
+              : ''}
           </span>
         </p>
         {printing ? (
@@ -239,12 +239,7 @@ function ExportCard({ account }: { account: ExportAccount }) {
                 Cancel
               </Button>
             ) : null}
-            <Button
-              size="sm"
-              loading={running}
-              disabled={empty}
-              onClick={() => start(format)}
-            >
+            <Button size="sm" loading={running} disabled={empty} onClick={() => start(format)}>
               {format === 'pdf' ? (
                 <Printer aria-hidden="true" strokeWidth={1.75} />
               ) : (
@@ -315,9 +310,9 @@ function DeleteAccountCard({ email }: { email: string | null }) {
       description={
         <p>
           There is no delete button yet. Email us from{' '}
-          {email ? <span className="font-medium text-fg">{email}</span> : 'your sign-in address'} and
-          we delete your account and your conversations, then confirm by email. Export first if you
-          want a copy.
+          {email ? <span className="font-medium text-fg">{email}</span> : 'your sign-in address'}{' '}
+          and we delete your account and your conversations, then confirm by email. Export first if
+          you want a copy.
         </p>
       }
       footer={
@@ -331,7 +326,10 @@ function DeleteAccountCard({ email }: { email: string | null }) {
               Privacy Policy, your rights
             </a>
           </span>
-          <a href={mailto} className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'text-bad')}>
+          <a
+            href={mailto}
+            className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'text-bad')}
+          >
             <Mail aria-hidden="true" strokeWidth={1.75} />
             Email a deletion request
           </a>

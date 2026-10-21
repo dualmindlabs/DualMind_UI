@@ -18,7 +18,13 @@ import {
 
 export type ExportState =
   | { status: 'idle' }
-  | { status: 'running'; format: ExportFormat; phase: 'listing' | 'reading'; done: number; total: number }
+  | {
+      status: 'running';
+      format: ExportFormat;
+      phase: 'listing' | 'reading';
+      done: number;
+      total: number;
+    }
   | {
       status: 'done';
       format: ExportFormat;

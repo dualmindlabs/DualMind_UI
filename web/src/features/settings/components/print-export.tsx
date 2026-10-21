@@ -73,8 +73,11 @@ export function PrintExport({ job }: { job: PrintJob }) {
             visibilityLabel(thread.visibility),
           ].filter(Boolean);
           return (
-            <section key={thread.threadId} className="grid gap-5 border-t border-line pt-6 first-of-type:border-t-0 first-of-type:pt-0">
-              <div className="grid gap-1 break-after-avoid">
+            <section
+              key={thread.threadId}
+              className="grid gap-5 border-t border-line pt-6 first-of-type:border-t-0 first-of-type:pt-0"
+            >
+              <div className="grid break-after-avoid gap-1">
                 <h2 className="text-h3 font-medium">
                   {index + 1}. {thread.title}
                 </h2>
@@ -83,10 +86,10 @@ export function PrintExport({ job }: { job: PrintJob }) {
               {turns.length === 0 ? <p className="text-ui-sm text-fg-soft">No turns yet.</p> : null}
               {turns.map(turn => (
                 <div key={turn.number} className="grid gap-3">
-                  <p className="eyebrow text-muted break-after-avoid">Turn {turn.number}</p>
-                  <div className="border-l-2 border-human pl-3 break-inside-avoid">
+                  <p className="break-after-avoid eyebrow text-muted">Turn {turn.number}</p>
+                  <div className="break-inside-avoid border-l-2 border-human pl-3">
                     <p className="text-caption font-medium text-human">Prompt</p>
-                    <p className="whitespace-pre-wrap break-words">{turn.prompt}</p>
+                    <p className="break-words whitespace-pre-wrap">{turn.prompt}</p>
                   </div>
                   {turn.answers.map(answer => {
                     const label = answer.slot ? `Answer ${answer.slot}` : 'Answer';
@@ -94,21 +97,22 @@ export function PrintExport({ job }: { job: PrintJob }) {
                       ? ['name hidden until you vote']
                       : [modelLabel(answer.model), formatDuration(answer.timeMs)].filter(Boolean);
                     return (
-                      <div
-                        key={label}
-                        className="rounded-lg border border-line p-3"
-                      >
+                      <div key={label} className="rounded-lg border border-line p-3">
                         <p className="text-caption font-medium text-fg-soft">
                           {[label, ...about].join(' · ')}
                         </p>
-                        <p className="mt-1 text-ui-sm whitespace-pre-wrap break-words">
-                          {answer.text.trim() === '' ? 'No answer was stored.' : answer.text.trimEnd()}
+                        <p className="mt-1 text-ui-sm break-words whitespace-pre-wrap">
+                          {answer.text.trim() === ''
+                            ? 'No answer was stored.'
+                            : answer.text.trimEnd()}
                         </p>
                       </div>
                     );
                   })}
                   {turn.verdict ? (
-                    <p className="text-ui-sm font-medium text-human">Your verdict: {turn.verdict}</p>
+                    <p className="text-ui-sm font-medium text-human">
+                      Your verdict: {turn.verdict}
+                    </p>
                   ) : null}
                 </div>
               ))}

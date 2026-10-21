@@ -102,7 +102,10 @@ export function SettingsCard({
  * "Saved on this device", shown for a moment after a setting that applies at once changes. The
  * live region is always in the page, so the message is announced when it appears.
  */
-export function SavedNote({ visible, children = 'Saved on this device' }: {
+export function SavedNote({
+  visible,
+  children = 'Saved on this device',
+}: {
   visible: boolean;
   children?: ReactNode;
 }) {

@@ -44,7 +44,10 @@ function PageHeading({ email }: { email?: string | null | undefined }) {
 
 function LoadingState() {
   return (
-    <div aria-busy="true" className="grid gap-10 pt-8 lg:grid-cols-[13.5rem_minmax(0,1fr)] lg:gap-14">
+    <div
+      aria-busy="true"
+      className="grid gap-10 pt-8 lg:grid-cols-[13.5rem_minmax(0,1fr)] lg:gap-14"
+    >
       <p className="sr-only" role="status">
         Loading your settings
       </p>
@@ -112,7 +115,7 @@ function SignedIn({ user, profileName }: { user: User; profileName: string | nul
   return (
     <div className="grid gap-10 pt-8 lg:grid-cols-[13.5rem_minmax(0,1fr)] lg:gap-14">
       <SettingsNav className="lg:sticky lg:top-24 lg:self-start" />
-      <div className="grid min-w-0 max-w-3xl gap-14">
+      <div className="grid max-w-3xl min-w-0 gap-14">
         <ProfileSection user={user} profileName={profileName} />
         <AppearanceSection />
         <ArenaSection />

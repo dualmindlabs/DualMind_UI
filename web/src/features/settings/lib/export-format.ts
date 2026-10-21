@@ -211,10 +211,9 @@ export const TRUNCATED_NOTE = `Only your ${EXPORT_THREAD_LIMIT} most recent thre
 function answerHeading(answer: ExportAnswer, hidden: boolean): string {
   const label = answer.slot ? `Answer ${answer.slot}` : 'Answer';
   if (hidden) return `**${label}** · name hidden until you vote`;
-  const details = [
-    modelLabel(answer.model),
-    formatDuration(answer.timeMs),
-  ].filter((part): part is string => part !== null);
+  const details = [modelLabel(answer.model), formatDuration(answer.timeMs)].filter(
+    (part): part is string => part !== null,
+  );
   return [`**${label}**`, ...details.map(part => escapeMarkdownInline(part))].join(' · ');
 }
 
@@ -227,7 +226,8 @@ const markdownWriter: ExportWriter = {
       '',
       `- **Exported:** ${formatUtc(meta.exportedAt) ?? ''}`,
     ];
-    if (meta.account.email) lines.push(`- **Account:** ${escapeMarkdownInline(meta.account.email)}`);
+    if (meta.account.email)
+      lines.push(`- **Account:** ${escapeMarkdownInline(meta.account.email)}`);
     lines.push(`- **Threads:** ${meta.threads.length}`);
     if (meta.truncated) lines.push('', `> ${TRUNCATED_NOTE}`);
     return `${lines.join('\n')}\n`;
@@ -328,7 +328,7 @@ const csvWriter: ExportWriter = {
   extension: 'csv',
   mime: 'text/csv;charset=utf-8',
   // The byte order mark lets spreadsheet apps read the file as UTF-8.
-  start: () => `﻿${csvRow(CSV_COLUMNS)}`,
+  start: () => `\uFEFF${csvRow(CSV_COLUMNS)}`,
   thread: entry => {
     const { thread } = entry;
     const base = [
@@ -339,7 +339,8 @@ const csvWriter: ExportWriter = {
       thread.createdAt ?? null,
     ];
     const turns = exportTurns(entry);
-    if (turns.length === 0) return csvRow([...base, ...Array<null>(CSV_COLUMNS.length - 5).fill(null)]);
+    if (turns.length === 0)
+      return csvRow([...base, ...Array<null>(CSV_COLUMNS.length - 5).fill(null)]);
     return turns
       .map(turn => {
         const [a, b] = turn.answers;
@@ -372,7 +373,19 @@ function token(name: `--${string}`, theme: ThemeName): string {
 
 function htmlStyles(): string {
   const vars = (theme: ThemeName) =>
-    (['--bg', '--surface', '--line-subtle', '--fg', '--fg-soft', '--muted', '--mind-a', '--mind-b-text', '--human'] as const)
+    (
+      [
+        '--bg',
+        '--surface',
+        '--line-subtle',
+        '--fg',
+        '--fg-soft',
+        '--muted',
+        '--mind-a',
+        '--mind-b-text',
+        '--human',
+      ] as const
+    )
       .map(name => `${name}:${token(name, theme)}`)
       .join(';');
   return [
@@ -425,7 +438,10 @@ const htmlWriter: ExportWriter = {
       plural(meta.threads.length, 'thread'),
     ].filter(Boolean) as string[];
     const contents = meta.threads
-      .map((thread, index) => `<li><a href="#thread-${index + 1}">${escapeHtml(thread.title)}</a></li>`)
+      .map(
+        (thread, index) =>
+          `<li><a href="#thread-${index + 1}">${escapeHtml(thread.title)}</a></li>`,
+      )
       .join('');
     return [
       '<!doctype html>',
@@ -466,7 +482,9 @@ const htmlWriter: ExportWriter = {
                 `<section class="turn"><h3>Turn ${turn.number}</h3>`,
                 `<div class="prompt"><p class="label">Prompt</p><p class="text">${escapeHtml(turn.prompt)}</p></div>`,
                 `<div class="answers">${turn.answers.map(answer => htmlAnswer(answer, turn.namesHidden)).join('')}</div>`,
-                turn.verdict ? `<p class="verdict">Your verdict: ${escapeHtml(turn.verdict)}</p>` : '',
+                turn.verdict
+                  ? `<p class="verdict">Your verdict: ${escapeHtml(turn.verdict)}</p>`
+                  : '',
                 '</section>',
               ].join(''),
             )

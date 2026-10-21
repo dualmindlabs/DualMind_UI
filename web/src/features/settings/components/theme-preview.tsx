@@ -42,8 +42,14 @@ function MiniArena({ theme, style }: { theme: ThemeName; style?: CSSProperties }
     backgroundColor: color,
   });
   return (
-    <span className="absolute inset-0 grid grid-rows-[auto_1fr_auto]" style={{ ...style, backgroundColor: colors.bg }}>
-      <span className="flex h-3.5 items-center gap-1 border-b px-2" style={{ borderColor: colors.line }}>
+    <span
+      className="absolute inset-0 grid grid-rows-[auto_1fr_auto]"
+      style={{ ...style, backgroundColor: colors.bg }}
+    >
+      <span
+        className="flex h-3.5 items-center gap-1 border-b px-2"
+        style={{ borderColor: colors.line }}
+      >
         <span className="h-1 rounded-full" style={bar('1.25rem', colors.fg)} />
         <span className="ml-auto size-1.5 rounded-full" style={{ backgroundColor: colors.human }} />
       </span>
@@ -52,7 +58,11 @@ function MiniArena({ theme, style }: { theme: ThemeName; style?: CSSProperties }
           <span
             key={index}
             className="grid content-start gap-1 rounded-[4px] border border-t-2 p-1.5"
-            style={{ backgroundColor: colors.surface, borderColor: colors.line, borderTopColor: edge }}
+            style={{
+              backgroundColor: colors.surface,
+              borderColor: colors.line,
+              borderTopColor: edge,
+            }}
           >
             <span className="h-1 rounded-full" style={bar('80%', colors.fg)} />
             <span className="h-1 rounded-full" style={bar('64%')} />
@@ -60,13 +70,22 @@ function MiniArena({ theme, style }: { theme: ThemeName; style?: CSSProperties }
           </span>
         ))}
       </span>
-      <span className="mx-2 mb-2 h-3 rounded-full border" style={{ backgroundColor: colors.surface, borderColor: colors.line }} />
+      <span
+        className="mx-2 mb-2 h-3 rounded-full border"
+        style={{ backgroundColor: colors.surface, borderColor: colors.line }}
+      />
     </span>
   );
 }
 
 /** The picture on a theme card: dark, light, or both split along the diagonal for System. */
-export function ThemePreview({ preference, className }: { preference: ThemePreference; className?: string }) {
+export function ThemePreview({
+  preference,
+  className,
+}: {
+  preference: ThemePreference;
+  className?: string;
+}) {
   return (
     <span
       className={cn(

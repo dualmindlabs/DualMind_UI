@@ -121,7 +121,9 @@ describe('SettingsPage', () => {
   });
 
   it('explains when this build has no sign-in', () => {
-    renderSettings(createAuthStore({ config: null, loadClient: () => Promise.reject(new Error()) }));
+    renderSettings(
+      createAuthStore({ config: null, loadClient: () => Promise.reject(new Error()) }),
+    );
     expect(screen.getByRole('heading', { name: 'Sign-in is unavailable here' })).toBeVisible();
     expect(screen.queryByRole('heading', { level: 2, name: 'Profile' })).not.toBeInTheDocument();
   });

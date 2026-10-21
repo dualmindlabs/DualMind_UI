@@ -1,4 +1,10 @@
-import { ArrowLeftRight, CornerDownLeft, type LucideIcon, MessageSquare, Swords } from 'lucide-react';
+import {
+  ArrowLeftRight,
+  CornerDownLeft,
+  type LucideIcon,
+  MessageSquare,
+  Swords,
+} from 'lucide-react';
 
 import { Field } from '@/components/ui/field';
 import { Kbd, KbdGroup } from '@/components/ui/kbd';
@@ -16,7 +22,7 @@ import {
 import { useModifierKey } from '@/hooks/use-modifier-key';
 
 import { useSavedFlash } from '../hooks/use-saved-flash';
-import { type ChoiceOption, ChoiceCards } from './choice-cards';
+import { ChoiceCards,type ChoiceOption } from './choice-cards';
 import { SavedNote, SettingsCard, SettingsSection } from './settings-card';
 
 const MODE_ICONS: Record<ArenaMode, LucideIcon> = {
