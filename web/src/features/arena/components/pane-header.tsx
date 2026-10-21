@@ -1,6 +1,7 @@
 import { EyeOff } from 'lucide-react';
 
 import { RoleBadge } from '@/components/ui/role-badge';
+import { DecryptedText } from '@/components/vendor/reactbits/decrypted-text';
 import { cn } from '@/lib/utils/cn';
 
 import { CopyButton } from './copy-button';
@@ -21,6 +22,8 @@ export interface PaneHeaderProps {
   hiddenNote?: string | undefined;
   meta?: string | null | undefined;
   chosen?: boolean;
+  /** The name decrypts once (the reveal). */
+  revealing?: boolean;
   /** The text the copy button copies; null hides the button (nothing final to copy yet). */
   copyText: string | null;
 }
@@ -36,6 +39,7 @@ export function PaneHeader({
   hiddenNote = 'Name hidden',
   meta,
   chosen = false,
+  revealing = false,
   copyText,
 }: PaneHeaderProps) {
   const style = SIDE_STYLES[side];
@@ -43,7 +47,7 @@ export function PaneHeader({
   return (
     <header
       className={cn(
-        'flex min-h-12 flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-line px-3 py-2 sm:px-4',
+        'flex min-h-12 flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-t-[13px] border-b border-line px-3 py-2 sm:px-4',
         style.tint,
       )}
     >
@@ -54,7 +58,17 @@ export function PaneHeader({
           {modelLabel ? (
             <span className="truncate font-medium text-fg" data-testid="pane-model">
               <span className="sr-only">, </span>
-              {modelLabel}
+              {revealing ? (
+                <DecryptedText
+                  text={modelLabel}
+                  animateOn="mount"
+                  sequential
+                  speed={28}
+                  encryptedClassName="text-muted"
+                />
+              ) : (
+                modelLabel
+              )}
             </span>
           ) : side === 'solo' ? null : (
             <span className="inline-flex items-center gap-1 text-caption text-muted">
@@ -72,7 +86,12 @@ export function PaneHeader({
       </div>
       <div className="flex items-center gap-1.5">
         {meta ? (
-          <p className="font-mono text-caption whitespace-nowrap text-muted tabular-nums">{meta}</p>
+          <p
+            data-testid="pane-meta"
+            className="font-mono text-caption whitespace-nowrap text-muted tabular-nums"
+          >
+            {meta}
+          </p>
         ) : null}
         {copyText === null ? null : <CopyButton text={copyText} label={`Copy ${style.title}`} />}
       </div>

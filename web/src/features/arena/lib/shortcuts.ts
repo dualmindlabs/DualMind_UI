@@ -2,10 +2,17 @@
  * The arena's keyboard map (design-direction.md section 7, new-features.md F-6). Shortcuts with
  * a modifier work everywhere; single-key shortcuts only fire when focus is not in a text field,
  * and can be turned off (`dm.arena.shortcuts` = `off`; WCAG 2.1.4, Character Key Shortcuts).
- * The `?` overlay and the vote keys 1 to 4 arrive with the battle flow (slice S9).
+ * The vote keys 1 to 4 work while a battle waits for a vote.
  */
 
-export type SingleKeyAction = 'new-battle' | 'toggle-sidebar' | 'focus-composer';
+export type SingleKeyAction =
+  | 'new-battle'
+  | 'toggle-sidebar'
+  | 'focus-composer'
+  | 'vote-left'
+  | 'vote-right'
+  | 'vote-tie'
+  | 'vote-both-bad';
 
 export interface ShortcutEntry {
   /** Keys as shown, one <kbd> each. `Mod` becomes Ctrl or Cmd. */
@@ -28,6 +35,15 @@ export const SHORTCUT_GROUPS: readonly ShortcutGroup[] = [
       { keys: ['N'], description: 'Start a new battle', single: true },
       { keys: ['/'], description: 'Move to the prompt box', single: true },
       { keys: ['['], description: 'Show or hide the history', single: true },
+    ],
+  },
+  {
+    heading: 'Voting',
+    entries: [
+      { keys: ['1'], description: 'A is better', single: true },
+      { keys: ['2'], description: 'B is better', single: true },
+      { keys: ['3'], description: 'Tie', single: true },
+      { keys: ['4'], description: 'Both are bad', single: true },
     ],
   },
   {
@@ -75,6 +91,14 @@ export function singleKeyAction(
       return 'toggle-sidebar';
     case '/':
       return 'focus-composer';
+    case '1':
+      return 'vote-left';
+    case '2':
+      return 'vote-right';
+    case '3':
+      return 'vote-tie';
+    case '4':
+      return 'vote-both-bad';
     default:
       return null;
   }

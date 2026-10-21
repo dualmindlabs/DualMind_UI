@@ -64,7 +64,7 @@ export function TurnView({ turn, names }: TurnViewProps) {
               text={turn.a.text}
               modelLabel={turn.revealed ? label(turn.a, names) : null}
               hiddenNote={hiddenNote}
-              meta={paneMeta(turn.a)}
+              meta={turn.revealed ? paneMeta(turn.a) : null}
               chosen={turn.vote === 'left'}
             />
           }
@@ -74,7 +74,7 @@ export function TurnView({ turn, names }: TurnViewProps) {
               text={turn.b.text}
               modelLabel={turn.revealed ? label(turn.b, names) : null}
               hiddenNote={hiddenNote}
-              meta={paneMeta(turn.b)}
+              meta={turn.revealed ? paneMeta(turn.b) : null}
               chosen={turn.vote === 'right'}
             />
           }

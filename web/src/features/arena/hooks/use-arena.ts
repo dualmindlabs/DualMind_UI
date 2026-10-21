@@ -3,6 +3,7 @@ import { createContext, type RefObject, useContext } from 'react';
 import type { Thread } from '@/lib/api';
 
 import type { ArenaMode } from '../lib/modes';
+import type { BattleApi } from './use-battle';
 
 /** The arena's shared state, provided by <ArenaProvider> (components/arena-provider.tsx). */
 export interface ArenaState {
@@ -38,6 +39,8 @@ export interface ArenaState {
   focusComposer: () => void;
   /** A polite screen-reader message (states, never every word of an answer). */
   announce: (message: string) => void;
+  /** The live turns of the open thread: battles, comparisons and chats (useBattle). */
+  battle: BattleApi;
 }
 
 export const ArenaContext = createContext<ArenaState | null>(null);

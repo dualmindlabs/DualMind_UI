@@ -11,14 +11,26 @@ import { cn } from '@/lib/utils/cn';
 import { useArena } from '../hooks/use-arena';
 import { useDraft } from '../hooks/use-draft';
 import { useModelChoices } from '../hooks/use-model-choices';
-import { useModelOptions } from '../hooks/use-model-options';
+import { type ModelOption, useModelOptions } from '../hooks/use-model-options';
 import { MODE_DETAILS } from '../lib/modes';
 import { ModeSwitch } from './mode-switch';
 import { ModelPicker } from './model-picker';
 
+/** The models picked in the composer: the Side by side pair and the Direct model (ids). */
+export interface ComposerPicks {
+  pair: { a: string | null; b: string | null };
+  directModel: string | null;
+}
+
+/** A random model for an empty Side by side slot, never the one on the other side. */
+function randomOther(options: readonly ModelOption[] | undefined, other: ModelOption | null) {
+  const pool = (options ?? []).filter(option => option.modelId !== other?.modelId);
+  return pool[Math.floor(Math.random() * pool.length)] ?? null;
+}
+
 export interface ComposerProps {
   /** Sends the prompt; the arena decides what a send means in each mode. */
-  onSend: (prompt: string) => void;
+  onSend: (prompt: string, picks: ComposerPicks) => void;
   /** Answers are on their way: the send button becomes Stop, and Esc stops. */
   busy?: boolean;
   onStop?: () => void;
@@ -39,7 +51,8 @@ export function Composer({
   variant = 'dock',
   className,
 }: ComposerProps) {
-  const { mode, selectMode, composerRef } = useArena();
+  const { mode, selectMode, composerRef, battle } = useArena();
+  const followUp = mode === 'battle' && battle.state.turns.some(turn => turn.b?.model);
   const { draft, setDraft } = useDraft();
   const { options } = useModelOptions();
   const choices = useModelChoices(mode === 'battle' ? undefined : options);
@@ -47,7 +60,13 @@ export function Composer({
 
   const send = () => {
     if (busy || empty) return;
-    onSend(draft.trim());
+    // Side by side needs both models: a side left on random gets one now (legacy behaviour).
+    const left = choices.left ?? (mode === 'side' ? randomOther(options, choices.right) : null);
+    const right = choices.right ?? (mode === 'side' ? randomOther(options, left) : null);
+    onSend(draft.trim(), {
+      pair: { a: left?.modelId ?? null, b: right?.modelId ?? null },
+      directModel: choices.direct?.modelId ?? null,
+    });
   };
 
   return (
@@ -70,7 +89,9 @@ export function Composer({
       >
         <PromptInputTextarea
           aria-label="Your prompt"
-          placeholder={MODE_DETAILS[mode].placeholder}
+          placeholder={
+            followUp ? 'Ask a follow-up, same two models' : MODE_DETAILS[mode].placeholder
+          }
           enterKeyHint="send"
           className={cn(variant === 'hero' && 'min-h-16')}
           onKeyDown={event => {

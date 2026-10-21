@@ -1,5 +1,7 @@
 import { type ReactNode, useId } from 'react';
 
+import { BorderBeam } from '@/components/vendor/magicui/border-beam';
+import { ChargeBorder } from '@/features/marketing';
 import { cn } from '@/lib/utils/cn';
 
 import { Markdown } from './markdown';
@@ -19,6 +21,12 @@ export interface AnswerPaneProps {
   chosen?: boolean;
   /** True while the text is still arriving. */
   streaming?: boolean;
+  /** The model is working: a Border Beam runs around the pane (a state, not decoration). */
+  generating?: boolean;
+  /** The name just became visible: it decrypts once, and the chosen pane gets the charge. */
+  revealing?: boolean;
+  /** Under the body: the metrics after a reveal. */
+  footer?: ReactNode;
   /** Replaces the body (loading, error). */
   children?: ReactNode;
   className?: string;
@@ -37,6 +45,9 @@ export function AnswerPane({
   meta,
   chosen = false,
   streaming = false,
+  generating = false,
+  revealing = false,
+  footer,
   children,
   className,
 }: AnswerPaneProps) {
@@ -48,19 +59,31 @@ export function AnswerPane({
       data-side={side}
       data-chosen={chosen ? '' : undefined}
       className={cn(
-        'flex min-w-0 flex-col overflow-hidden rounded-lg border bg-surface shadow-raise',
+        'relative flex min-w-0 flex-col rounded-lg border bg-surface shadow-raise',
         chosen ? 'border-human ring-1 ring-human/40' : 'border-line',
         className,
       )}
     >
+      {generating && side !== 'solo' ? (
+        <BorderBeam
+          duration={2.4}
+          size={120}
+          colorFrom={side === 'a' ? '--mind-a' : '--mind-b'}
+          colorTo={side === 'a' ? '--mind-a' : '--mind-b'}
+        />
+      ) : generating ? (
+        <BorderBeam duration={2.4} size={120} colorFrom="--mind-a" colorTo="--mind-a" />
+      ) : null}
+      {chosen && revealing ? <ChargeBorder /> : null}
       <PaneHeader
         side={side}
+        revealing={revealing}
         headingId={headingId}
         modelLabel={modelLabel}
         hiddenNote={hiddenNote}
         meta={meta}
         chosen={chosen}
-        copyText={streaming || children ? null : text}
+        copyText={streaming || generating || children ? null : text}
       />
       <div className="min-w-0 px-4 py-4 sm:px-5">
         {children ?? (
@@ -69,6 +92,7 @@ export function AnswerPane({
           </Markdown>
         )}
       </div>
+      {footer}
     </section>
   );
 }

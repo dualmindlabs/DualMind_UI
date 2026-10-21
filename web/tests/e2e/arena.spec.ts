@@ -4,8 +4,7 @@ import { expect, type Page, test } from '@playwright/test';
 import { mockArena } from './arena-mocks';
 import { passGate, settle, shotPath, storeTheme } from './helpers';
 
-// Slice S8: the signed-in arena shell at / (opt-in with ?arena=new while the battle flow is
-// built): the switch from the landing page, the history (groups, search, rename, delete), the
+// Slices S8 and S9: the signed-in arena at / (the default; ?arena=legacy keeps the legacy one): the switch from the landing page, the history (groups, search, rename, delete), the
 // composer (modes, model pickers, starters), /?thread= deep links, keyboard, axe, overflow and
 // the review screenshots. Supabase and the API are answered by Playwright routes (arena-mocks.ts).
 
@@ -88,13 +87,11 @@ test.describe('the switch at /', () => {
     expect(csp).toEqual([]);
   });
 
-  test('a signed-in visitor who has not opted in still goes to the legacy arena', async ({
-    page,
-  }) => {
-    await page.route(/\/(config\.js|js\/.*)$/, route => route.abort());
+  test('the new arena is the default for signed-in visitors (slice S9)', async ({ page }) => {
     await mockArena(page);
-    await page.goto('/', { waitUntil: 'commit' });
-    await page.waitForURL(/\/legacy-app/);
+    await page.goto('/');
+    await expect(page.getByTestId('arena')).toBeVisible();
+    await expect(page).toHaveURL(/\/$/);
   });
 
   test('?arena=legacy opts out again', async ({ page }) => {
@@ -174,6 +171,7 @@ test.describe('threads', () => {
     await expect(first.getByTestId('pane-model').first()).toHaveText(/llama-3\.3-70b/);
     await expect(turns.nth(1)).toContainText('both names stay hidden');
     await expect(turns.nth(1).getByTestId('pane-model')).toHaveCount(0);
+    await expect(turns.nth(1).getByTestId('pane-meta')).toHaveCount(0);
     // Safe links: https only, new tab, host shown.
     const link = first.getByRole('link', { name: /Python docs/ });
     await expect(link).toHaveAttribute('rel', 'noopener noreferrer nofollow');
@@ -193,7 +191,7 @@ test.describe('threads', () => {
     await page.getByRole('link', { name: /Write a haiku about merge conflicts/ }).click();
     await expect(page).toHaveURL(/\?thread=t-haiku/);
     await expect(page.getByText('Side by side', { exact: false }).first()).toBeVisible();
-    await page.locator('body').click({ position: { x: 5, y: 300 } });
+    await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
     await page.keyboard.press('n');
     await expect(page).toHaveURL(/\/$/);
     await expect(page.getByRole('textbox', { name: 'Your prompt' })).toBeFocused();
@@ -336,5 +334,174 @@ test.describe('screenshots', () => {
     await openArena(page);
     await settle(page, 700);
     await page.screenshot({ path: shotPath('arena-empty-history-dark') });
+  });
+});
+
+test.describe('battles', () => {
+  test('prompt, both answers, vote with the keyboard, reveal, follow-up, new battle', async ({
+    page,
+  }) => {
+    const problems = collectProblems(page);
+    const state = await mockArena(page);
+    await openArena(page);
+    const prompt = page.getByRole('textbox', { name: 'Your prompt' });
+    await prompt.fill('Explain recursion to a ten-year-old');
+    await page.keyboard.press('Control+Enter');
+
+    const turn = page.getByTestId('live-turn').first();
+    await expect(turn).toHaveAttribute('data-phase', 'awaiting_vote', { timeout: 15_000 });
+    await expect(page).toHaveURL(/\?thread=t-new-/);
+    await expect(turn.getByRole('region', { name: /Answer A/ })).toContainText('base case');
+    await expect(turn.getByRole('region', { name: /Answer B/ })).toContainText('nesting dolls');
+    // Blind: no names, no timing, length or tokens before the vote (they hint at the model).
+    await expect(turn.getByTestId('pane-model')).toHaveCount(0);
+    await expect(turn.getByTestId('pane-meta')).toHaveCount(0);
+    await expect(turn).not.toContainText('Tokens');
+    await expect(turn).not.toContainText(/\d words/);
+    await expect(page.getByTestId('arena-announcer')).toContainText('Both answers are ready');
+
+    await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+    await page.keyboard.press('2');
+    await expect(turn).toHaveAttribute('data-phase', 'revealed');
+    await expect(turn.getByTestId('verdict')).toContainText('B is better');
+    await expect(page.getByTestId('arena-announcer')).toContainText(
+      'You voted B. Model A was llama-3.3-70b-instruct-fp8-fast. Model B was Compound Mini.',
+    );
+    await expect(turn.getByTestId('pane-model').nth(1)).toContainText('Compound Mini', {
+      timeout: 5000,
+    });
+    await expect(turn.getByRole('region', { name: /Answer B/ })).toContainText('Tokens');
+    await expect(turn.getByTestId('pane-meta')).toHaveCount(2);
+    const vote = state.bodies.find(item => item.path === '/api/arena/model-vote');
+    expect(vote?.body).toMatchObject({ comparisonId: 'c-live-1', voteChoice: 'right' });
+
+    // A follow-up keeps the pair and the thread.
+    await prompt.fill('Now with a Python example');
+    await page.keyboard.press('Enter');
+    await expect(page.getByTestId('live-turn')).toHaveCount(2);
+    const battles = state.bodies.filter(item => item.path === '/api/arena/dualchat');
+    expect(battles[1]?.body.threadId).toBe(battles[0]?.body.threadId);
+    expect(typeof battles[1]?.body.model1).toBe('string');
+    expect(typeof battles[1]?.body.model2).toBe('string');
+
+    await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+    await page.keyboard.press('n');
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.getByTestId('live-turn')).toHaveCount(0);
+    expect(problems).toEqual([]);
+  });
+
+  test('an offline vote is queued, shown as pending, then sent on reconnect', async ({
+    page,
+    context,
+  }) => {
+    const state = await mockArena(page);
+    await openArena(page);
+    await page.getByRole('textbox', { name: 'Your prompt' }).fill('Which is bigger, 9.11 or 9.9?');
+    await page.keyboard.press('Enter');
+    const turn = page.getByTestId('live-turn').first();
+    await expect(turn).toHaveAttribute('data-phase', 'awaiting_vote', { timeout: 15_000 });
+    await context.setOffline(true);
+    await turn.getByRole('button', { name: /A is better/ }).click();
+    await expect(turn.getByTestId('vote-pending')).toBeVisible();
+    expect(await page.evaluate(() => window.localStorage.getItem('dm.voteQueue.v1'))).toContain(
+      'c-live-1',
+    );
+    await context.setOffline(false);
+    await expect(turn.getByTestId('vote-pending')).toHaveCount(0, { timeout: 15_000 });
+    expect(state.bodies.some(item => item.path === '/api/arena/model-vote')).toBe(true);
+  });
+
+  test('Side by side sends the picked pair and shows names at once', async ({ page }) => {
+    const state = await mockArena(page);
+    await openArena(page);
+    await page.getByRole('radio', { name: 'Side by side' }).check({ force: true });
+    await page.getByRole('button', { name: /Model for answer B/ }).click();
+    await page.getByRole('option', { name: /Gemma 3n/ }).click();
+    await page
+      .getByRole('textbox', { name: 'Your prompt' })
+      .fill('Write a haiku about merge conflicts');
+    await page.keyboard.press('Enter');
+    const turn = page.getByTestId('live-turn').first();
+    await expect(turn).toHaveAttribute('data-phase', 'awaiting_vote', { timeout: 15_000 });
+    await expect(turn.getByTestId('pane-model').nth(1)).toContainText('Gemma 3n E2B IT');
+    await expect(turn.getByText('Voting is optional here.')).toBeVisible();
+    const body = state.bodies.find(item => item.path === '/api/arena/dualchat')?.body;
+    expect(body?.model2).toBe('1fe310c7-24d1-49a5-a042-2e409e009524');
+    expect(typeof body?.model1).toBe('string');
+  });
+
+  test('Direct streams the answer from the server in chunks', async ({ page }) => {
+    await mockArena(page);
+    await openArena(page);
+    await page.getByRole('radio', { name: 'Direct' }).check({ force: true });
+    await page.getByRole('textbox', { name: 'Your prompt' }).fill('Say hello');
+    await page.keyboard.press('Enter');
+    const turn = page.getByTestId('live-turn').first();
+    await expect(turn).toHaveAttribute('data-phase', 'answering', { timeout: 15_000 });
+    await expect(turn).toHaveAttribute('data-phase', 'done', { timeout: 15_000 });
+    await expect(turn).toContainText('one word at a time');
+    await expect(turn.locator('strong')).toHaveText('one word at a time');
+  });
+});
+
+test.describe('battle screenshots', () => {
+  for (const viewport of [
+    { label: 'desktop', width: 1440, height: 900 },
+    { label: 'mobile', width: 390, height: 844 },
+  ] as const) {
+    for (const theme of ['dark', 'light'] as const) {
+      test(`battle: ${viewport.label}, ${theme}`, async ({ page }) => {
+        await page.setViewportSize({ width: viewport.width, height: viewport.height });
+        await storeTheme(page, theme);
+        await mockArena(page, { battleDelayMs: 2500 });
+        await openArena(page);
+        await page
+          .getByRole('textbox', { name: 'Your prompt' })
+          .fill('Explain recursion to a ten-year-old');
+        await page.keyboard.press('Enter');
+        const turn = page.getByTestId('live-turn').first();
+        await page.waitForTimeout(900);
+        await page.screenshot({ path: shotPath(`battle-waiting-${viewport.label}-${theme}`) });
+        await expect(turn).toHaveAttribute('data-phase', 'awaiting_vote', { timeout: 15_000 });
+        await settle(page, 400);
+        await page.screenshot({ path: shotPath(`battle-vote-${viewport.label}-${theme}`) });
+        await turn.getByRole('button', { name: /B is better/ }).click();
+        await expect(turn).toHaveAttribute('data-phase', 'revealed');
+        await page.waitForTimeout(500);
+        await page.screenshot({ path: shotPath(`battle-reveal-${viewport.label}-${theme}`) });
+        await settle(page, 2600);
+        await page.screenshot({ path: shotPath(`battle-revealed-${viewport.label}-${theme}`) });
+      });
+    }
+  }
+
+  test('battle: reduced motion shows everything at once', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await mockArena(page);
+    await openArena(page);
+    await page.getByRole('textbox', { name: 'Your prompt' }).fill('Explain recursion');
+    await page.keyboard.press('Enter');
+    const turn = page.getByTestId('live-turn').first();
+    await expect(turn).toHaveAttribute('data-phase', 'awaiting_vote', { timeout: 15_000 });
+    await turn.getByRole('button', { name: /A is better/ }).click();
+    await expect(turn.getByTestId('pane-model').first()).toContainText(
+      'llama-3.3-70b-instruct-fp8-fast',
+    );
+    await settle(page, 300);
+    await page.screenshot({ path: shotPath('battle-revealed-reduced-motion') });
+  });
+
+  test('direct: streaming answer, desktop', async ({ page }) => {
+    await mockArena(page);
+    await openArena(page);
+    await page.getByRole('radio', { name: 'Direct' }).check({ force: true });
+    await page.getByRole('textbox', { name: 'Your prompt' }).fill('Say hello');
+    await page.keyboard.press('Enter');
+    await expect(page.getByTestId('live-turn').first()).toHaveAttribute('data-phase', 'done', {
+      timeout: 15_000,
+    });
+    await settle(page, 300);
+    await page.screenshot({ path: shotPath('direct-answer-dark') });
   });
 });

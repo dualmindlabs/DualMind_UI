@@ -108,8 +108,19 @@ function heading(level: 1 | 2 | 3 | 4 | 5 | 6) {
   return AnswerHeading;
 }
 
+/** Real emphasis elements (Streamdown's defaults are styled spans), so meaning survives. */
+function AnswerStrong({ node: _node, children }: ComponentProps<'strong'> & ExtraProps) {
+  return <strong>{children}</strong>;
+}
+
+function AnswerEmphasis({ node: _node, children }: ComponentProps<'em'> & ExtraProps) {
+  return <em>{children}</em>;
+}
+
 const COMPONENTS: Components = {
   code: AnswerCode,
+  strong: AnswerStrong,
+  em: AnswerEmphasis,
   table: AnswerTable,
   a: AnswerLink,
   h1: heading(1),

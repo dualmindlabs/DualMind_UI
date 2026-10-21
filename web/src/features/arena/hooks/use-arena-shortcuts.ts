@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 
+import { turnAwaitingVote } from '../lib/battle-machine';
 import { singleKeyAction } from '../lib/shortcuts';
 import { useArena } from './use-arena';
 
@@ -9,7 +10,8 @@ import { useArena } from './use-arena';
  * menu) nothing fires here.
  */
 export function useArenaShortcuts(): void {
-  const { shortcutsEnabled, newBattle, toggleHistory, focusComposer } = useArena();
+  const { shortcutsEnabled, newBattle, toggleHistory, focusComposer, battle } = useArena();
+  const { state, vote } = battle;
 
   useEffect(() => {
     if (!shortcutsEnabled) return;
@@ -17,6 +19,13 @@ export function useArenaShortcuts(): void {
       const action = singleKeyAction(event);
       if (action === null) return;
       if (document.querySelector('[aria-modal="true"], [role="menu"]')) return;
+      if (action.startsWith('vote-')) {
+        const turn = turnAwaitingVote(state);
+        if (!turn) return;
+        event.preventDefault();
+        vote(turn.id, action.slice('vote-'.length) as 'left' | 'right' | 'tie' | 'both-bad');
+        return;
+      }
       event.preventDefault();
       switch (action) {
         case 'new-battle':
@@ -28,9 +37,11 @@ export function useArenaShortcuts(): void {
         case 'focus-composer':
           focusComposer();
           break;
+        default:
+          break;
       }
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [shortcutsEnabled, newBattle, toggleHistory, focusComposer]);
+  }, [shortcutsEnabled, newBattle, toggleHistory, focusComposer, state, vote]);
 }

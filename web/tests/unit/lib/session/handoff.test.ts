@@ -145,21 +145,29 @@ const cases: Array<{
   },
 ];
 
-describe('signed-in hand-off', () => {
+// The hand-off to the legacy arena, for visitors who keep it (`dm.arena` = `legacy`).
+const LEGACY_CHOICE = { [ARENA_CHOICE_KEY]: 'legacy' };
+
+describe('signed-in hand-off (legacy arena kept)', () => {
   it.each(cases)(
     '$name (TypeScript rules)',
     ({ search = '', hash = '', storage = {}, expected }) => {
-      expect(handoffDestination({ search, hash }, memoryStorage(storage))).toBe(expected);
+      expect(
+        handoffDestination({ search, hash }, memoryStorage({ ...storage, ...LEGACY_CHOICE })),
+      ).toBe(expected);
     },
   );
 
   it.each(cases)('$name (inline script)', ({ search = '', hash = '', storage = {}, expected }) => {
-    expect(runScript({ search, hash }, memoryStorage(storage))).toBe(expected);
+    expect(runScript({ search, hash }, memoryStorage({ ...storage, ...LEGACY_CHOICE }))).toBe(
+      expected,
+    );
   });
 
   it('treats storage that cannot be read as signed out, but still follows auth params', () => {
     expect(runScript({}, 'throws')).toBeNull();
-    expect(runScript({ search: '?code=1' }, 'throws')).toBe(`${LEGACY_APP_PATH}?code=1`);
+    // Without a readable choice the default (the new arena) finishes the sign-in on /.
+    expect(runScriptFull({ search: '?code=1' }, 'throws')).toEqual({ target: null, marked: true });
     const throwing = {
       length: 1,
       key: () => {
@@ -205,7 +213,7 @@ describe('the hand-off outside the landing page', () => {
   );
 });
 
-describe('the new arena switch (slice S8)', () => {
+describe('the new arena switch (slices S8 and S9)', () => {
   it('reads the choice from the URL first, then from storage', () => {
     expect(arenaChoiceFromSearch('?arena=new')).toBe('new');
     expect(arenaChoiceFromSearch('?x=1&arena=legacy')).toBe('legacy');
@@ -224,11 +232,32 @@ describe('the new arena switch (slice S8)', () => {
     expect(readArenaChoice('', null)).toBeNull();
   });
 
-  it('is opt-in while the battle flow is built', () => {
-    expect(NEW_ARENA_BY_DEFAULT).toBe(false);
-    expect(usesNewArena(null)).toBe(false);
+  it('is the default since the battle flow; legacy is the opt-out', () => {
+    expect(NEW_ARENA_BY_DEFAULT).toBe(true);
+    expect(usesNewArena(null)).toBe(true);
     expect(usesNewArena('legacy')).toBe(false);
     expect(usesNewArena('new')).toBe(true);
+  });
+
+  it('keeps every signed-in visitor on / by default', () => {
+    const storage = memoryStorage({ 'sb-abcdefghijkl-auth-token': SESSION });
+    expect(landingView({ search: '', hash: '' }, storage)).toEqual({ kind: 'arena' });
+    expect(runScriptFull({}, storage)).toEqual({ target: null, marked: true });
+    expect(runScriptFull({}, memoryStorage({ [LEGACY_SESSION_KEY]: SESSION }))).toEqual({
+      target: null,
+      marked: true,
+    });
+  });
+
+  it('sends recovery links on to the new password page, hash kept', () => {
+    const hash = '#access_token=a&refresh_token=b&type=recovery';
+    expect(runScriptFull({ hash }, memoryStorage({}))).toEqual({
+      target: `/update-password.html${hash}`,
+      marked: false,
+    });
+    expect(handoffDestination({ search: '', hash }, memoryStorage({}))).toBe(
+      `/update-password.html${hash}`,
+    );
   });
 
   const SIGNED_IN = { 'sb-abcdefghijkl-auth-token': SESSION };
@@ -263,10 +292,10 @@ describe('the new arena switch (slice S8)', () => {
     expect(landingView({ search: '?arena=new', hash: '' }, storage)).toEqual({ kind: 'landing' });
   });
 
-  it('auth parameters still go to the legacy arena, opted in or not', () => {
-    const storage = memoryStorage({ ...SIGNED_IN, [ARENA_CHOICE_KEY]: 'new' });
+  it('auth returns stay on / for the new app, and go to the legacy arena for legacy visitors', () => {
     const hash = '#access_token=a&refresh_token=b';
-    expect(runScriptFull({ hash }, storage)).toEqual({
+    expect(runScriptFull({ hash }, memoryStorage({}))).toEqual({ target: null, marked: true });
+    expect(runScriptFull({ hash }, memoryStorage(LEGACY_CHOICE))).toEqual({
       target: `${LEGACY_APP_PATH}${hash}`,
       marked: false,
     });

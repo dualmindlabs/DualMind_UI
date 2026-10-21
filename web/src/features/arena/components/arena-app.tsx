@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { SkipLink } from '@/components/layout/skip-link';
-import { toast } from '@/components/ui/sonner';
 import { useApiClient } from '@/hooks/use-api-client';
 import { threadsQuery } from '@/lib/api';
 import { cn } from '@/lib/utils/cn';
@@ -9,9 +8,10 @@ import { cn } from '@/lib/utils/cn';
 import { useArena } from '../hooks/use-arena';
 import { useArenaCommands } from '../hooks/use-arena-commands';
 import { useArenaShortcuts } from '../hooks/use-arena-shortcuts';
+import { useDraft } from '../hooks/use-draft';
 import { ArenaHeader } from './arena-header';
 import { ArenaProvider } from './arena-provider';
-import { Composer } from './composer';
+import { Composer, type ComposerPicks } from './composer';
 import { EmptyState } from './empty-state';
 import { PromptStarters } from './prompt-starters';
 import { THREAD_LIMIT } from './thread-panel';
@@ -20,19 +20,31 @@ import { ThreadView } from './thread-view';
 
 function ArenaLayout() {
   const api = useApiClient();
-  const { threadId } = useArena();
+  const { threadId, mode, battle } = useArena();
+  const { setDraft } = useDraft();
   const threads = useQuery(threadsQuery(api, THREAD_LIMIT));
   useArenaCommands(threads.data);
   useArenaShortcuts();
 
-  // Slice S8 builds the shell; the battle flow (slice S9) takes the prompt from here.
-  const send = () => {
-    toast('Battles in the new arena arrive with the next update', {
-      description: 'Your prompt stays in the box. The classic arena runs battles today.',
+  const send = (prompt: string, picks: ComposerPicks) => {
+    // A battle's follow-up keeps the pair of this session's last battle (blind until the vote).
+    const last = [...battle.state.turns].reverse().find(turn => turn.a?.model && turn.b?.model);
+    const lastPair =
+      last?.a?.model && last.b?.model
+        ? {
+            a: last.a.model.id ?? last.a.model.name,
+            b: last.b.model.id ?? last.b.model.name,
+          }
+        : null;
+    battle.send(prompt, {
+      mode,
+      pair: mode === 'side' ? picks.pair : mode === 'battle' ? lastPair : null,
+      directModel: picks.directModel,
     });
+    setDraft('');
   };
 
-  const empty = threadId === null;
+  const empty = threadId === null && battle.state.turns.length === 0;
 
   return (
     <div className="flex h-dvh flex-col bg-bg">
@@ -57,19 +69,25 @@ function ArenaLayout() {
               />
               <div className="relative mx-auto grid w-full max-w-3xl gap-8 px-4 py-8 sm:px-6">
                 <EmptyState />
-                <Composer variant="hero" onSend={send} className="max-md:order-2" />
+                <Composer
+                  variant="hero"
+                  onSend={send}
+                  busy={battle.busy}
+                  onStop={battle.stop}
+                  className="max-md:order-2"
+                />
                 <PromptStarters className="max-md:order-1" />
               </div>
             </>
           ) : (
             <>
-              <ThreadView key={threadId} threadId={threadId} />
+              <ThreadView threadId={threadId} />
               <div className="relative mx-auto w-full max-w-3xl px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6">
                 <div
                   aria-hidden="true"
                   className="pointer-events-none absolute inset-x-0 -top-8 h-8 bg-linear-to-t from-bg to-transparent"
                 />
-                <Composer onSend={send} />
+                <Composer onSend={send} busy={battle.busy} onStop={battle.stop} />
               </div>
             </>
           )}

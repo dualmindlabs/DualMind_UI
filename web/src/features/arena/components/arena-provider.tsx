@@ -7,6 +7,7 @@ import { useMediaQuery } from '@/hooks/use-media-query';
 import { threadQuery } from '@/lib/api';
 
 import { ArenaContext, type ArenaState } from '../hooks/use-arena';
+import { useBattle } from '../hooks/use-battle';
 import { DraftContext, type DraftState } from '../hooks/use-draft';
 import { useStoredValue } from '../hooks/use-stored-value';
 import { type ArenaMode, isArenaMode, modeFromThread } from '../lib/modes';
@@ -54,6 +55,33 @@ export function ArenaProvider({ children }: { children: ReactNode }) {
     );
   }, [searchParams, setSearchParams]);
 
+  const announce = useCallback(
+    (message: string) => {
+      setAnnouncement(current => ({ id: current.id + 1, message }));
+    },
+    [setAnnouncement],
+  );
+
+  // A thread created by the first prompt goes into the address, so a reload keeps it.
+  const onThreadCreated = useCallback(
+    (id: string) =>
+      setSearchParams(
+        params => {
+          params.set('thread', id);
+          return params;
+        },
+        { replace: true },
+      ),
+    [setSearchParams],
+  );
+  const battle = useBattle({ threadId, onThreadCreated, announce });
+  const { reset: resetBattle, state: battleState } = battle;
+
+  // Another thread in the address (history, Back, Forward): its live turns start empty.
+  useEffect(() => {
+    if (threadId !== null && threadId !== battleState.threadId) resetBattle(threadId);
+  }, [threadId, battleState.threadId, resetBattle]);
+
   const focusComposer = useCallback(() => {
     // After the current render: the composer may be about to move (empty state to thread).
     requestAnimationFrame(() => composerRef.current?.focus());
@@ -62,36 +90,39 @@ export function ArenaProvider({ children }: { children: ReactNode }) {
   const openThread = useCallback(
     (id: string) => {
       setHistoryOpen(false);
+      resetBattle(id);
       setSearchParams(params => {
         params.set('thread', id);
         return params;
       });
     },
-    [setSearchParams, setHistoryOpen],
+    [setSearchParams, resetBattle, setHistoryOpen],
   );
 
   const newBattle = useCallback(() => {
     setHistoryOpen(false);
+    resetBattle(null);
     setDraft('');
     setSearchParams(params => {
       params.delete('thread');
       return params;
     });
     focusComposer();
-  }, [setSearchParams, focusComposer, setHistoryOpen, setDraft]);
+  }, [setSearchParams, focusComposer, resetBattle, setHistoryOpen, setDraft]);
 
   const selectMode = useCallback(
     (next: ArenaMode) => {
       setStoredMode(next);
       // Another mode is another conversation: leave the open thread for a new one.
-      if (threadId !== null && next !== mode) {
+      if ((threadId !== null || battleState.turns.length > 0) && next !== mode) {
+        resetBattle(null);
         setSearchParams(params => {
           params.delete('thread');
           return params;
         });
       }
     },
-    [setStoredMode, threadId, mode, setSearchParams],
+    [setStoredMode, threadId, mode, setSearchParams, resetBattle, battleState.turns.length],
   );
 
   const setSidebarCollapsed = useCallback(
@@ -107,13 +138,6 @@ export function ArenaProvider({ children }: { children: ReactNode }) {
   const setShortcutsEnabled = useCallback(
     (enabled: boolean) => setStoredShortcuts(enabled ? null : 'off'),
     [setStoredShortcuts],
-  );
-
-  const announce = useCallback(
-    (message: string) => {
-      setAnnouncement(current => ({ id: current.id + 1, message }));
-    },
-    [setAnnouncement],
   );
 
   // The tab title follows the open thread.
@@ -142,6 +166,7 @@ export function ArenaProvider({ children }: { children: ReactNode }) {
       composerRef,
       focusComposer,
       announce,
+      battle,
     }),
     [
       mode,
@@ -159,6 +184,7 @@ export function ArenaProvider({ children }: { children: ReactNode }) {
       setShortcutsEnabled,
       focusComposer,
       announce,
+      battle,
       setHistoryOpen,
     ],
   );
