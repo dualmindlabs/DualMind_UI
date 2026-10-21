@@ -1,6 +1,6 @@
 # BE-2: Text-to-speech route alias
 
-Status: **proposed** (2026-10-21). Wave W1. Fixes [KNOWN_ISSUES #7](../../../KNOWN_ISSUES.md) for any caller that still uses the old path.
+Status: **built** (2026-10-21, PR #49; PR awaiting merge). Wave W1. Fixes [KNOWN_ISSUES #7](../../../KNOWN_ISSUES.md) for any caller that still uses the old path.
 
 ## 1. Summary
 

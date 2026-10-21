@@ -78,6 +78,29 @@ The leaderboard modal source comment says model-stats "requires auth". It does n
 | 5xx | provider or server failure | arena routes: `{ object: "ai.error", code: "API_ERROR" or "STREAM_ERROR", message }`; others `{ success: false, error, code }` | `ApiError` | yes |
 | 502 | Worker could not reach the backend | `{ error: "bad_gateway", requestId }` since the proxy hardening (#24); before it `{ success: false, message: "Backend API Error: ...", error: "<error.toString()>" }` | `ApiError` | yes |
 | 504 | Worker got no answer from the backend in time (30 s; 65 s for `dualchat` and `chat`, per #30; event streams are never cut) | `{ error: "gateway_timeout", requestId }` | n/a (new) | n/a |
+
+#### One error shape, on request (BE-1)
+
+The table above is what a caller sees **without** the opt-in, and it stays unchanged (the legacy app is such a caller; error statuses add `Vary: Accept`, nothing else). A caller that sends `Accept: application/problem+json` (the typed client does, as `application/json, application/problem+json;q=0.9`) gets an RFC 9457 body on every non-2xx `/api/*` answer, including the Worker's 502 and 504, with the same status, `X-Request-Id` and `WWW-Authenticate`, `Retry-After`, `x-correlation-id` and `Allow` kept. Event streams and success bodies are never rewritten. Design: [BE-1](../backend/designs/BE-1-error-shape.md); code: `server/problem-rewrite.js`.
+
+```json
+{ "type": "https://arena.dualmindlab.tech/problems/validation_error", "title": "Invalid request", "status": 400,
+  "detail": "prompt is required", "instance": "/api/arena/dualchat", "requestId": "...", "code": "INVALID_REQUEST" }
+```
+
+| Row | Observed shape | Status | Problem type | `detail` |
+| --- | --- | --- | --- | --- |
+| 1 | arena `ai.error` | 400 | `validation_error` | upstream `message` |
+| 1b | arena `ai.error` | 5xx | by status (`internal_error`, `bad_gateway`, `gateway_timeout`) | fixed: "The model service failed." |
+| 2 | `{ success: false, error, code }` | 400, 422 / 403 / 404 / 409 / 5xx | `validation_error` / `forbidden` / `not_found` / `conflict` / `internal_error` | upstream `error` (5xx: fixed) |
+| 3 | empty body | 401 | `unauthorized` | "Sign in again." |
+| 4 | empty body | 404 | `not_found` | "No such resource." |
+| 5, 6 | Worker `{ error, requestId }` | 502, 504 | `bad_gateway`, `gateway_timeout` | fixed |
+| 7 | ASP.NET ProblemDetails | 400 | `validation_error` | `detail` or `title`, plus `errors: [{ path, message }]` |
+| 8 | legacy `Backend API Error` 502 | 502 | `bad_gateway` | fixed (the exception text is logged, never sent) |
+| 9 | anything else (not JSON, over 64 KiB, unknown shape) | any | by status (400 `validation_error`, 401 `unauthorized`, 403 `forbidden`, 404 `not_found`, 408 `gateway_timeout`, 409 `conflict`, 413 `payload_too_large`, 415 `unsupported_media_type`, 429 `rate_limited`, other 4xx `validation_error`, 5xx `internal_error`) | fixed per type |
+
+4xx `detail` is the upstream text when it is plain and at most 300 characters (longer is cut with an ellipsis); 5xx `detail` is always a fixed sentence. The upstream `code` is kept as an extension member. Each rewrite logs `problem_rewrite` with `requestId`, `route`, `status`, `row`, `type`.
 | network | offline, CORS, DNS | `TypeError` | `NetworkError` | yes |
 
 The error message the UI shows is `data.message || data.error || "Request failed (status)"`. Two error shapes (`message` vs `error`) plus an empty 401 body are why that fallback chain exists.
@@ -108,7 +131,7 @@ Consequence today: a `POST /api/arena/dualchat` that times out at 30 s while the
 | Arena | POST | `/api/arena/chat/stream` | token | `ArenaService.js:58` | unused (no UI caller; parser exists) |
 | Arena | POST | `/api/arena/model-vote` | token | `ArenaService.js:127`, `js/ui/app.js:1194`, `app.js:1653` (queue flush) | used |
 | Arena | GET | `/api/arena/model-stats` | public | `ArenaService.js:134`, `js/leaderboardPage.js:174`, `js/ui/leaderboardModal.js:267` | used (live) |
-| Arena | POST | `/api/audio/tts` | token | `ArenaService.js:90`, `js/ui/app.js:1414` | broken (404, browser TTS fallback) |
+| Arena | POST | `/api/audio/tts` | token | `ArenaService.js:90`, `js/ui/app.js:1414` | deprecated alias of `/api/speech/generate` at the Worker (BE-2); 404 on the API itself |
 | Arena | POST | `/api/speech/generate` | token | none yet | proposed (the real route, KNOWN_ISSUES #7) |
 | Arena | POST | `/api/arena/dualchat/stream` | token | none | proposed (new-features B-1) |
 | Threads | GET | `/api/threads?limit=` | token | `ThreadService.js:29`, `components/Sidebar.js:60` | used |
@@ -358,7 +381,7 @@ Recorded 2026-10-20 (live): 53 items, ordered by rank. Trimmed to 2:
 
 ### 3.8 Arena: text to speech
 
-**`POST /api/audio/tts`** (what the client calls): **404**. The route does not exist (KNOWN_ISSUES #7, confirmed live by its author on 2026-10-18; not re-sent here).
+**`POST /api/audio/tts`** (what the legacy client calls): **404 on the API itself** (KNOWN_ISSUES #7, confirmed live by its author on 2026-10-18; not re-sent here). **Fixed at the Worker (BE-2, [design](../backend/designs/BE-2-tts-route.md)):** `https://arena.dualmindlab.tech/api/audio/tts` is a deprecated alias. The proxy validates the body (JSON object, `text` 1 to 5000 characters after trimming, optional `voice` of `[A-Za-z0-9._-]{1,64}`, at most 16 KiB; 400, 413, 415 and, for other methods, 405 with `Allow: POST`), forwards exactly `{ text, voice? }` to `POST /api/speech/generate`, and answers `200 audio/*` with `Cache-Control: no-store`, `Deprecation: @1792540800` and `Link: </api/speech/generate>; rel="successor-version"`. An `application/octet-stream` or untyped body is accepted when it starts with `RIFF....WAVE` and served as `audio/wav`; any other 2xx content type is a 502. Upstream errors pass through like any v1 call (and become problems on request). Removal plan: design section 14.
 
 **`POST /api/speech/generate`** (the real route per KNOWN_ISSUES #7; not in the published OpenAPI document):
 
@@ -491,8 +514,8 @@ Feature numbers refer to [new-features.md](../redesign/new-features.md).
 | 3 | No idempotency; `HttpClient` retries POSTs and can create duplicate battles; the vote queue can resend | Accept `Idempotency-Key: <uuid>` on `dualchat`, `chat`, `model-vote` and `POST /api/threads`; replay returns the first response. Client side: stop auto-retrying these POSTs (already planned in the migration plan). | B-8 |
 | 4 | Mixed casing: `model-stats` repeats every field in camelCase and snake_case plus aliases (`elo`, `elo_rating`, `matches`...); `users/sync` takes `avatar_url`; `feature-flag` and others differ | Pick camelCase for all new and existing JSON, drop the duplicate fields from `model-stats` after the client moves to the camelCase ones, accept both on `users/sync` for one release | n/a |
 | 5 | Lists are `{ items }` today but the client also accepts bare arrays, and only `threads` takes `limit` (no cursor) | One envelope `{ items, nextCursor? }` for every list, and cursor paging on `threads` and `messages` (today only `limit`) | n/a |
-| 6 | Three error shapes (`{object:'ai.error',code,message}`, `{success:false,error,code}`, empty 401/404) plus the Worker's 502 shape that leaks `error.toString()` | One error body: `{ error: { code, message, requestId, details? } }` on every non-2xx, including 401 and 404. Return `Retry-After` on 429 and 503. | n/a |
-| 7 | TTS: client calls `/api/audio/tts` (404); real route `/api/speech/generate` is not in OpenAPI | New client uses the real route; publish it in OpenAPI with the `voice` parameter and the `audio/wav` response; keep one name | KNOWN_ISSUES #7 |
+| 6 | (Worker side done by BE-1: opt-in problem+json at the proxy. The API's own shapes are unchanged.) Three error shapes (`{object:'ai.error',code,message}`, `{success:false,error,code}`, empty 401/404) plus the Worker's 502 shape that leaks `error.toString()` | One error body: `{ error: { code, message, requestId, details? } }` on every non-2xx, including 401 and 404. Return `Retry-After` on 429 and 503. | n/a |
+| 7 | (Worker alias done by BE-2.) TTS: client calls `/api/audio/tts` (404); real route `/api/speech/generate` is not in OpenAPI | New client uses the real route; publish it in OpenAPI with the `voice` parameter and the `audio/wav` response; keep one name | KNOWN_ISSUES #7 |
 | 8 | `users/sync` is missing from OpenAPI; `users/me`, `models/{id}`, `version` are called by unused client methods | Document `users/sync` (request and response); either implement or delete the other three | N7 |
 | 9 | Request id: only `x-correlation-id` is returned; the client sends none | Client sends `x-request-id`; API echoes it as `x-correlation-id` and includes it in error bodies | n/a |
 | 10 | Worker CORS: `Access-Control-Allow-Methods` omits `PATCH` and `Allow-Headers` omits `Accept` and `X-Request-Id`; `Allow-Origin: *` on `/api/*` | Moot for same-origin calls; if the Worker ever serves cross-origin callers, add `PATCH` and the new headers. The hardening list in the migration plan covers the rest. | migration plan s5 |

@@ -1,6 +1,6 @@
 # BE-1: One error shape (opt-in problem+json for v1 errors)
 
-Status: **proposed** (2026-10-21). Wave W1. Depends on the problem type registry from [BE-0](./BE-0-platform.md) (`server/problem-types.js`). Fixes gap 6 of [docs/api/endpoints.md](../../api/endpoints.md#5-gaps-and-proposals-for-the-backend-phase).
+Status: **built** (2026-10-21, PR #49; PR awaiting merge). Wave W1. The problem type registry is inline in `server/problem-rewrite.js` until [BE-0](./BE-0-platform.md) adds the shared `server/problem-types.js`; the slugs match. Fixes gap 6 of [docs/api/endpoints.md](../../api/endpoints.md#5-gaps-and-proposals-for-the-backend-phase).
 
 ## 1. Summary
 
