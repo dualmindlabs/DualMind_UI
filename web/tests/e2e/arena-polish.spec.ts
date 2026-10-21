@@ -185,7 +185,10 @@ test.describe('syntax highlighting', () => {
       // capture exactly its box.
       await block.evaluate(element => element.scrollIntoView({ block: 'center' }));
       await settle(page, 900);
-      await page.screenshot({ path: shotPath(`arena-code-block-${theme}`), clip: await box(block) });
+      await page.screenshot({
+        path: shotPath(`arena-code-block-${theme}`),
+        clip: await box(block),
+      });
     });
   }
 });
