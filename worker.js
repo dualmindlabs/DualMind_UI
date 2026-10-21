@@ -24,8 +24,9 @@
 // After the gate, requests go through, in order (docs/architecture.md, "Worker request flow"):
 //   1. /api/*: the same-origin proxy to the DualMind API (server/api-proxy.js)
 //   2. legacy URL redirects, 301 (server/redirects.js)
-//   3. client-only routes of the web app: the SPA fallback page (server/routing.js)
-//   4. the legacy share page, og-image.png
+//   3. client-only routes of the web app: the SPA fallback page (server/routing.js); the share
+//      page /share/<id> gets it never cached and with link-preview tags (server/share.js)
+//   4. og-image.png
 //   5. static files from dist/ (robots.txt and sitemap.xml are built into it by build.js) with
 //      the caching table (server/caching.js)
 //   6. anything else: the 404 page (dist/404.html) with status 404
@@ -51,6 +52,7 @@ import {
   LEGACY_CONTENT_SECURITY_POLICY,
   webContentSecurityPolicy,
 } from './server/security-headers.js';
+import { isShareRoute, serveSharePage } from './server/share.js';
 import { loadWebManifest } from './server/web-manifest.js';
 
 const FORCE_WAITLIST = true;
@@ -148,27 +150,14 @@ const arena = {
     }
 
     // 3. Client-only routes of the new web app (web/): React Router's SPA fallback page with
-    // status 200. The list in server/routing.js is empty until the first such route lands.
+    // status 200 (SPA_FALLBACK_ROUTES in server/routing.js). Share links (/share/<id> and the old
+    // ?id= forms) get it never cached, with the link-preview tags written in (server/share.js).
     if ((request.method === 'GET' || request.method === 'HEAD') && isSpaFallbackRoute(pathname)) {
-      const fallback = await serveSpaFallback(request, env);
+      const fallback = isShareRoute(pathname)
+        ? await serveSharePage(request, env, ctx)
+        : await serveSpaFallback(request, env);
       if (fallback) {
         return fallback;
-      }
-    }
-
-    // 4. Handle /share/* routes explicitly for thread sharing
-    if (pathname.startsWith('/share')) {
-      if (env?.ASSETS?.fetch) {
-        // Rewrite all /share/* requests to /share/index.html
-        const shareUrl = new URL(request.url);
-        shareUrl.pathname = '/share/index.html';
-
-        const assetResponse = await env.ASSETS.fetch(new Request(shareUrl, request));
-
-        if (assetResponse && assetResponse.status !== 404) {
-          // The caching table keeps share pages out of every cache.
-          return withCaching(request, env, assetResponse, pathname);
-        }
       }
     }
 

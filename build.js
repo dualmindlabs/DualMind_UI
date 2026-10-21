@@ -30,6 +30,8 @@ const webClientDir = path.join(webDir, 'build', 'client');
 // forgot-password.html (and the login/ folder) answer with 301s to the web app's /login/,
 // /signup/ and /forgot-password/ (server/redirects.js); auth-callback.html and
 // update-password.html are the web app's client-only routes (server/routing.js).
+// Slice S11 dropped the legacy share/ page: /share/<id> is the web app's client-only share page
+// (server/share.js), and nothing in dist/ may live under /share/.
 const filesToCopy = [
     'index.html',
     'auth-verify.html',
@@ -45,8 +47,7 @@ const foldersToCopy = [
     'css',
     'js',
     'leaderboard',
-    'models',
-    'share'
+    'models'
 ];
 
 // Public pages that are still legacy files (no web page yet): they go into the sitemap next to
@@ -250,6 +251,9 @@ for (const file of replacedByWeb) {
 }
 if (fs.readFileSync(path.join(distDir, 'index.html'), 'utf8').includes('data-spa-fallback')) {
     fail('dist/index.html is the SPA fallback, not the prerendered landing page. Check the prerender list in web/react-router.config.ts.');
+}
+if (fs.existsSync(path.join(distDir, 'share'))) {
+    fail('dist/share/ exists, but /share/ is the web app\'s client-only share page (server/share.js). Remove the file that put it there.');
 }
 if (!webFiles.includes(NOT_FOUND_SOURCE)) {
     fail(`the web build has no 404 page (${NOT_FOUND_SOURCE}). Check that /404 is in prerender in web/react-router.config.ts.`);

@@ -29,7 +29,7 @@ export const CACHE_RULES = [
   },
   {
     name: 'share',
-    applies: '/share and everything below it (legacy share page)',
+    applies: '/share and everything below it (the share page, served by server/share.js)',
     cacheControl: SHARE_NO_STORE,
     test: ({ pathname }) => pathname === '/share' || pathname.startsWith('/share/'),
   },
