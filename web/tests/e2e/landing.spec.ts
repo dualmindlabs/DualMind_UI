@@ -201,8 +201,10 @@ test('a demo chip still plays the recorded battle and offers the sign-in', async
   const region = demo(page);
   await expect(region).toBeFocused();
   await expect(region).toBeInViewport();
+  const status = page.getByTestId('hero-status');
+  await expect(status).toContainText('Playing a recorded battle below.');
   await expect(
-    page.getByTestId('asked-note').getByRole('link', { name: 'Sign in to battle real models' }),
+    status.getByRole('link', { name: 'Sign in to battle real models' }),
   ).toHaveAttribute('href', '/login/');
 });
 
