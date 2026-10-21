@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 
 import { Emblem } from '@/components/layout/emblem';
 import { Wordmark } from '@/components/layout/wordmark';
+import { BRAND_SUPPORTING } from '@/content/brand';
 import { footerColumns } from '@/lib/site/links';
 import { cn } from '@/lib/utils/cn';
 
@@ -39,7 +40,7 @@ export function SiteFooter({ status, navLabel = 'Footer', className }: SiteFoote
           </p>
           {status ? <div data-slot="footer-status">{status}</div> : null}
         </div>
-        <nav aria-label={navLabel} className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3">
+        <nav aria-label={navLabel} className="grid grid-cols-2 gap-x-6 gap-y-10 lg:grid-cols-4">
           {footerColumns.map(column => (
             <div key={column.title} className="grid content-start gap-4">
               <h2 className="eyebrow text-muted">{column.title}</h2>
@@ -48,6 +49,9 @@ export function SiteFooter({ status, navLabel = 'Footer', className }: SiteFoote
                   <li key={link.href}>
                     <a
                       href={link.href}
+                      {...(link.external && link.href.startsWith('https:')
+                        ? { rel: 'noopener noreferrer' }
+                        : {})}
                       className="inline-flex min-h-8 items-center rounded-sm text-ui-sm text-fg-soft transition-colors duration-(--dur-fast) ease-out-expo hover:text-fg"
                     >
                       {link.label}
@@ -62,9 +66,7 @@ export function SiteFooter({ status, navLabel = 'Footer', className }: SiteFoote
       <div className="border-t border-line">
         <div className="mx-auto flex max-w-page flex-col gap-3 px-4 py-6 text-caption text-muted sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <p>© {YEAR} DualMind Labs. All rights reserved.</p>
-          <p className="eyebrow">
-            Two minds, <span className="text-human">one verdict</span>
-          </p>
+          <p className="eyebrow">{BRAND_SUPPORTING}</p>
         </div>
       </div>
     </footer>

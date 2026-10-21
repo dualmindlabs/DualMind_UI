@@ -1,5 +1,5 @@
 /**
- * "Built with": every third-party source the web app uses, with its licence. The About page
+ * "Built with": every third-party source the web app uses, with its licence. The Credits page
  * (slice S4) renders it, the /design/ effects gallery labels each effect with it, and it must
  * match the inventory in docs/redesign/licences.md (section 4).
  */

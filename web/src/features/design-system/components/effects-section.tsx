@@ -73,7 +73,7 @@ export function EffectsSection() {
           <p>
             {effects.length} effects from React Bits, Magic UI, Motion Primitives and Aceternity UI,
             ported to our tokens. Each one has a still version for reduced motion, pauses when it is
-            off-screen, and keeps its source licence next to the code.
+            off-screen, and keeps its source license next to the code.
           </p>
           <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-3">
             <button

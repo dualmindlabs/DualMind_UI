@@ -9,7 +9,14 @@ export interface SiteLink {
   href: string;
   /** One line for the command palette and the mobile menu. */
   description?: string;
+  /** Leaves the site (GitHub) or opens the mail app (mailto:); not a trailing-slash path. */
+  external?: boolean;
 }
+
+/** The public source repository. */
+export const GITHUB_URL = 'https://github.com/dualmindlabs/DualMind_UI';
+/** The support address already used across the site (FAQ, privacy page). */
+export const SUPPORT_EMAIL = 'support@dualmindlab.tech';
 
 /** The header navigation (design-direction.md section 12, global shell). */
 export const primaryNav: readonly SiteLink[] = [
@@ -41,6 +48,7 @@ export const footerColumns: readonly FooterColumn[] = [
       { label: 'About', href: '/about/' },
       { label: 'How it works', href: '/how-it-works/' },
       { label: 'FAQ', href: '/faq/' },
+      { label: 'Credits', href: '/credits/' },
     ],
   },
   {
@@ -49,6 +57,14 @@ export const footerColumns: readonly FooterColumn[] = [
       { label: 'Privacy', href: '/privacy/' },
       { label: 'Terms', href: '/terms/' },
       { label: 'Cookies', href: '/cookies/' },
+    ],
+  },
+  // No Status link until a status page exists.
+  {
+    title: 'Connect',
+    links: [
+      { label: 'GitHub', href: GITHUB_URL, external: true },
+      { label: 'Contact', href: `mailto:${SUPPORT_EMAIL}`, external: true },
     ],
   },
 ];

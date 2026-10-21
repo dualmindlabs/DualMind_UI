@@ -331,10 +331,16 @@ function isIndexable(html) {
     return true;
 }
 
+// The sign-in pages stay indexable but are not worth listing: a sitemap is for content pages.
+const SITEMAP_EXCLUDED = new Set(['/login/', '/signup/']);
+// Every URL gets the build date (UTC, YYYY-MM-DD) as <lastmod>: the site is rebuilt and deployed
+// as a whole, so the build date is the date the pages were last published.
+const SITEMAP_LASTMOD = new Date().toISOString().slice(0, 10);
+
 const sitemapPages = [];
 for (const target of webHtmlTargets) {
     const url = pageUrl(target);
-    if (url === '/__spa-fallback' || url === '/404') continue;
+    if (url === '/__spa-fallback' || url === '/404' || SITEMAP_EXCLUDED.has(url)) continue;
     if (isIndexable(fs.readFileSync(path.join(distDir, target), 'utf8'))) sitemapPages.push(url);
 }
 for (const url of LEGACY_PUBLIC_PAGES) {
@@ -345,7 +351,7 @@ for (const url of LEGACY_PUBLIC_PAGES) {
 sitemapPages.sort((a, b) => (a === '/' ? -1 : b === '/' ? 1 : a.localeCompare(b)));
 const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${[...new Set(sitemapPages)].map(url => `  <url><loc>${SITE_URL}${url}</loc></url>`).join('\n')}
+${[...new Set(sitemapPages)].map(url => `  <url><loc>${SITE_URL}${url}</loc><lastmod>${SITEMAP_LASTMOD}</lastmod></url>`).join('\n')}
 </urlset>
 `;
 fs.writeFileSync(path.join(distDir, 'sitemap.xml'), sitemapXml);
