@@ -1,6 +1,6 @@
 # 0007. Backend features on Cloudflare, at the edge of the existing API
 
-- Status: Proposed (backend phase, 2026-10-20)
+- Status: Amended by [ADR 0008](./0008-features-in-the-dotnet-api.md) (2026-10-21): data features move to the .NET API; the Worker keeps edge concerns
 - Date: 2026-10-20
 - Deciders: @harshbhx
 
