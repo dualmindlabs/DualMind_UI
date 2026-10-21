@@ -107,6 +107,9 @@ test.describe('model picker (P1-11)', () => {
         await expect(unrated).not.toContainText('#');
         await expect(unrated).toHaveAttribute('title', 'gemma-3n-e2b-it');
         if (viewport.label === 'desktop') {
+          await picker
+            .locator('[cmdk-group-heading]', { hasText: 'Not yet rated' })
+            .evaluate(element => element.scrollIntoView({ block: 'start' }));
           await settle(page, 200);
           await page.screenshot({ path: shotPath(`arena-model-picker-unrated-${theme}`) });
         }
@@ -178,8 +181,11 @@ test.describe('syntax highlighting', () => {
       await expect(block.locator('pre')).toHaveAttribute('data-highlighted', 'true', {
         timeout: 15_000,
       });
-      await settle(page, 300);
-      await block.screenshot({ path: shotPath(`arena-code-block-${theme}`) });
+      // The thread sticks to its bottom while it loads: centre the block, let it settle, then
+      // capture exactly its box.
+      await block.evaluate(element => element.scrollIntoView({ block: 'center' }));
+      await settle(page, 900);
+      await page.screenshot({ path: shotPath(`arena-code-block-${theme}`), clip: await box(block) });
     });
   }
 });

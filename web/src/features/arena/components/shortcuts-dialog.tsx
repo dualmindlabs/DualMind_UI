@@ -1,3 +1,5 @@
+import { useRef } from 'react';
+
 import {
   Dialog,
   DialogContent,
@@ -76,6 +78,9 @@ export function ShortcutsDialog() {
     setShortcutsEnabled,
   } = useArena();
   const modifier = useModifierKey();
+  // Focus starts on the title, so the dialog opens at its top on a phone (the first control is
+  // the switch at the end) and screen readers start with the name.
+  const title = useRef<HTMLHeadingElement>(null);
 
   return (
     <Dialog
@@ -87,10 +92,13 @@ export function ShortcutsDialog() {
       <DialogContent
         data-testid="shortcuts-dialog"
         className="max-w-lg gap-4"
+        initialFocus={title}
         finalFocus={() => (shortcutsReturnFocus?.isConnected ? shortcutsReturnFocus : true)}
       >
         <DialogHeader>
-          <DialogTitle>Keyboard shortcuts</DialogTitle>
+          <DialogTitle ref={title} tabIndex={-1} className="outline-none">
+            Keyboard shortcuts
+          </DialogTitle>
           <DialogDescription>
             Battle, vote and move around without the mouse. Single keys work when you are not typing
             in a field.

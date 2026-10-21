@@ -56,9 +56,9 @@ export function ScrollRow({ as = 'div', contentKey, className, children }: Scrol
         <span
           aria-hidden="true"
           data-testid="scroll-cue"
-          className="pointer-events-none absolute inset-y-0 right-0 flex items-center text-muted"
+          className="pointer-events-none absolute top-1/2 right-0 grid size-6 -translate-y-1/2 place-items-center rounded-full border border-line bg-surface-2 text-fg-soft shadow-raise"
         >
-          <ChevronRight className="size-4" strokeWidth={2} />
+          <ChevronRight className="size-3.5" strokeWidth={2} />
         </span>
       ) : null}
     </div>
