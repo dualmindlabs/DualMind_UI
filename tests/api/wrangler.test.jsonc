@@ -1,5 +1,5 @@
 {
-  // Miniflare config for the Workers Vitest project (vitest.api.config.ts). It runs the real
+  // Miniflare config for the Workers Vitest project (vitest.api.config.mts). It runs the real
   // worker.js with the same bindings as the root wrangler.jsonc, simulated locally, minus the
   // production-only parts (routes, Flagship) and with a stub assets directory.
   "name": "dualmind-arena-api-tests",
