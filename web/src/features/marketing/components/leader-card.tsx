@@ -3,12 +3,7 @@ import { Trophy } from 'lucide-react';
 import { ShineBorder } from '@/components/vendor/magicui/shine-border';
 import { CountUp } from '@/components/vendor/reactbits/count-up';
 import { SpotlightCard } from '@/components/vendor/reactbits/spotlight-card';
-import {
-  formatCount,
-  formatPercent,
-  ProviderBadge,
-  type RatedEntry,
-} from '@/features/leaderboard';
+import { formatCount, formatPercent, ProviderBadge, type RatedEntry } from '@/features/leaderboard';
 
 /** The current #1 on a Spotlight Card with a Shine Border, its Elo counting in on first view. */
 export function LeaderCard({ model }: { model: RatedEntry }) {

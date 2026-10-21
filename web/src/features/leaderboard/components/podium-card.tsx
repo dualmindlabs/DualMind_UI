@@ -59,7 +59,10 @@ export function PodiumCard({ entry, place, eloStart, onOpen }: PodiumCardProps) 
           </div>
 
           <div className="grid min-w-0 gap-1.5">
-            <h3 className="min-w-0 text-h3 font-semibold break-words text-fg" title={entry.modelName}>
+            <h3
+              className="min-w-0 text-h3 font-semibold break-words text-fg"
+              title={entry.modelName}
+            >
               <button
                 ref={buttonRef}
                 type="button"

@@ -23,7 +23,7 @@ export function modelSlug(modelName: string): string {
  * `modelSlug`. Keep entries to genuine exceptions: everything else comes from `prettifyModelId`.
  */
 export const CURATED_NAMES: Readonly<Record<string, string>> = {
-  'compound': 'Compound',
+  compound: 'Compound',
   'compound-mini': 'Compound Mini',
   'gemini-2.0-flash-lite': 'Gemini 2.0 Flash-Lite',
   'gemma-sea-lion-v4-27b-it': 'Gemma SEA-LION v4 27B IT',
@@ -140,23 +140,23 @@ const maker = (key: string, label: string): ModelMaker => ({ key, label });
 
 /** The organisation segment of an id (`@cf/<org>/<model>`, `groq/<model>`) -> its maker. */
 const MAKERS_BY_ORG: Readonly<Record<string, ModelMaker>> = {
-  'meta': maker('meta', 'Meta'),
+  meta: maker('meta', 'Meta'),
   'meta-llama': maker('meta', 'Meta'),
   'deepseek-ai': maker('deepseek', 'DeepSeek'),
-  'qwen': maker('qwen', 'Alibaba Qwen'),
-  'nvidia': maker('nvidia', 'NVIDIA'),
-  'mistral': maker('mistral', 'Mistral'),
-  'mistralai': maker('mistral', 'Mistral'),
-  'google': maker('google', 'Google'),
-  'moonshotai': maker('moonshot', 'Moonshot AI'),
+  qwen: maker('qwen', 'Alibaba Qwen'),
+  nvidia: maker('nvidia', 'NVIDIA'),
+  mistral: maker('mistral', 'Mistral'),
+  mistralai: maker('mistral', 'Mistral'),
+  google: maker('google', 'Google'),
+  moonshotai: maker('moonshot', 'Moonshot AI'),
   'zai-org': maker('zai', 'Z.ai'),
-  'openai': maker('openai', 'OpenAI'),
-  'defog': maker('defog', 'Defog'),
+  openai: maker('openai', 'OpenAI'),
+  defog: maker('defog', 'Defog'),
   'ibm-granite': maker('ibm', 'IBM'),
-  'microsoft': maker('microsoft', 'Microsoft'),
-  'aisingapore': maker('ai-singapore', 'AI Singapore'),
-  'nousresearch': maker('nous', 'Nous Research'),
-  'groq': maker('groq', 'Groq'),
+  microsoft: maker('microsoft', 'Microsoft'),
+  aisingapore: maker('ai-singapore', 'AI Singapore'),
+  nousresearch: maker('nous', 'Nous Research'),
+  groq: maker('groq', 'Groq'),
 };
 
 /** Ids with no organisation segment (`gemma-3n-e2b-it`): the family name decides. */

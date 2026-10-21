@@ -116,7 +116,11 @@ describe('LeaderboardPage', () => {
       .getAllByRole('row')
       .slice(1)
       .map(row => within(row).getByRole('rowheader').querySelector('button')?.textContent);
-    expect(names).toEqual(['Llama 3.3 70B Instruct (FP8, fast)', 'Gemma 3n E2B IT', 'Gemma 3 1B IT']);
+    expect(names).toEqual([
+      'Llama 3.3 70B Instruct (FP8, fast)',
+      'Gemma 3n E2B IT',
+      'Gemma 3 1B IT',
+    ]);
     expect(screen.getByRole('button', { name: 'Hide 3 models' })).toHaveAttribute(
       'aria-expanded',
       'true',

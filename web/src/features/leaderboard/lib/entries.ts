@@ -1,10 +1,5 @@
 import type { ModelStat } from '@/lib/api';
-import {
-  modelMaker,
-  platformLabel,
-  resolveDisplayName,
-  servedBy,
-} from '@/lib/models/display-name';
+import { modelMaker, platformLabel, resolveDisplayName, servedBy } from '@/lib/models/display-name';
 
 import type {
   Leaderboard,

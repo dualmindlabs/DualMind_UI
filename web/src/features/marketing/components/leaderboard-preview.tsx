@@ -67,8 +67,8 @@ export function LeaderboardPreview({ stats }: { stats: LiveStatsState }) {
             <div className="rounded-lg border border-line bg-surface p-6 sm:p-8 lg:col-span-2">
               <p className="text-h3 font-normal text-fg">No model is rated yet.</p>
               <p className="mt-2 text-ui text-fg-soft">
-                A model gets a rank once it has enough battles. Open the leaderboard to see how
-                the models are doing so far.
+                A model gets a rank once it has enough battles. Open the leaderboard to see how the
+                models are doing so far.
               </p>
             </div>
           ) : stats.status === 'error' ? (

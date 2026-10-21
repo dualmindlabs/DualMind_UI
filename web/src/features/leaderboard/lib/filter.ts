@@ -21,7 +21,9 @@ export function normalizeSearch(text: string): string {
 export function matchesQuery(entry: LeaderboardEntry, query: string): boolean {
   const words = normalizeSearch(query).split(' ').filter(Boolean);
   if (words.length === 0) return true;
-  const haystack = normalizeSearch(`${entry.name} ${entry.modelName} ${entry.providerLabel} ${entry.platformLabel}`);
+  const haystack = normalizeSearch(
+    `${entry.name} ${entry.modelName} ${entry.providerLabel} ${entry.platformLabel}`,
+  );
   return words.every(word => haystack.includes(word));
 }
 

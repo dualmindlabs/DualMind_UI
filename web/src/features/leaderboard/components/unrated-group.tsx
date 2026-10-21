@@ -44,9 +44,8 @@ export function UnratedGroup({
             Not yet rated
           </h3>
           <p className="max-w-reading text-ui-sm text-fg-soft">
-            {pluralize(entries.length, 'model')} with fewer than{' '}
-            {formatCount(PROVISIONAL_BATTLES)} battles. They have no rank yet: a few votes can still
-            move their Elo a long way.
+            {pluralize(entries.length, 'model')} with fewer than {formatCount(PROVISIONAL_BATTLES)}{' '}
+            battles. They have no rank yet: a few votes can still move their Elo a long way.
           </p>
         </div>
         {forceOpen ? null : (

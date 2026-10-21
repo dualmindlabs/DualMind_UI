@@ -140,9 +140,9 @@ describe('search and provider filter', () => {
       'Gemma 3 1B IT',
     ]);
     expect(filterEntries(entries, { query: 'gemma', provider: 'groq' })).toEqual([]);
-    expect(
-      filterEntries(fullBoard.entries, { query: 'gpt oss', provider: 'openai' }),
-    ).toHaveLength(2);
+    expect(filterEntries(fullBoard.entries, { query: 'gpt oss', provider: 'openai' })).toHaveLength(
+      2,
+    );
     // The serving platform is searchable too.
     expect(filterEntries(entries, { query: 'workers ai', provider: 'groq' })).toEqual([]);
     expect(filterEntries(entries, { query: 'workers ai', provider: ALL_PROVIDERS })).toHaveLength(

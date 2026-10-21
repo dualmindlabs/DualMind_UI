@@ -127,7 +127,8 @@ export function ModelsPage() {
             <p className="max-w-reading text-body text-fg-soft">
               The models that answer blind battles, with their current Elo rating, win rate and
               number of battles. Models with fewer than {PROVISIONAL_BATTLES} battles have no rank
-              yet and are marked as not yet rated. Select one to see its record against the rest of the board.
+              yet and are marked as not yet rated. Select one to see its record against the rest of
+              the board.
             </p>
             <div className="flex flex-wrap items-center gap-3">
               <a href={ARENA_HREF} className={cn(buttonVariants({ variant: 'primary' }))}>
