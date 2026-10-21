@@ -1,4 +1,4 @@
-import { Ellipsis, Pencil, Trash } from 'lucide-react';
+import { Ellipsis, Pencil, Share2, Trash } from 'lucide-react';
 
 import { buttonVariants } from '@/components/ui/button';
 import {
@@ -16,14 +16,23 @@ export interface ThreadItemProps {
   time: string;
   onOpen: (threadId: string) => void;
   onRename: (thread: Thread) => void;
+  onShare: (threadId: string) => void;
   onDelete: (thread: Thread) => void;
 }
 
 /**
  * One thread in the history: a real link (`/?thread=<id>`, so it opens in a new tab too) and a
- * menu with rename and delete. The open thread is marked with `aria-current`.
+ * menu with rename, share and delete. The open thread is marked with `aria-current`.
  */
-export function ThreadItem({ thread, active, time, onOpen, onRename, onDelete }: ThreadItemProps) {
+export function ThreadItem({
+  thread,
+  active,
+  time,
+  onOpen,
+  onRename,
+  onShare,
+  onDelete,
+}: ThreadItemProps) {
   return (
     <li className="group/item relative min-w-0">
       <a
@@ -58,6 +67,10 @@ export function ThreadItem({ thread, active, time, onOpen, onRename, onDelete }:
           <DropdownMenuItem onClick={() => onRename(thread)}>
             <Pencil aria-hidden="true" strokeWidth={1.75} />
             Rename
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => onShare(thread.threadId)}>
+            <Share2 aria-hidden="true" strokeWidth={1.75} />
+            Share
           </DropdownMenuItem>
           <DropdownMenuItem variant="destructive" onClick={() => onDelete(thread)}>
             <Trash aria-hidden="true" strokeWidth={1.75} />

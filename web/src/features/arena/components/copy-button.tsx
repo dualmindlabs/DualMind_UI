@@ -3,17 +3,8 @@ import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/sonner';
+import { copyText } from '@/lib/utils/clipboard';
 import { cn } from '@/lib/utils/cn';
-
-/** Writes text to the clipboard; false when the browser refuses (permissions, insecure page). */
-export async function copyText(text: string): Promise<boolean> {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch {
-    return false;
-  }
-}
 
 export interface CopyButtonProps {
   text: string;

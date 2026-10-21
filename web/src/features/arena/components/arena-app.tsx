@@ -14,13 +14,14 @@ import { ArenaProvider } from './arena-provider';
 import { Composer, type ComposerPicks } from './composer';
 import { EmptyState } from './empty-state';
 import { PromptStarters } from './prompt-starters';
+import { ShareDialog } from './share-dialog';
 import { THREAD_LIMIT } from './thread-panel';
 import { ThreadSidebar } from './thread-sidebar';
 import { ThreadView } from './thread-view';
 
 function ArenaLayout() {
   const api = useApiClient();
-  const { threadId, mode, battle } = useArena();
+  const { threadId, mode, battle, shareThreadId, closeShare } = useArena();
   const { setDraft } = useDraft();
   const threads = useQuery(threadsQuery(api, THREAD_LIMIT));
   useArenaCommands(threads.data);
@@ -93,6 +94,7 @@ function ArenaLayout() {
           )}
         </main>
       </div>
+      <ShareDialog threadId={shareThreadId} onClose={closeShare} />
     </div>
   );
 }

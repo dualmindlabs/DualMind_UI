@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { RotateCw, SearchX } from 'lucide-react';
+import { RotateCw, SearchX, Share2 } from 'lucide-react';
 import { useMemo } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -75,7 +75,7 @@ function ThreadMessage({
  */
 export function ThreadView({ threadId }: { threadId: string | null }) {
   const api = useApiClient();
-  const { thread, mode, newBattle, battle } = useArena();
+  const { thread, mode, newBattle, battle, openShare } = useArena();
   const messages = useQuery({
     ...threadMessagesQuery(api, threadId ?? ''),
     enabled: threadId !== null,
@@ -131,8 +131,8 @@ export function ThreadView({ threadId }: { threadId: string | null }) {
           wide ? 'max-w-6xl' : 'max-w-3xl',
         )}
       >
-        <header className="grid gap-1.5">
-          <p className="eyebrow text-muted">
+        <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-4 gap-y-1.5">
+          <p className="col-start-1 eyebrow text-muted">
             {MODE_DETAILS[mode].label}
             {thread ? (
               <span className="text-muted">
@@ -143,11 +143,22 @@ export function ThreadView({ threadId }: { threadId: string | null }) {
             ) : null}
           </p>
           {thread || threadId === null ? (
-            <h1 className="text-h3 font-semibold text-balance text-fg sm:text-h2">
+            <h1 className="col-start-1 text-h3 font-semibold text-balance text-fg sm:text-h2">
               {thread?.title ?? live[0]?.prompt ?? 'New battle'}
             </h1>
           ) : (
-            <Skeleton className="h-8 w-2/3" />
+            <Skeleton className="col-start-1 h-8 w-2/3" />
+          )}
+          {threadId === null ? null : (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => openShare(threadId)}
+              className="col-start-2 row-span-2 row-start-1 self-center"
+            >
+              <Share2 aria-hidden="true" strokeWidth={1.75} />
+              Share
+            </Button>
           )}
         </header>
         {threadId === null ? null : turns === undefined ? (

@@ -19,6 +19,8 @@ export interface AnswerPaneProps {
   meta?: string | null;
   /** The visitor picked this answer: a static terra outline and a "Your pick" mark. */
   chosen?: boolean;
+  /** The mark's words; "Your pick" unless a share page says otherwise. */
+  pickLabel?: string;
   /** True while the text is still arriving. */
   streaming?: boolean;
   /** The model is working: a Border Beam runs around the pane (a state, not decoration). */
@@ -44,6 +46,7 @@ export function AnswerPane({
   hiddenNote,
   meta,
   chosen = false,
+  pickLabel,
   streaming = false,
   generating = false,
   revealing = false,
@@ -83,6 +86,7 @@ export function AnswerPane({
         hiddenNote={hiddenNote}
         meta={meta}
         chosen={chosen}
+        {...(pickLabel === undefined ? {} : { pickLabel })}
         copyText={streaming || generating || children ? null : text}
       />
       <div className="min-w-0 px-4 py-4 sm:px-5">

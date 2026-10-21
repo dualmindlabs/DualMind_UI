@@ -32,6 +32,7 @@ export function ArenaProvider({ children }: { children: ReactNode }) {
   const shortcutsEnabled = storedShortcuts !== 'off';
 
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [shareThreadId, setShareThreadId] = useState<string | null>(null);
   const [draft, setDraft] = useState('');
   const [announcement, setAnnouncement] = useState({ id: 0, message: '' });
   const composerRef = useRef<HTMLTextAreaElement | null>(null);
@@ -125,6 +126,15 @@ export function ArenaProvider({ children }: { children: ReactNode }) {
     [setStoredMode, threadId, mode, setSearchParams, resetBattle, battleState.turns.length],
   );
 
+  const openShare = useCallback(
+    (id: string) => {
+      setHistoryOpen(false);
+      setShareThreadId(id);
+    },
+    [setHistoryOpen, setShareThreadId],
+  );
+  const closeShare = useCallback(() => setShareThreadId(null), [setShareThreadId]);
+
   const setSidebarCollapsed = useCallback(
     (collapsed: boolean) => setStoredSidebar(collapsed ? 'collapsed' : null),
     [setStoredSidebar],
@@ -155,6 +165,9 @@ export function ArenaProvider({ children }: { children: ReactNode }) {
       thread: openThreadData,
       openThread,
       newBattle,
+      shareThreadId,
+      openShare,
+      closeShare,
       sidebarCollapsed,
       setSidebarCollapsed,
       historyOpen,
@@ -175,6 +188,9 @@ export function ArenaProvider({ children }: { children: ReactNode }) {
       openThreadData,
       openThread,
       newBattle,
+      shareThreadId,
+      openShare,
+      closeShare,
       sidebarCollapsed,
       setSidebarCollapsed,
       historyOpen,
