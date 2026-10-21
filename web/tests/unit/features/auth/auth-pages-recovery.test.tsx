@@ -42,8 +42,10 @@ function makeAuth() {
   return {
     getSession: vi.fn(() => Promise.resolve({ data: { session: null }, error: null })),
     onAuthStateChange: vi.fn(() => ({ data: { subscription: { unsubscribe: () => {} } } })),
-    resend: vi.fn(() => Promise.resolve({ error: null })),
-    resetPasswordForEmail: vi.fn(() => Promise.resolve({ error: null })),
+    resend: vi.fn((_params: unknown) => Promise.resolve({ error: null })),
+    resetPasswordForEmail: vi.fn((_email: string, _options?: unknown) =>
+      Promise.resolve({ error: null }),
+    ),
   };
 }
 
