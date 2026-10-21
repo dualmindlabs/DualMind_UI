@@ -2,7 +2,7 @@
 
 Thin route modules, one per URL, named after the URL (`design.tsx` for `/design/`).
 
-**Belongs here:** the route's `meta` (title, description, robots, canonical), `links`, loaders when a route is prerendered, and a default export that renders one feature's page component.
+**Belongs here:** the route's `meta` (title, description, robots, canonical; public pages return `pageMeta()` from `@/lib/site/page-meta`), `links`, loaders when a route is prerendered, and a default export that renders one feature's page component.
 
 **Rules**
 
