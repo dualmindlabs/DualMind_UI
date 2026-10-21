@@ -130,7 +130,7 @@ export const Markdown = memo(function Markdown({
 }: MarkdownProps) {
   return (
     <Streamdown
-      className={className}
+      className={className ?? ''}
       mode={streaming ? 'streaming' : 'static'}
       isAnimating={streaming}
       parseIncompleteMarkdown={streaming}
