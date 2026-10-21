@@ -306,10 +306,7 @@ test.describe('share page', () => {
 test.describe('link previews from the Worker', () => {
   const headers = { Cookie: PREVIEW_COOKIE };
 
-  test('a public battle: 200, never cached, the first prompt in the tags', async ({
-    request,
-    baseURL,
-  }) => {
+  test('a public battle: 200, never cached, the first prompt in the tags', async ({ request }) => {
     const response = await request.get(`/share/${IDS.public}`, { headers, maxRedirects: 0 });
     expect(response.status()).toBe(200);
     expect(response.headers()['cache-control']).toBe('no-store, no-cache, must-revalidate');
@@ -320,8 +317,11 @@ test.describe('link previews from the Worker', () => {
     expect(metaContent(html, 'property', 'og:description')).toBe(
       'Two anonymous AI models answered. See which one won.',
     );
-    expect(metaContent(html, 'property', 'og:url')).toBe(`${baseURL}/share/${IDS.public}`);
-    expect(metaContent(html, 'property', 'og:image')).toBe(`${baseURL}/og/share.png`);
+    // The Worker uses the origin it was called on (wrangler dev here, the site in production).
+    expect(metaContent(html, 'property', 'og:url')).toMatch(
+      new RegExp(`^https?://[^/]+/share/${IDS.public}$`),
+    );
+    expect(metaContent(html, 'property', 'og:image')).toMatch(/^https?:\/\/[^/]+\/og\/share\.png$/);
     expect(metaContent(html, 'name', 'twitter:card')).toBe('summary_large_image');
     expect(html).not.toMatch(/llama|qwen/i);
     expect(html).toContain('data-spa-fallback');
@@ -329,13 +329,14 @@ test.describe('link previews from the Worker', () => {
 
   test('an old ?id= link gets the same tags, pointing at the canonical address', async ({
     request,
-    baseURL,
   }) => {
     const response = await request.get(`/share/?id=${IDS.unvoted}`, { headers, maxRedirects: 0 });
     expect(response.status()).toBe(200);
     const html = await response.text();
     expect(metaContent(html, 'property', 'og:title')).toBe('Which is bigger, 9.11 or 9.9?');
-    expect(metaContent(html, 'property', 'og:url')).toBe(`${baseURL}/share/${IDS.unvoted}`);
+    expect(metaContent(html, 'property', 'og:url')).toMatch(
+      new RegExp(`^https?://[^/]+/share/${IDS.unvoted}$`),
+    );
     expect(metaContent(html, 'name', 'robots')).toBe('noindex, nofollow');
   });
 
