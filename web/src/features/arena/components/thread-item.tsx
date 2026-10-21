@@ -22,7 +22,9 @@ export interface ThreadItemProps {
 
 /**
  * One thread in the history: a real link (`/?thread=<id>`, so it opens in a new tab too) and a
- * menu with rename, share and delete. The open thread is marked with `aria-current`.
+ * menu with rename, share and delete. The open thread is marked with `aria-current`. In the wide
+ * panel the time sits at the end of the row (and gives way to the menu on hover); in the drawer
+ * it sits under the title (UI audit P2-9).
  */
 export function ThreadItem({
   thread,
@@ -44,12 +46,20 @@ export function ThreadItem({
           onOpen(thread.threadId);
         }}
         className={cn(
-          'flex min-h-10 items-center gap-2 rounded-md py-2 pr-10 pl-3 text-ui-sm text-fg-soft transition-colors duration-(--dur-fast) ease-out-expo hover:bg-hover hover:text-fg pointer-coarse:min-h-11',
+          'flex min-h-10 items-center gap-2 rounded-md py-2 pr-10 pl-3 text-ui-sm text-fg-soft transition-colors duration-(--dur-fast) ease-out-expo hover:bg-hover hover:text-fg active:bg-pressed pointer-coarse:min-h-11',
           'focus-visible:-outline-offset-2 aria-[current=page]:bg-surface-3 aria-[current=page]:text-fg',
+          // The drawer (below lg) is narrow: the title gets the whole row (two lines at most) and
+          // the time moves under it, instead of clipping the title at a few words.
+          'max-lg:flex-col max-lg:items-start max-lg:gap-0.5',
         )}
       >
-        <span className="min-w-0 flex-1 truncate">{thread.title}</span>
-        <span className="shrink-0 font-mono text-caption text-muted tabular-nums transition-opacity group-focus-within/item:opacity-0 group-hover/item:opacity-0">
+        <span className="min-w-0 flex-1 truncate max-lg:line-clamp-2 max-lg:w-full max-lg:flex-none max-lg:whitespace-normal">
+          {thread.title}
+        </span>
+        <span
+          data-testid="thread-time"
+          className="shrink-0 font-mono text-caption text-muted tabular-nums transition-opacity lg:group-focus-within/item:opacity-0 lg:group-hover/item:opacity-0"
+        >
           {time}
         </span>
       </a>

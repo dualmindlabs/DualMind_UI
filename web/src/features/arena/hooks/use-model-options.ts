@@ -14,15 +14,18 @@ export interface ModelOption {
   modelName: string;
   /** What people read. */
   displayName: string;
+  /** Who made it ("Meta", "Alibaba Qwen"), as the leaderboard says it. */
   provider: string;
   elo: number | null;
+  /** The leaderboard's rank; null while the model is not yet rated (or not on the board). */
   rank: number | null;
 }
 
 /**
  * The models for Side by side and Direct: the catalogue (`GET /api/models`, needs the session)
- * joined with the public leaderboard for rank and Elo, best ranked first. The leaderboard is
- * optional: when it fails, the pickers still work, without numbers.
+ * joined with the public leaderboard for rank and Elo, best ranked first, then the models not yet
+ * rated (lib/model-groups.ts splits them for the picker). The leaderboard is optional: when it
+ * fails, the pickers still work, without numbers.
  */
 export function useModelOptions() {
   const api = useApiClient();

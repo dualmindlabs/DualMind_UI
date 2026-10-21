@@ -38,6 +38,16 @@ export interface ArenaState {
   /** Single-key shortcuts (N, /, [) are on. */
   shortcutsEnabled: boolean;
   setShortcutsEnabled: (enabled: boolean) => void;
+  /** The keyboard shortcuts dialog (`?`, the account menu, the palette) is open. */
+  shortcutsOpen: boolean;
+  /**
+   * Opens it. Focus goes back to `returnTo` when the dialog closes (the account menu passes its
+   * trigger), else to what had focus when it opened.
+   */
+  openShortcuts: (returnTo?: HTMLElement | null) => void;
+  closeShortcuts: () => void;
+  /** Where focus returns when the shortcuts dialog closes (null: the dialog's default). */
+  shortcutsReturnFocus: HTMLElement | null;
 
   /** The prompt box, for focus. */
   composerRef: RefObject<HTMLTextAreaElement | null>;

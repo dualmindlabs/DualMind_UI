@@ -15,7 +15,8 @@ import { SafeLink } from './safe-link';
  *   `javascript:`, `data:` and the other dangerous protocols are removed by rehype-harden.
  * - Images never load (no remote images, no `data:` images): an answer cannot leak anything
  *   through an image URL. A short marker with the alt text stays in their place.
- * - Code blocks have a language label and a copy button (code-block.tsx); tables scroll inside
+ * - Code blocks have a language label, a copy button and Shiki colours, loaded only when a block
+ *   in a known language is on screen (code-block.tsx, lib/highlight.ts); tables scroll inside
  *   the pane.
  *
  * The XSS corpus in tests/unit/features/arena/markdown.test.tsx keeps these promises.

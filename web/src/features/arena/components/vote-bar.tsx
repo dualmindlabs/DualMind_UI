@@ -1,8 +1,11 @@
 import { useEffect, useRef } from 'react';
 
+import { Kbd } from '@/components/ui/kbd';
 import { RoleBadge } from '@/components/ui/role-badge';
 import type { VoteChoice } from '@/lib/api';
 import { cn } from '@/lib/utils/cn';
+
+import { PRESSABLE } from '../lib/press';
 
 /** The verdicts in reading order, with the keys of design-direction.md section 7. */
 export const VOTE_OPTIONS: ReadonlyArray<{
@@ -31,7 +34,8 @@ export interface VoteBarProps {
 /**
  * The verdict: four large targets (keys 1 to 4 outside text fields), A on the left and B on the
  * right like the panes. The pick turns terra, the human's colour. The buttons use aria-disabled
- * while a vote is sent, so focus never falls out of the bar.
+ * while a vote is sent, so focus never falls out of the bar; the others dim and stop pressing.
+ * Press, hover and focus match the kit's buttons (lib/press.ts); 56px tall on touch screens.
  */
 export function VoteBar({ onVote, chosen, optional = false, error, className }: VoteBarProps) {
   const locked = chosen !== null;
@@ -79,9 +83,12 @@ export function VoteBar({ onVote, chosen, optional = false, error, className }: 
               if (!locked) onVote(option.choice);
             }}
             className={cn(
-              'flex h-12 min-w-0 items-center justify-between gap-2 rounded-md border border-line-strong bg-surface px-3 text-ui font-medium text-fg sm:px-4 pointer-coarse:h-14',
-              'transition-[background-color,border-color,scale] duration-(--dur-fast) ease-out-expo hover:bg-surface-2 active:scale-[0.98]',
-              'aria-disabled:cursor-default aria-disabled:hover:bg-surface aria-pressed:border-human aria-pressed:bg-human-tint',
+              'group/vote flex h-12 min-w-0 cursor-pointer items-center justify-between gap-2 rounded-md border border-line-strong bg-surface px-3 text-ui font-medium text-fg sm:px-4 pointer-coarse:h-14',
+              PRESSABLE,
+              'hover:border-fg-soft hover:bg-surface-2 active:bg-surface-3',
+              // Sent: the pick turns terra; the others stay readable, but quiet and inert.
+              'aria-pressed:border-human aria-pressed:bg-human-tint aria-pressed:hover:border-human aria-pressed:hover:bg-human-tint',
+              'aria-disabled:cursor-default aria-disabled:not-aria-pressed:opacity-60 aria-disabled:hover:border-line-strong aria-disabled:hover:bg-surface aria-disabled:active:scale-100',
               option.phoneOrder,
             )}
           >
@@ -90,12 +97,12 @@ export function VoteBar({ onVote, chosen, optional = false, error, className }: 
               {option.choice === 'right' ? <RoleBadge who="b" letterOnly size="sm" /> : null}
               <span className="truncate">{option.label}</span>
             </span>
-            <kbd
+            <Kbd
               aria-hidden="true"
-              className="hidden rounded-sm border border-line px-1.5 py-0.5 text-caption leading-none text-muted sm:inline"
+              className="hidden transition-colors duration-(--dur-fast) group-hover/vote:text-fg group-aria-pressed/vote:border-human/60 group-aria-pressed/vote:text-human sm:inline-flex"
             >
               {option.key}
-            </kbd>
+            </Kbd>
           </button>
         ))}
       </div>

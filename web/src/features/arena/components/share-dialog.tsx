@@ -42,6 +42,8 @@ import { sharePath, shareUrl } from '@/lib/site/share';
 import { canShareNatively, copyText, shareNatively } from '@/lib/utils/clipboard';
 import { cn } from '@/lib/utils/cn';
 
+import { SUCCESS_POP } from '../lib/press';
+
 interface VisibilityOption {
   value: Visibility;
   label: string;
@@ -227,7 +229,12 @@ function ShareForm({ thread }: { thread: Thread }) {
             disabled={!open}
             className="shrink-0"
           >
-            <CopyIcon aria-hidden="true" strokeWidth={1.75} />
+            <CopyIcon
+              key={copied ? 'copied' : 'copy'}
+              aria-hidden="true"
+              strokeWidth={1.75}
+              className={copied ? SUCCESS_POP : undefined}
+            />
             {copied ? 'Copied' : 'Copy link'}
           </Button>
         </div>

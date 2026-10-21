@@ -1,3 +1,5 @@
+import type { RefObject } from 'react';
+
 import { RoleBadge } from '@/components/ui/role-badge';
 
 import { useArena } from '../hooks/use-arena';
@@ -8,7 +10,12 @@ import { MODE_DETAILS } from '../lib/modes';
  * with a single human-voice phrase, and what happens next. Quiet on purpose: the signature
  * moment of this screen is the reveal, not the welcome.
  */
-export function EmptyState() {
+export function EmptyState({
+  headingRef,
+}: {
+  /** The heading, for the model pickers: their lists never cover it. */
+  headingRef?: RefObject<HTMLHeadingElement | null>;
+}) {
   const { mode } = useArena();
   const details = MODE_DETAILS[mode];
 
@@ -23,7 +30,7 @@ export function EmptyState() {
         )}
         {details.eyebrow}
       </p>
-      <h1 className="text-h1 font-light tracking-tight text-fg">
+      <h1 ref={headingRef} className="text-h1 font-light tracking-tight text-fg">
         {details.heading.plain}{' '}
         <span className="human-voice text-human">{details.heading.human}</span>
       </h1>

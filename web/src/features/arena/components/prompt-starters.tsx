@@ -7,12 +7,15 @@ import { cn } from '@/lib/utils/cn';
 
 import { useArena } from '../hooks/use-arena';
 import { useDraft } from '../hooks/use-draft';
+import { PRESSABLE } from '../lib/press';
 import { pickSurprise, STARTER_CATEGORIES, type StarterCategory } from '../lib/starters';
+import { ScrollRow } from './scroll-row';
 
 /**
  * Prompt starters (new-features.md F-7): categories, four curated prompts each, and "Surprise
  * me". A starter fills the prompt box and focuses it; nothing is sent until the visitor sends it.
- * On phones the chips scroll sideways.
+ * On phones both rows scroll sideways, with snap points, edge fades and a chevron cue
+ * (ScrollRow); from `md` they wrap and centre.
  */
 export function PromptStarters({ className }: { className?: string }) {
   const { focusComposer } = useArena();
@@ -26,11 +29,11 @@ export function PromptStarters({ className }: { className?: string }) {
   };
 
   return (
-    <section aria-labelledby="starters-title" className={cn('grid min-w-0 gap-3', className)}>
+    <section aria-labelledby="starters-title" className={cn('grid min-w-0 gap-1', className)}>
       <h2 id="starters-title" className="sr-only">
         Prompt starters
       </h2>
-      <div className="flex min-w-0 [scrollbar-width:none] items-center gap-2 overflow-x-auto pb-1 md:flex-wrap md:justify-center md:overflow-visible">
+      <ScrollRow className="items-center gap-2 md:flex-wrap md:justify-center md:overflow-visible">
         <div role="group" aria-label="Starter category" className="flex shrink-0 gap-1">
           {STARTER_CATEGORIES.map(item => (
             <button
@@ -38,7 +41,10 @@ export function PromptStarters({ className }: { className?: string }) {
               type="button"
               aria-pressed={item.id === category}
               onClick={() => setCategory(item.id)}
-              className="h-8 shrink-0 rounded-full px-3 eyebrow text-muted transition-colors duration-(--dur-fast) hover:text-fg aria-pressed:bg-surface-3 aria-pressed:text-fg pointer-coarse:h-10"
+              className={cn(
+                'h-8 shrink-0 cursor-pointer snap-start rounded-full px-3 eyebrow text-muted hover:bg-hover hover:text-fg aria-pressed:bg-surface-3 aria-pressed:text-fg pointer-coarse:h-11',
+                PRESSABLE,
+              )}
             >
               {item.label}
             </button>
@@ -47,22 +53,26 @@ export function PromptStarters({ className }: { className?: string }) {
         <Button
           variant="ghost"
           size="xs"
-          className="shrink-0 rounded-full text-human hover:text-human"
+          className="shrink-0 snap-start rounded-full text-human hover:text-human pointer-coarse:h-11 [&_svg]:transition-transform [&_svg]:duration-(--dur-base) [&_svg]:ease-out-expo motion-safe:hover:[&_svg]:rotate-180"
           onClick={() => fill(pickSurprise(Math.random, draft || null))}
         >
           <Shuffle aria-hidden="true" strokeWidth={1.75} />
           Surprise me
         </Button>
-      </div>
-      <ul className="flex min-w-0 [scrollbar-width:none] gap-2 overflow-x-auto pb-1 md:flex-wrap md:justify-center md:overflow-visible">
+      </ScrollRow>
+      <ScrollRow
+        as="ul"
+        contentKey={category}
+        className="gap-2 md:flex-wrap md:justify-center md:overflow-visible"
+      >
         {active?.prompts.map(prompt => (
-          <li key={prompt} className="max-w-[80vw] shrink-0 md:max-w-[22rem]">
+          <li key={prompt} className="max-w-[80vw] shrink-0 snap-start md:max-w-[22rem]">
             <PromptSuggestion title={prompt} onClick={() => fill(prompt)} className="w-full">
               {prompt}
             </PromptSuggestion>
           </li>
         ))}
-      </ul>
+      </ScrollRow>
     </section>
   );
 }
