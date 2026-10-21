@@ -308,40 +308,55 @@ describe('problem+json opt-in (BE-1)', () => {
     ['application/json', 'application/json'],
     ['application/json, text/plain, */*', 'the legacy app (axios) Accept'],
     ['application/problem+json;q=0', 'q=0'],
-  ] as Array<[string | null, string]>)('without the opt-in (%s: %s) the v1 error is unchanged', async accept => {
-    const bodies = [
-      [400, JSON.stringify(legacyBody), 'application/json'],
-      [401, '', null],
-      [404, '', null],
-      [500, JSON.stringify({ success: false, error: 'NullReferenceException', code: 'X' }), 'application/json'],
-      [502, JSON.stringify({ success: false, message: 'Backend API Error: boom', error: 'TypeError: x' }), 'application/json'],
-    ] as const;
-    for (const [status, text, contentType] of bodies) {
-      const upstream = fakeUpstream(
-        () =>
-          new Response(text === '' ? null : text, {
-            status,
-            headers: {
-              ...(contentType ? { 'content-type': contentType } : {}),
-              'x-correlation-id': 'corr-9',
-              'www-authenticate': 'Bearer',
-            },
+  ] as Array<[string | null, string]>)(
+    'without the opt-in (%s: %s) the v1 error is unchanged',
+    async accept => {
+      const bodies = [
+        [400, JSON.stringify(legacyBody), 'application/json'],
+        [401, '', null],
+        [404, '', null],
+        [
+          500,
+          JSON.stringify({ success: false, error: 'NullReferenceException', code: 'X' }),
+          'application/json',
+        ],
+        [
+          502,
+          JSON.stringify({
+            success: false,
+            message: 'Backend API Error: boom',
+            error: 'TypeError: x',
           }),
-      );
-      const response = await proxyApi(
-        apiRequest('/api/arena/dualchat', accept === null ? {} : { headers: { Accept: accept } }),
-        {},
-        { fetchImpl: upstream.fetchImpl, log: noLog, newId: () => 'plain-id-0001' },
-      );
-      expect(response.status).toBe(status);
-      expect(await response.text()).toBe(text);
-      expect(response.headers.get('content-type')).toBe(contentType);
-      expect(response.headers.get('x-correlation-id')).toBe('corr-9');
-      expect(response.headers.get('www-authenticate')).toBe('Bearer');
-      // The only addition on an error status is Vary: Accept.
-      expect(response.headers.get('vary')).toBe('Accept');
-    }
-  });
+          'application/json',
+        ],
+      ] as const;
+      for (const [status, text, contentType] of bodies) {
+        const upstream = fakeUpstream(
+          () =>
+            new Response(text === '' ? null : text, {
+              status,
+              headers: {
+                ...(contentType ? { 'content-type': contentType } : {}),
+                'x-correlation-id': 'corr-9',
+                'www-authenticate': 'Bearer',
+              },
+            }),
+        );
+        const response = await proxyApi(
+          apiRequest('/api/arena/dualchat', accept === null ? {} : { headers: { Accept: accept } }),
+          {},
+          { fetchImpl: upstream.fetchImpl, log: noLog, newId: () => 'plain-id-0001' },
+        );
+        expect(response.status).toBe(status);
+        expect(await response.text()).toBe(text);
+        expect(response.headers.get('content-type')).toBe(contentType);
+        expect(response.headers.get('x-correlation-id')).toBe('corr-9');
+        expect(response.headers.get('www-authenticate')).toBe('Bearer');
+        // The only addition on an error status is Vary: Accept.
+        expect(response.headers.get('vary')).toBe('Accept');
+      }
+    },
+  );
 
   it('with the opt-in, keeps the status and request id and sets the problem headers', async () => {
     const upstream = fakeUpstream(() => json(legacyBody, { status: 400 }));
@@ -409,7 +424,7 @@ describe('problem+json opt-in (BE-1)', () => {
     );
     expect(problem.status).toBe(502);
     expect(problem.headers.get('content-type')).toContain(PROBLEM);
-    const body = await problem.json();
+    const body = (await problem.json()) as Record<string, unknown>;
     expect(body).toMatchObject({
       type: 'https://arena.dualmindlab.tech/problems/bad_gateway',
       detail: 'The API could not be reached.',
@@ -422,7 +437,9 @@ describe('problem+json opt-in (BE-1)', () => {
       const stalled = fakeUpstream(
         (_url, init) =>
           new Promise<Response>((_resolve, reject) => {
-            init.signal?.addEventListener('abort', () => reject(new DOMException('x', 'AbortError')));
+            init.signal?.addEventListener('abort', () =>
+              reject(new DOMException('x', 'AbortError')),
+            );
           }),
       );
       const pending = proxyApi(

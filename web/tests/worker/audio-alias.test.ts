@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { proxyApi } from '../../../server/api-proxy.js';
 import {
   AUDIO_ALIAS,
   DEPRECATION,
@@ -7,14 +8,17 @@ import {
   MAX_TTS_TEXT_LENGTH,
   parseAliasBody,
 } from '../../../server/audio-alias.js';
-import { proxyApi } from '../../../server/api-proxy.js';
 
 // BE-2: the deprecated /api/audio/tts alias of /api/speech/generate.
 
 const ORIGIN = 'https://arena.dualmindlab.tech';
 const noLog = () => {};
 
-function post(body: BodyInit | null, headers: Record<string, string> = {}, path: string = AUDIO_ALIAS.from) {
+function post(
+  body: BodyInit | null,
+  headers: Record<string, string> = {},
+  path: string = AUDIO_ALIAS.from,
+) {
   return new Request(`${ORIGIN}${path}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...headers },
@@ -33,7 +37,7 @@ function wavFixture(size = 1024) {
 function fakeUpstream(respond: (url: string, init: RequestInit) => Response | Promise<Response>) {
   const calls: Array<{ url: string; init: RequestInit; headers: Headers; body: string }> = [];
   const fetchImpl = (async (url: string, init: RequestInit) => {
-    calls.push({ url, init, headers: new Headers(init.headers), body: String(init.body ?? '') });
+    calls.push({ url, init, headers: new Headers(init.headers), body: typeof init.body === 'string' ? init.body : '' });
     return respond(url, init);
   }) as unknown as typeof fetch;
   return { calls, fetchImpl };
@@ -65,7 +69,11 @@ describe('parseAliasBody', () => {
     await bad(post('{"text":"   "}'), 400, 'invalid_request');
     await bad(post('{}'), 400, 'invalid_request');
     await bad(post('{"text":5}'), 400, 'invalid_request');
-    await bad(post(JSON.stringify({ text: 'a'.repeat(MAX_TTS_TEXT_LENGTH + 1) })), 400, 'invalid_request');
+    await bad(
+      post(JSON.stringify({ text: 'a'.repeat(MAX_TTS_TEXT_LENGTH + 1) })),
+      400,
+      'invalid_request',
+    );
     expect(
       await parseAliasBody(post(JSON.stringify({ text: 'a'.repeat(MAX_TTS_TEXT_LENGTH) }))),
     ).toMatchObject({ ok: true });
@@ -82,7 +90,11 @@ describe('parseAliasBody', () => {
   });
 
   it('rejects a non-JSON content type with 415', async () => {
-    await bad(post('{"text":"hi"}', { 'Content-Type': 'text/plain' }), 415, 'unsupported_media_type');
+    await bad(
+      post('{"text":"hi"}', { 'Content-Type': 'text/plain' }),
+      415,
+      'unsupported_media_type',
+    );
   });
 
   it('rejects a body over 16 KiB with and without Content-Length', async () => {
@@ -150,7 +162,11 @@ describe('through the proxy', () => {
     const upstream = fakeUpstream(
       () => new Response(wav, { headers: { 'content-type': 'application/octet-stream' } }),
     );
-    const response = await proxyApi(post('{"text":"hi"}'), {}, { fetchImpl: upstream.fetchImpl, log: noLog });
+    const response = await proxyApi(
+      post('{"text":"hi"}'),
+      {},
+      { fetchImpl: upstream.fetchImpl, log: noLog },
+    );
     expect(response.status).toBe(200);
     expect(response.headers.get('content-type')).toBe('audio/wav');
     expect(new Uint8Array(await response.arrayBuffer())).toEqual(wav);
@@ -167,7 +183,11 @@ describe('through the proxy', () => {
       },
     });
     const upstream = fakeUpstream(() => new Response(body));
-    const response = await proxyApi(post('{"text":"hi"}'), {}, { fetchImpl: upstream.fetchImpl, log: noLog });
+    const response = await proxyApi(
+      post('{"text":"hi"}'),
+      {},
+      { fetchImpl: upstream.fetchImpl, log: noLog },
+    );
     expect(response.headers.get('content-type')).toBe('audio/wav');
     expect(new Uint8Array(await response.arrayBuffer())).toEqual(wav);
   });
@@ -176,7 +196,11 @@ describe('through the proxy', () => {
     const upstream = fakeUpstream(
       () => new Response(new Uint8Array([1, 2, 3]), { headers: { 'content-type': 'audio/mpeg' } }),
     );
-    const response = await proxyApi(post('{"text":"hi"}'), {}, { fetchImpl: upstream.fetchImpl, log: noLog });
+    const response = await proxyApi(
+      post('{"text":"hi"}'),
+      {},
+      { fetchImpl: upstream.fetchImpl, log: noLog },
+    );
     expect(response.headers.get('content-type')).toBe('audio/mpeg');
   });
 
@@ -200,7 +224,11 @@ describe('through the proxy', () => {
     const upstream = fakeUpstream(
       () => new Response('{"ok":true}', { headers: { 'content-type': 'application/json' } }),
     );
-    const response = await proxyApi(post('{"text":"hi"}'), {}, { fetchImpl: upstream.fetchImpl, log: noLog });
+    const response = await proxyApi(
+      post('{"text":"hi"}'),
+      {},
+      { fetchImpl: upstream.fetchImpl, log: noLog },
+    );
     expect(response.status).toBe(502);
   });
 
@@ -208,7 +236,11 @@ describe('through the proxy', () => {
     const upstream = fakeUpstream(
       () => new Response(null, { status: 401, headers: { 'www-authenticate': 'Bearer' } }),
     );
-    const plain = await proxyApi(post('{"text":"hi"}'), {}, { fetchImpl: upstream.fetchImpl, log: noLog });
+    const plain = await proxyApi(
+      post('{"text":"hi"}'),
+      {},
+      { fetchImpl: upstream.fetchImpl, log: noLog },
+    );
     expect(plain.status).toBe(401);
     expect(await plain.text()).toBe('');
     expect(plain.headers.get('deprecation')).toBeNull();
@@ -272,7 +304,9 @@ describe('through the proxy', () => {
     const upstream = fakeUpstream(
       (_url, init) =>
         new Promise<Response>((_resolve, reject) => {
-          init.signal?.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError')));
+          init.signal?.addEventListener('abort', () =>
+            reject(new DOMException('aborted', 'AbortError')),
+          );
         }),
     );
     const pending = proxyApi(
@@ -283,7 +317,10 @@ describe('through the proxy', () => {
     await vi.advanceTimersByTimeAsync(30_000);
     const response = await pending;
     expect(response.status).toBe(504);
-    expect(await response.json()).toEqual({ error: 'gateway_timeout', requestId: 'alias-504-0001' });
+    expect(await response.json()).toEqual({
+      error: 'gateway_timeout',
+      requestId: 'alias-504-0001',
+    });
   });
 
   it('logs tts_alias_used with lengths only, never the text', async () => {
@@ -297,7 +334,12 @@ describe('through the proxy', () => {
       { fetchImpl: upstream.fetchImpl, log: event => events.push(event) },
     );
     expect(events).toHaveLength(1);
-    expect(events[0]).toMatchObject({ event: 'tts_alias_used', textLength: 15, hasVoice: true, status: 200 });
+    expect(events[0]).toMatchObject({
+      event: 'tts_alias_used',
+      textLength: 15,
+      hasVoice: true,
+      status: 200,
+    });
     expect(JSON.stringify(events)).not.toContain('secret');
   });
 

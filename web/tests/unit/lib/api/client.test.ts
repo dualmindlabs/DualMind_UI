@@ -209,7 +209,9 @@ describe('streamChat edge cases', () => {
       { type: 'delta', text: 'Whole answer' },
       { type: 'done', finishReason: 'stop', usage: null },
     ]);
-    expect(calls[0]?.headers.get('accept')).toBe('text/event-stream, application/problem+json;q=0.9');
+    expect(calls[0]?.headers.get('accept')).toBe(
+      'text/event-stream, application/problem+json;q=0.9',
+    );
   });
 
   it('rejects JSON that is not an answer, and an empty body', async () => {

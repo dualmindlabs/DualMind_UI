@@ -14,7 +14,10 @@ const ORIGIN = 'https://arena.dualmindlab.tech';
 const REQUEST_ID = 'req-test-0001';
 
 const accepting = (accept: string | null) =>
-  new Request(`${ORIGIN}/api/arena/dualchat`, accept === null ? {} : { headers: { Accept: accept } });
+  new Request(
+    `${ORIGIN}/api/arena/dualchat`,
+    accept === null ? {} : { headers: { Accept: accept } },
+  );
 
 async function rewrite(
   status: number,
@@ -96,7 +99,11 @@ describe('the mapping table', () => {
       requestId: REQUEST_ID,
       code: 'INVALID_REQUEST',
     });
-    expect(events[0]).toMatchObject({ event: 'problem_rewrite', row: 1, upstreamCode: 'INVALID_REQUEST' });
+    expect(events[0]).toMatchObject({
+      event: 'problem_rewrite',
+      row: 1,
+      upstreamCode: 'INVALID_REQUEST',
+    });
   });
 
   it.each([
@@ -104,18 +111,21 @@ describe('the mapping table', () => {
     [502, 'bad_gateway'],
     [504, 'gateway_timeout'],
     [503, 'internal_error'],
-  ])('row 1b: ai.error %s is generic and never shows the provider text (%s)', async (status, type) => {
-    const { problem, events } = await rewrite(
-      status,
-      asJson({ object: 'ai.error', code: 'API_ERROR', message: 'openai key sk-123 rejected' }),
-      { contentType: 'application/json' },
-    );
-    expect(problem.type).toBe(`${PROBLEM_TYPE_BASE}${type}`);
-    expect(problem.detail).toBe('The model service failed.');
-    expect(problem.code).toBe('API_ERROR');
-    expect(JSON.stringify(problem)).not.toContain('sk-123');
-    expect(events[0]).toMatchObject({ row: 1, upstreamDetail: 'openai key sk-123 rejected' });
-  });
+  ])(
+    'row 1b: ai.error %s is generic and never shows the provider text (%s)',
+    async (status, type) => {
+      const { problem, events } = await rewrite(
+        status,
+        asJson({ object: 'ai.error', code: 'API_ERROR', message: 'openai key sk-123 rejected' }),
+        { contentType: 'application/json' },
+      );
+      expect(problem.type).toBe(`${PROBLEM_TYPE_BASE}${type}`);
+      expect(problem.detail).toBe('The model service failed.');
+      expect(problem.code).toBe('API_ERROR');
+      expect(JSON.stringify(problem)).not.toContain('sk-123');
+      expect(events[0]).toMatchObject({ row: 1, upstreamDetail: 'openai key sk-123 rejected' });
+    },
+  );
 
   it.each([
     [400, 'validation_error'],
@@ -123,19 +133,22 @@ describe('the mapping table', () => {
     [403, 'forbidden'],
     [404, 'not_found'],
     [409, 'conflict'],
-  ])('row 2: { success:false, error, code } %s -> %s with the upstream text', async (status, type) => {
-    const { problem } = await rewrite(
-      status,
-      asJson({ success: false, error: 'Thread not found', code: 'THREAD_NOT_FOUND' }),
-      { contentType: 'application/json' },
-    );
-    expect(problem).toMatchObject({
-      type: `${PROBLEM_TYPE_BASE}${type}`,
-      status,
-      detail: 'Thread not found',
-      code: 'THREAD_NOT_FOUND',
-    });
-  });
+  ])(
+    'row 2: { success:false, error, code } %s -> %s with the upstream text',
+    async (status, type) => {
+      const { problem } = await rewrite(
+        status,
+        asJson({ success: false, error: 'Thread not found', code: 'THREAD_NOT_FOUND' }),
+        { contentType: 'application/json' },
+      );
+      expect(problem).toMatchObject({
+        type: `${PROBLEM_TYPE_BASE}${type}`,
+        status,
+        detail: 'Thread not found',
+        code: 'THREAD_NOT_FOUND',
+      });
+    },
+  );
 
   it('row 2e: 5xx is generic', async () => {
     const { problem } = await rewrite(
@@ -261,19 +274,23 @@ describe('detail rules', () => {
 
 describe('headers and passthrough', () => {
   it('keeps Retry-After, x-correlation-id and Allow; drops length, encoding and validators', async () => {
-    const { response } = await rewrite(429, asJson({ success: false, error: 'Slow down', code: 'RL' }), {
-      contentType: 'application/json',
-      headers: {
-        'retry-after': '12',
-        'x-correlation-id': 'corr-1',
-        allow: 'GET',
-        'content-length': '999',
-        etag: '"abc"',
-        'last-modified': 'Wed, 21 Oct 2026 07:28:00 GMT',
-        'set-cookie': 'a=b',
-        'access-control-allow-origin': '*',
+    const { response } = await rewrite(
+      429,
+      asJson({ success: false, error: 'Slow down', code: 'RL' }),
+      {
+        contentType: 'application/json',
+        headers: {
+          'retry-after': '12',
+          'x-correlation-id': 'corr-1',
+          allow: 'GET',
+          'content-length': '999',
+          etag: '"abc"',
+          'last-modified': 'Wed, 21 Oct 2026 07:28:00 GMT',
+          'set-cookie': 'a=b',
+          'access-control-allow-origin': '*',
+        },
       },
-    });
+    );
     expect(response.headers.get('retry-after')).toBe('12');
     expect(response.headers.get('x-correlation-id')).toBe('corr-1');
     expect(response.headers.get('allow')).toBe('GET');
@@ -287,8 +304,15 @@ describe('headers and passthrough', () => {
   });
 
   it('an upstream problem+json passes through, with requestId added when missing', async () => {
-    const own = { type: `${PROBLEM_TYPE_BASE}conflict`, title: 'Conflict', status: 409, detail: 'Taken' };
-    const { problem } = await rewrite(409, asJson(own), { contentType: 'application/problem+json' });
+    const own = {
+      type: `${PROBLEM_TYPE_BASE}conflict`,
+      title: 'Conflict',
+      status: 409,
+      detail: 'Taken',
+    };
+    const { problem } = await rewrite(409, asJson(own), {
+      contentType: 'application/problem+json',
+    });
     expect(problem).toEqual({ ...own, requestId: REQUEST_ID });
     const withId = await rewrite(409, asJson({ ...own, requestId: 'theirs-123' }), {
       contentType: 'application/problem+json',
