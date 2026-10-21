@@ -21,6 +21,13 @@ export const primaryNav: readonly SiteLink[] = [
 
 export const signInLink: SiteLink = { label: 'Sign in', href: '/login/' };
 
+/** Signed-in only (the account menu and the command palette): profile, appearance, data. */
+export const settingsLink: SiteLink = {
+  label: 'Settings',
+  href: '/settings/',
+  description: 'Profile, theme, motion, shortcuts and your data',
+};
+
 export interface FooterColumn {
   title: string;
   links: readonly SiteLink[];

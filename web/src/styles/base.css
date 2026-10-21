@@ -19,7 +19,7 @@
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    html {
+    html:not([data-motion='reduce']) {
       scroll-behavior: smooth;
     }
   }
@@ -73,16 +73,32 @@
     font-family: var(--font-mono);
   }
 
-  /* Reduced motion: nothing moves. Components that animate with JS use useReducedMotion(). */
+  /*
+   * Reduced motion: nothing moves. Components that animate with JS use useReducedMotion(). The
+   * motion setting on /settings/ overrides the OS through <html data-motion>: "allow" keeps
+   * motion when the OS asks for less, "reduce" stops it when the OS does not
+   * (lib/motion/motion-preference.ts).
+   */
   @media (prefers-reduced-motion: reduce) {
-    *,
-    ::before,
-    ::after {
+    html:not([data-motion='allow']),
+    html:not([data-motion='allow']) *,
+    html:not([data-motion='allow']) ::before,
+    html:not([data-motion='allow']) ::after {
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
     }
+  }
+
+  html[data-motion='reduce'],
+  html[data-motion='reduce'] *,
+  html[data-motion='reduce'] ::before,
+  html[data-motion='reduce'] ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 

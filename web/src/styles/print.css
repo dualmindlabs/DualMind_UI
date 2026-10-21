@@ -39,4 +39,27 @@
     font-size: 0.875em;
     overflow-wrap: anywhere;
   }
+
+  /*
+   * The PDF export of /settings/ (features/settings/components/print-export.tsx): while
+   * <html data-printing-export> is set, only the export's print view is printed.
+   */
+  html[data-printing-export] body > :not([data-print-view]) {
+    display: none !important;
+  }
+
+  html[data-printing-export] [data-print-view] {
+    display: block !important;
+  }
+
+  html:not([data-printing-export]) [data-print-view] {
+    display: none !important;
+  }
+}
+
+/* The print view exists only on paper. */
+@media screen {
+  [data-print-view] {
+    display: none !important;
+  }
 }

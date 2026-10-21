@@ -12,8 +12,9 @@ import type { Config } from '@react-router/dev/config';
  *   dist/index.html, whose copy lives on as dist/legacy-app.html until the arena slice (S8).
  *
  * Add a path here when its slice moves a page to this app (see docs/redesign/migration-plan.md).
- * Client-only routes (/update-password.html, /auth-callback.html) are not listed: the Worker
- * answers them with the SPA fallback (server/routing.js, SPA_FALLBACK_ROUTES).
+ * Client-only routes (/update-password.html, /auth-callback.html, /share/<id>, /settings/) are
+ * not listed: the Worker answers them with the SPA fallback (server/routing.js,
+ * SPA_FALLBACK_ROUTES).
  */
 export default {
   appDirectory: 'src/app',

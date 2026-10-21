@@ -1,6 +1,8 @@
 import { LazyMotion, m, MotionConfig } from 'motion/react';
 import { type FocusEvent, useId, useState } from 'react';
 
+import { useMotionPreference } from '@/hooks/use-motion-preference';
+import { motionConfigValue } from '@/lib/motion/motion-preference';
 import { isActivePath, primaryNav } from '@/lib/site/links';
 import { cn } from '@/lib/utils/cn';
 import { spring } from '@/styles/tokens';
@@ -27,6 +29,7 @@ export function SiteNav({ activePath, label = 'Main', size = 'md', className }: 
   const [highlighted, setHighlighted] = useState<string | null>(null);
   // layoutIds are global to the page; scope them so several navs (previews) never share one.
   const scope = useId();
+  const { preference: motion } = useMotionPreference();
 
   const clearOnLeave = (event: FocusEvent<HTMLUListElement>) => {
     if (!event.currentTarget.contains(event.relatedTarget)) setHighlighted(null);
@@ -34,7 +37,7 @@ export function SiteNav({ activePath, label = 'Main', size = 'md', className }: 
 
   return (
     <LazyMotion features={loadLayoutFeatures} strict>
-      <MotionConfig reducedMotion="user" transition={spring}>
+      <MotionConfig reducedMotion={motionConfigValue(motion)} transition={spring}>
         <nav aria-label={label} className={className}>
           <ul
             className="flex items-center gap-0.5"

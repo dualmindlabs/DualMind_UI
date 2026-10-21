@@ -109,7 +109,7 @@ export const faqContent: PageContent = {
           question: 'Can I share a battle?',
           answer: [
             'Yes. Open the share menu on a conversation to make it viewable by link. Anyone with the link can read it. A conversation stays private until you share it, and you can switch it back to private later.',
-            'You can also export a conversation as Markdown, JSON, CSV, HTML or PDF.',
+            'You can also download all your conversations from Settings as Markdown, JSON, CSV, HTML or PDF.',
           ],
         },
         {
