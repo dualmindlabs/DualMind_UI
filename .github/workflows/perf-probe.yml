@@ -25,6 +25,16 @@ jobs:
           VITE_SUPABASE_ANON_KEY: e2e-anon-key-not-a-real-key
           PERF_PROBE: '1'
         run: node build.js
+      - name: Variant (scripts after load)
+        if: ${{ vars.PROBE_VARIANT != 'off' }}
+        run: |
+          python3 - <<'PY'
+          import re
+          h=open('dist/index.html').read()
+          for m in re.finditer(r'<script[^>]*>.{0,600}',h,re.S): print('SCRIPT:',m.group(0)[:700].replace('\n',' '));print()
+          print('LINKS:',[m for m in re.findall(r'<link[^>]*>',h) if 'modulepreload' not in m])
+          print('head tail:',h[h.find('</head>')-300:h.find('</head>')])
+          PY
       - name: Chunk report
         run: |
           mkdir -p probe
