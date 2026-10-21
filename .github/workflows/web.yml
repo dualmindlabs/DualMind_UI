@@ -141,6 +141,11 @@ jobs:
           set -euo pipefail
           test -f dist/design/index.html
           test -f dist/__spa-fallback.html
+          for page in about how-it-works faq privacy terms cookies; do test -f dist/$page/index.html; done
+          test -f dist/404.html
+          ! test -e dist/404/index.html
+          grep -q '/about/' dist/sitemap.xml
+          ! grep -q 'design' dist/sitemap.xml
           grep -q 'Two minds' dist/design/index.html
           grep -q 'noindex' dist/design/index.html
           # / is the prerendered landing page (slice S3), never the SPA fallback; the legacy arena

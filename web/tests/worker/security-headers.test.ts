@@ -157,20 +157,30 @@ describe('headers on real responses', () => {
     expect(response.headers.get('content-security-policy')).toBeNull();
   });
 
-  it('files, redirects and 404s get the base headers but no CSP', async () => {
-    for (const path of [
-      '/assets/root-AbCd_123.js',
-      '/assets/logo.png',
-      '/design',
-      '/careers',
-      '/nope',
-    ]) {
+  it('files and redirects get the base headers but no CSP', async () => {
+    for (const path of ['/assets/root-AbCd_123.js', '/assets/logo.png', '/design', '/careers']) {
       const response = await get(path);
       expect(response.headers.get('x-content-type-options'), path).toBe('nosniff');
       expect(response.headers.get('x-frame-options'), path).toBe('DENY');
       expect(response.headers.get('content-security-policy'), path).toBeNull();
       expect(response.headers.get('content-security-policy-report-only'), path).toBeNull();
     }
+  });
+
+  it('the 404 page is a web page: enforced CSP with the build hashes, status 404', async () => {
+    const response = await get('/nope');
+    expect(response.status).toBe(404);
+    expect(response.headers.get('content-security-policy')).toContain(`'sha256-${HASH}'`);
+    expect(response.headers.get('content-security-policy-report-only')).toBeNull();
+    expect(response.headers.get('x-frame-options')).toBe('DENY');
+  });
+
+  it('without a manifest the 404 page gets the report-only policy', async () => {
+    const files = { ...DIST };
+    delete files['/__web-manifest.json'];
+    const response = await get('/nope', files);
+    expect(response.status).toBe(404);
+    expect(response.headers.get('content-security-policy')).toBeNull();
   });
 
   it('the waitlist redirect gets them too', async () => {

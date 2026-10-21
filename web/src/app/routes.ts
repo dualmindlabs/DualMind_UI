@@ -14,4 +14,16 @@ export default [
   // Live rankings and the model directory (slice S7), from the public model-stats API.
   route('leaderboard', 'routes/leaderboard.tsx'),
   route('models', 'routes/models.tsx'),
+
+  // Info and legal pages (slice S4).
+  route('about', 'routes/about.tsx'),
+  route('how-it-works', 'routes/how-it-works.tsx'),
+  route('faq', 'routes/faq.tsx'),
+  route('privacy', 'routes/privacy.tsx'),
+  route('terms', 'routes/terms.tsx'),
+  route('cookies', 'routes/cookies.tsx'),
+
+  // Anything else: the 404 page. Prerendered as /404 (build.js moves it to dist/404.html, which
+  // the Worker serves with status 404); this entry also covers client-side navigation.
+  route('*', 'routes/not-found.tsx'),
 ] satisfies RouteConfig;

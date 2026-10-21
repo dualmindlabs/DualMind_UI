@@ -17,5 +17,18 @@ export default {
   appDirectory: 'src/app',
   buildDirectory: 'build',
   ssr: false,
-  prerender: ['/', '/design', '/leaderboard', '/models'],
+  prerender: [
+    '/',
+    '/design',
+    '/leaderboard',
+    '/models',
+    '/about',
+    '/how-it-works',
+    '/faq',
+    '/privacy',
+    '/terms',
+    '/cookies',
+    // The splat route renders the 404 page; build.js turns 404/index.html into dist/404.html.
+    '/404',
+  ],
 } satisfies Config;
