@@ -1,22 +1,9 @@
 import { reactRouter } from '@react-router/dev/vite';
 import tailwindcss from '@tailwindcss/vite';
-import { writeFileSync } from 'node:fs';
-
-import { defineConfig, type Plugin } from 'vite';
-
-// PERF_PROBE=1 (a throwaway CI job): writes the modules inside every chunk to build/probe.json.
-const probe: Plugin = {
-  name: 'perf-probe',
-  generateBundle(_options, bundle) {
-    const out: Record<string, string[]> = {};
-    for (const [name, chunk] of Object.entries(bundle))
-      if (chunk.type === 'chunk') out[name] = Object.keys(chunk.modules);
-    writeFileSync(`probe-${String(Date.now())}.json`, JSON.stringify(out));
-  },
-};
+import { defineConfig } from 'vite';
 
 export default defineConfig({
-  plugins: [tailwindcss(), reactRouter(), ...(process.env.PERF_PROBE === '1' ? [probe] : [])],
+  plugins: [tailwindcss(), reactRouter()],
   resolve: {
     // The `@/...` alias (-> src/), from tsconfig.json `paths`.
     tsconfigPaths: true,
