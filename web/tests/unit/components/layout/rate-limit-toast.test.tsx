@@ -1,10 +1,10 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 
 import { ApiProvider } from '@/components/layout/api-provider';
-import { Toaster } from '@/components/ui/sonner';
+import { toast, Toaster } from '@/components/ui/sonner';
 import { useApiClient } from '@/hooks/use-api-client';
 import { createApiClient, leaderboardQuery, startBattleMutation } from '@/lib/api';
 
@@ -54,12 +54,21 @@ function renderApp(fetch: ReturnType<typeof scriptedFetch>['fetch'], child: Reac
 }
 
 describe('429 toast', () => {
+  afterEach(() => {
+    toast.dismiss();
+  });
+
   it('shows the wait time when a battle is rate limited, and sends it once (no retry)', async () => {
     const { fetch, calls } = scriptedFetch(limited());
     renderApp(fetch, <Battle />);
     await userEvent.click(screen.getByRole('button', { name: 'Start battle' }));
+    // The first toast loads the Sonner chunk on demand, which can take a while on a cold runner.
     expect(
-      await screen.findByText('Too many requests. Try again in 60 seconds.'),
+      await screen.findByText(
+        'Too many requests. Try again in 60 seconds.',
+        {},
+        { timeout: 5000 },
+      ),
     ).toBeInTheDocument();
     expect(calls).toHaveLength(1);
   });
