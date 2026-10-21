@@ -289,7 +289,7 @@ jobs:
 
       - name: Run Playwright (wrangler dev + Chromium)
         working-directory: web
-        run: npx playwright test
+        run: npx playwright test arena-offline --reporter=list
 
       # Lighthouse (mobile, simulated throttling) on the landing page through the same Worker,
       # with the preview cookie on every request. Budgets in web/lighthouserc.json: accessibility 1,
