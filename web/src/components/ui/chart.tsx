@@ -73,7 +73,7 @@ export function ChartContainer({
         style={{ ...colors, ...style }}
         className={cn(
           'flex justify-center text-caption [&_.recharts-cartesian-axis-tick_text]:fill-muted [&_.recharts-cartesian-axis-tick_text]:tabular-nums',
-          '[&_.recharts-rectangle.recharts-tooltip-cursor]:fill-hover [&_.recharts-curve.recharts-tooltip-cursor]:stroke-line-strong',
+          '[&_.recharts-curve.recharts-tooltip-cursor]:stroke-line-strong [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-hover',
           '[&_.recharts-layer]:outline-hidden [&_.recharts-surface]:outline-hidden',
           className,
         )}
@@ -155,7 +155,9 @@ export function ChartTooltipContent({
               <span className="ml-auto font-mono font-medium text-fg tabular-nums">
                 {typeof item.value === 'number'
                   ? item.value.toLocaleString('en-US')
-                  : String(item.value ?? '')}
+                  : typeof item.value === 'string'
+                    ? item.value
+                    : null}
               </span>
             </div>
           );

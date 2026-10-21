@@ -91,13 +91,16 @@ async function overflowing(page: Page) {
         return box.width > 0 && box.right > limit && !clipped(element);
       })
       .slice(0, 5)
-      .map(element => `${element.tagName.toLowerCase()}.${element.className.toString().slice(0, 60)}`);
+      .map(
+        element => `${element.tagName.toLowerCase()}.${element.className.toString().slice(0, 60)}`,
+      );
   });
 }
 
 const table = (page: Page) => page.getByRole('table');
 const bodyRows = (page: Page) => table(page).locator('tbody tr');
-const firstRowName = (page: Page) => bodyRows(page).first().getByRole('rowheader').getByRole('button');
+const firstRowName = (page: Page) =>
+  bodyRows(page).first().getByRole('rowheader').getByRole('button');
 
 test.beforeEach(async ({ context, baseURL }) => {
   await passGate(context, baseURL ?? 'http://127.0.0.1:8787');
@@ -161,11 +164,14 @@ test.describe('/leaderboard/ (desktop)', () => {
     await expect(bodyRows(page)).toHaveCount(53);
     const podium = page.getByRole('list', { name: 'Top three models' });
     await expect(podium.getByRole('listitem')).toHaveCount(3);
-    await expect(podium.getByRole('listitem').first()).toContainText('llama-3.3-70b-instruct-fp8-fast');
+    await expect(podium.getByRole('listitem').first()).toContainText(
+      'llama-3.3-70b-instruct-fp8-fast',
+    );
     await expect(page.getByRole('status').filter({ hasText: 'models' })).toContainText('53 models');
     // The leader has 96 battles: provisional, and the page says so.
     await expect(bodyRows(page).first().getByText('Provisional')).toBeVisible();
-    await expect(page.getByText(/sign in|log in/i)).toHaveCount(0);
+    // The legacy page asked for a sign-in first; this one only has the header's Sign in link.
+    await expect(page.getByText(/login in the main app|login required/i)).toHaveCount(0);
     expect(errors).toEqual([]);
   });
 
@@ -242,8 +248,11 @@ test.describe('/leaderboard/ (desktop)', () => {
     await expect(sheet).toBeHidden();
     await expect(name).toBeFocused();
 
-    // A click anywhere on a row opens it too.
-    await bodyRows(page).nth(2).locator('td').last().click();
+    // A click anywhere on a row opens it too (the name's button covers the whole row).
+    const cell = bodyRows(page).nth(2).locator('td').last();
+    const box = await cell.boundingBox();
+    expect(box).not.toBeNull();
+    if (box) await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
     await expect(page.getByRole('dialog').getByRole('heading', { level: 2 })).toHaveText(
       'deepseek-r1-distill-qwen-32b',
     );
@@ -309,7 +318,10 @@ test.describe('/leaderboard/ (phone)', () => {
     await expect(list.getByRole('listitem')).toHaveCount(53);
     await expect(table(page)).toHaveCount(0);
 
-    await page.getByRole('group', { name: 'Sort' }).getByRole('button', { name: 'Battles' }).click();
+    await page
+      .getByRole('group', { name: 'Sort' })
+      .getByRole('button', { name: 'Battles' })
+      .click();
     await expect(list.getByRole('listitem').first()).toContainText('llama-3.2-1b-instruct');
 
     const card = list.getByRole('button', { name: 'llama-3.2-1b-instruct' });

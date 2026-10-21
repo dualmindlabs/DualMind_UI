@@ -47,7 +47,7 @@ function BoardCard({
           type="button"
           aria-haspopup="dialog"
           onClick={() => onOpen(entry.id, buttonRef.current)}
-          className="min-w-0 cursor-pointer text-left text-ui font-medium break-words text-fg outline-none after:absolute after:inset-0 after:z-[1] focus-visible:after:outline-(length:--focus-width) focus-visible:after:outline-focus focus-visible:after:outline-solid focus-visible:after:-outline-offset-2"
+          className="min-w-0 cursor-pointer text-left text-ui font-medium break-words text-fg outline-none after:absolute after:inset-0 after:z-[1] focus-visible:after:outline-(length:--focus-width) focus-visible:after:-outline-offset-2 focus-visible:after:outline-focus focus-visible:after:outline-solid"
         >
           {entry.name}
         </button>
@@ -71,7 +71,11 @@ function BoardCard({
             <span className="text-muted"> {entry.battles === 1 ? 'battle' : 'battles'}</span>
           </span>
           {entry.provisional ? <ProvisionalBadge /> : null}
-          <ChevronRight aria-hidden="true" strokeWidth={1.75} className="ml-auto size-4 text-muted" />
+          <ChevronRight
+            aria-hidden="true"
+            strokeWidth={1.75}
+            className="ml-auto size-4 text-muted"
+          />
         </div>
       </div>
     </li>

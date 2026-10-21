@@ -37,24 +37,22 @@ export function toLeaderboardEntries(stats: readonly ModelStat[]): LeaderboardEn
   const highest = Math.max(...ratings);
 
   return stats
-    .map(
-      (stat): LeaderboardEntry => ({
-        id: stat.modelId,
-        name: stat.displayName,
-        modelName: stat.modelName,
-        provider: stat.providerName.trim().toLowerCase(),
-        providerLabel: providerLabel(stat.providerName),
-        rank: stat.eloRank,
-        elo: stat.eloScore,
-        wins: stat.totalWins,
-        losses: stat.totalLosses,
-        ties: stat.totalTies,
-        battles: stat.totalResponses,
-        winRate: stat.winRate,
-        provisional: isProvisional(stat.totalResponses),
-        eloShare: eloShare(stat.eloScore, lowest, highest),
-      }),
-    )
+    .map((stat): LeaderboardEntry => ({
+      id: stat.modelId,
+      name: stat.displayName,
+      modelName: stat.modelName,
+      provider: stat.providerName.trim().toLowerCase(),
+      providerLabel: providerLabel(stat.providerName),
+      rank: stat.eloRank,
+      elo: stat.eloScore,
+      wins: stat.totalWins,
+      losses: stat.totalLosses,
+      ties: stat.totalTies,
+      battles: stat.totalResponses,
+      winRate: stat.winRate,
+      provisional: isProvisional(stat.totalResponses),
+      eloShare: eloShare(stat.eloScore, lowest, highest),
+    }))
     .sort(byRank);
 }
 
@@ -82,7 +80,8 @@ export function providerOptions(entries: readonly LeaderboardEntry[]): ProviderO
   for (const entry of entries) {
     const option = counts.get(entry.provider);
     if (option) option.count += 1;
-    else counts.set(entry.provider, { value: entry.provider, label: entry.providerLabel, count: 1 });
+    else
+      counts.set(entry.provider, { value: entry.provider, label: entry.providerLabel, count: 1 });
   }
   return [...counts.values()].sort(
     (a, b) => b.count - a.count || a.label.localeCompare(b.label, 'en'),

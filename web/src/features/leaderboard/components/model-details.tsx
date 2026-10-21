@@ -52,7 +52,10 @@ function Links({ from }: { from: ModelDetailsProps['from'] }) {
         <Swords aria-hidden="true" strokeWidth={1.75} />
         Start a battle
       </a>
-      <a href={RATINGS_HELP_HREF} className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}>
+      <a
+        href={RATINGS_HELP_HREF}
+        className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
+      >
         How ratings work
       </a>
       <a href={other.href} className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }))}>

@@ -27,7 +27,10 @@ export function RecordBar({ wins, ties, losses }: RecordBarProps) {
     <figure className="grid gap-3">
       <div
         aria-hidden="true"
-        className={cn('flex h-2.5 w-full gap-0.5 overflow-hidden rounded-full', total === 0 && 'bg-line')}
+        className={cn(
+          'flex h-2.5 w-full gap-0.5 overflow-hidden rounded-full',
+          total === 0 && 'bg-line',
+        )}
       >
         {total > 0
           ? SEGMENTS.filter(segment => values[segment.key] > 0).map(segment => (

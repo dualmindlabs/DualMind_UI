@@ -47,7 +47,7 @@ export function ModelCard({ entry, onOpen }: ModelCardProps) {
               type="button"
               aria-haspopup="dialog"
               onClick={() => onOpen(entry.id, buttonRef.current)}
-              className="cursor-pointer text-left outline-none after:absolute after:inset-0 after:z-[2] after:rounded-lg group-hover/model:underline group-hover/model:decoration-line-strong group-hover/model:underline-offset-4 focus-visible:after:outline-(length:--focus-width) focus-visible:after:outline-focus focus-visible:after:outline-solid focus-visible:after:-outline-offset-2"
+              className="cursor-pointer text-left outline-none group-hover/model:underline group-hover/model:decoration-line-strong group-hover/model:underline-offset-4 after:absolute after:inset-0 after:z-[2] after:rounded-lg focus-visible:after:outline-(length:--focus-width) focus-visible:after:-outline-offset-2 focus-visible:after:outline-focus focus-visible:after:outline-solid"
             >
               {entry.name}
             </button>

@@ -54,13 +54,15 @@ function Row({
             type="button"
             aria-haspopup="dialog"
             onClick={() => onOpen(entry.id, buttonRef.current)}
-            className="min-w-0 cursor-pointer text-left text-ui font-medium break-words text-fg outline-none after:absolute after:inset-0 after:z-[1] after:rounded-md group-hover/row:underline group-hover/row:decoration-line-strong group-hover/row:underline-offset-4 focus-visible:after:outline-(length:--focus-width) focus-visible:after:outline-focus focus-visible:after:outline-solid focus-visible:after:-outline-offset-2"
+            className="min-w-0 cursor-pointer text-left text-ui font-medium break-words text-fg outline-none group-hover/row:underline group-hover/row:decoration-line-strong group-hover/row:underline-offset-4 after:absolute after:inset-0 after:z-[1] after:rounded-md focus-visible:after:outline-(length:--focus-width) focus-visible:after:-outline-offset-2 focus-visible:after:outline-focus focus-visible:after:outline-solid"
           >
             {entry.name}
           </button>
           {entry.provisional ? <ProvisionalBadge /> : null}
         </div>
-        <span className="mt-0.5 block text-caption text-muted lg:hidden">{entry.providerLabel}</span>
+        <span className="mt-0.5 block text-caption text-muted lg:hidden">
+          {entry.providerLabel}
+        </span>
       </th>
       <td className="hidden py-3.5 pr-3 pl-3 align-middle text-ui-sm text-fg-soft lg:table-cell">
         {entry.providerLabel}
@@ -118,7 +120,12 @@ export function LeaderboardTable({
   className,
 }: LeaderboardTableProps) {
   return (
-    <div className={cn('overflow-hidden rounded-lg border border-line bg-surface shadow-raise', className)}>
+    <div
+      className={cn(
+        'overflow-hidden rounded-lg border border-line bg-surface shadow-raise',
+        className,
+      )}
+    >
       <table className="w-full border-collapse text-left">
         <caption className="sr-only">
           Models ranked by Elo rating. Column buttons sort the table; a model name opens its

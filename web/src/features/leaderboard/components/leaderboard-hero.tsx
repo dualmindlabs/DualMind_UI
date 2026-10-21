@@ -24,7 +24,7 @@ export function LeaderboardHero({ summary, updatedAt, refreshing, stale }: Leade
     <header className="relative isolate overflow-hidden border-b border-line bg-bg-deep">
       <div
         aria-hidden="true"
-        className="dot-grid absolute inset-0 -z-10 opacity-60 [mask-image:radial-gradient(ellipse_70%_80%_at_70%_0%,black,transparent)]"
+        className="absolute inset-0 -z-10 dot-grid [mask-image:radial-gradient(ellipse_70%_80%_at_70%_0%,black,transparent)] opacity-60"
       />
       <PageContainer className="grid gap-10 pt-14 pb-12 md:pt-20 md:pb-16">
         <div className="grid max-w-3xl gap-6">
@@ -52,12 +52,7 @@ export function LeaderboardHero({ summary, updatedAt, refreshing, stale }: Leade
             </a>
           </div>
         </div>
-        <StatsStrip
-          summary={summary}
-          updatedAt={updatedAt}
-          refreshing={refreshing}
-          stale={stale}
-        />
+        <StatsStrip summary={summary} updatedAt={updatedAt} refreshing={refreshing} stale={stale} />
       </PageContainer>
     </header>
   );

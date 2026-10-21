@@ -4,8 +4,8 @@ import {
   type ChartConfig,
   ChartContainer,
   ChartTooltip,
-  type ChartTooltipItem,
   ChartTooltipContent,
+  type ChartTooltipItem,
 } from '@/components/ui/chart';
 import { useShouldReduceMotion } from '@/hooks/use-should-reduce-motion';
 

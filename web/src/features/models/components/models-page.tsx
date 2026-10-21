@@ -113,7 +113,7 @@ export function ModelsPage() {
         <header className="relative isolate overflow-hidden border-b border-line bg-bg-deep">
           <div
             aria-hidden="true"
-            className="dot-grid absolute inset-0 -z-10 opacity-60 [mask-image:radial-gradient(ellipse_70%_80%_at_70%_0%,black,transparent)]"
+            className="absolute inset-0 -z-10 dot-grid [mask-image:radial-gradient(ellipse_70%_80%_at_70%_0%,black,transparent)] opacity-60"
           />
           <PageContainer className="grid max-w-page gap-6 pt-14 pb-12 md:pt-20 md:pb-16">
             <p className="flex items-center gap-3">

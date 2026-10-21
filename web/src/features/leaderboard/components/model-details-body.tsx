@@ -110,11 +110,7 @@ export function ModelDetailsBody({ entry, board }: ModelDetailsBodyProps) {
 
       <Section title="Win rate across the board">
         <Suspense fallback={<Skeleton className="h-44 w-full" />}>
-          <WinRateChart
-            entries={entries}
-            selectedId={entry.id}
-            average={summary.averageWinRate}
-          />
+          <WinRateChart entries={entries} selectedId={entry.id} average={summary.averageWinRate} />
         </Suspense>
         <p className="text-caption text-muted">
           One column per model, highest win rate first.{' '}

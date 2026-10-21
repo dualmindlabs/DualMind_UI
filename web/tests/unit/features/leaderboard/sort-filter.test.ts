@@ -70,11 +70,7 @@ describe('sortEntries', () => {
       'A',
       'B',
     ]);
-    expect(names(sortEntries(tied, { key: 'battles', direction: 'asc' }))).toEqual([
-      'A',
-      'B',
-      'C',
-    ]);
+    expect(names(sortEntries(tied, { key: 'battles', direction: 'asc' }))).toEqual(['A', 'B', 'C']);
   });
 
   it('never changes the list it is given', () => {
@@ -131,7 +127,9 @@ describe('search and provider filter', () => {
       'Gemma 3 1B IT',
     ]);
     expect(filterEntries(entries, { query: 'gemma', provider: 'groq' })).toEqual([]);
-    expect(filterEntries(fullBoard.entries, { query: 'gpt oss', provider: 'groq' })).toHaveLength(2);
+    expect(filterEntries(fullBoard.entries, { query: 'gpt oss', provider: 'groq' })).toHaveLength(
+      2,
+    );
   });
 
   it('knows when a filter is on', () => {

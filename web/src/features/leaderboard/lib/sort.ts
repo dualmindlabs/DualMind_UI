@@ -52,10 +52,7 @@ export function nextSort(current: SortState, key: SortKey): SortState {
 }
 
 /** The header's `aria-sort` value. */
-export function ariaSort(
-  sort: SortState,
-  key: SortKey,
-): 'ascending' | 'descending' | 'none' {
+export function ariaSort(sort: SortState, key: SortKey): 'ascending' | 'descending' | 'none' {
   if (sort.key !== key) return 'none';
   return sort.direction === 'asc' ? 'ascending' : 'descending';
 }

@@ -51,7 +51,10 @@ function renderPage() {
 }
 
 const table = () => screen.findByRole('table');
-const bodyRows = async () => within(await table()).getAllByRole('row').slice(1);
+const bodyRows = async () =>
+  within(await table())
+    .getAllByRole('row')
+    .slice(1);
 const rowNames = async () =>
   (await bodyRows()).map(
     row => within(row).getByRole('rowheader').querySelector('button')?.textContent,

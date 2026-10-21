@@ -76,10 +76,14 @@ export function BoardStatus({
           role="alert"
           className="flex flex-wrap items-start gap-3 rounded-md border border-warn/40 bg-surface px-4 py-3 text-ui-sm text-fg-soft"
         >
-          <TriangleAlert aria-hidden="true" strokeWidth={1.75} className="mt-0.5 size-4 text-warn" />
+          <TriangleAlert
+            aria-hidden="true"
+            strokeWidth={1.75}
+            className="mt-0.5 size-4 text-warn"
+          />
           <p className="min-w-0 flex-1">
-            <span className="font-medium text-fg">These numbers may be out of date.</span> The
-            last refresh failed ({getUserMessage(refreshError)}), so this is still the board from{' '}
+            <span className="font-medium text-fg">These numbers may be out of date.</span> The last
+            refresh failed ({getUserMessage(refreshError)}), so this is still the board from{' '}
             <time dateTime={new Date(updatedAt).toISOString()}>{formatClock(updatedAt)}</time>.
           </p>
           <Button variant="secondary" size="xs" onClick={onRefresh} loading={refreshing}>

@@ -63,7 +63,7 @@ export function PodiumCard({ entry, place, onOpen }: PodiumCardProps) {
                 type="button"
                 aria-haspopup="dialog"
                 onClick={() => onOpen(entry.id, buttonRef.current)}
-                className="cursor-pointer text-left outline-none after:absolute after:inset-0 after:z-[2] after:rounded-lg focus-visible:after:outline-(length:--focus-width) focus-visible:after:outline-focus focus-visible:after:outline-solid focus-visible:after:-outline-offset-2"
+                className="cursor-pointer text-left outline-none after:absolute after:inset-0 after:z-[2] after:rounded-lg focus-visible:after:outline-(length:--focus-width) focus-visible:after:-outline-offset-2 focus-visible:after:outline-focus focus-visible:after:outline-solid"
               >
                 <DecryptedText text={entry.name} animateOn="view" speed={40} maxIterations={14} />
               </button>

@@ -40,7 +40,12 @@ export function BoardControls({
   const options = [{ value: ALL_PROVIDERS, label: 'All', count: total }, ...providers];
 
   return (
-    <div className={cn('flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between', className)}>
+    <div
+      className={cn(
+        'flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between',
+        className,
+      )}
+    >
       <div className="relative w-full lg:max-w-sm">
         <label htmlFor={searchId} className="sr-only">
           Search models
