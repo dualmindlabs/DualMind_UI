@@ -63,6 +63,12 @@ describe('Markdown (model answers)', () => {
     expect(container.textContent).toContain('local');
   });
 
+  it('keeps emphasis as real strong and em elements', () => {
+    const { container } = render(<Markdown>{'A **bold** and *calm* answer.'}</Markdown>);
+    expect(container.querySelector('strong')?.textContent).toBe('bold');
+    expect(container.querySelector('em')?.textContent).toBe('calm');
+  });
+
   it('marks blocked images instead of loading them', () => {
     const { container } = render(<Markdown>{'![a chart](https://evil.example/c.png)'}</Markdown>);
     expect(container.querySelector('img')).toBeNull();
