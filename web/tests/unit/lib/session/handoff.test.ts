@@ -3,43 +3,75 @@ import { runInNewContext } from 'node:vm';
 import { describe, expect, it, vi } from 'vitest';
 
 import {
+  ARENA_ATTRIBUTE,
+  ARENA_CHOICE_KEY,
+  arenaChoiceFromSearch,
   handoffDestination,
   handoffTarget,
   hasAuthParams,
   hasStoredSession,
+  landingView,
   LEGACY_APP_PATH,
   LEGACY_SESSION_KEY,
+  NEW_ARENA_BY_DEFAULT,
+  readArenaChoice,
   SESSION_HANDOFF_SCRIPT,
+  usesNewArena,
   wantsSessionHandoff,
 } from '@/lib/session/handoff';
 
-/** A Storage stand-in with the three members the hand-off reads. */
+/** A Storage stand-in with the members the hand-off reads and writes. */
 function memoryStorage(entries: Record<string, string>) {
-  const keys = Object.keys(entries);
+  const data = { ...entries };
   return {
-    length: keys.length,
-    key: (index: number) => keys[index] ?? null,
+    get length() {
+      return Object.keys(data).length;
+    },
+    key: (index: number) => Object.keys(data)[index] ?? null,
     getItem: (key: string) =>
-      Object.prototype.hasOwnProperty.call(entries, key) ? (entries[key] ?? null) : null,
+      Object.prototype.hasOwnProperty.call(data, key) ? (data[key] ?? null) : null,
+    setItem: (key: string, value: string) => {
+      data[key] = value;
+    },
+    data,
   };
 }
 
-/** Runs the inline <head> script with a fake location and storage; returns where it went. */
-function runScript(
+interface ScriptRun {
+  /** Where the script sent the visitor, or null. */
+  target: string | null;
+  /** True when it marked <html> for the new arena. */
+  marked: boolean;
+}
+
+/** Runs the inline <head> script with a fake location, storage and document. */
+function runScriptFull(
   { search = '', hash = '', pathname = '/' }: { search?: string; hash?: string; pathname?: string },
   storage: ReturnType<typeof memoryStorage> | 'throws',
-): string | null {
+): ScriptRun {
   const replace = vi.fn<(url: string) => void>();
+  const setAttribute = vi.fn<(name: string, value: string) => void>();
   const window = {
     location: { pathname, search, hash, replace },
     get localStorage() {
       if (storage === 'throws') throw new Error('SecurityError');
       return storage;
     },
+    document: { documentElement: { setAttribute } },
   };
-  // The script reads `window.location` and `window.localStorage` only.
+  // The script reads `window.location`, `window.localStorage` and `window.document` only.
   runInNewContext(SESSION_HANDOFF_SCRIPT, { window });
-  return replace.mock.calls[0]?.[0] ?? null;
+  return {
+    target: replace.mock.calls[0]?.[0] ?? null,
+    marked: setAttribute.mock.calls.some(([name]) => name === ARENA_ATTRIBUTE),
+  };
+}
+
+function runScript(
+  location: { search?: string; hash?: string; pathname?: string },
+  storage: ReturnType<typeof memoryStorage> | 'throws',
+): string | null {
+  return runScriptFull(location, storage).target;
 }
 
 const SESSION = '{"access_token":"x","refresh_token":"y"}';
@@ -147,7 +179,7 @@ describe('signed-in hand-off', () => {
   });
 
   it('is a tiny, self-contained script that replaces the history entry', () => {
-    expect(SESSION_HANDOFF_SCRIPT.length).toBeLessThan(700);
+    expect(SESSION_HANDOFF_SCRIPT.length).toBeLessThan(1000);
     expect(SESSION_HANDOFF_SCRIPT).toContain('.replace(');
     expect(SESSION_HANDOFF_SCRIPT).not.toMatch(/\bimport\b|\brequire\b|=>/);
   });
@@ -171,4 +203,87 @@ describe('the hand-off outside the landing page', () => {
       expect(handoffDestination({ pathname, search: '', hash }, memoryStorage(storage))).toBeNull();
     },
   );
+});
+
+describe('the new arena switch (slice S8)', () => {
+  it('reads the choice from the URL first, then from storage', () => {
+    expect(arenaChoiceFromSearch('?arena=new')).toBe('new');
+    expect(arenaChoiceFromSearch('?x=1&arena=legacy')).toBe('legacy');
+    expect(arenaChoiceFromSearch('?arena=newer')).toBeNull();
+    expect(readArenaChoice('', memoryStorage({ [ARENA_CHOICE_KEY]: 'new' }))).toBe('new');
+    expect(readArenaChoice('?arena=legacy', memoryStorage({ [ARENA_CHOICE_KEY]: 'new' }))).toBe(
+      'legacy',
+    );
+    expect(readArenaChoice('', memoryStorage({ [ARENA_CHOICE_KEY]: 'maybe' }))).toBeNull();
+    const throwing = {
+      getItem: () => {
+        throw new Error('blocked');
+      },
+    };
+    expect(readArenaChoice('', throwing)).toBeNull();
+    expect(readArenaChoice('', null)).toBeNull();
+  });
+
+  it('is opt-in while the battle flow is built', () => {
+    expect(NEW_ARENA_BY_DEFAULT).toBe(false);
+    expect(usesNewArena(null)).toBe(false);
+    expect(usesNewArena('legacy')).toBe(false);
+    expect(usesNewArena('new')).toBe(true);
+  });
+
+  const SIGNED_IN = { 'sb-abcdefghijkl-auth-token': SESSION };
+
+  it('keeps a signed-in visitor who opted in on / and marks <html>', () => {
+    const storage = memoryStorage({ ...SIGNED_IN, [ARENA_CHOICE_KEY]: 'new' });
+    expect(landingView({ search: '', hash: '' }, storage)).toEqual({ kind: 'arena' });
+    expect(runScriptFull({}, storage)).toEqual({ target: null, marked: true });
+  });
+
+  it('?arena=new opts in and stores the choice; ?arena=legacy opts out again', () => {
+    const storage = memoryStorage(SIGNED_IN);
+    expect(runScriptFull({ search: '?arena=new' }, storage)).toEqual({
+      target: null,
+      marked: true,
+    });
+    expect(storage.data[ARENA_CHOICE_KEY]).toBe('new');
+    expect(runScriptFull({}, storage)).toEqual({ target: null, marked: true });
+    expect(runScriptFull({ search: '?arena=legacy' }, storage)).toEqual({
+      target: `${LEGACY_APP_PATH}?arena=legacy`,
+      marked: false,
+    });
+    expect(storage.data[ARENA_CHOICE_KEY]).toBe('legacy');
+  });
+
+  it('a signed-out visitor who opted in sees the landing page, unmarked', () => {
+    const storage = memoryStorage({});
+    expect(runScriptFull({ search: '?arena=new' }, storage)).toEqual({
+      target: null,
+      marked: false,
+    });
+    expect(landingView({ search: '?arena=new', hash: '' }, storage)).toEqual({ kind: 'landing' });
+  });
+
+  it('auth parameters still go to the legacy arena, opted in or not', () => {
+    const storage = memoryStorage({ ...SIGNED_IN, [ARENA_CHOICE_KEY]: 'new' });
+    const hash = '#access_token=a&refresh_token=b';
+    expect(runScriptFull({ hash }, storage)).toEqual({
+      target: `${LEGACY_APP_PATH}${hash}`,
+      marked: false,
+    });
+  });
+
+  it('keeps ?thread= deep links for the new arena', () => {
+    const storage = memoryStorage({ ...SIGNED_IN, [ARENA_CHOICE_KEY]: 'new' });
+    expect(runScriptFull({ search: '?thread=abc' }, storage)).toEqual({
+      target: null,
+      marked: true,
+    });
+  });
+
+  it('blocked storage counts as signed out, even with ?arena=new', () => {
+    expect(runScriptFull({ search: '?arena=new' }, 'throws')).toEqual({
+      target: null,
+      marked: false,
+    });
+  });
 });

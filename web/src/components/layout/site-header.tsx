@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { useLocation } from 'react-router';
 
 import { CommandPaletteTrigger } from '@/components/layout/command-palette-trigger';
@@ -30,6 +30,10 @@ export interface SiteHeaderProps {
   navLabel?: string;
   /** `false` renders a plain <div> instead of the page's <header> landmark (previews). */
   landmark?: boolean;
+  /** App only: controls before the home link (the arena's history button on small screens). */
+  leading?: ReactNode;
+  /** Replaces the sign-in link, for example with the signed-in account menu. */
+  account?: ReactNode;
   className?: string;
 }
 
@@ -69,6 +73,8 @@ export function SiteHeader({
   activePath,
   navLabel = 'Main',
   landmark = true,
+  leading,
+  account,
   className,
 }: SiteHeaderProps) {
   const Root = landmark ? 'header' : 'div';
@@ -81,16 +87,23 @@ export function SiteHeader({
       <CommandPaletteTrigger appearance="icon" className="lg:hidden" />
       <CommandPaletteTrigger appearance="pill" className="hidden lg:inline-flex" />
       <ThemeToggle compact className="hidden lg:inline-flex" />
-      <a
-        href={signInLink.href}
-        className={cn(
-          buttonVariants({ variant: variant === 'app' ? 'outline' : 'primary', size: 'sm' }),
-          'hidden rounded-full sm:inline-flex',
-        )}
-      >
-        {signInLink.label}
-      </a>
-      <MobileNav activePath={path} label={navLabel} className="lg:hidden" />
+      {account ?? (
+        <a
+          href={signInLink.href}
+          className={cn(
+            buttonVariants({ variant: variant === 'app' ? 'outline' : 'primary', size: 'sm' }),
+            'hidden rounded-full sm:inline-flex',
+          )}
+        >
+          {signInLink.label}
+        </a>
+      )}
+      <MobileNav
+        activePath={path}
+        label={navLabel}
+        hideSignIn={account !== undefined}
+        className="lg:hidden"
+      />
     </>
   );
 
@@ -106,6 +119,7 @@ export function SiteHeader({
         )}
       >
         <div className="flex h-full items-center gap-3 px-4 sm:px-6">
+          {leading}
           <HomeLink />
           <span aria-hidden="true" className="mx-2 hidden h-5 w-px bg-line lg:block" />
           <SiteNav activePath={path} label={navLabel} size="sm" className="hidden lg:block" />

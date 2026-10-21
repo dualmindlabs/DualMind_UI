@@ -8,6 +8,7 @@ Third-party component code copied into this repository, one folder per source. E
 | `magicui/`           | [Magic UI](https://magicui.design)                     | MIT                  | `LICENSE.md`       |
 | `motion-primitives/` | [Motion Primitives](https://motion-primitives.com)     | MIT                  | `LICENSE.md`       |
 | `aceternity/`        | [Aceternity UI](https://ui.aceternity.com) (free tier) | Custom               | `LICENSE-NOTES.md` |
+| `prompt-kit/`        | [prompt-kit](https://www.prompt-kit.com)               | MIT                  | `LICENSE.md`       |
 
 **Rules**
 
