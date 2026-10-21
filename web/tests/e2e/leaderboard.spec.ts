@@ -297,7 +297,8 @@ test.describe('/leaderboard/ (desktop)', () => {
     const errors = collectErrors(page);
     await mockStats(page);
     await page.goto('/leaderboard/');
-    const name = page.getByRole('button', { name: 'Qwen QwQ 32B', exact: true });
+    // The podium names the top three too, so look for the name inside the table.
+    const name = table(page).getByRole('button', { name: 'Qwen QwQ 32B', exact: true });
     await name.focus();
     await page.keyboard.press('Enter');
 
