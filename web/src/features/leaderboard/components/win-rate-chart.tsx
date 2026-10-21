@@ -72,41 +72,41 @@ export function WinRateChart({ entries, selectedId, average }: WinRateChartProps
   return (
     <div className="grid gap-2.5">
       <ChartContainer
-      config={config}
-      className="h-44 w-full"
-      initialDimension={{ width: 360, height: 176 }}
-    >
-      <BarChart data={data} margin={{ top: 10, right: 4, bottom: 6, left: 0 }} barCategoryGap={1}>
-        <CartesianGrid vertical={false} stroke="var(--line)" strokeDasharray="0" />
-        <XAxis dataKey="name" hide />
-        <YAxis
-          domain={[0, 100]}
-          ticks={[0, 50, 100]}
-          tickFormatter={(value: number) => `${value}%`}
-          tickLine={false}
-          axisLine={false}
-          width={44}
-        />
-        <ReferenceLine
-          y={average}
-          stroke="var(--fg-soft)"
-          strokeWidth={1}
-          ifOverflow="extendDomain"
-        />
-        <ChartTooltip
-          cursor={{ fill: 'var(--hover)' }}
-          content={<ChartTooltipContent hideLabel formatter={tooltipRow} />}
-        />
-        <Bar dataKey="winRate" radius={[2, 2, 0, 0]} maxBarSize={24} isAnimationActive={!reduce}>
-          {data.map(datum => (
-            <Cell
-              key={datum.id}
-              fill={datum.selected ? 'var(--color-selected)' : 'var(--color-winRate)'}
-              fillOpacity={datum.selected ? 1 : 0.55}
-            />
-          ))}
-        </Bar>
-      </BarChart>
+        config={config}
+        className="h-44 w-full"
+        initialDimension={{ width: 360, height: 176 }}
+      >
+        <BarChart data={data} margin={{ top: 10, right: 4, bottom: 6, left: 0 }} barCategoryGap={1}>
+          <CartesianGrid vertical={false} stroke="var(--line)" strokeDasharray="0" />
+          <XAxis dataKey="name" hide />
+          <YAxis
+            domain={[0, 100]}
+            ticks={[0, 50, 100]}
+            tickFormatter={(value: number) => `${value}%`}
+            tickLine={false}
+            axisLine={false}
+            width={44}
+          />
+          <ReferenceLine
+            y={average}
+            stroke="var(--fg-soft)"
+            strokeWidth={1}
+            ifOverflow="extendDomain"
+          />
+          <ChartTooltip
+            cursor={{ fill: 'var(--hover)' }}
+            content={<ChartTooltipContent hideLabel formatter={tooltipRow} />}
+          />
+          <Bar dataKey="winRate" radius={[2, 2, 0, 0]} maxBarSize={24} isAnimationActive={!reduce}>
+            {data.map(datum => (
+              <Cell
+                key={datum.id}
+                fill={datum.selected ? 'var(--color-selected)' : 'var(--color-winRate)'}
+                fillOpacity={datum.selected ? 1 : 0.55}
+              />
+            ))}
+          </Bar>
+        </BarChart>
       </ChartContainer>
       <ul className="flex flex-wrap gap-x-4 gap-y-1 text-caption text-fg-soft">
         <li className="inline-flex items-center gap-1.5">

@@ -148,12 +148,7 @@ export function LeaderboardTable({
         </thead>
         <tbody>
           {entries.map(entry => (
-            <Row
-              key={entry.id}
-              entry={entry}
-              onOpen={onOpen}
-              leader={entry.id === leaderId}
-            />
+            <Row key={entry.id} entry={entry} onOpen={onOpen} leader={entry.id === leaderId} />
           ))}
         </tbody>
       </table>
