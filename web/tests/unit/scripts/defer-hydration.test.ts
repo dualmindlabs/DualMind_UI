@@ -31,7 +31,9 @@ describe('deferHydration', () => {
     expect(result.html).toContain('addEventListener("load"');
     expect(result.html).toContain('["/assets/a-12345678.js","/assets/b-abcdefgh.js"]');
     expect(result.html).toContain(`/assets/${result.bootFile}`);
-    expect(result.bootCode).toBe('import "/assets/a-12345678.js"; import("/assets/b-abcdefgh.js");');
+    expect(result.bootCode).toBe(
+      'import "/assets/a-12345678.js"; import("/assets/b-abcdefgh.js");',
+    );
     expect(result.bootFile).toMatch(/^boot-[A-Za-z0-9_-]{8}\.js$/);
   });
 
