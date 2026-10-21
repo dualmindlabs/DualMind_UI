@@ -3,9 +3,7 @@ import { useLeaderboard } from '@/features/leaderboard';
 import { type LiveStats, toLiveStats } from '../lib/live-stats';
 
 export type LiveStatsState =
-  | { status: 'loading' }
-  | { status: 'ready'; stats: LiveStats }
-  | { status: 'error' };
+  { status: 'loading' } | { status: 'ready'; stats: LiveStats } | { status: 'error' };
 
 /**
  * The live numbers on the landing page, from the leaderboard feature's board query (the public
