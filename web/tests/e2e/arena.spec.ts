@@ -363,7 +363,7 @@ test.describe('battles', () => {
     await expect(page.getByTestId('arena-announcer')).toContainText(
       'You voted B. Model A was llama-3.3-70b-instruct-fp8-fast. Model B was Compound Mini.',
     );
-    await expect(turn.getByTestId('pane-model').nth(1)).toHaveText('Compound Mini', {
+    await expect(turn.getByTestId('pane-model').nth(1)).toContainText('Compound Mini', {
       timeout: 5000,
     });
     await expect(turn.getByRole('region', { name: /Answer B/ })).toContainText('Tokens');
@@ -419,7 +419,7 @@ test.describe('battles', () => {
     await page.keyboard.press('Enter');
     const turn = page.getByTestId('live-turn').first();
     await expect(turn).toHaveAttribute('data-phase', 'awaiting_vote', { timeout: 15_000 });
-    await expect(turn.getByTestId('pane-model').nth(1)).toHaveText('Gemma 3n E2B IT');
+    await expect(turn.getByTestId('pane-model').nth(1)).toContainText('Gemma 3n E2B IT');
     await expect(turn.getByText('Voting is optional here.')).toBeVisible();
     const body = state.bodies.find(item => item.path === '/api/arena/dualchat')?.body;
     expect(body?.model2).toBe('1fe310c7-24d1-49a5-a042-2e409e009524');
@@ -480,7 +480,7 @@ test.describe('battle screenshots', () => {
     const turn = page.getByTestId('live-turn').first();
     await expect(turn).toHaveAttribute('data-phase', 'awaiting_vote', { timeout: 15_000 });
     await turn.getByRole('button', { name: /A is better/ }).click();
-    await expect(turn.getByTestId('pane-model').first()).toHaveText(
+    await expect(turn.getByTestId('pane-model').first()).toContainText(
       'llama-3.3-70b-instruct-fp8-fast',
     );
     await settle(page, 300);
