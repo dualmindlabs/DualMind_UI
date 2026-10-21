@@ -61,7 +61,9 @@ export function PanePair({ a, b, label, className }: PanePairProps) {
               'aria-pressed:bg-surface-3 aria-pressed:text-fg',
             )}
           >
-            <RoleBadge who={side.id} letterOnly size="sm" />
+            <span aria-hidden="true" className="inline-flex">
+              <RoleBadge who={side.id} letterOnly size="sm" />
+            </span>
             {side.label}
           </button>
         ))}
