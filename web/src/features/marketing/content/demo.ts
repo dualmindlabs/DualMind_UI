@@ -30,7 +30,7 @@ export const DEMO_BATTLES: readonly DemoBattle[] = [
     id: 'benchmarks',
     prompt: 'Why do AI benchmarks stop being useful?',
     crisp:
-      'Three reasons. Test questions leak into training data, so a model can score well by memory. Top models crowd the ceiling, so the gaps between them stop meaning much. And once a score becomes the target, teams optimise for the test instead of the skill. Fresh tasks and blind human comparisons hold up longer.',
+      'Three reasons. Test questions leak into training data, so a model can score well by memory. Top models crowd the ceiling, so the gaps between them stop meaning much. And once a score becomes the target, teams optimize for the test instead of the skill. Fresh tasks and blind human comparisons hold up longer.',
     padded:
       'AI benchmarks are an important part of how the industry measures progress, and they have played a valuable role over the years. However, as AI evolves rapidly, many factors can affect how useful a benchmark is. Different benchmarks measure different things, and the landscape is always changing. It is important to consider a wide range of perspectives, since no single benchmark can capture everything.',
     crispSide: 'b',

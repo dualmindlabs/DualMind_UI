@@ -35,6 +35,16 @@ Legend: Impact and Effort are **H**igh, **M**edium, **L**ow (effort: L < 1 day, 
 | BE-22 | Data controls | **.NET API** | Planned |
 | BE-23 | Anonymous demo guard (Turnstile) | Worker | Planned |
 | BE-24 | Fair pairing | **.NET API** | Planned |
+| BE-25 | Developer API keys + usage dashboard | **.NET API** (keys, usage aggregates) + Worker (verify, per-key limit, counting) | Design ready |
+| BE-26 | Private arenas | **.NET API** | Design ready |
+| BE-27 | Multi-turn battles | **.NET API** | Design ready |
+| BE-28 | Model cards pages | **.NET API** (profile, aggregate) + Worker (cache, preview tags) | Design ready |
+| BE-29 | Battle of the day, embed widget, replays | **.NET API** (featuring, consent) + Worker (embed, oEmbed, CSP) | Design ready |
+| BE-30 | Seasons and leagues | **.NET API** (+ Worker cache) | Design ready |
+| BE-31 | Cost-quality view | **.NET API** (prices, rollup) + Worker cache | Design ready |
+| BE-32 | Profiles, badges and reputation | **.NET API** | Design ready (scope conflict, see the design) |
+| BE-33 | Prompt gallery | **.NET API** (+ Worker cache) | Design ready |
+| BE-34 | Collections, exports, Hugging Face dataset | **.NET API** (collections) + GitHub Actions (dataset) | Design ready |
 
 **New wave order (from 2026-10-21):**
 
@@ -43,6 +53,7 @@ Legend: Impact and Effort are **H**igh, **M**edium, **L**ow (effort: L < 1 day, 
 3. **.NET W2, rankings:** BE-14 integrity, BE-9 ratings with CIs, BE-10 rating change, BE-8 history, BE-11 head-to-head, BE-16 position/style.
 4. **Showcase:** streaming `dualchat` in .NET (B-1) and BE-17 edge arena, BE-20 status page, BE-18 live, BE-19 share cards.
 5. **People and data:** BE-15, BE-12, BE-13, BE-21, BE-22, BE-24, BE-23.
+6. **W6, product features from the 21 Oct poll (BE-25 to BE-34)**, after the rankings wave because most read BE-8, BE-9, BE-11 or BE-12 (details in section 2): BE-28 model cards, BE-31 cost-quality, BE-33 prompt gallery, BE-30 seasons, BE-25 API keys, BE-29 battle of the day and embeds, BE-32 profiles, BE-34 collections then the Hugging Face dataset, BE-26 private arenas, BE-27 multi-turn battles. Designs: [designs/README.md](./designs/README.md#wave-w6-product-features-chosen-in-the-21-oct-poll-be-25-to-be-34).
 
 ## 1. Features
 
@@ -73,6 +84,16 @@ Legend: Impact and Effort are **H**igh, **M**edium, **L**ow (effort: L < 1 day, 
 | BE-22 | **Data controls** | Export my data and delete my ledger rows from settings | M | M | D1, R2, Queues | D1, R2 |
 | BE-23 | **Anonymous demo guard** | Turnstile on anonymous write paths (demo battles) | L | L | Turnstile | Turnstile widget + secret |
 | BE-24 | **Fair pairing** | Weighted pairing so new models get matched enough and no model dominates the sample; sampling policy published | M | M | D1, KV | D1, KV |
+| BE-25 | **Developer API keys + usage dashboard** | Create and revoke keys, use them on the public read API with higher per-key limits, see daily usage per key. Read scope only; no billing | M | H | KV (verdict cache), Queues (usage counting), Rate Limiting binding | none new (uses existing KV, Queue) |
+| BE-26 | **Private arenas** | Your own prompt set (up to 200) and models, blind battles from it, a private board with honest intervals, unlisted share of the board; never feeds public stats | M | H | Rate Limiting binding | none |
+| BE-27 | **Multi-turn battles** | Up to six turns with the same hidden pair, one vote on the conversation, rated on a separate multi-turn board | H | H | Workers (SSE pass-through) | none |
+| BE-28 | **Model cards pages** | `/models/<slug>`: rating and rank spread, history, head-to-head, categories, price and latency, season awards, consented sample battles | H | M | Cache API, Workers (preview tags) | none |
+| BE-29 | **Battle of the day, embed, replays** | One consented, curated battle per day on the home page and an archive, an `<iframe>` embed with oEmbed, replay at recorded pace | M | M | Workers (embed route, CSP), Cache API, R2 (BE-19 card) | none new |
+| BE-30 | **Seasons and leagues** | Monthly frozen rating seasons, league boards (open weights, proprietary, free), hall of fame with published award rules | M | M | Cron Trigger (in the API repo's `cf-worker`), Cache API | none |
+| BE-31 | **Cost-quality view** | Rating against price or measured latency, Pareto frontier, sourced prices with as-of dates, unknown shown as unknown | H | M | Cache API | none |
+| BE-32 | **Profiles, badges and reputation** | Private-by-default profile with a handle, participation badges, optional minimal public page; reputation stays an internal integrity weight | L | M | Workers (preview tags) | none |
+| BE-33 | **Prompt gallery** | Curated and moderated community prompts to start a battle from, categories, tags, try counts | M | M | Cache API | none |
+| BE-34 | **Collections, exports, Hugging Face dataset** | Save battles into collections, export md/json/jsonl/csv, unlisted share; publish the BE-21 monthly export as a Hugging Face dataset with a generated card | M | H (A: M, B: L after BE-21) | GitHub Actions, R2 (read) | Hugging Face account and write token |
 
 ## 2. Waves
 
@@ -85,6 +106,24 @@ Ordered for value and so that nothing waits on Harsh longer than necessary. Acco
 | **W3: honest rankings** | BE-9, BE-10, BE-14, BE-16, BE-12 | The statistical core: confidence intervals, integrity filtering, categories, and the rating change on reveal |
 | **W4: showcase** | BE-17, BE-18, BE-20, BE-13 | Real streaming battles fully on Cloudflare, live updates, status page, moderation |
 | **W5: people and data** | BE-15, BE-19, BE-21, BE-22, BE-23, BE-24 | Personal stats, share cards, open data, data controls |
+| **W6: product features (poll picks)** | BE-28, BE-31, BE-33, BE-30, BE-25, BE-29, BE-32, BE-34, BE-26, BE-27 (in this order) | Public, cacheable features first (they only read data the earlier waves produce); the two features that change the battle core (BE-26, BE-27) last |
+
+W6 dependencies (hard unless noted):
+
+| Feature | Needs first | Soft |
+| --- | --- | --- |
+| BE-28 model cards | .NET safety PRs, baseline schema | BE-8, BE-9, BE-11, BE-12, BE-29, BE-31, BE-30 (each lights up one section) |
+| BE-31 cost-quality | BE-9, api-repo-review M4 (`served_by`, tokens), BE-28 profiles | BE-12, BE-30 |
+| BE-33 prompt gallery | .NET safety PRs | BE-13, BE-12, BE-21 scrubber, BE-32 |
+| BE-30 seasons | BE-9 with a time window, BE-14, BE-28 profiles | BE-8, BE-12 |
+| BE-25 API keys | BE-3, BE-4, BE-5, BE-6 | public routes from BE-8, BE-11, BE-28 |
+| BE-29 battle of the day | consent on the share feature, BE-13 | BE-14, BE-19, BE-21, BE-22 |
+| BE-32 profiles | scope decision, BE-15 | BE-14, BE-12, BE-27, BE-30, BE-33 |
+| BE-34 collections / dataset | collections: validated votes, BE-22 / dataset: **BE-21**, BE-13, BE-14, BE-26 isolation | BE-12, BE-27 (row shape) |
+| BE-26 private arenas | BE-6, baseline schema (so private votes can skip `elo_score`), BE-16 | BE-9, BE-13, BE-24, BE-33 |
+| BE-27 multi-turn | BE-6, streaming `dualchat` (B-1), vote validation | BE-9, BE-16, BE-14, BE-10 |
+
+Estimated total for W6: about 33 backend days and 25 web days.
 
 ## 3. Impact vs effort
 
@@ -95,11 +134,26 @@ impact                               BE-10 rating change, BE-12 categories,  BE-
                                      BE-14 integrity, BE-0 platform
 medium BE-1 errors, BE-3 limits,     BE-13 moderation, BE-15 your verdicts,
 impact BE-4 cache, BE-5 API docs,    BE-16 style control, BE-18 live,
-       BE-11 head-to-head            BE-19 share cards, BE-20 status,
-                                     BE-21 dataset, BE-22 data controls,
-                                     BE-24 fair pairing
+       BE-11 head-to-head,           BE-19 share cards, BE-20 status,
+       BE-33 prompt gallery          BE-21 dataset, BE-22 data controls,
+                                     BE-24 fair pairing, BE-29 battle of the day,
+                                     BE-30 seasons, BE-32 profiles*
 low    BE-2 TTS fix, BE-23 Turnstile
 ```
+
+The BE-25 to BE-34 features on the same grid (impact for a showcase project, not for growth):
+
+```text
+            low effort           medium effort                       high effort
+high                             BE-28 model cards,                  BE-27 multi-turn battles
+impact                           BE-31 cost-quality
+medium      BE-33 prompt gallery BE-29 battle of the day,            BE-25 API keys,
+impact      (seed + review)      BE-30 seasons                       BE-26 private arenas,
+                                                                     BE-34 collections + dataset
+low                              BE-32 profiles (scope conflict)
+```
+
+*BE-32 has low impact for a showcase and conflicts with the older "no public profiles" scope note; it sits last among the W6 features that are not blocked.
 
 ## 4. Rules for every backend PR
 

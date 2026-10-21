@@ -194,10 +194,9 @@ export function SignupPage() {
     <AuthShell quote={QUOTES.signup}>
       <div className="grid gap-8">
         <AuthHeading
-          eyebrow="Create an account"
-          title="Two models. One prompt."
-          voice="You decide."
-          lead="Free. Ask once, compare two anonymous answers, and your vote moves the leaderboard."
+          eyebrow="Free to join"
+          title="Create your account"
+          lead="Two models. One prompt. You decide."
         />
         <AuthGate target={target}>
           {confirmFor ? (

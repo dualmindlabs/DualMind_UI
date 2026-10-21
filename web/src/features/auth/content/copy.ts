@@ -12,7 +12,7 @@ export interface BrandQuote {
 export const QUOTES = {
   login: {
     text: 'Both answers were right. Only one of them was useful.',
-    source: 'A blind battle on a code review prompt',
+    source: 'Example, from a battle on a code-review prompt',
   },
   signup: {
     text: 'You never see the names until you vote. That is the whole point.',

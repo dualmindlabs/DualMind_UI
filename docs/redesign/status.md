@@ -2,12 +2,14 @@
 
 The running log of the Arena redesign: what merged, what is in progress, what comes next. One line per change, newest first, written so it can be copied into Notion as is. Plan and slice numbers: [migration-plan.md](./migration-plan.md) section 8. Things that need Harsh: [needs-harsh.md](./needs-harsh.md).
 
-Last updated: 2026-10-21 13:55 UTC. Definition of done: [startup-grade-checklist.md](./startup-grade-checklist.md).
+Last updated: 2026-10-21 17:55 UTC. Definition of done: [startup-grade-checklist.md](./startup-grade-checklist.md).
 
 ## Merged
 
 | Date (UTC) | PR | What |
 | --- | --- | --- |
+| 2026-10-21 | [#63](https://github.com/dualmindlabs/DualMind_UI/pull/63) | Backend design documents BE-25 to BE-34 (Harsh's poll picks: developer API keys, private arenas, multi-turn, model cards, battle of the day and embeds, seasons, cost-quality, profiles, prompt gallery, collections and dataset) and roadmap wave W6; docs only |
+| 2026-10-21 | [#60](https://github.com/dualmindlabs/DualMind_UI/pull/60) | **Audit P0-3 + P1-3:** human model names everywhere (one display-name module, raw id in tooltips and details), makers instead of "Cloudflare", "Not yet rated" group without ranks under 100 battles, share images for `/leaderboard/` and `/models/` |
 | 2026-10-21 | [#58](https://github.com/dualmindlabs/DualMind_UI/pull/58) | **S11 share:** share dialog (private, unlisted, public), `/share/<id>` page with the reveal applied, per-share link previews injected by the Worker, branded share card; share links work again (KNOWN_ISSUES #3) |
 | 2026-10-21 | [#56](https://github.com/dualmindlabs/DualMind_UI/pull/56) | [UI audit](./ui-audit.md) of every screen with a prioritized fix list and a performance plan |
 | 2026-10-21 | [#53](https://github.com/dualmindlabs/DualMind_UI/pull/53) | **S8 arena B:** blind battles, vote bar (keys 1-4), reveal with names and metrics shown only after the vote, follow-ups, side by side and direct (streaming), offline vote queue; **the new arena is the default** at signed-in `/` (`?arena=legacy` for one release) |
@@ -45,10 +47,16 @@ Last updated: 2026-10-21 13:55 UTC. Definition of done: [startup-grade-checklist
 
 | Slice | PR | What |
 | --- | --- | --- |
-| Audit fix 1 | [#57](https://github.com/dualmindlabs/DualMind_UI/pull/57) | Landing performance: hero paints first, lazy tooltip and API client, split below-the-fold sections |
+| S12 settings | [#65](https://github.com/dualmindlabs/DualMind_UI/pull/65) | `/settings/`: profile, theme, motion, default arena mode, shortcuts, export (Markdown, JSON, CSV, HTML, PDF via print) |
+| Audit fix: touch and auth | [#62](https://github.com/dualmindlabs/DualMind_UI/pull/62) | 44 px touch targets, button press states, auth-callback resend, login quote, signup heading, forced colours, P2 fixes |
+| Audit fix: info and brand | [#61](https://github.com/dualmindlabs/DualMind_UI/pull/61) | `/credits/` page, About as a company page, one tagline, footer links, en-US copy, sitemap `lastmod` |
+| Audit fix: states | [#64](https://github.com/dualmindlabs/DualMind_UI/pull/64) | Screenshots of loading, error, empty and rate-limited states on every data screen (P1-8) |
+| Arena polish | [#66](https://github.com/dualmindlabs/DualMind_UI/pull/66) | Model picker placement and names, syntax highlighting, shortcuts overlay, phone tabs; then the landing prompt carry-over (P1-1) |
+
+Closed without merging: [#57](https://github.com/dualmindlabs/DualMind_UI/pull/57) (landing performance). Harsh dropped performance work on 2026-10-21; the branch is kept.
 
 ## Next
 
-1. Remaining audit fix PRs ([ui-audit.md](./ui-audit.md)): fonts and CSS; Lighthouse on six routes plus state screenshots and failing budgets; leaderboard data presentation (display names, provisional handling) plus share cards for leaderboard and models; arena polish (display names on reveal, syntax highlighting, shortcuts overlay); touch targets, auth dead ends, credits page, one tagline.
-2. S12 settings, S13 cutover (legacy files removed, CSP everywhere, build variables for Supabase), i18n readiness, README screenshots.
-3. Backend work is paused by Harsh until he says so (docs for BE-25 to BE-34 are allowed).
+1. Merge the five PRs above as CI goes green; then the strings the info PR could not change (arena heading "Two minds. Your verdict.", the `/design/` hero line) and README screenshots.
+2. S13 cutover (legacy files removed, CSP everywhere, build variables for Supabase), i18n readiness (P1-9).
+3. No performance work (Harsh, 2026-10-21). Backend implementation waits for Harsh's "good night"; designs for BE-25 to BE-34 are merged.

@@ -70,7 +70,7 @@ export function EffectFrame({
           </h4>
           <span className="text-caption text-muted">{effect.use}</span>
         </div>
-        <ul aria-label="Source and licence" className="flex flex-wrap gap-1.5">
+        <ul aria-label="Source and license" className="flex flex-wrap gap-1.5">
           <li>
             <a
               href={effect.url}
@@ -95,7 +95,7 @@ export function EffectFrame({
               rel="noreferrer"
             >
               {credit.licence}
-              <span className="sr-only"> licence (opens in a new tab)</span>
+              <span className="sr-only"> license (opens in a new tab)</span>
             </a>
           </li>
           {effect.webgl ? (
