@@ -264,7 +264,7 @@ test.describe('/leaderboard/ (desktop)', () => {
       'aria-sort',
       'ascending',
     );
-    await expect(firstRowName(page)).toHaveText('Compound Mini');
+    await expect(firstRowName(page)).toHaveText('Compound');
   });
 
   test('search and the provider filter narrow the board', async ({ page }) => {
@@ -272,7 +272,7 @@ test.describe('/leaderboard/ (desktop)', () => {
     await page.goto('/leaderboard/');
     await expect(bodyRows(page)).toHaveCount(RATED);
 
-    // Four rated and six unrated Gemma builds: a search opens the unrated group by itself.
+    // Ten Gemma builds, eight rated and two not yet: a search opens the unrated group by itself.
     await page.getByRole('searchbox', { name: 'Search models' }).fill('gemma');
     await expect(bodyRows(page)).toHaveCount(10);
     await expect(page.getByText(/^Showing/)).toHaveText(`Showing 10 of ${MODELS} models`);
