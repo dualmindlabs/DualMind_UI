@@ -220,7 +220,9 @@ jobs:
           total() { local sum=0; for f in "$@"; do sum=$((sum + $(gz "$f"))); done; echo "$sum"; }
           lazy=()
           for chunk in light-rays silk electric-border features-dom-animation features-dom-max; do
-            file=$(ls dist/assets/${chunk}-*.js 2>/dev/null | head -n 1 || true)
+            # The hash is exactly 8 characters: `silk-*.js` would also match the shared
+            # `silk-poster-<hash>.js` chunk, and which one `ls` lists first depends on the hash.
+            file=$(ls dist/assets 2>/dev/null | grep -E "^${chunk}-[A-Za-z0-9_-]{8}\.js$" | head -n 1 | sed 's#^#dist/assets/#' || true)
             if [ -z "$file" ]; then
               echo "::error::Expected a separate chunk for ${chunk} in dist/assets"
               exit 1

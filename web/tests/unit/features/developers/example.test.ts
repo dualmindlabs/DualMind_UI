@@ -62,7 +62,9 @@ describe('exampleFor', () => {
         doc,
       ),
     ).toEqual({ a: 0, b: true });
-    expect(JSON.stringify(exampleFor({ $ref: '#/components/schemas/Loop' }, doc))).toContain('null');
+    expect(JSON.stringify(exampleFor({ $ref: '#/components/schemas/Loop' }, doc))).toContain(
+      'null',
+    );
     expect(exampleFor({ $ref: '#/components/schemas/Missing' }, doc)).toBeNull();
     expect(exampleFor({ $ref: 'https://elsewhere/x' }, doc)).toBeNull();
   });

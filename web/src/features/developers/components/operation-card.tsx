@@ -8,7 +8,11 @@ import { ScrollTable } from './scroll-table';
 export function OperationCard({ operation }: { operation: ReferenceOperation }) {
   const headingId = `${operation.id}-title`;
   return (
-    <section id={operation.id} aria-labelledby={headingId} className="scroll-mt-24 border-t border-line pt-8">
+    <section
+      id={operation.id}
+      aria-labelledby={headingId}
+      className="scroll-mt-24 border-t border-line pt-8"
+    >
       <h3 id={headingId} className="flex flex-wrap items-center gap-x-3 gap-y-2">
         <Badge variant="mind-a">{operation.method}</Badge>
         <code className="break-all">{operation.path}</code>

@@ -82,7 +82,8 @@ export function DevelopersPage() {
               <h2 id="overview-title">Overview</h2>
               <p>
                 The base URL is <code>{reference.baseUrl}/api/v2</code>. {reference.title} is
-                described by an OpenAPI 3.1 document you can <a href="/api/v2/openapi.json">download</a>.
+                described by an OpenAPI 3.1 document you can{' '}
+                <a href="/api/v2/openapi.json">download</a>.
               </p>
               <ul>
                 {conventions.map(item => (

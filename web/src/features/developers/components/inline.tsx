@@ -6,11 +6,7 @@ export function Inline({ text }: { text: string }) {
   return (
     <>
       {parts.map((part, index) =>
-        index % 2 === 1 ? (
-          <code key={index}>{part}</code>
-        ) : (
-          <Fragment key={index}>{part}</Fragment>
-        ),
+        index % 2 === 1 ? <code key={index}>{part}</code> : <Fragment key={index}>{part}</Fragment>,
       )}
     </>
   );

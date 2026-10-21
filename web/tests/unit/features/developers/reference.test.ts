@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
+import { rateLimits } from '@/features/developers/lib/content';
 import { buildReference, operationId } from '@/features/developers/lib/reference';
 import { openApiDocument } from '@/features/developers/lib/spec';
-import { rateLimits } from '@/features/developers/lib/content';
 
 import { PROBLEM_TYPES } from '../../../../../server/problem-types.js';
 import { RATE_LIMIT_GROUPS } from '../../../../../server/rate-limit.js';
@@ -38,7 +38,12 @@ describe('buildReference on the committed OpenAPI document', () => {
       for (const response of operation.responses) {
         if (response.contentType) {
           expect(response.example, `${operation.id} ${response.status}`).not.toBeNull();
-          expect(() => JSON.parse(response.example ?? ''), `${operation.id} ${response.status}`).not.toThrow();
+          expect(
+            () => {
+              JSON.parse(response.example ?? '');
+            },
+            `${operation.id} ${response.status}`,
+          ).not.toThrow();
         } else {
           expect(response.example).toBeNull();
         }
@@ -47,7 +52,9 @@ describe('buildReference on the committed OpenAPI document', () => {
   });
 
   it('shows a realistic leaderboard example from the schema examples', () => {
-    const leaderboard = reference.operations.find(operation => operation.id === 'get-api-v2-leaderboard');
+    const leaderboard = reference.operations.find(
+      operation => operation.id === 'get-api-v2-leaderboard',
+    );
     const ok = leaderboard?.responses.find(response => response.status === '200');
     const body = JSON.parse(ok?.example ?? '{}') as {
       items: { modelName: string; winRate: number }[];
@@ -57,13 +64,15 @@ describe('buildReference on the committed OpenAPI document', () => {
     expect(body.items[0]?.winRate).toBe(64.58);
     expect(body.meta.provisionalBelow).toBe(5);
     expect(leaderboard?.requiresAuth).toBe(false);
-    expect(reference.operations.find(operation => operation.id === 'get-api-v2-me')?.requiresAuth).toBe(true);
+    expect(
+      reference.operations.find(operation => operation.id === 'get-api-v2-me')?.requiresAuth,
+    ).toBe(true);
   });
 
   it('builds problem examples from the registry', () => {
     const me = reference.operations.find(operation => operation.id === 'get-api-v2-me');
     const unauthorized = me?.responses.find(response => response.status === '401');
-    expect(JSON.parse(unauthorized?.example ?? '{}')).toMatchObject({
+    expect(JSON.parse(unauthorized?.example ?? '{}') as unknown).toMatchObject({
       status: 401,
       title: 'Unauthorized',
       type: 'https://arena.dualmindlab.tech/problems/unauthorized',

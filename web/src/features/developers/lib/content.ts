@@ -35,7 +35,7 @@ export const quickstart: readonly Snippet[] = [
     id: 'curl',
     label: 'curl',
     language: 'bash',
-    code: 'curl -s https://arena.dualmindlab.tech/api/v2/leaderboard | jq \'.items[0]\'',
+    code: "curl -s https://arena.dualmindlab.tech/api/v2/leaderboard | jq '.items[0]'",
   },
   {
     id: 'javascript',
@@ -68,7 +68,11 @@ export interface RateLimitRow {
 /** Mirrors RATE_LIMIT_GROUPS in server/rate-limit.js (a unit test keeps them equal). */
 export const rateLimits: readonly RateLimitRow[] = [
   { group: 'read', appliesTo: 'every GET and HEAD under /api/', limit: '30 per 10 seconds' },
-  { group: 'write', appliesTo: 'other POST, PATCH, PUT and DELETE calls', limit: '30 per 60 seconds' },
+  {
+    group: 'write',
+    appliesTo: 'other POST, PATCH, PUT and DELETE calls',
+    limit: '30 per 60 seconds',
+  },
   { group: 'battle', appliesTo: 'starting a battle or chat', limit: '6 per 60 seconds' },
   { group: 'vote', appliesTo: 'voting', limit: '10 per 10 seconds' },
   { group: 'speech', appliesTo: 'text to speech', limit: '10 per 60 seconds' },
@@ -84,8 +88,16 @@ export const versioningParagraphs: readonly string[] = [
 ];
 
 export const moreLinks: readonly { label: string; href: string; note: string }[] = [
-  { label: 'OpenAPI 3.1 document', href: OPENAPI_URL_PATH, note: 'for Postman, Scalar, Redoc or openapi-typescript' },
-  { label: 'Leaderboard as Markdown', href: '/leaderboard.md', note: 'one table, for people and for language models' },
+  {
+    label: 'OpenAPI 3.1 document',
+    href: OPENAPI_URL_PATH,
+    note: 'for Postman, Scalar, Redoc or openapi-typescript',
+  },
+  {
+    label: 'Leaderboard as Markdown',
+    href: '/leaderboard.md',
+    note: 'one table, for people and for language models',
+  },
   { label: 'llms.txt', href: '/llms.txt', note: 'the index of the above for LLM tools' },
   { label: 'Developer docs', href: DEV_DOCS_URL, note: 'guides and the v1 API reference' },
 ];
