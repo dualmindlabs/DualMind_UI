@@ -63,7 +63,7 @@ export function MobileNav({
         </div>
         <DrawerTitle className="sr-only">Menu</DrawerTitle>
         <DrawerDescription className="sr-only">
-          Pages of DualMind Arena, the colour theme and sign in.
+          Pages of DualMind Arena, the color theme and sign in.
         </DrawerDescription>
         <nav aria-label={label} className="px-3 pt-2">
           <ul className="grid gap-1">

@@ -5,6 +5,7 @@ import { credits } from '@/content/credits';
 import {
   aboutContent,
   AboutPage,
+  CreditsPage,
   faqContent,
   FaqPage,
   HowItWorksPage,
@@ -19,11 +20,31 @@ import { faqJsonLd } from '@/features/info/lib/seo';
 import { renderWithShell } from '../../render-with-shell';
 
 describe('info pages', () => {
-  it('About: one h1 with its human phrase, and every credit', () => {
+  it('About: one h1 with its human phrase, the company sections and a link to /credits/', () => {
     const { container } = renderWithShell(<AboutPage />, '/about/');
     const h1 = screen.getByRole('heading', { level: 1 });
     expect(h1).toHaveTextContent('Compare AI models, blind.');
     expect(h1.querySelector('.human-voice')).toHaveTextContent('blind.');
+    // The license wall moved to /credits/.
+    expect(container.querySelector('#credits')).toBeNull();
+    for (const id of ['how-we-run-it', 'open-source', 'contact']) {
+      expect(container.querySelector(`section#${id}`), id).not.toBeNull();
+    }
+    const hrefs = (name: string | RegExp) =>
+      screen.getAllByRole('link', { name }).map(link => link.getAttribute('href'));
+    expect(new Set(hrefs('Credits'))).toEqual(new Set(['/credits/']));
+    expect(new Set(hrefs('GitHub'))).toEqual(
+      new Set(['https://github.com/dualmindlabs/DualMind_UI']),
+    );
+    expect(hrefs('support@dualmindlab.tech')).toContain('mailto:support@dualmindlab.tech');
+    expect(container.textContent).not.toMatch(/\.NET/);
+  });
+
+  it('Credits: one h1 and every credit with its license', () => {
+    const { container } = renderWithShell(<CreditsPage />, '/credits/');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+      'Built on the work of others.',
+    );
     const section = container.querySelector<HTMLElement>('#credits');
     expect(section).toHaveAttribute('aria-labelledby', 'credits-title');
     if (!section) return;
@@ -59,7 +80,7 @@ describe('info pages', () => {
   it('404: heading, ways back and the search hint', () => {
     renderWithShell(<NotFoundPage />, '/nope');
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('404');
-    expect(screen.getByRole('link', { name: 'Go to the Arena' })).toHaveAttribute('href', '/');
+    expect(screen.getByRole('link', { name: 'Start a battle' })).toHaveAttribute('href', '/');
     expect(screen.getByRole('button', { name: /Or search the site/ })).toBeInTheDocument();
   });
 });

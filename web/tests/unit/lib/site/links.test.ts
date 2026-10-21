@@ -13,14 +13,30 @@ describe('site links', () => {
   });
 
   it('uses trailing-slash paths for every page but the home page', () => {
-    const links = [...primaryNav, ...footerColumns.flatMap(column => column.links)];
+    const links = [...primaryNav, ...footerColumns.flatMap(column => column.links)].filter(
+      link => !link.external,
+    );
     for (const link of links) {
       expect(link.href === '/' || /^\/[a-z-]+\/$/.test(link.href), link.href).toBe(true);
     }
   });
 
-  it('has the product, company and legal footer columns', () => {
-    expect(footerColumns.map(column => column.title)).toEqual(['Product', 'Company', 'Legal']);
+  it('has the product, company, legal and connect footer columns', () => {
+    expect(footerColumns.map(column => column.title)).toEqual([
+      'Product',
+      'Company',
+      'Legal',
+      'Connect',
+    ]);
+    expect(footerColumns[1]?.links.map(link => link.href)).toContain('/credits/');
+    expect(footerColumns[3]?.links.map(link => link.href)).toEqual([
+      'https://github.com/dualmindlabs/DualMind_UI',
+      'mailto:support@dualmindlab.tech',
+    ]);
+    // No Status link until a status page exists.
+    expect(footerColumns.flatMap(column => column.links.map(link => link.label))).not.toContain(
+      'Status',
+    );
     expect(footerColumns[2]?.links.map(link => link.href)).toEqual([
       '/privacy/',
       '/terms/',

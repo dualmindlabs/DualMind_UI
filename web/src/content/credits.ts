@@ -1,5 +1,5 @@
 /**
- * "Built with": every third-party source the web app uses, with its licence. The About page
+ * "Built with": every third-party source the web app uses, with its licence. The Credits page
  * (slice S4) renders it, the /design/ effects gallery labels each effect with it, and it must
  * match the inventory in docs/redesign/licences.md (section 4).
  */
@@ -107,7 +107,7 @@ export const credits: readonly Credit[] = [
     licenceUrl: 'https://github.com/vercel/streamdown/blob/main/LICENSE',
     kind: 'dependency',
     restricted: false,
-    uses: ['Model answers as Markdown, sanitised and hardened'],
+    uses: ['Model answers as Markdown, sanitized and hardened'],
   },
   {
     id: 'motion',
