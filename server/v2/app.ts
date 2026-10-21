@@ -14,10 +14,11 @@ import { onError, problemFor, ProblemError } from './problems.ts';
 import { registerHealth } from './routes/health.ts';
 import { registerLeaderboard } from './routes/leaderboard.ts';
 import { registerMe } from './routes/me.ts';
+import { OPENAPI_PATH, registerOpenapi } from './routes/openapi.ts';
 
 export const MAX_JSON_BODY_BYTES = 1024 * 1024;
 
-export const OPENAPI_PATH = '/api/v2/openapi.json';
+export { OPENAPI_PATH };
 
 export const openapiConfig = {
   openapi: '3.1.0' as const,
@@ -98,7 +99,7 @@ export function createApp(options: AppOptions = {}): OpenAPIHono<AppEnv> {
   registerLeaderboard(app);
   options.extend?.(app);
 
-  app.doc31(OPENAPI_PATH, openapiConfig);
+  registerOpenapi(app, openapiConfig);
   return app;
 }
 
