@@ -64,11 +64,7 @@ describe('429 toast', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Start battle' }));
     // The first toast loads the Sonner chunk on demand, which can take a while on a cold runner.
     expect(
-      await screen.findByText(
-        'Too many requests. Try again in 60 seconds.',
-        {},
-        { timeout: 5000 },
-      ),
+      await screen.findByText('Too many requests. Try again in 60 seconds.', {}, { timeout: 5000 }),
     ).toBeInTheDocument();
     expect(calls).toHaveLength(1);
   });
