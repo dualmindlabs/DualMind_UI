@@ -51,7 +51,7 @@ Public. Built from `getLeaderboard()` (BE-4), so it shares the cache and its fai
 ```markdown
 # DualMind Arena leaderboard
 
-Updated: 2026-10-21T08:30:00.000Z. Ratings are Elo scores from blind head-to-head votes. Models marked "preliminary" have fewer than 30 battles.
+Updated: 2026-10-21T08:30:00.000Z. Ratings are Elo scores from blind head-to-head votes. Models marked "preliminary" have fewer than 100 battles.
 
 | Rank | Model | Provider | Elo | Win rate | Battles | Status |
 | ---: | --- | --- | ---: | ---: | ---: | --- |

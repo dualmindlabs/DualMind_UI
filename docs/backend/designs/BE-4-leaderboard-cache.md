@@ -15,7 +15,7 @@ Non-goals: history, rank movement, confidence intervals, categories (BE-8, BE-9,
 ## 3. User-visible behaviour
 
 - The leaderboard page loads faster and works signed out; during a short API outage it still shows the last data, marked with its age.
-- Models with fewer than 30 battles are flagged `provisional`, so the UI can show a "preliminary" badge.
+- Models with fewer than 100 battles are flagged `provisional` (the same rule the leaderboard page uses today, `PROVISIONAL_BATTLES` in `web/src/features/leaderboard/lib/constants.ts`), so the UI can show a "preliminary" badge.
 - Machine readers get a stable, documented JSON.
 
 ## 4. API
@@ -61,7 +61,7 @@ Response `200`:
   "meta": {
     "generatedAt": "2026-10-21T08:30:00.000Z",
     "count": 2,
-    "provisionalBelow": 30,
+    "provisionalBelow": 100,
     "source": "dualmind-api:model-stats"
   }
 }
@@ -123,7 +123,7 @@ Pure function `normaliseModelStats(raw): { items, dropped }` in `server/v2/leade
 1. Per row: required `modelId`, `modelName`, `providerName`, finite `eloScore`, non-negative integers for the counts; otherwise the row is dropped and counted in `dropped` (logged).
 2. `displayName`: upstream value, else `modelName` without the provider prefix (everything up to the last `/`).
 3. `winRate`: upstream value if finite and 0 to 100, else `round(totalWins / totalResponses * 10000) / 100` (0 when no responses). Two decimals.
-4. `provisional = totalResponses < 30`.
+4. `provisional = totalResponses < 100`.
 5. Duplicate `modelId`: keep the row with more `totalResponses`.
 6. `eloRank`: upstream if a positive integer on every row, else recomputed from `eloScore` descending with ties sharing a rank (1, 1, 3).
 7. Sort by `eloRank`, then `eloScore` descending, then `displayName`.
@@ -184,7 +184,7 @@ docs/api/endpoints.md                 v2 section; CHANGELOG
 
 ## 13. Test plan
 
-- Unit `normalise` (Node or Workers project): the two recorded rows from endpoints.md (with all duplicate and alias fields) produce exactly the example above; missing `displayName`; alias-only rows; negative or `NaN` numbers dropped; duplicate ids; missing or partial ranks recomputed with shared ranks; `winRate` recompute and 0 responses; provisional boundary (29, 30); stable order; 53-row fixture snapshot.
+- Unit `normalise` (Node or Workers project): the two recorded rows from endpoints.md (with all duplicate and alias fields) produce exactly the example above; missing `displayName`; alias-only rows; negative or `NaN` numbers dropped; duplicate ids; missing or partial ranks recomputed with shared ranks; `winRate` recompute and 0 responses; provisional boundary (99, 100); stable order; 53-row fixture snapshot.
 - Unit `etag`: hash is independent of key order and of `generatedAt`; `If-None-Match` with one tag, a list, weak `W/`, `*`, garbage.
 - Cache state machine with an in-memory fake cache and a fake clock: fresh hit, stale hit plus one background refresh (two simultaneous stale requests cause one upstream call), expired refresh, refresh failure serves stale, cold failure gives 502 and 504 problems with `Retry-After`, the 10 s failure backoff, same-hash refresh keeps `ETag` and `generatedAt`, a 25-hour-old entry is ignored, empty upstream is not cached.
 - Miniflare integration (`tests/api/leaderboard.test.ts`): real `caches.default`, MSW upstream: miss then hit (one upstream call for 10 requests), `304` on `If-None-Match`, `HEAD`, stale revalidation through `waitUntil` (`await` the waitUntil promises with the test helper), upstream 500 with and without a copy.
@@ -200,7 +200,7 @@ docs/api/endpoints.md                 v2 section; CHANGELOG
 
 ## 15. Open questions
 
-1. Provisional threshold: 30 battles (a common cut-off in public arenas, [research.md](../research.md)). Confirm, or choose another; it is one constant, published in `meta.provisionalBelow`.
+1. Provisional threshold: 100 battles, matching the leaderboard page today (research.md suggests 300 battles or a confidence-interval rule once BE-9 lands). One shared constant, published in `meta.provisionalBelow`; the web constant must import it from `contract/` when BE-0 lands.
 2. Cache TTLs (fresh 60 s, stale 10 min): leaderboard changes slowly, so these are conservative; longer lowers API calls further. Harsh may prefer to see new votes sooner.
 3. `winRate` counts ties as non-wins (v1 behaviour, kept to avoid a silent change). BE-9 can introduce a tie-aware figure under a new name.
 4. Expose a `?provisional=false` filter or keep it client-side? Default: client-side; one list is easier to cache.
