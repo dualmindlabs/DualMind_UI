@@ -14,7 +14,10 @@ describe('RichText', () => {
     const internal = screen.getByRole('link', { name: 'Credits' });
     expect(internal).toHaveAttribute('href', '/credits/');
     expect(internal).not.toHaveAttribute('rel');
-    expect(screen.getByRole('link', { name: 'GitHub' })).toHaveAttribute('rel', 'noopener noreferrer');
+    expect(screen.getByRole('link', { name: 'GitHub' })).toHaveAttribute(
+      'rel',
+      'noopener noreferrer',
+    );
     expect(screen.getByText(/thanks\./)).toBeInTheDocument();
   });
 });

@@ -1,8 +1,7 @@
 import { Fragment } from 'react';
 
 /** An email address, or a link written as `[label](href)`. */
-const TOKEN =
-  /\[([^\]]+)\]\(([^)\s]+)\)|([A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+)/g;
+const TOKEN = /\[([^\]]+)\]\(([^)\s]+)\)|([A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+)/g;
 
 /**
  * Plain text from the content files, with email addresses turned into mailto links and

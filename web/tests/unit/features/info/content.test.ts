@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
 import { BRAND_PRIMARY, BRAND_SUPPORTING } from '@/content/brand';
-import { type Block, creditsContent, infoPages, MAX_DESCRIPTION_LENGTH, type PageContent } from '@/features/info';
+import {
+  type Block,
+  creditsContent,
+  infoPages,
+  MAX_DESCRIPTION_LENGTH,
+  type PageContent,
+} from '@/features/info';
 
 function blockText(block: Block): string[] {
   switch (block.type) {
