@@ -313,13 +313,7 @@ test.describe('screenshots', () => {
           await settle(page, 500);
           await page.screenshot({ path: shotPath(`arena-thread-rail-${theme}`) });
           await page.keyboard.press('[');
-          await openArena(page, '/?arena=new');
-          await page.getByRole('radio', { name: 'Side by side' }).check({ force: true });
-          await page.getByRole('button', { name: /Model for answer A/ }).click();
-          await settle(page, 400);
-          await page.screenshot({ path: shotPath(`arena-model-picker-${theme}`) });
-          await page.keyboard.press('Escape');
-          await page.getByRole('radio', { name: 'Battle' }).check({ force: true });
+          // The model picker's screenshots are in arena-polish.spec.ts.
         } else {
           await page.getByRole('button', { name: 'Open the history' }).click();
           await settle(page, 600);
@@ -417,7 +411,7 @@ test.describe('battles', () => {
     await openArena(page);
     await page.getByRole('radio', { name: 'Side by side' }).check({ force: true });
     await page.getByRole('button', { name: /Model for answer B/ }).click();
-    await page.getByRole('option', { name: /Gemma 3n/ }).click();
+    await page.getByRole('option', { name: /Gemma 3n E2B IT/ }).click();
     await page
       .getByRole('textbox', { name: 'Your prompt' })
       .fill('Write a haiku about merge conflicts');

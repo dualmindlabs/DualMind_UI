@@ -1,4 +1,5 @@
-import { LogOut, Settings, Undo2 } from 'lucide-react';
+import { Keyboard, LogOut, Settings, Undo2 } from 'lucide-react';
+import { useContext, useRef } from 'react';
 
 import { buttonVariants } from '@/components/ui/button';
 import {
@@ -9,12 +10,14 @@ import {
   DropdownMenuLabel,
   DropdownMenuLinkItem,
   DropdownMenuSeparator,
+  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/use-auth';
 import { settingsLink } from '@/lib/site/links';
 import { cn } from '@/lib/utils/cn';
 
+import { ArenaContext } from '../hooks/use-arena';
 import { leaveForClassicArena } from '../lib/classic-arena';
 
 function initialOf(name: string): string {
@@ -22,11 +25,15 @@ function initialOf(name: string): string {
 }
 
 /**
- * The signed-in visitor's menu: who is signed in, settings, the classic arena, and sign out. The
- * name set on /settings/ (Supabase `full_name`) comes first, then the API profile's.
+ * The signed-in visitor's menu: who is signed in, the keyboard shortcuts, settings, the classic
+ * arena, and sign out. The name set on /settings/ (Supabase `full_name`) comes first, then the API
+ * profile's.
  */
 export function AccountMenu() {
   const { user, profile, signOut } = useAuth();
+  // Outside the arena (a page that reuses this menu) there is no shortcuts dialog to open.
+  const openShortcuts = useContext(ArenaContext)?.openShortcuts;
+  const trigger = useRef<HTMLButtonElement>(null);
   const metadata = (user?.user_metadata ?? {}) as Record<string, unknown>;
   const fullName =
     typeof metadata.full_name === 'string' && metadata.full_name.trim() !== ''
@@ -38,6 +45,7 @@ export function AccountMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
+        ref={trigger}
         aria-label={`Account: ${name}`}
         className={cn(
           buttonVariants({ variant: 'ghost', size: 'icon-sm' }),
@@ -56,6 +64,13 @@ export function AccountMenu() {
           </DropdownMenuLabel>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
+        {openShortcuts ? (
+          <DropdownMenuItem onClick={() => openShortcuts(trigger.current)}>
+            <Keyboard aria-hidden="true" strokeWidth={1.75} />
+            Keyboard shortcuts
+            <DropdownMenuShortcut>?</DropdownMenuShortcut>
+          </DropdownMenuItem>
+        ) : null}
         <DropdownMenuLinkItem href={settingsLink.href}>
           <Settings aria-hidden="true" strokeWidth={1.75} />
           {settingsLink.label}

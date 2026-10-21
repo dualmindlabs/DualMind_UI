@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { useRef } from 'react';
 
 import { SkipLink } from '@/components/layout/skip-link';
 import { useApiClient } from '@/hooks/use-api-client';
@@ -15,6 +16,7 @@ import { Composer, type ComposerPicks } from './composer';
 import { EmptyState } from './empty-state';
 import { PromptStarters } from './prompt-starters';
 import { ShareDialog } from './share-dialog';
+import { ShortcutsDialog } from './shortcuts-dialog';
 import { THREAD_LIMIT } from './thread-panel';
 import { ThreadSidebar } from './thread-sidebar';
 import { ThreadView } from './thread-view';
@@ -24,6 +26,7 @@ function ArenaLayout() {
   const { threadId, mode, battle, shareThreadId, closeShare } = useArena();
   const { setDraft } = useDraft();
   const threads = useQuery(threadsQuery(api, THREAD_LIMIT));
+  const heading = useRef<HTMLHeadingElement>(null);
   useArenaCommands(threads.data);
   useArenaShortcuts();
 
@@ -69,9 +72,10 @@ function ArenaLayout() {
                 className="pointer-events-none absolute inset-0 dot-grid [mask-image:radial-gradient(ellipse_60%_50%_at_50%_45%,black,transparent)] opacity-70"
               />
               <div className="relative mx-auto grid w-full max-w-3xl gap-8 px-4 py-8 sm:px-6">
-                <EmptyState />
+                <EmptyState headingRef={heading} />
                 <Composer
                   variant="hero"
+                  avoidRef={heading}
                   onSend={send}
                   busy={battle.busy}
                   onStop={battle.stop}
@@ -95,6 +99,7 @@ function ArenaLayout() {
         </main>
       </div>
       <ShareDialog threadId={shareThreadId} onClose={closeShare} />
+      <ShortcutsDialog />
     </div>
   );
 }

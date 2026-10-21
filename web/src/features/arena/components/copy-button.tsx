@@ -6,6 +6,8 @@ import { toast } from '@/components/ui/sonner';
 import { copyText } from '@/lib/utils/clipboard';
 import { cn } from '@/lib/utils/cn';
 
+import { SUCCESS_POP } from '../lib/press';
+
 export interface CopyButtonProps {
   text: string;
   /** The accessible name, for example "Copy answer A". */
@@ -15,7 +17,10 @@ export interface CopyButtonProps {
   className?: string;
 }
 
-/** Copies text, then shows a check for two seconds; a failure says so in a toast. */
+/**
+ * Copies text, then shows a check for two seconds (it pops in, and the button turns green); a
+ * failure says so in a toast. Press, hover, focus and touch size come from the kit's Button.
+ */
 export function CopyButton({ text, label, showLabel = false, className }: CopyButtonProps) {
   const [copied, setCopied] = useState(false);
 
@@ -39,7 +44,12 @@ export function CopyButton({ text, label, showLabel = false, className }: CopyBu
       onClick={() => void copy()}
       className={cn('text-muted hover:text-fg', copied && 'text-ok hover:text-ok', className)}
     >
-      <Icon aria-hidden="true" strokeWidth={1.75} />
+      <Icon
+        key={copied ? 'copied' : 'copy'}
+        aria-hidden="true"
+        strokeWidth={1.75}
+        className={copied ? SUCCESS_POP : undefined}
+      />
       {showLabel ? (
         <>
           <span aria-hidden="true">{copied ? 'Copied' : 'Copy'}</span>
