@@ -112,7 +112,7 @@ function ShareForm({ thread }: { thread: Thread }) {
   const url = shareUrl(thread.threadId);
   const noun = NOUNS[thread.mode];
   const native = { title: thread.title, text: `A ${noun} on DualMind Arena`, url };
-  const [nativeAvailable] = useState(() => canShareNatively(native));
+  const nativeAvailable = canShareNatively(native);
 
   const select = (next: Visibility) => {
     if (next === thread.visibility || change.isPending) return;

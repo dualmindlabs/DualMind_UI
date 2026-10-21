@@ -12,6 +12,7 @@ import { toast } from '@/components/ui/sonner';
 import { ThreadTranscript } from '@/features/arena';
 import { useApiClient } from '@/hooks/use-api-client';
 import { useAuth } from '@/hooks/use-auth';
+import { useHydrated } from '@/hooks/use-hydrated';
 import { leaderboardQuery, type SharedThread } from '@/lib/api';
 import { shareIdFromLocation, sharePath, shareUrl } from '@/lib/site/share';
 import { canShareNatively, copyText, shareNatively } from '@/lib/utils/clipboard';
@@ -40,10 +41,10 @@ function ShareActions({ threadId, title }: { threadId: string; title: string }) 
   const url = shareUrl(threadId);
   const [copied, setCopied] = useState(false);
   const native = { title, text: 'Two AI models answered. See the verdict.', url };
-  const [nativeAvailable, setNativeAvailable] = useState(false);
+  // After hydration only, so the first client render matches the fallback page.
+  const hydrated = useHydrated();
+  const nativeAvailable = hydrated && canShareNatively({ url });
 
-  // After hydration only: the server-rendered fallback must match the first client render.
-  useEffect(() => setNativeAvailable(canShareNatively({ url })), [url]);
   useEffect(() => {
     if (!copied) return;
     const timer = setTimeout(() => setCopied(false), 2000);

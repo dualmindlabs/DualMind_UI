@@ -28,7 +28,7 @@ function leadFor(mode: ThreadMode, voted: boolean, allVoted: boolean): string {
     : 'Two anonymous AI models answered. Names are revealed on the turns that got a vote.';
 }
 
-function parseDate(value: string | undefined): Date | null {
+function parseDate(value: string | null | undefined): Date | null {
   if (!value) return null;
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? null : date;

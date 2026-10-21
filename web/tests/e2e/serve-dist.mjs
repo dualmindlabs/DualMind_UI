@@ -10,7 +10,9 @@
 // and headers it received, and adds the headers the Worker must strip (BACKEND_URL points at it).
 // The public leaderboard (GET /api/arena/model-stats) answers with a recorded response instead
 // (tests/fixtures/api/model-stats.board.recorded.json), so the landing page shows real data in the
-// tests, the screenshots and Lighthouse. Tests that need a failure mock it with page.route().
+// tests, the screenshots and Lighthouse. Shared threads (GET /api/threads/<id> and /messages)
+// come from tests/fixtures/api/share-threads.json. Tests that need a failure mock it with
+// page.route().
 import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import http from 'node:http';
@@ -72,6 +74,30 @@ if (!existsSync(path.join(config.assets.directory, 'design', 'index.html'))) {
 const leaderboard = readFileSync(
   path.join(webDir, 'tests', 'fixtures', 'api', 'model-stats.board.recorded.json'),
 );
+// Shared threads (slice S11), answered like the API answers a visitor without a token: public and
+// unlisted threads by id, 401 for the private one, 404 for anything else.
+const shared = JSON.parse(
+  readFileSync(path.join(webDir, 'tests', 'fixtures', 'api', 'share-threads.json'), 'utf8'),
+);
+
+function sharedThread(request, response) {
+  const match = /^\/api\/threads\/([^/?]+)(\/messages)?(?:\?|$)/.exec(request.url ?? '');
+  if (!match || request.method !== 'GET') return false;
+  const [, id, messages] = match;
+  const entry = shared.threads[id];
+  const reply = (status, body) => {
+    response.writeHead(status, { 'content-type': 'application/json; charset=utf-8' });
+    response.end(JSON.stringify(body));
+  };
+  if (id === shared.ids.private) {
+    reply(401, { success: false, error: 'Authentication required', code: 'UNAUTHORIZED' });
+  } else if (!entry) {
+    reply(404, { success: false, error: 'Thread not found', code: 'NOT_FOUND' });
+  } else {
+    reply(200, messages ? { items: entry.messages } : entry.thread);
+  }
+  return true;
+}
 
 const backendPort = Number(port) + 1;
 // Direct chat (POST /api/arena/chat/stream) as a real chunked Server-Sent Events stream, one
@@ -116,6 +142,7 @@ const backend = http.createServer((request, response) => {
     streamChat(request, response);
     return;
   }
+  if (sharedThread(request, response)) return;
   if (request.method === 'GET' && request.url?.startsWith('/api/arena/model-stats')) {
     response.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
     response.end(leaderboard);
