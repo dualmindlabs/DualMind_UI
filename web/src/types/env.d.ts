@@ -8,6 +8,10 @@ interface ImportMetaEnv {
   readonly VITE_API_BASE_URL?: string;
   /** `1` or `true` answers API calls from the in-memory mock adapter (demo, offline, e2e). */
   readonly VITE_API_MOCK?: string;
+  /** Supabase project URL, https://<project ref>.supabase.co (public; from the build variables). */
+  readonly VITE_SUPABASE_URL?: string;
+  /** Supabase public anon key (public by design; from the build variables, never committed). */
+  readonly VITE_SUPABASE_ANON_KEY?: string;
 }
 
 interface ImportMeta {

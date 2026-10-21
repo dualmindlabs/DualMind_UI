@@ -26,17 +26,16 @@ const webDir = path.join(__dirname, 'web');
 const webClientDir = path.join(webDir, 'build', 'client');
 
 // Define exactly what to copy to avoid the 100k+ files (like node_modules, next-dualmind, etc)
+// Slice S6 dropped the legacy sign-in pages: login-modern.html, signup-modern.html and
+// forgot-password.html (and the login/ folder) answer with 301s to the web app's /login/,
+// /signup/ and /forgot-password/ (server/redirects.js); auth-callback.html and
+// update-password.html are the web app's client-only routes (server/routing.js).
 const filesToCopy = [
     'index.html',
-    'auth-callback.html',
     'auth-verify.html',
     'config.js',
-    'forgot-password.html',
-    'login-modern.html',
     'manifest.json',
-    'signup-modern.html',
     'theme.js',
-    'update-password.html',
     '.assetsignore'
 ];
 
@@ -46,14 +45,13 @@ const foldersToCopy = [
     'css',
     'js',
     'leaderboard',
-    'login',
     'models',
     'share'
 ];
 
 // Public pages that are still legacy files (no web page yet): they go into the sitemap next to
 // the web app's indexable pages. A slice that migrates one drops it from this list.
-const LEGACY_PUBLIC_PAGES = ['/', '/login/'];
+const LEGACY_PUBLIC_PAGES = ['/'];
 
 // The public origin, for sitemap.xml and robots.txt (the same variable the web app's canonical
 // URLs use, with the same default).
@@ -122,6 +120,34 @@ function copyDir(src, dest) {
             fs.copyFileSync(srcPath, destPath);
         }
     }
+}
+
+// 0. Sign-in settings for the web build. Production and preview builds should get
+// VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY from the Workers Builds build variables. Until those
+// are set, the public URL and anon key are read here from the legacy config.js (public by design,
+// already served to every browser) and passed to the web build through the environment, so no new
+// file holds them. Replace this fallback with the build variables before config.js is deleted at
+// the cutover (slice S13).
+function supabaseSettingsFromLegacyConfig() {
+    const file = path.join(srcDir, 'config.js');
+    if (!fs.existsSync(file)) return null;
+    const source = fs.readFileSync(file, 'utf8');
+    const read = name => new RegExp(`const ${name}\\s*=[^;]*?:\\s*'([^']+)'\\s*;`).exec(source)?.[1];
+    const url = read('envSupabaseUrl');
+    const anonKey = read('envSupabaseAnonKey');
+    if (!url || !anonKey || !/^https:\/\/[a-z0-9-]+\.supabase\.co$/.test(url)) return null;
+    return { url, anonKey };
+}
+
+if (!process.env.VITE_SUPABASE_URL && !process.env.VITE_SUPABASE_ANON_KEY) {
+    const legacy = supabaseSettingsFromLegacyConfig();
+    if (legacy) {
+        process.env.VITE_SUPABASE_URL = legacy.url;
+        process.env.VITE_SUPABASE_ANON_KEY = legacy.anonKey;
+        console.log(`Sign-in: VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY not set; using the public values from config.js (${legacy.url}). Set the build variables before config.js is removed (S13).`);
+    }
+} else if (!process.env.VITE_SUPABASE_URL || !process.env.VITE_SUPABASE_ANON_KEY) {
+    console.warn('build.js: set both VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY, or neither; sign-in will be unavailable.');
 }
 
 // 1. Build the web app.
@@ -248,10 +274,18 @@ function inlineScriptHashes(html) {
     return hashes;
 }
 
-// The Supabase project the web app talks to, from the build environment (slice S6 sets it).
+// Origins the web app's pages may fetch from besides their own: the Supabase project from the
+// build environment (VITE_SUPABASE_URL, a Workers Builds build variable; never hard-coded here)
+// and the Pwned Passwords range API for the sign-up breach check (k-anonymity: only five
+// characters of a SHA-1 hash leave the browser).
+const PWNED_PASSWORDS_ORIGIN = 'https://api.pwnedpasswords.com';
+
 function connectSrcFromEnv() {
     const raw = (process.env.VITE_SUPABASE_URL || '').trim();
-    if (!raw) return [];
+    if (!raw) {
+        console.warn('build.js: VITE_SUPABASE_URL is not set; the sign-in pages will show "sign-in unavailable".');
+        return [PWNED_PASSWORDS_ORIGIN];
+    }
     let url;
     try {
         url = new URL(raw);
@@ -261,7 +295,7 @@ function connectSrcFromEnv() {
     if (url.protocol !== 'https:') {
         fail(`VITE_SUPABASE_URL must use https: ${raw}`);
     }
-    return [url.origin, `wss://${url.host}`];
+    return [url.origin, `wss://${url.host}`, PWNED_PASSWORDS_ORIGIN];
 }
 
 const scriptHashes = new Set();

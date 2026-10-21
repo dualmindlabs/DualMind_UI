@@ -64,13 +64,21 @@ export function handoffTarget(search: string, hash: string): string {
 }
 
 /**
+ * The hand-off only ever runs on the landing page itself. React Router's SPA fallback page is
+ * rendered from the `/` route too, so the script also ends up in the HTML of client-only routes
+ * such as /auth-callback.html, where Supabase tokens in the URL must stay with the web app.
+ */
+export const HANDOFF_PATH = '/';
+
+/**
  * Where to send the visitor, or null to stay on the landing page. Storage that cannot be read
- * (blocked cookies, private mode) counts as signed out.
+ * (blocked cookies, private mode) counts as signed out; any path but `/` stays.
  */
 export function handoffDestination(
-  location: Pick<Location, 'search' | 'hash'>,
+  location: Pick<Location, 'search' | 'hash'> & { pathname?: string },
   storage: SessionStorage | null,
 ): string | null {
+  if ((location.pathname ?? HANDOFF_PATH) !== HANDOFF_PATH) return null;
   let signedIn = false;
   try {
     signedIn = storage !== null && hasStoredSession(storage);
@@ -97,11 +105,14 @@ export function wantsSessionHandoff(handle: unknown): handle is SessionHandoffHa
 
 /**
  * The inline <head> script: the same rules as handoffDestination(), in plain ES5. It never throws
- * (storage access can), and it replaces the history entry so Back does not bounce the visitor.
+ * (storage access can), it does nothing outside `/` (see HANDOFF_PATH), and it replaces the
+ * history entry so Back does not bounce the visitor.
  */
 export const SESSION_HANDOFF_SCRIPT = [
   '(function(){try{',
-  'var l=window.location,q=l.search,h=l.hash,',
+  'var l=window.location,q=l.search,h=l.hash;',
+  `if(l.pathname!==${JSON.stringify(HANDOFF_PATH)})return;`,
+  'var ',
   `a=${AUTH_HASH_RE.toString()}.test(h)||${AUTH_QUERY_RE.toString()}.test(q)||${AUTH_TYPE_RE.toString()}.test(h+q),`,
   's=false;',
   'try{var t=window.localStorage,v=function(x){return x!==null&&x!==""&&x!=="null"};',

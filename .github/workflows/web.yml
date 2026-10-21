@@ -132,8 +132,15 @@ jobs:
           cache: npm
           cache-dependency-path: web/package-lock.json
 
+      # Dummy Supabase settings: the sign-in pages build in their working state, and the e2e
+      # tests answer every call to this origin with Playwright routes (tests/e2e/auth.spec.ts).
+      # Production and preview builds get the real public values from the Workers Builds build
+      # variables of the same names; they are never committed.
       - name: Build the composed site (node build.js)
         id: build
+        env:
+          VITE_SUPABASE_URL: https://e2eproject.supabase.co
+          VITE_SUPABASE_ANON_KEY: e2e-anon-key-not-a-real-key
         run: node build.js
 
       - name: Check the composed dist/ and report sizes
@@ -146,6 +153,9 @@ jobs:
           ! test -e dist/404/index.html
           grep -q '/about/' dist/sitemap.xml
           ! grep -q 'design' dist/sitemap.xml
+          grep -q '/login/' dist/sitemap.xml
+          grep -q '/signup/' dist/sitemap.xml
+          ! grep -q 'forgot-password' dist/sitemap.xml
           grep -q 'Two minds' dist/design/index.html
           grep -q 'noindex' dist/design/index.html
           # / is the prerendered landing page (slice S3), never the SPA fallback; the legacy arena
@@ -162,12 +172,21 @@ jobs:
           ! grep -q 'leaderboardPage.js' dist/leaderboard/index.html
           grep -q 'Every model in' dist/models/index.html
           ! grep -q 'AI Models Comparison' dist/models/index.html
+          # Slice S6: the sign-in pages are prerendered; the legacy ones are gone from dist/ (301s),
+          # the email targets are client-only routes, and the CSP manifest has the Supabase origin.
+          grep -q 'Welcome back to the' dist/login/index.html
+          grep -q 'Two models. One prompt.' dist/signup/index.html
+          grep -q 'Forgot your password?' dist/forgot-password/index.html
+          for f in login-modern.html signup-modern.html forgot-password.html auth-callback.html update-password.html login/login/index.html login/auth-complete.js; do
+            if [ -e "dist/$f" ]; then echo "::error::dist/$f should be gone (slice S6)"; exit 1; fi
+          done
+          grep -q 'https://e2eproject.supabase.co' dist/__web-manifest.json
           {
             echo "### Web build output"
             echo
             echo "| File | Size | Gzip |"
             echo "| --- | ---: | ---: |"
-            for f in dist/index.html dist/design/index.html dist/leaderboard/index.html dist/models/index.html dist/__spa-fallback.html $(ls -S dist/assets/*.js dist/assets/*.css); do
+            for f in dist/index.html dist/design/index.html dist/leaderboard/index.html dist/models/index.html dist/login/index.html dist/signup/index.html dist/__spa-fallback.html $(ls -S dist/assets/*.js dist/assets/*.css); do
               echo "| \`${f#dist/}\` | $(wc -c < "$f") | $(gzip -9c "$f" | wc -c) |"
             done
           } >> "$GITHUB_STEP_SUMMARY"
@@ -331,7 +350,7 @@ jobs:
         if: always()
         run: |
           {
-            echo "### Screenshots of /, /design/, /leaderboard/ and /models/"
+            echo "### Screenshots of /, /design/, /leaderboard/, /models/ and the sign-in pages"
             echo
             echo "Download the \`web-screenshots\` artifact from [this run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifacts):"
             echo

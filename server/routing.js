@@ -17,11 +17,15 @@ export function isHashedAsset(pathname) {
 /**
  * Client-only routes of the web app, answered with React Router's SPA fallback page
  * (dist/__spa-fallback.html, written by build.js) and status 200. Each entry is an exact path,
- * or a prefix ending in `*` (`/share/*`). Empty until the first client-only route lands
- * (slice S5 onwards: /share/, /settings/, /auth-callback.html, /update-password.html).
+ * or a prefix ending in `*` (`/share/*`). Later slices add /share/ and /settings/.
  * @type {readonly string[]}
  */
-export const SPA_FALLBACK_ROUTES = [];
+export const SPA_FALLBACK_ROUTES = [
+  // Slice S6: the Supabase email targets, rendered in place at their exact legacy addresses
+  // (links already in inboxes point here), never redirected.
+  '/update-password.html',
+  '/auth-callback.html',
+];
 
 /** Where the fallback is served from. Workers assets serve dist/__spa-fallback.html here. */
 export const SPA_FALLBACK_PATH = '/__spa-fallback';

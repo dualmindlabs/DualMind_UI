@@ -23,6 +23,16 @@ export default [
   route('terms', 'routes/terms.tsx'),
   route('cookies', 'routes/cookies.tsx'),
 
+  // Sign-in (slice S6): clean canonical paths, prerendered; the old .html URLs 301 here
+  // (server/redirects.js).
+  route('login', 'routes/login.tsx'),
+  route('signup', 'routes/signup.tsx'),
+  route('forgot-password', 'routes/forgot-password.tsx'),
+  // Supabase email targets at their exact legacy addresses: client-only (SPA fallback, status 200;
+  // SPA_FALLBACK_ROUTES in server/routing.js), never redirected.
+  route('update-password.html', 'routes/update-password.tsx'),
+  route('auth-callback.html', 'routes/auth-callback.tsx'),
+
   // Anything else: the 404 page. Prerendered as /404 (build.js moves it to dist/404.html, which
   // the Worker serves with status 404); this entry also covers client-side navigation.
   route('*', 'routes/not-found.tsx'),

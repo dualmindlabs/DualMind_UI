@@ -137,6 +137,8 @@ The legacy app keeps the current thread in memory only. The new arena adds deep 
 
 ## 4. Auth port (Supabase)
 
+> **Status (2026-10-21): built in slice S6** ([PR #43](https://github.com/dualmindlabs/DualMind_UI/pull/43)). As planned, with these details: supabase-js is lazy-loaded; the store mirrors the session into `dualmind.auth.supabase` while the legacy arena exists (the legacy keys are removed on sign-out; removing them at load waits for S13); phone sign-in is a "Phone code" tab on `/login/` (sign-up by phone is not ported); the sign-up terms checkbox became a consent line. The build reads `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` and, until those Workers Builds variables are set, falls back to the public values in the legacy `config.js` (replace before S13 deletes it). Production redirect targets are unchanged, so Supabase needs no change for production; see [needs-harsh.md](./needs-harsh.md) item 1 for the build variables and the optional preview allow-list entry.
+
 - **One client** in `web/app/lib/auth/supabase.ts`: `createClient(url, anonKey, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'implicit' } })`.
   - `flowType` stays `implicit` for now, because the email templates and links already in inboxes return tokens in the `#hash`, and PKCE email links only work in the browser that asked for them. Moving OAuth to PKCE is a later, separate change.
   - The storage key stays Supabase's default (`sb-<project-ref>-auth-token`), which today's client also writes, so legacy pages and new pages share the session during the migration.

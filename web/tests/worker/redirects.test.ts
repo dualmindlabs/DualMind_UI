@@ -41,6 +41,15 @@ describe('legacy redirects', () => {
       ['/careers', '/about/'],
       ['/auth-verify.html', '/'],
       ['/verify.html', '/'],
+      ['/login-modern.html', '/login/'],
+      ['/login-modern', '/login/'],
+      ['/login/index.html', '/login/'],
+      ['/login/login', '/login/'],
+      ['/signup-modern.html', '/signup/'],
+      ['/signup-modern', '/signup/'],
+      ['/forgot-password.html', '/forgot-password/'],
+      ['/auth-callback', '/auth-callback.html'],
+      ['/update-password', '/update-password.html'],
     ]);
   });
 
@@ -55,6 +64,14 @@ describe('legacy redirects', () => {
       '/index.htm',
       '/verify',
       '/login/verify.html',
+      // The new sign-in pages and the Supabase email targets are never redirected.
+      '/login/',
+      '/signup/',
+      '/forgot-password/',
+      '/auth-callback.html',
+      '/update-password.html',
+      '/login/loginx',
+      '/login-modern.htm',
     ]) {
       expect(findRedirect(path), path).toBeUndefined();
       expect(redirectResponse(new URL(`${ORIGIN}${path}`)), path).toBeNull();
