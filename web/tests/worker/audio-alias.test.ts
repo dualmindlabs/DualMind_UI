@@ -14,7 +14,7 @@ import { proxyApi } from '../../../server/api-proxy.js';
 const ORIGIN = 'https://arena.dualmindlab.tech';
 const noLog = () => {};
 
-function post(body: BodyInit | null, headers: Record<string, string> = {}, path = AUDIO_ALIAS.from) {
+function post(body: BodyInit | null, headers: Record<string, string> = {}, path: string = AUDIO_ALIAS.from) {
   return new Request(`${ORIGIN}${path}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...headers },

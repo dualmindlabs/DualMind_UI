@@ -308,7 +308,7 @@ describe('problem+json opt-in (BE-1)', () => {
     ['application/json', 'application/json'],
     ['application/json, text/plain, */*', 'the legacy app (axios) Accept'],
     ['application/problem+json;q=0', 'q=0'],
-  ])('without the opt-in (%s: %s) the v1 error is unchanged', async accept => {
+  ] as Array<[string | null, string]>)('without the opt-in (%s: %s) the v1 error is unchanged', async accept => {
     const bodies = [
       [400, JSON.stringify(legacyBody), 'application/json'],
       [401, '', null],
