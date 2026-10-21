@@ -112,6 +112,26 @@
     --focus-width: 2px;
     --focus-offset: 3px;
 
+    /*
+     * Code colours in answers (features/arena/lib/highlight.ts): Shiki's CSS-variables theme
+     * points every token at one of these, and they point at our text tokens, so both themes
+     * (and `prefers-contrast`) recolour code without highlighting it again. Each one is a text
+     * token already checked at 4.5:1 or more on the surfaces code sits on.
+     */
+    --code-foreground: var(--fg);
+    --code-background: transparent;
+    --code-token-keyword: var(--mind-b-text);
+    --code-token-function: var(--mind-a);
+    --code-token-string: var(--ok);
+    --code-token-string-expression: var(--ok);
+    --code-token-constant: var(--warn);
+    --code-token-parameter: var(--fg-soft);
+    --code-token-punctuation: var(--fg-soft);
+    --code-token-comment: var(--muted);
+    --code-token-link: var(--mind-a);
+    --code-token-inserted: var(--ok);
+    --code-token-deleted: var(--bad);
+
     /* Motion (section 6) */
     --dur-instant: 90ms;
     --dur-fast: 160ms;
@@ -255,6 +275,16 @@
   @keyframes dm-grow {
     from {
       transform: scaleX(0);
+    }
+  }
+
+  /* A success icon arriving (copied, saved): from small and clear to its size. */
+  --animate-pop: dm-pop var(--dur-base) var(--ease-out-expo) both;
+
+  @keyframes dm-pop {
+    from {
+      opacity: 0;
+      transform: scale(0.6);
     }
   }
 

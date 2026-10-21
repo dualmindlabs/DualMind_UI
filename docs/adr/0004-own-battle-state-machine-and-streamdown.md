@@ -24,3 +24,7 @@ The Arena is not a normal chat: two answer panes must stay synchronised, the vot
 - **assistant-ui:** one runtime per thread; two panes in lockstep with a shared vote would fight it.
 - **Vercel AI SDK `useChat` + AI Elements:** our API does not speak the AI SDK stream protocol, and AI Elements is being folded into shadcn and assumes Next.js.
 - **marked + DOMPurify + highlight.js from CDNs** (today): three CDN scripts, no streaming safety, and a weaker CSP.
+
+## Amendment (2026-10-21): code highlighting
+
+Answers render code blocks with our own component (`web/src/features/arena/components/code-block.tsx`: language label, copy button), so Streamdown's code plugin is not used. Shiki is loaded directly instead, only when a code block is on screen and one grammar at a time (a fixed set of about twenty languages; anything else stays plain), with the **JavaScript regex engine** (no WebAssembly, so the enforced CSP needs no `wasm-unsafe-eval`) and a **CSS-variables theme** whose colours are our light and dark tokens. Tokens are rendered as React text, so the "no raw HTML outside Streamdown" rule still holds.

@@ -65,32 +65,38 @@ export function sessionJson(): string {
   });
 }
 
-export const MODELS = [
-  {
-    modelId: 'fdbfca6d-a3d2-4a70-b0ab-426024eb5cd5',
-    modelName: '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
-    displayName: 'llama-3.3-70b-instruct-fp8-fast',
-    providerName: 'cloudflare',
-    isFree: true,
-    status: 'active',
-  },
-  {
-    modelId: '69a22e49-21bf-4388-88e3-46794e7cbac2',
-    modelName: 'groq/compound-mini',
-    displayName: 'Compound Mini',
-    providerName: 'groq',
-    isFree: true,
-    status: 'active',
-  },
-  {
-    modelId: '1fe310c7-24d1-49a5-a042-2e409e009524',
-    modelName: 'gemma-3n-e2b-it',
-    displayName: 'Gemma 3n E2B IT',
-    providerName: 'google',
-    isFree: true,
-    status: 'active',
-  },
-];
+interface RecordedStat {
+  modelId: string;
+  modelName: string;
+  displayName: string;
+  providerName: string;
+}
+
+/**
+ * The catalogue (`GET /api/models`): every model on the recorded board, with the same ids,
+ * names and providers, so the pickers list what the leaderboard lists (53 models, ranked and not
+ * yet rated) and the two never disagree in the review screenshots.
+ */
+export const MODELS = (JSON.parse(BOARD) as { items: RecordedStat[] }).items.map(stat => ({
+  modelId: stat.modelId,
+  modelName: stat.modelName,
+  displayName: stat.displayName,
+  providerName: stat.providerName,
+  isFree: true,
+  status: 'active',
+}));
+
+function boardModel(modelName: string) {
+  const found = MODELS.find(item => item.modelName === modelName);
+  if (!found) throw new Error(`${modelName} is not on the recorded board`);
+  return found;
+}
+
+/** The pair a battle answers with when the request names none (and the stored threads). */
+export const PAIR = [
+  boardModel('@cf/meta/llama-3.3-70b-instruct-fp8-fast'),
+  boardModel('groq/compound-mini'),
+] as const;
 
 const ANSWER_A = `Recursion is when a function **solves a problem by calling itself** on a smaller piece of the same problem.
 
@@ -164,8 +170,8 @@ function messagesFor(threadId: string) {
     threadId,
     position,
     promptText: prompt,
-    model1Name: MODELS[0]?.modelName,
-    model2Name: MODELS[1]?.modelName,
+    model1Name: PAIR[0].modelName,
+    model2Name: PAIR[1].modelName,
     model1Response: ANSWER_A,
     model2Response: ANSWER_B,
     model1TimeMs: 1840,
@@ -274,18 +280,18 @@ export async function mockArena(
       if (options.battleDelayMs)
         await new Promise(resolve => setTimeout(resolve, options.battleDelayMs));
       battles += 1;
-      const pick = (id: unknown, fallback: number) =>
-        MODELS.find(model => model.modelId === id) ?? MODELS[fallback] ?? MODELS[0];
+      const pick = (id: unknown, fallback: 0 | 1) =>
+        MODELS.find(item => item.modelId === id) ?? PAIR[fallback];
       const left = pick(body.model1, 0);
       const right = pick(body.model2, 1);
-      const answer = (text: string, model: (typeof MODELS)[number] | undefined, ms: number) => ({
+      const answer = (text: string, model: (typeof MODELS)[number], ms: number) => ({
         object: 'ai.response',
         success: true,
         message: text,
         model: {
-          name: model?.modelName,
-          displayName: model?.displayName,
-          provider: model?.providerName,
+          name: model.modelName,
+          displayName: model.displayName,
+          provider: model.providerName,
         },
         responseTimeMs: ms,
         usage: {

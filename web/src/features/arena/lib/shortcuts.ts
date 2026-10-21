@@ -2,10 +2,13 @@
  * The arena's keyboard map (design-direction.md section 7, new-features.md F-6). Shortcuts with
  * a modifier work everywhere; single-key shortcuts only fire when focus is not in a text field,
  * and can be turned off (`dm.arena.shortcuts` = `off`; WCAG 2.1.4, Character Key Shortcuts).
- * The vote keys 1 to 4 work while a battle waits for a vote.
+ * The vote keys 1 to 4 work while a battle waits for a vote. `?` lists them all in a dialog
+ * (shortcuts-dialog.tsx), which the account menu and the command palette open too, so the list
+ * stays reachable when single keys are off.
  */
 
 export type SingleKeyAction =
+  | 'show-shortcuts'
   | 'new-battle'
   | 'toggle-sidebar'
   | 'focus-composer'
@@ -32,9 +35,11 @@ export const SHORTCUT_GROUPS: readonly ShortcutGroup[] = [
     heading: 'Anywhere',
     entries: [
       { keys: ['Mod', 'K'], description: 'Open the command palette' },
+      { keys: ['?'], description: 'Show these shortcuts', single: true },
       { keys: ['N'], description: 'Start a new battle', single: true },
       { keys: ['/'], description: 'Move to the prompt box', single: true },
       { keys: ['['], description: 'Show or hide the history', single: true },
+      { keys: ['Esc'], description: 'Close a dialog, menu or the history drawer' },
     ],
   },
   {
@@ -72,7 +77,10 @@ export function isTextEntryTarget(target: EventTarget | null): boolean {
   return false;
 }
 
-/** The single-key action for a key press, or null (modifiers, repeats, text fields, other keys). */
+/**
+ * The single-key action for a key press, or null (modifiers, repeats, text fields, other keys).
+ * Shift is allowed: `?` is Shift+/ on most layouts, and `event.key` already says which it is.
+ */
 export function singleKeyAction(
   event: Pick<
     KeyboardEvent,
@@ -84,6 +92,8 @@ export function singleKeyAction(
   }
   if (isTextEntryTarget(event.target)) return null;
   switch (event.key) {
+    case '?':
+      return 'show-shortcuts';
     case 'n':
     case 'N':
       return 'new-battle';

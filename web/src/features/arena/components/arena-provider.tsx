@@ -16,7 +16,8 @@ import { ARENA_PREFERENCE_KEYS, WIDE_QUERY } from '../lib/preferences';
 
 /**
  * The arena's state for every part of the screen: the mode, the open thread (from `?thread=`),
- * the history panel or drawer, the shortcuts, the prompt draft and a polite live region.
+ * the history panel or drawer, the shortcuts and their dialog, the prompt draft and a polite live
+ * region.
  * Preferences live in localStorage, so they survive reloads and stay in step across tabs.
  */
 export function ArenaProvider({ children }: { children: ReactNode }) {
@@ -34,10 +35,16 @@ export function ArenaProvider({ children }: { children: ReactNode }) {
 
   const [historyOpen, setHistoryOpen] = useState(false);
   const [shareThreadId, setShareThreadId] = useState<string | null>(null);
+<<<<<<< HEAD
   // A prompt typed on the landing page before signing in (UI audit P1-1): it opens in the box,
   // focused and not sent. Read once; the effect below clears it from the tab.
   const [landingDraft] = useState(() => readPromptDraft());
   const [draft, setDraft] = useState(landingDraft ?? '');
+=======
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [shortcutsReturnFocus, setShortcutsReturnFocus] = useState<HTMLElement | null>(null);
+  const [draft, setDraft] = useState('');
+>>>>>>> origin/master
   const [announcement, setAnnouncement] = useState({ id: 0, message: '' });
   const composerRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -159,6 +166,21 @@ export function ArenaProvider({ children }: { children: ReactNode }) {
     else setHistoryOpen(open => !open);
   }, [wide, sidebarCollapsed, setSidebarCollapsed, setHistoryOpen]);
 
+  const openShortcuts = useCallback(
+    (returnTo?: HTMLElement | null) => {
+      // From a key press: focus returns to what had it. From the account menu: to its trigger.
+      // Anything gone by then (the palette's field) falls back to the dialog's default.
+      const active = document.activeElement;
+      setShortcutsReturnFocus(
+        returnTo ?? (active instanceof HTMLElement && active !== document.body ? active : null),
+      );
+      setHistoryOpen(false);
+      setShortcutsOpen(true);
+    },
+    [setHistoryOpen, setShortcutsOpen, setShortcutsReturnFocus],
+  );
+  const closeShortcuts = useCallback(() => setShortcutsOpen(false), [setShortcutsOpen]);
+
   const setShortcutsEnabled = useCallback(
     (enabled: boolean) => setStoredShortcuts(enabled ? null : 'off'),
     [setStoredShortcuts],
@@ -190,6 +212,10 @@ export function ArenaProvider({ children }: { children: ReactNode }) {
       wide,
       shortcutsEnabled,
       setShortcutsEnabled,
+      shortcutsOpen,
+      openShortcuts,
+      closeShortcuts,
+      shortcutsReturnFocus,
       composerRef,
       focusComposer,
       announce,
@@ -212,6 +238,10 @@ export function ArenaProvider({ children }: { children: ReactNode }) {
       wide,
       shortcutsEnabled,
       setShortcutsEnabled,
+      shortcutsOpen,
+      openShortcuts,
+      closeShortcuts,
+      shortcutsReturnFocus,
       focusComposer,
       announce,
       battle,
