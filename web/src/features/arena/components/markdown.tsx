@@ -64,7 +64,12 @@ type CodeProps = ComponentProps<'code'> & ExtraProps & { 'data-block'?: string }
 function AnswerCode({ node: _node, className, children, ...props }: CodeProps) {
   if ('data-block' in props) {
     const language = /language-([\w+#-]+)/.exec(className ?? '')?.[1] ?? null;
-    return <CodeBlock code={textOf(children).replace(/^\n+/, '').replace(/\n$/, '')} language={language} />;
+    return (
+      <CodeBlock
+        code={textOf(children).replace(/^\n+/, '').replace(/\n$/, '')}
+        language={language}
+      />
+    );
   }
   return <code className={className}>{children}</code>;
 }
