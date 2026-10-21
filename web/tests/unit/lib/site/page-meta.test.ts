@@ -7,7 +7,7 @@ import { absoluteUrl, pageMeta, SITE_NAME } from '@/lib/site/page-meta';
 type Tag = Record<string, unknown>;
 
 const find = (meta: MetaDescriptor[], key: string, value: string) =>
-  meta.find(tag => (tag as Tag)[key] === value) as Tag | undefined;
+  meta.find(tag => tag[key] === value) as Tag | undefined;
 
 const base = {
   title: 'Leaderboard · DualMind Arena',
