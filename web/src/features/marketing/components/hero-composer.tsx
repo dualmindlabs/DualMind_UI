@@ -40,7 +40,7 @@ export function HeroComposer({ onAsk, className }: HeroComposerProps) {
         submitLabel={HERO.composerSubmit}
         className="max-w-2xl"
       />
-      <div className="mt-5 flex max-w-4xl flex-wrap items-center justify-center gap-2">
+      <div className="mt-5 flex max-w-5xl flex-wrap items-center justify-center gap-2">
         <span className="mr-1 eyebrow text-muted">Or watch</span>
         {DEMO_BATTLES.map((battle, index) => (
           <button
