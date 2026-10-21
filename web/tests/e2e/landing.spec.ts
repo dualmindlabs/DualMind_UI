@@ -196,11 +196,13 @@ test('a prompt from the hero plays the recorded demo and offers the sign-in', as
   await expect(page.getByText('Playing a recorded demo below.')).toBeVisible();
 });
 
-test.describe('signed-in hand-off', () => {
+test.describe('signed-in hand-off (visitors who keep the legacy arena)', () => {
   // The legacy app's own scripts would redirect a fake session to the login page; keep them
-  // out so the test sees where the hand-off lands.
+  // out so the test sees where the hand-off lands. Since slice S9 the new arena is the default:
+  // these visitors chose the legacy arena (`dm.arena` = `legacy`); arena.spec.ts covers the rest.
   test.beforeEach(async ({ page }) => {
     await page.route(/\/(config\.js|js\/.*)$/, route => route.abort());
+    await page.addInitScript(() => window.localStorage.setItem('dm.arena', 'legacy'));
   });
 
   test('a stored legacy session goes to the legacy arena, query and hash kept', async ({

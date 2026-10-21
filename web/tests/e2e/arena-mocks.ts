@@ -114,6 +114,10 @@ function iso(daysAgo: number, hour = 11): string {
 export interface ArenaMockState {
   threads: Array<Record<string, unknown>>;
   requests: string[];
+  /** Request bodies of the battle and vote calls, in order. */
+  bodies: Array<{ path: string; body: Record<string, unknown> }>;
+  /** While true, votes fail like a dropped connection (the offline queue keeps them). */
+  offline: boolean;
 }
 
 export function seedThreads(): Array<Record<string, unknown>> {
@@ -169,9 +173,20 @@ const json = (route: Route, status: number, body: unknown) =>
 /** Signs the browser in (a stored session) and answers Supabase and the API from memory. */
 export async function mockArena(
   page: Page,
-  options: { threads?: Array<Record<string, unknown>>; failThreads?: boolean } = {},
+  options: {
+    threads?: Array<Record<string, unknown>>;
+    failThreads?: boolean;
+    /** Delay of the battle answer, in milliseconds (the waiting state's screenshot). */
+    battleDelayMs?: number;
+  } = {},
 ): Promise<ArenaMockState> {
-  const state: ArenaMockState = { threads: options.threads ?? seedThreads(), requests: [] };
+  const state: ArenaMockState = {
+    threads: options.threads ?? seedThreads(),
+    requests: [],
+    bodies: [],
+    offline: false,
+  };
+  let battles = 0;
   const session = sessionJson();
   await page.addInitScript(([key, value]) => window.localStorage.setItem(key, value), [
     SESSION_KEY,
@@ -230,6 +245,53 @@ export async function mockArena(
           winRate: 60 - index * 8,
         })),
       });
+    }
+    // Direct chat streams from the e2e backend (serve-dist.mjs), in real chunks.
+    if (path === '/api/arena/chat/stream') return route.continue();
+    if (path === '/api/threads' && method === 'POST') {
+      const body = request.postDataJSON() as { title?: string; mode?: string };
+      const created = {
+        threadId: `t-new-${state.threads.length + 1}`,
+        userId: USER.id,
+        title: body.title ?? 'New thread',
+        mode: body.mode ?? 'battle',
+        visibility: 'private',
+        messageCount: 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      state.threads = [created, ...state.threads];
+      return json(route, 200, created);
+    }
+    if (path === '/api/arena/dualchat') {
+      const body = request.postDataJSON() as Record<string, unknown>;
+      state.bodies.push({ path, body });
+      if (options.battleDelayMs) await new Promise(resolve => setTimeout(resolve, options.battleDelayMs));
+      battles += 1;
+      const pick = (id: unknown, fallback: number) =>
+        MODELS.find(model => model.modelId === id) ?? MODELS[fallback] ?? MODELS[0];
+      const left = pick(body.model1, 0);
+      const right = pick(body.model2, 1);
+      const answer = (text: string, model: (typeof MODELS)[number] | undefined, ms: number) => ({
+        object: 'ai.response',
+        success: true,
+        message: text,
+        model: { name: model?.modelName, displayName: model?.displayName, provider: model?.providerName },
+        responseTimeMs: ms,
+        usage: { promptTokens: 12, completionTokens: Math.ceil(text.length / 4), totalTokens: 12 + Math.ceil(text.length / 4) },
+      });
+      return json(route, 200, {
+        success: true,
+        comparisonId: `c-live-${battles}`,
+        agent1: answer(ANSWER_A, left, 1840),
+        agent2: answer(ANSWER_B, right, 2310),
+      });
+    }
+    if (path === '/api/arena/model-vote') {
+      const body = request.postDataJSON() as Record<string, unknown>;
+      if (state.offline) return route.abort('internetdisconnected');
+      state.bodies.push({ path, body });
+      return json(route, 200, { success: true, message: 'Vote recorded' });
     }
     if (path === '/api/threads' && method === 'GET') {
       if (options.failThreads)

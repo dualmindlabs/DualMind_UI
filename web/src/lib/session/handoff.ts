@@ -1,19 +1,18 @@
 /**
  * The landing page's signed-in switch (docs/redesign/migration-plan.md section 3.3).
  *
- * `/` is the prerendered landing page. The working arena is still the legacy app, served from the
- * same dist/ as /legacy-app.html (build.js), while the new arena (slice S8, in
- * src/features/arena/) renders at `/` itself for visitors who opted in:
+ * `/` is the prerendered landing page, and the signed-in arena (src/features/arena/) renders at
+ * `/` itself. The legacy arena stays reachable at /legacy-app.html (build.js) for one release:
  *
- * - `?arena=new` on `/` (or `localStorage['dm.arena'] = 'new'`) opts in; `?arena=legacy` opts
- *   out again. The query parameter stores the choice, so it sticks for later visits.
- * - A signed-in visitor who opted in stays on `/`: the script marks <html data-arena> before the
- *   first paint, CSS hides the landing page and shows the arena's loading frame, and the app
- *   renders the arena once the session is confirmed (src/app/routes/home.tsx).
- * - Every other signed-in visitor, and every visit with Supabase auth parameters in the URL (an
- *   OAuth or magic-link return, a recovery link), is sent to the legacy arena before the first
- *   paint, with the query string and the hash kept, so the legacy Supabase client can finish the
- *   sign-in it started.
+ * - A signed-in visitor, or a visit with Supabase auth parameters in the URL (an OAuth or
+ *   magic-link return; supabase-js in the new app reads them), stays on `/`: the script marks
+ *   <html data-arena> before the first paint, CSS hides the landing page and shows the arena's
+ *   loading frame, and the app renders the arena once the session is confirmed
+ *   (src/app/routes/home.tsx). A password recovery link goes on to /update-password.html with its
+ *   hash.
+ * - `?arena=legacy` (or `localStorage['dm.arena'] = 'legacy'`, set by "Open the classic arena")
+ *   keeps the legacy arena: signed-in visitors and auth returns are sent there before the first
+ *   paint, query string and hash kept. `?arena=new` comes back. The parameter stores the choice.
  *
  * SESSION_HANDOFF_SCRIPT runs inline in the landing page's <head> (the Content-Security-Policy
  * allows it by its sha256, computed by build.js). It is built from the same regular expressions
@@ -57,11 +56,17 @@ export const ARENA_PARAM_RE = /[?&]arena=(new|legacy)(?:&|$)/;
 export const ARENA_ATTRIBUTE = 'data-arena';
 
 /**
- * Whether signed-in visitors get the new arena without opting in. Off while the battle flow is
- * being built (slice S8): `?arena=new` opts in. Slice S9 turns it on and keeps `?arena=legacy`
- * as the way back for one release.
+ * Whether signed-in visitors get the new arena without opting in. On since the battle flow
+ * (slice S9); `?arena=legacy` (or the account menu) keeps the legacy arena for one release, and
+ * `?arena=new` comes back.
  */
-export const NEW_ARENA_BY_DEFAULT = false;
+export const NEW_ARENA_BY_DEFAULT = true;
+
+/** Where password recovery links continue in the new app (slice S6). */
+export const RECOVERY_PATH = '/update-password.html';
+
+/** A password recovery link (`type=recovery`). */
+export const RECOVERY_TYPE_RE = /[#?&]type=recovery(&|$)/;
 
 type SessionStorage = Pick<Storage, 'length' | 'key' | 'getItem'>;
 
@@ -126,7 +131,10 @@ export function usesNewArena(choice: ArenaChoice | null): boolean {
 
 /** What `/` shows: the landing page, the new arena, or a hand-off to the legacy arena. */
 export type LandingView =
-  { kind: 'landing' } | { kind: 'arena' } | { kind: 'legacy'; target: string };
+  | { kind: 'landing' }
+  | { kind: 'arena' }
+  | { kind: 'legacy'; target: string }
+  | { kind: 'recovery'; target: string };
 
 /**
  * Decides what `/` shows. Storage that cannot be read (blocked cookies, private mode) counts as
@@ -144,11 +152,16 @@ export function landingView(
     signedIn = false;
   }
   const target = handoffTarget(location.search, location.hash);
-  if (hasAuthParams(location.search, location.hash)) return { kind: 'legacy', target };
-  if (!signedIn) return { kind: 'landing' };
-  return usesNewArena(readArenaChoice(location.search, storage))
-    ? { kind: 'arena' }
-    : { kind: 'legacy', target };
+  const auth = hasAuthParams(location.search, location.hash);
+  if (!usesNewArena(readArenaChoice(location.search, storage))) {
+    return auth || signedIn ? { kind: 'legacy', target } : { kind: 'landing' };
+  }
+  // The new app finishes sign-ins itself (supabase-js reads the tokens); a recovery link goes on
+  // to the new password page with its hash, like /auth-callback.html does.
+  if (RECOVERY_TYPE_RE.test(location.hash + location.search)) {
+    return { kind: 'recovery', target: `${RECOVERY_PATH}${location.search}${location.hash}` };
+  }
+  return auth || signedIn ? { kind: 'arena' } : { kind: 'landing' };
 }
 
 /**
@@ -159,7 +172,7 @@ export function handoffDestination(
   storage: SessionStorage | null,
 ): string | null {
   const view = landingView(location, storage);
-  return view.kind === 'legacy' ? view.target : null;
+  return view.kind === 'legacy' || view.kind === 'recovery' ? view.target : null;
 }
 
 /** A route `handle` that asks the root layout for the hand-off script. */
@@ -193,7 +206,8 @@ export const SESSION_HANDOFF_SCRIPT = [
   `for(var i=0;!s&&i<t.length;i++){var k=t.key(i);s=k!==null&&${SUPABASE_SESSION_KEY_RE.toString()}.test(k)&&v(t.getItem(k))}`,
   '}catch(e){s=false}',
   `var n=${NEW_ARENA_BY_DEFAULT ? 'c!=="legacy"' : 'c==="new"'};`,
-  `if(a||(s&&!n)){l.replace(${JSON.stringify(LEGACY_APP_PATH)}+q+h);return}`,
-  `if(s){w.document.documentElement.setAttribute(${JSON.stringify(ARENA_ATTRIBUTE)},"")}`,
+  `if(!n){if(a||s){l.replace(${JSON.stringify(LEGACY_APP_PATH)}+q+h)}return}`,
+  `if(${RECOVERY_TYPE_RE.toString()}.test(h+q)){l.replace(${JSON.stringify(RECOVERY_PATH)}+q+h);return}`,
+  `if(a||s){w.document.documentElement.setAttribute(${JSON.stringify(ARENA_ATTRIBUTE)},"")}`,
   '}catch(e){}})();',
 ].join('');

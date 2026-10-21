@@ -19,6 +19,7 @@ import { useNow } from '../hooks/use-now';
 import { MODE_DETAILS } from '../lib/modes';
 import { formatThreadTime, threadTime } from '../lib/thread-groups';
 import { toTurns } from '../lib/turns';
+import { LiveTurnView } from './live-turn-view';
 import { TurnView } from './turn-view';
 
 function TurnSkeleton() {
@@ -72,10 +73,14 @@ function ThreadMessage({
  * An open thread (`/?thread=<id>`): its title, then every turn, oldest first, in a container that
  * sticks to the newest content. Loading, missing and failed threads each get their own state.
  */
-export function ThreadView({ threadId }: { threadId: string }) {
+export function ThreadView({ threadId }: { threadId: string | null }) {
   const api = useApiClient();
-  const { thread, mode, newBattle } = useArena();
-  const messages = useQuery(threadMessagesQuery(api, threadId));
+  const { thread, mode, newBattle, battle } = useArena();
+  const messages = useQuery({
+    ...threadMessagesQuery(api, threadId ?? ''),
+    enabled: threadId !== null,
+  });
+  const live = battle.state.threadId === threadId ? battle.state.turns : [];
   const { options } = useModelOptions();
   const now = useNow();
 
@@ -83,12 +88,16 @@ export function ThreadView({ threadId }: { threadId: string }) {
     () => new Map((options ?? []).map(option => [option.modelName, option.displayName])),
     [options],
   );
-  const turns = useMemo(
-    () => (messages.data ? toTurns(messages.data, mode) : undefined),
-    [messages.data, mode],
-  );
+  // A turn of this session that the server already stores shows once: as the live turn.
+  const turns = useMemo(() => {
+    if (!messages.data) return undefined;
+    const liveIds = new Set(live.map(turn => turn.comparisonId).filter(Boolean));
+    return toTurns(messages.data, mode).filter(
+      turn => turn.comparisonId === null || !liveIds.has(turn.comparisonId),
+    );
+  }, [messages.data, mode, live]);
 
-  if (messages.isError) {
+  if (threadId !== null && messages.isError) {
     const missing = isApiErrorKind(messages.error, 'not_found', 'forbidden');
     return missing ? (
       <ThreadMessage
@@ -128,26 +137,29 @@ export function ThreadView({ threadId }: { threadId: string }) {
               </span>
             ) : null}
           </p>
-          {thread ? (
+          {thread || threadId === null ? (
             <h1 className="text-h3 font-semibold text-balance text-fg sm:text-h2">
-              {thread.title}
+              {thread?.title ?? live[0]?.prompt ?? 'New battle'}
             </h1>
           ) : (
             <Skeleton className="h-8 w-2/3" />
           )}
         </header>
-        {turns === undefined ? (
+        {threadId === null ? null : turns === undefined ? (
           <div aria-busy="true" className="grid gap-10">
             <p className="sr-only">Loading the thread</p>
             <TurnSkeleton />
           </div>
-        ) : turns.length === 0 ? (
+        ) : turns.length === 0 && live.length === 0 ? (
           <p className="text-ui text-fg-soft">
             This thread has no answers yet. Send a prompt below to start it.
           </p>
         ) : (
           turns.map(turn => <TurnView key={turn.id} turn={turn} names={names} />)
         )}
+        {live.map((turn, index) => (
+          <LiveTurnView key={turn.id} turn={turn} number={(turns?.length ?? 0) + index + 1} />
+        ))}
       </ChatContainerContent>
       <div className="pointer-events-none absolute inset-x-0 bottom-3 flex justify-center">
         <ScrollButton className="pointer-events-auto" label="Scroll to the latest answer" />

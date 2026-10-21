@@ -74,7 +74,40 @@ const leaderboard = readFileSync(
 );
 
 const backendPort = Number(port) + 1;
+// Direct chat (POST /api/arena/chat/stream) as a real chunked Server-Sent Events stream, one
+// word every 60 ms, so the e2e tests see the answer grow through the Worker proxy.
+const STREAM_WORDS =
+  'Direct mode streams this answer as it is written: **one word at a time**, from the e2e backend.'.split(
+    ' ',
+  );
+
+function streamChat(request, response) {
+  response.writeHead(200, {
+    'content-type': 'text/event-stream; charset=utf-8',
+    'cache-control': 'no-cache',
+  });
+  let index = 0;
+  const timer = setInterval(() => {
+    if (index < STREAM_WORDS.length) {
+      const text = `${index === 0 ? '' : ' '}${STREAM_WORDS[index]}`;
+      response.write(`data: ${JSON.stringify({ object: 'ai.stream.delta', delta: { type: 'text', text } })}\n\n`);
+      index += 1;
+      return;
+    }
+    clearInterval(timer);
+    const usage = { promptTokens: 9, completionTokens: STREAM_WORDS.length, totalTokens: 9 + STREAM_WORDS.length };
+    response.write(`data: ${JSON.stringify({ object: 'ai.stream.done', finishReason: 'stop', usage })}\n\n`);
+    response.end('data: [DONE]\n\n');
+  }, 60);
+  response.on('close', () => clearInterval(timer));
+}
+
 const backend = http.createServer((request, response) => {
+  if (request.method === 'POST' && request.url?.startsWith('/api/arena/chat/stream')) {
+    request.resume();
+    streamChat(request, response);
+    return;
+  }
   if (request.method === 'GET' && request.url?.startsWith('/api/arena/model-stats')) {
     response.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
     response.end(leaderboard);
