@@ -1,19 +1,21 @@
 # Morning summary
 
-Short, phone-readable summary of the overnight work. Full log: [status.md](./status.md). Things for Harsh: [needs-harsh.md](./needs-harsh.md).
+Phone-readable summary of the overnight run. Full log: [status.md](./status.md). For Harsh: [needs-harsh.md](./needs-harsh.md).
 
-Updated: 2026-10-21 01:10 UTC (rewritten at the end of the run).
+Updated: 2026-10-21 02:55 UTC.
 
-**Shipped (all merged, CI green, production still behind the waitlist gate):**
-1. Plan + catalog + licences + buy list: [#19](https://github.com/dualmindlabs/DualMind_UI/pull/19), [#23](https://github.com/dualmindlabs/DualMind_UI/pull/23)
-2. React app foundation + `/design/` style guide: [#22](https://github.com/dualmindlabs/DualMind_UI/pull/22)
-3. Worker security (CSP, headers, redirects, hardened API proxy): [#24](https://github.com/dualmindlabs/DualMind_UI/pull/24), [#30](https://github.com/dualmindlabs/DualMind_UI/pull/30)
-4. Typed API client: [#33](https://github.com/dualmindlabs/DualMind_UI/pull/33); endpoint map: [#21](https://github.com/dualmindlabs/DualMind_UI/pull/21)
-5. UI kit + shell + command palette: [#34](https://github.com/dualmindlabs/DualMind_UI/pull/34); 27 effects: [#36](https://github.com/dualmindlabs/DualMind_UI/pull/36)
-6. Info/legal content: [#35](https://github.com/dualmindlabs/DualMind_UI/pull/35); backend plan: [#32](https://github.com/dualmindlabs/DualMind_UI/pull/32)
+**Shipped overnight (all merged, CI green; production still behind the waitlist):**
+1. Landing page `/`: live hero, real prompt box, playable demo battle, live top 5: [#40](https://github.com/dualmindlabs/DualMind_UI/pull/40)
+2. Leaderboard + models on live data, no sign-in needed: [#38](https://github.com/dualmindlabs/DualMind_UI/pull/38)
+3. About, how it works, FAQ, privacy, terms, cookies, 404: [#41](https://github.com/dualmindlabs/DualMind_UI/pull/41)
+4. UI kit, header, command palette: [#34](https://github.com/dualmindlabs/DualMind_UI/pull/34); 27 effects: [#36](https://github.com/dualmindlabs/DualMind_UI/pull/36)
+5. Typed API client: [#33](https://github.com/dualmindlabs/DualMind_UI/pull/33); Worker security (CSP, headers, redirects): [#24](https://github.com/dualmindlabs/DualMind_UI/pull/24)
+6. Backend plan (research, 25-feature roadmap, ADR 0007): [#32](https://github.com/dualmindlabs/DualMind_UI/pull/32)
 
-**See it:** https://arena.dualmindlab.tech/design/?preview=dualmind-preview (the preview link sets a cookie that passes the waitlist).
+**See it:** https://arena.dualmindlab.tech/?preview=dualmind-preview (sets a preview cookie), then /leaderboard/, /about/, /design/.
 
-**Next:** landing page, info pages, leaderboard, then auth and the arena itself.
+**Screenshots:** landing https://github.com/dualmindlabs/DualMind_UI/actions/runs/39532315889/artifacts/12315739074 · leaderboard https://github.com/dualmindlabs/DualMind_UI/actions/runs/39530192992/artifacts/12314189940 · info pages https://github.com/dualmindlabs/DualMind_UI/actions/runs/39533833408/artifacts/12317112907
 
-**Harsh to do:** Supabase redirect URLs before the auth slice (needs-harsh.md #1); disconnect the failing Vercel project (#2).
+**In progress:** sign-in on the new app (S6). **Next:** the arena itself (signed-in `/`, battles, reveal), share, settings, then cleanup and backend.
+
+**Harsh to do:** see needs-harsh.md (Supabase preview URL and build variables for sign-in, failing Vercel project, a governing-law choice for the terms, optional buy list).
