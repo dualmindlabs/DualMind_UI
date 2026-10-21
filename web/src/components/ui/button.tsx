@@ -51,7 +51,7 @@ const buttonCva = cva(
     },
     compoundVariants: [
       // A link reads as text: no box, no padding, no press scale.
-      { variant: 'link', className: 'h-auto rounded-sm px-0 shadow-none motion-safe:active:not-data-loading:scale-100' },
+      { variant: 'link', className: 'h-auto rounded-sm border-0 px-0 shadow-none motion-safe:active:not-data-loading:scale-100' },
     ],
     defaultVariants: { variant: 'primary', size: 'md' },
   },
