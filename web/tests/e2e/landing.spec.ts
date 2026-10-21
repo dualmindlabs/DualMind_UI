@@ -203,9 +203,10 @@ test('a demo chip still plays the recorded battle and offers the sign-in', async
   await expect(region).toBeInViewport();
   const status = page.getByTestId('hero-status');
   await expect(status).toContainText('Playing a recorded battle below.');
-  await expect(
-    status.getByRole('link', { name: 'Sign in to battle real models' }),
-  ).toHaveAttribute('href', '/login/');
+  await expect(status.getByRole('link', { name: 'Sign in to battle real models' })).toHaveAttribute(
+    'href',
+    '/login/',
+  );
 });
 
 test.describe('signed-in hand-off (visitors who keep the legacy arena)', () => {
