@@ -19,14 +19,14 @@ export const MAX_JSON_BODY_BYTES = 1024 * 1024;
 export const OPENAPI_PATH = '/api/v2/openapi.json';
 
 export const openapiConfig = {
-  openapi: '3.1.0',
+  openapi: '3.1.0' as const,
   info: {
     title: 'DualMind Arena API v2',
     version: API_VERSION,
     description: 'The Arena Worker API. JSON in and out, errors as RFC 9457 problem+json, every response carries X-Request-Id. /api/v2 changes only additively.',
   },
   servers: [{ url: 'https://arena.dualmindlab.tech' }],
-} as const;
+};
 
 export type AppOptions = {
   /** Replaces the Supabase verifier (tests). */
