@@ -51,7 +51,8 @@ export function Composer({
   variant = 'dock',
   className,
 }: ComposerProps) {
-  const { mode, selectMode, composerRef } = useArena();
+  const { mode, selectMode, composerRef, battle } = useArena();
+  const followUp = mode === 'battle' && battle.state.turns.some(turn => turn.b?.model);
   const { draft, setDraft } = useDraft();
   const { options } = useModelOptions();
   const choices = useModelChoices(mode === 'battle' ? undefined : options);
@@ -88,7 +89,7 @@ export function Composer({
       >
         <PromptInputTextarea
           aria-label="Your prompt"
-          placeholder={MODE_DETAILS[mode].placeholder}
+          placeholder={followUp ? 'Ask a follow-up, same two models' : MODE_DETAILS[mode].placeholder}
           enterKeyHint="send"
           className={cn(variant === 'hero' && 'min-h-16')}
           onKeyDown={event => {

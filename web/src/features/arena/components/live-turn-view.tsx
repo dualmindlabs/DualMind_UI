@@ -33,7 +33,7 @@ function Metrics({ answer }: { answer: LiveAnswer }) {
     ],
   ].filter((item): item is [string, string] => item[1] !== null);
   return (
-    <dl className="flex flex-wrap gap-x-5 gap-y-1 rounded-b-[13px] border-t border-line px-4 py-2.5 font-mono text-caption sm:px-5">
+    <dl className="mt-auto flex flex-wrap gap-x-5 gap-y-1 rounded-b-[13px] border-t border-line px-4 py-2.5 font-mono text-caption sm:px-5">
       {items.map(([term, value]) => (
         <div key={term} className="flex items-baseline gap-1.5">
           <dt className="text-muted">{term}</dt>

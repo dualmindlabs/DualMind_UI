@@ -1,3 +1,5 @@
+import { useEffect, useRef } from 'react';
+
 import { RoleBadge } from '@/components/ui/role-badge';
 import type { VoteChoice } from '@/lib/api';
 import { cn } from '@/lib/utils/cn';
@@ -33,6 +35,21 @@ export interface VoteBarProps {
  */
 export function VoteBar({ onVote, chosen, optional = false, error, className }: VoteBarProps) {
   const locked = chosen !== null;
+  const group = useRef<HTMLDivElement>(null);
+
+  // Answers are ready: when the visitor is still in the empty prompt box (they just sent), move
+  // focus to the verdict, so the keys 1 to 4 vote instead of typing into the box.
+  useEffect(() => {
+    const active = document.activeElement;
+    if (
+      active instanceof HTMLTextAreaElement &&
+      active.dataset.slot === 'prompt-input-textarea' &&
+      active.value.trim() === ''
+    ) {
+      group.current?.querySelector('button')?.focus({ preventScroll: true });
+    }
+  }, []);
+
   return (
     <div
       className={cn(
@@ -45,7 +62,12 @@ export function VoteBar({ onVote, chosen, optional = false, error, className }: 
         {optional ? 'Which answer is better? Voting is optional here.' : 'Which answer is better?'}
         <span className="hidden text-muted sm:inline"> Keys 1 to 4.</span>
       </p>
-      <div role="group" aria-label="Your verdict" className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+      <div
+        ref={group}
+        role="group"
+        aria-label="Your verdict"
+        className="grid grid-cols-2 gap-2 sm:grid-cols-4"
+      >
         {VOTE_OPTIONS.map(option => (
           <button
             key={option.choice}
