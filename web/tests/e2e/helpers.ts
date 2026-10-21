@@ -40,6 +40,6 @@ export async function fullPageShot(page: Page, options: Parameters<Page['screens
   try {
     return await page.screenshot(options);
   } finally {
-    await handle.evaluate(node => node.remove());
+    await handle.evaluate(node => (node as Element).remove());
   }
 }
