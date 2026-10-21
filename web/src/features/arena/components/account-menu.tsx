@@ -1,4 +1,4 @@
-import { LogOut, Undo2 } from 'lucide-react';
+import { LogOut, Settings, Undo2 } from 'lucide-react';
 
 import { buttonVariants } from '@/components/ui/button';
 import {
@@ -7,10 +7,12 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuLinkItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/use-auth';
+import { settingsLink } from '@/lib/site/links';
 import { cn } from '@/lib/utils/cn';
 
 import { leaveForClassicArena } from '../lib/classic-arena';
@@ -19,15 +21,18 @@ function initialOf(name: string): string {
   return name.trim().charAt(0).toUpperCase() || 'Y';
 }
 
-/** The signed-in visitor's menu: who is signed in, the classic arena, and sign out. */
+/**
+ * The signed-in visitor's menu: who is signed in, settings, the classic arena, and sign out. The
+ * name set on /settings/ (Supabase `full_name`) comes first, then the API profile's.
+ */
 export function AccountMenu() {
   const { user, profile, signOut } = useAuth();
   const metadata = (user?.user_metadata ?? {}) as Record<string, unknown>;
-  const name =
-    profile?.name ??
-    (typeof metadata.full_name === 'string' ? metadata.full_name : null) ??
-    user?.email ??
-    'You';
+  const fullName =
+    typeof metadata.full_name === 'string' && metadata.full_name.trim() !== ''
+      ? metadata.full_name.trim()
+      : null;
+  const name = fullName ?? profile?.name ?? user?.email ?? 'You';
   const email = user?.email ?? null;
 
   return (
@@ -51,6 +56,10 @@ export function AccountMenu() {
           </DropdownMenuLabel>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
+        <DropdownMenuLinkItem href={settingsLink.href}>
+          <Settings aria-hidden="true" strokeWidth={1.75} />
+          {settingsLink.label}
+        </DropdownMenuLinkItem>
         <DropdownMenuItem onClick={leaveForClassicArena}>
           <Undo2 aria-hidden="true" strokeWidth={1.75} />
           Open the classic arena

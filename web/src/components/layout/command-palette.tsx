@@ -6,6 +6,7 @@ import {
   type LucideIcon,
   Monitor,
   Moon,
+  Settings,
   Sun,
   Swords,
   Trophy,
@@ -23,9 +24,10 @@ import {
   CommandShortcut,
 } from '@/components/ui/command';
 import { Kbd } from '@/components/ui/kbd';
+import { useAuth } from '@/hooks/use-auth';
 import { type CommandAction, useCommandPalette } from '@/hooks/use-command-palette';
 import { useTheme } from '@/hooks/use-theme';
-import { primaryNav } from '@/lib/site/links';
+import { primaryNav, settingsLink } from '@/lib/site/links';
 import type { ThemePreference } from '@/lib/theme/theme';
 
 const navIcons: Record<string, LucideIcon> = {
@@ -54,13 +56,15 @@ const themeActions: ReadonlyArray<{ value: ThemePreference; label: string; icon:
 ];
 
 /**
- * The command palette (Ctrl+K or Cmd+K): jump to a page, switch the theme, and run the commands
- * features add with useCommandPaletteGroup() (the arena's "New battle", "Switch mode" in S8).
+ * The command palette (Ctrl+K or Cmd+K): jump to a page (Settings too, when signed in), switch
+ * the theme, and run the commands features add with useCommandPaletteGroup() (the arena's
+ * "New battle", "Switch mode" in S8).
  * A modal dialog: focus moves to the search field, Esc closes it and focus returns to where it was.
  */
 export function CommandPalette() {
   const { open, setOpen, groups } = useCommandPalette();
   const { preference, setPreference } = useTheme();
+  const signedIn = useAuth().status === 'signed-in';
 
   const navigate = useMemo<readonly CommandAction[]>(
     () => [
@@ -83,8 +87,29 @@ export function CommandPalette() {
         hint: '/faq/',
         perform: () => goTo('/faq/'),
       },
+      ...(signedIn
+        ? [
+            {
+              id: `go-${settingsLink.href}`,
+              label: settingsLink.label,
+              keywords: [
+                'account',
+                'profile',
+                'preferences',
+                'password',
+                'export',
+                'download',
+                'motion',
+                'shortcuts',
+              ],
+              icon: Settings,
+              hint: settingsLink.href,
+              perform: () => goTo(settingsLink.href),
+            },
+          ]
+        : []),
     ],
-    [],
+    [signedIn],
   );
 
   const run = (perform: () => void) => {

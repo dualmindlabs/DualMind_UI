@@ -1,4 +1,31 @@
 @import 'tailwindcss';
+
+/*
+ * `motion-safe:` and `motion-reduce:` follow the motion setting on /settings/ as well as the OS:
+ * <html data-motion="reduce"> or "allow" wins over `prefers-reduced-motion`
+ * (lib/motion/motion-preference.ts).
+ */
+@custom-variant motion-safe {
+  @media (prefers-reduced-motion: no-preference) {
+    &:where(:root:not([data-motion='reduce']) *) {
+      @slot;
+    }
+  }
+  &:where(:root[data-motion='allow'] *) {
+    @slot;
+  }
+}
+
+@custom-variant motion-reduce {
+  @media (prefers-reduced-motion: reduce) {
+    &:where(:root:not([data-motion='allow']) *) {
+      @slot;
+    }
+  }
+  &:where(:root[data-motion='reduce'] *) {
+    @slot;
+  }
+}
 @import './tokens.css';
 @import './base.css';
 @import './prose.css';

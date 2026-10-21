@@ -7,7 +7,7 @@ import { index, route, type RouteConfig } from '@react-router/dev/routes';
  * the legacy files in the repo root until their slice lands (docs/redesign/migration-plan.md).
  */
 export default [
-  // The landing page (signed out); signed-in visitors are handed to the legacy arena (S3).
+  // The landing page (signed out); signed-in visitors get the arena (S8, S9), loaded lazily.
   index('routes/home.tsx'),
   // Living style guide (noindex).
   route('design', 'routes/design.tsx'),
@@ -38,6 +38,11 @@ export default [
   // /share/index.html. Client-only (SPA fallback, status 200, no-store, link-preview tags written by
   // the Worker; server/share.js).
   route('share/:threadId?', 'routes/share.tsx'),
+
+  // Settings and export (slice S12): signed in only, so client-only (SPA fallback, status 200,
+  // noindex; SPA_FALLBACK_ROUTES and isNoindexPath in server/routing.js). Signed-out visitors go
+  // to /login/?redirect=%2Fsettings%2F (hooks/use-require-auth.ts).
+  route('settings', 'routes/settings.tsx'),
 
   // Anything else: the 404 page. Prerendered as /404 (build.js moves it to dist/404.html, which
   // the Worker serves with status 404); this entry also covers client-side navigation.

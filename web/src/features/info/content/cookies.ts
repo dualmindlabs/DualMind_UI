@@ -65,6 +65,11 @@ export const cookiesContent: PageContent = {
                 'Whether you chose the dark theme, the light theme or the system setting.',
             },
             {
+              term: 'Arena and display settings (local storage)',
+              description:
+                'The choices on the Settings page and in the arena: the default mode, which key sends a prompt, single-key shortcuts on or off, the motion setting and whether the history panel is collapsed.',
+            },
+            {
               term: 'Model choices (local storage)',
               description:
                 'The models you last picked for Battle, Side by side and Direct, so they are preselected next time.',

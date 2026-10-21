@@ -179,7 +179,7 @@ export const privacyContent: PageContent = {
       blocks: [
         {
           type: 'paragraph',
-          text: 'You can ask us for a copy of your data, to correct it, or to delete it. You can delete conversations yourself from the sidebar and export a conversation as Markdown, JSON, CSV, HTML or PDF. For everything else, including deleting your account, write to privacy@dualmindlab.tech from the email address on the account. We will answer as soon as we can.',
+          text: 'You can ask us for a copy of your data, to correct it, or to delete it. You can delete conversations yourself from the sidebar, and download all of them from Settings as Markdown, JSON, CSV, HTML or PDF. For everything else, including deleting your account, write to privacy@dualmindlab.tech from the email address on the account. We will answer as soon as we can.',
         },
         {
           type: 'paragraph',
