@@ -169,8 +169,7 @@ describe('web app pages', () => {
 
 describe('legacy pages and files', () => {
   it('legacy pages: 200, no-store, security headers', async () => {
-    for (const page of ['/legacy-app', '/leaderboard/', '/about/']) {
-    for (const page of ['/', '/leaderboard/', '/models/']) {
+    for (const page of ['/legacy-app', '/leaderboard/', '/models/']) {
       const response = await preview(page);
       expect(response.status, page).toBe(200);
       expect(response.headers.get('cache-control'), page).toBe(LEGACY_NO_STORE);
