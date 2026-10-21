@@ -170,54 +170,66 @@
         "properties": {
           "modelId": {
             "type": "string",
-            "description": "Stable model id"
+            "description": "Stable model id",
+            "example": "fdbfca6d-a3d2-4a70-b0ab-426024eb5cd5"
           },
           "modelName": {
             "type": "string",
-            "description": "Full model name, may carry a provider prefix such as @cf/meta/"
+            "description": "Full model name, may carry a provider prefix such as @cf/meta/",
+            "example": "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
           },
           "displayName": {
             "type": "string",
-            "description": "Name to show"
+            "description": "Name to show",
+            "example": "llama-3.3-70b-instruct-fp8-fast"
           },
           "providerName": {
-            "type": "string"
+            "type": "string",
+            "example": "cloudflare"
           },
           "eloScore": {
             "type": "number",
-            "description": "Elo rating, one decimal"
+            "description": "Elo rating, one decimal",
+            "example": 1150
           },
           "eloRank": {
             "type": "integer",
             "minimum": 1,
-            "description": "Rank by Elo; ties share a rank (1, 1, 3)"
+            "description": "Rank by Elo; ties share a rank (1, 1, 3)",
+            "example": 1
           },
           "totalWins": {
             "type": "integer",
-            "minimum": 0
+            "minimum": 0,
+            "example": 62
           },
           "totalLosses": {
             "type": "integer",
-            "minimum": 0
+            "minimum": 0,
+            "example": 27
           },
           "totalTies": {
             "type": "integer",
-            "minimum": 0
+            "minimum": 0,
+            "example": 9
           },
           "totalResponses": {
             "type": "integer",
             "minimum": 0,
-            "description": "Battles the model took part in"
+            "description": "Battles the model took part in",
+            "example": 96
           },
           "winRate": {
             "type": "number",
             "minimum": 0,
             "maximum": 100,
-            "description": "Percent from 0 to 100 with two decimals; ties count as non-wins"
+            "description": "Percent from 0 to 100 with two decimals; ties count as non-wins",
+            "example": 64.58
           },
           "provisional": {
             "type": "boolean",
-            "description": "True while totalResponses is below meta.provisionalBelow"
+            "description": "True while totalResponses is below meta.provisionalBelow",
+            "example": false
           }
         },
         "required": [
@@ -241,18 +253,22 @@
           "generatedAt": {
             "type": "string",
             "format": "date-time",
-            "description": "When the data last changed, not when it was served"
+            "description": "When the data last changed, not when it was served",
+            "example": "2026-10-21T08:30:00.000Z"
           },
           "count": {
             "type": "integer",
-            "minimum": 0
+            "minimum": 0,
+            "example": 53
           },
           "provisionalBelow": {
             "type": "integer",
-            "minimum": 0
+            "minimum": 0,
+            "example": 5
           },
           "source": {
-            "type": "string"
+            "type": "string",
+            "example": "dualmind-api:model-stats"
           }
         },
         "required": [
