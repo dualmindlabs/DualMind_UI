@@ -25,9 +25,9 @@ const BOARD = readFileSync(
 );
 const STATS = '**/api/arena/model-stats';
 
-/** The recorded board has 53 models; 36 have the 100 battles that earn a rank (PROVISIONAL_BATTLES). */
+/** The recorded board has 53 models; 49 have the 5 battles that earn a rank (PROVISIONAL_BATTLES). */
 const MODELS = 53;
-const RATED = 36;
+const RATED = 49;
 const UNRATED = MODELS - RATED;
 const withCookie = { headers: { Cookie: PREVIEW_COOKIE }, maxRedirects: 0 };
 
@@ -219,7 +219,7 @@ test.describe('/leaderboard/ (desktop)', () => {
     await expect(firstRowName(page)).toHaveAttribute('title', '@cf/meta/llama-3.1-70b-instruct');
   });
 
-  test('models below 100 battles sit in a collapsed "Not yet rated" group without ranks', async ({
+  test('models below 5 battles sit in a collapsed "Not yet rated" group without ranks', async ({
     page,
   }) => {
     await mockStats(page);

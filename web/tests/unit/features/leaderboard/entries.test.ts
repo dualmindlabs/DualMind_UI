@@ -15,36 +15,37 @@ import {
 import { fullBoard, names, sampleBoard, sampleStats } from './helpers';
 
 describe('the provisional rule', () => {
-  it('is fewer than 100 battles', () => {
-    expect(PROVISIONAL_BATTLES).toBe(100);
+  it('is fewer than 5 battles', () => {
+    expect(PROVISIONAL_BATTLES).toBe(5);
     expect(isProvisional(0)).toBe(true);
-    expect(isProvisional(99)).toBe(true);
-    expect(isProvisional(100)).toBe(false);
+    expect(isProvisional(4)).toBe(true);
+    expect(isProvisional(5)).toBe(false);
     expect(isProvisional(291)).toBe(false);
   });
 
   it('puts the models below the threshold in a separate group, without a rank', () => {
-    // The API ranks a 96-battle model first; the board does not.
+    // The API's own leader has 96 battles, which is enough to be ranked.
     const leader = fullBoard.entries[0];
     expect(leader?.rank).toBe(1);
-    expect(leader?.battles).toBe(250);
+    expect(leader?.battles).toBe(96);
     expect(leader?.provisional).toBe(false);
-    expect(fullBoard.entries.filter(entry => entry.provisional)).toHaveLength(17);
-    expect(fullBoard.summary.provisional).toBe(17);
-    expect(fullBoard.summary.rated).toBe(36);
-    expect(fullBoard.rated).toHaveLength(36);
-    expect(fullBoard.unrated).toHaveLength(17);
+    expect(fullBoard.entries.filter(entry => entry.provisional)).toHaveLength(4);
+    expect(fullBoard.summary.provisional).toBe(4);
+    expect(fullBoard.summary.rated).toBe(49);
+    expect(fullBoard.rated).toHaveLength(49);
+    expect(fullBoard.unrated).toHaveLength(4);
+    expect(fullBoard.unrated.every(entry => entry.battles < 5)).toBe(true);
     expect(fullBoard.unrated.every(entry => entry.rank === null && entry.provisional)).toBe(true);
     expect(fullBoard.rated.every(entry => isRated(entry) && !entry.provisional)).toBe(true);
     // Rated models first, then the rest.
-    expect(fullBoard.entries.slice(0, 36)).toEqual(fullBoard.rated);
-    expect(fullBoard.entries.slice(36)).toEqual(fullBoard.unrated);
+    expect(fullBoard.entries.slice(0, 49)).toEqual(fullBoard.rated);
+    expect(fullBoard.entries.slice(49)).toEqual(fullBoard.unrated);
   });
 
   it('recomputes ranks among the rated models: equal ratings share a rank, the next one skips', () => {
     const ranks = fullBoard.rated.map(entry => entry.rank);
     expect(ranks.slice(0, 8)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
-    expect(ranks.at(-1)).toBeLessThanOrEqual(36);
+    expect(ranks.at(-1)).toBeLessThanOrEqual(49);
     // The two 8B builds at 1025 share a rank.
     const shared = fullBoard.rated.filter(entry => Math.round(entry.elo) === 1025);
     expect(new Set(shared.map(entry => entry.rank)).size).toBe(1);
@@ -55,10 +56,13 @@ describe('the provisional rule', () => {
 describe('toLeaderboardEntries (normalised model-stats to board entries)', () => {
   const entries = sampleBoard.entries;
 
-  it('lists the rated models by rank, then the rest by rating, with the API numbers', () => {
-    expect(entries.map(entry => entry.rank)).toEqual([1, 2, 3, 3, null, null, null]);
-    expect(names(entries).slice(0, 2)).toEqual(['Llama 3.1 70B Instruct', 'Compound Mini']);
-    expect(entries[0]).toMatchObject({
+  it('lists the models by rank, with the API numbers, with the API numbers', () => {
+    expect(entries.map(entry => entry.rank)).toEqual([1, 2, 3, 4, 5, 5, 7]);
+    expect(names(entries).slice(0, 2)).toEqual([
+      'Llama 3.3 70B Instruct (FP8, fast)',
+      'Llama 3.1 70B Instruct',
+    ]);
+    expect(entries[1]).toMatchObject({
       id: '2f2219b0-d1ce-402d-b6d0-29d1e67ef04b',
       name: 'Llama 3.1 70B Instruct',
       modelName: '@cf/meta/llama-3.1-70b-instruct',
@@ -71,8 +75,8 @@ describe('toLeaderboardEntries (normalised model-stats to board entries)', () =>
       battles: 250,
       provisional: false,
     });
-    // The API's own leader, with 96 battles, comes first among the unrated.
-    expect(entries[4]).toMatchObject({
+    // The API's own leader has 96 battles: ranked first, with the API numbers.
+    expect(entries[0]).toMatchObject({
       name: 'Llama 3.3 70B Instruct (FP8, fast)',
       elo: 1150,
       wins: 62,
@@ -80,9 +84,11 @@ describe('toLeaderboardEntries (normalised model-stats to board entries)', () =>
       ties: 9,
       battles: 96,
       winRate: 64.58,
-      rank: null,
-      provisional: true,
+      rank: 1,
+      provisional: false,
     });
+    // A model with fewer than 5 battles has the numbers but no rank.
+    expect(fullBoard.unrated[0]).toMatchObject({ rank: null, provisional: true });
     // A model that serves itself has no "via" note.
     expect(entries.find(entry => entry.name === 'Compound Mini')?.servedBy).toBeNull();
   });
@@ -90,7 +96,7 @@ describe('toLeaderboardEntries (normalised model-stats to board entries)', () =>
   it('sorts rows the API sent out of order and breaks shared ranks by rating, then name', () => {
     const shuffled = [...sampleStats].reverse();
     expect(names(toLeaderboardEntries(shuffled))).toEqual(names(entries));
-    const shared = entries.filter(entry => entry.rank === 3);
+    const shared = entries.filter(entry => entry.rank === 5);
     expect(names(shared)).toEqual(['Hermes 2 Pro Mistral 7B', 'Llama 3.2 11B Vision Instruct']);
   });
 
@@ -131,19 +137,19 @@ describe('summarize', () => {
     const appearances = sampleBoard.entries.reduce((sum, entry) => sum + entry.battles, 0);
     expect(summary).toMatchObject({
       models: 7,
-      rated: 4,
+      rated: 7,
       battles: Math.round(appearances / 2),
       providers: 4,
       topElo: 1150,
       bottomElo: 1000,
     });
-    expect(summary.provisional).toBe(3);
+    expect(summary.provisional).toBe(0);
   });
 
   it('matches the recorded 53-model board', () => {
     expect(fullBoard.summary).toMatchObject({
       models: 53,
-      rated: 36,
+      rated: 49,
       battles: 3576,
       providers: 15,
       topElo: 1150,

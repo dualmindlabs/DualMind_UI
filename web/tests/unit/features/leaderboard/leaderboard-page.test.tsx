@@ -83,48 +83,23 @@ describe('LeaderboardPage', () => {
 
   it('loads the board without a sign-in: human names, rated models ranked, the rest apart', async () => {
     renderPage();
-    // Four of the seven models have 100 battles or more; the other three have no rank yet.
+    // All seven models have 5 battles or more, so every one is ranked.
     expect(await rowNames()).toEqual([
+      'Llama 3.3 70B Instruct (FP8, fast)',
       'Llama 3.1 70B Instruct',
       'Compound Mini',
+      'Gemma 3n E2B IT',
       'Hermes 2 Pro Mistral 7B',
       'Llama 3.2 11B Vision Instruct',
+      'Gemma 3 1B IT',
     ]);
     const podium = screen.getByRole('list', { name: 'Top three models' });
     expect(within(podium).getAllByRole('listitem')).toHaveLength(3);
-    // The 96-battle model that tops the API's own ranking is not on the podium.
-    expect(within(podium).queryByText(/FP8/)).not.toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Not yet rated' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Show 3 models' })).toHaveAttribute(
-      'aria-expanded',
-      'false',
-    );
+    // The model that tops the API's own ranking (96 battles) is on the podium.
+    expect(within(podium).getByText(/FP8/)).toBeInTheDocument();
+    // Nobody is below the threshold here, so there is no "Not yet rated" group.
+    expect(screen.queryByRole('heading', { name: 'Not yet rated' })).not.toBeInTheDocument();
     expect(screen.getByText(/Demo data/)).toBeInTheDocument();
-  });
-
-  it('keeps the unrated models collapsed, without rank numbers, until asked', async () => {
-    const user = userEvent.setup();
-    renderPage();
-    await table();
-    expect(screen.getAllByRole('table')).toHaveLength(1);
-    await user.click(screen.getByRole('button', { name: 'Show 3 models' }));
-    const tables = screen.getAllByRole('table');
-    expect(tables).toHaveLength(2);
-    const unrated = tables[1] as HTMLElement;
-    expect(within(unrated).queryByRole('button', { name: 'Rank' })).not.toBeInTheDocument();
-    const names = within(unrated)
-      .getAllByRole('row')
-      .slice(1)
-      .map(row => within(row).getByRole('rowheader').querySelector('button')?.textContent);
-    expect(names).toEqual([
-      'Llama 3.3 70B Instruct (FP8, fast)',
-      'Gemma 3n E2B IT',
-      'Gemma 3 1B IT',
-    ]);
-    expect(screen.getByRole('button', { name: 'Hide 3 models' })).toHaveAttribute(
-      'aria-expanded',
-      'true',
-    );
   });
 
   it('sorts when a column header is pressed, and says so with aria-sort', async () => {
@@ -145,7 +120,7 @@ describe('LeaderboardPage', () => {
 
     await user.click(battles);
     expect(header).toHaveAttribute('aria-sort', 'ascending');
-    expect((await rowNames())[0]).toBe('Compound Mini');
+    expect((await rowNames())[0]).toBe('Gemma 3n E2B IT');
   });
 
   it('searches and filters by provider, and reports the count', async () => {
@@ -153,9 +128,7 @@ describe('LeaderboardPage', () => {
     renderPage();
     await table();
     await user.type(screen.getByRole('searchbox', { name: 'Search models' }), 'gemma');
-    // Both Gemma models are not yet rated: a search opens that group so the match is visible.
     await waitFor(async () => expect(await bodyRows()).toHaveLength(2));
-    expect(screen.getByText(/No rated model matches/)).toBeInTheDocument();
     expect(screen.getByText(/Showing/)).toHaveTextContent('Showing 2 of 7 models');
 
     await user.click(screen.getByRole('button', { name: 'Clear the search' }));
@@ -165,7 +138,7 @@ describe('LeaderboardPage', () => {
     await user.type(screen.getByRole('searchbox', { name: 'Search models' }), 'llama');
     expect(await screen.findByText(/No model matches “llama”/)).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Clear the filters' }));
-    expect(await bodyRows()).toHaveLength(4);
+    expect(await bodyRows()).toHaveLength(7);
   });
 
   it('opens the details sheet from a row; Esc closes it and focus returns to the row', async () => {
@@ -177,9 +150,9 @@ describe('LeaderboardPage', () => {
     expect(within(dialog).getByRole('heading', { level: 2 })).toHaveTextContent('Compound Mini');
     // The raw id stays in the details, in mono text under the name.
     expect(within(dialog).getByText('groq/compound-mini')).toBeInTheDocument();
-    expect(within(dialog).getByText('Rank 02 of 4')).toBeInTheDocument();
-    expect(within(dialog).getByText('-89 on the leader')).toBeInTheDocument();
-    expect(within(dialog).getByText('Past the 100-battle mark')).toBeInTheDocument();
+    expect(within(dialog).getByText('Rank 03 of 7')).toBeInTheDocument();
+    expect(within(dialog).getByText('-99 on the leader')).toBeInTheDocument();
+    expect(within(dialog).getByText('Past the 5-battle mark')).toBeInTheDocument();
 
     await user.keyboard('{Escape}');
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
@@ -190,7 +163,7 @@ describe('LeaderboardPage', () => {
     wide = false;
     renderPage();
     const list = await screen.findByRole('list', { name: 'Models ranked by Elo' });
-    expect(within(list).getAllByRole('listitem')).toHaveLength(4);
+    expect(within(list).getAllByRole('listitem')).toHaveLength(7);
     expect(screen.queryByRole('table')).not.toBeInTheDocument();
     expect(screen.getByRole('group', { name: 'Sort' })).toBeInTheDocument();
   });
@@ -205,7 +178,7 @@ describe('LeaderboardPage', () => {
 
     scenario = 'ok';
     await user.click(within(alert).getByRole('button', { name: /Try again/ }));
-    expect(await bodyRows()).toHaveLength(4);
+    expect(await bodyRows()).toHaveLength(7);
   });
 
   it('says so when no model is ranked yet', async () => {
@@ -222,6 +195,6 @@ describe('LeaderboardPage', () => {
     await user.click(screen.getByRole('button', { name: /Refresh/ }));
     const warning = await screen.findByRole('alert');
     expect(warning).toHaveTextContent('These numbers may be out of date.');
-    expect(await bodyRows()).toHaveLength(4);
+    expect(await bodyRows()).toHaveLength(7);
   });
 });
