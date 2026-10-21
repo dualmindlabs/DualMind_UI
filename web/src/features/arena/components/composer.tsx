@@ -1,4 +1,5 @@
 import { ArrowLeftRight, ArrowUp, Square } from 'lucide-react';
+import type { RefObject } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -36,6 +37,8 @@ export interface ComposerProps {
   onStop?: () => void;
   /** `hero`: the empty arena's large, centred composer. `dock`: under an open thread. */
   variant?: 'hero' | 'dock';
+  /** What the model pickers' lists must not cover (the empty arena's heading). */
+  avoidRef?: RefObject<HTMLElement | null>;
   className?: string;
 }
 
@@ -49,6 +52,7 @@ export function Composer({
   busy = false,
   onStop,
   variant = 'dock',
+  avoidRef,
   className,
 }: ComposerProps) {
   const { mode, selectMode, composerRef, battle } = useArena();
@@ -57,6 +61,8 @@ export function Composer({
   const { options } = useModelOptions();
   const choices = useModelChoices(mode === 'battle' ? undefined : options);
   const empty = draft.trim() === '';
+  // The hero composer has room below it; the docked one sits on the bottom edge.
+  const picker = { placement: variant === 'hero' ? 'bottom' : 'top', avoidRef } as const;
 
   const send = () => {
     if (busy || empty) return;
@@ -112,6 +118,7 @@ export function Composer({
                 <ModelPicker
                   side="a"
                   label="Model for answer A"
+                  {...picker}
                   options={options}
                   value={choices.left}
                   onChange={model => choices.choose('left', model)}
@@ -123,12 +130,14 @@ export function Composer({
                   aria-label="Swap the two models"
                   onClick={choices.swap}
                   disabled={busy}
+                  className="[&_svg]:transition-transform [&_svg]:duration-(--dur-base) [&_svg]:ease-out-expo motion-safe:hover:[&_svg]:rotate-180"
                 >
                   <ArrowLeftRight aria-hidden="true" strokeWidth={1.75} />
                 </Button>
                 <ModelPicker
                   side="b"
                   label="Model for answer B"
+                  {...picker}
                   options={options}
                   value={choices.right}
                   onChange={model => choices.choose('right', model)}
@@ -139,6 +148,7 @@ export function Composer({
               <ModelPicker
                 side="solo"
                 label="Model"
+                {...picker}
                 options={options}
                 value={choices.direct}
                 onChange={model => choices.choose('direct', model)}
@@ -160,8 +170,10 @@ export function Composer({
                 variant="secondary"
                 size="icon-sm"
                 aria-label="Stop"
+                aria-keyshortcuts="Escape"
                 onClick={onStop}
-                className="rounded-full"
+                data-testid="composer-stop"
+                className="rounded-full border-line-strong"
               >
                 <Square aria-hidden="true" className="size-3.5 fill-current" strokeWidth={1.75} />
               </Button>
@@ -170,8 +182,11 @@ export function Composer({
                 type="submit"
                 size="icon-sm"
                 aria-label="Send"
+                aria-keyshortcuts="Enter"
                 disabled={empty}
-                className="rounded-full"
+                data-testid="composer-send"
+                // The arrow lifts on hover, like the prompt leaving; disabled, it stays still.
+                className="rounded-full [&_svg]:transition-transform [&_svg]:duration-(--dur-fast) [&_svg]:ease-out-expo motion-safe:hover:[&_svg]:-translate-y-0.5"
               >
                 <ArrowUp aria-hidden="true" strokeWidth={2} />
               </Button>

@@ -1,6 +1,7 @@
 import {
   ArrowLeftRight,
   History,
+  Keyboard,
   type LucideIcon,
   MessageSquare,
   MessagesSquare,
@@ -41,12 +42,21 @@ const PALETTE_THREADS = 12;
 
 /**
  * The arena's commands in the palette (Ctrl+K or Cmd+K, new-features.md F-1): new battle,
- * share the open thread, switch mode, jump to a recent thread, the history, and the way back to
- * the classic arena.
+ * share the open thread, switch mode, jump to a recent thread, the history, the keyboard
+ * shortcuts, and the way back to the classic arena.
  */
 export function useArenaCommands(threads: readonly Thread[] | undefined): void {
-  const { newBattle, selectMode, mode, openThread, toggleHistory, wide, threadId, openShare } =
-    useArena();
+  const {
+    newBattle,
+    selectMode,
+    mode,
+    openThread,
+    toggleHistory,
+    wide,
+    threadId,
+    openShare,
+    openShortcuts,
+  } = useArena();
 
   const arenaGroup = useMemo<CommandGroupDefinition>(
     () => ({
@@ -88,6 +98,14 @@ export function useArenaCommands(threads: readonly Thread[] | undefined): void {
           perform: toggleHistory,
         },
         {
+          id: 'arena-shortcuts',
+          label: 'Keyboard shortcuts',
+          keywords: ['keys', 'keyboard', 'hotkeys', 'help', 'vote keys'],
+          icon: Keyboard,
+          hint: '?',
+          perform: () => openShortcuts(),
+        },
+        {
           id: 'arena-classic',
           label: 'Open the classic arena',
           keywords: ['legacy', 'old', 'previous', 'back'],
@@ -96,7 +114,7 @@ export function useArenaCommands(threads: readonly Thread[] | undefined): void {
         },
       ],
     }),
-    [newBattle, mode, selectMode, wide, toggleHistory, threadId, openShare],
+    [newBattle, mode, selectMode, wide, toggleHistory, threadId, openShare, openShortcuts],
   );
 
   const threadGroup = useMemo<CommandGroupDefinition | null>(

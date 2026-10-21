@@ -5,12 +5,13 @@ import { singleKeyAction } from '../lib/shortcuts';
 import { useArena } from './use-arena';
 
 /**
- * The single-key shortcuts (N, / and [), only outside text fields and only while they are on.
- * Dialogs and menus handle their own keys: while one is open (`aria-modal` content or an open
- * menu) nothing fires here.
+ * The single-key shortcuts (?, N, / and [, and 1 to 4 while a vote is open), only outside text
+ * fields and only while they are on. Dialogs and menus handle their own keys: while one is open
+ * (`aria-modal` content or an open menu) nothing fires here.
  */
 export function useArenaShortcuts(): void {
-  const { shortcutsEnabled, newBattle, toggleHistory, focusComposer, battle } = useArena();
+  const { shortcutsEnabled, newBattle, toggleHistory, focusComposer, openShortcuts, battle } =
+    useArena();
   const { state, vote } = battle;
 
   useEffect(() => {
@@ -28,6 +29,9 @@ export function useArenaShortcuts(): void {
       }
       event.preventDefault();
       switch (action) {
+        case 'show-shortcuts':
+          openShortcuts();
+          break;
         case 'new-battle':
           newBattle();
           break;
@@ -43,5 +47,5 @@ export function useArenaShortcuts(): void {
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [shortcutsEnabled, newBattle, toggleHistory, focusComposer, state, vote]);
+  }, [shortcutsEnabled, newBattle, toggleHistory, focusComposer, openShortcuts, state, vote]);
 }

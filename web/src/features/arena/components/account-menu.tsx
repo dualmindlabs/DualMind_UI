@@ -1,4 +1,5 @@
-import { LogOut, Undo2 } from 'lucide-react';
+import { Keyboard, LogOut, Undo2 } from 'lucide-react';
+import { useContext, useRef } from 'react';
 
 import { buttonVariants } from '@/components/ui/button';
 import {
@@ -8,20 +9,28 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/use-auth';
 import { cn } from '@/lib/utils/cn';
 
+import { ArenaContext } from '../hooks/use-arena';
 import { leaveForClassicArena } from '../lib/classic-arena';
 
 function initialOf(name: string): string {
   return name.trim().charAt(0).toUpperCase() || 'Y';
 }
 
-/** The signed-in visitor's menu: who is signed in, the classic arena, and sign out. */
+/**
+ * The signed-in visitor's menu: who is signed in, the keyboard shortcuts, the classic arena, and
+ * sign out.
+ */
 export function AccountMenu() {
   const { user, profile, signOut } = useAuth();
+  // Outside the arena (a page that reuses this menu) there is no shortcuts dialog to open.
+  const openShortcuts = useContext(ArenaContext)?.openShortcuts;
+  const trigger = useRef<HTMLButtonElement>(null);
   const metadata = (user?.user_metadata ?? {}) as Record<string, unknown>;
   const name =
     profile?.name ??
@@ -33,6 +42,7 @@ export function AccountMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
+        ref={trigger}
         aria-label={`Account: ${name}`}
         className={cn(
           buttonVariants({ variant: 'ghost', size: 'icon-sm' }),
@@ -51,6 +61,13 @@ export function AccountMenu() {
           </DropdownMenuLabel>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
+        {openShortcuts ? (
+          <DropdownMenuItem onClick={() => openShortcuts(trigger.current)}>
+            <Keyboard aria-hidden="true" strokeWidth={1.75} />
+            Keyboard shortcuts
+            <DropdownMenuShortcut>?</DropdownMenuShortcut>
+          </DropdownMenuItem>
+        ) : null}
         <DropdownMenuItem onClick={leaveForClassicArena}>
           <Undo2 aria-hidden="true" strokeWidth={1.75} />
           Open the classic arena

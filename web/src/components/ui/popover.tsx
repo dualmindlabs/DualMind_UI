@@ -1,7 +1,9 @@
 /**
  * Popover on the Base UI popover primitive: an accessible popup anchored to a button.
  * Source: shadcn/ui `popover` (base-vega), MIT, see ./LICENSE.md.
- * Changes: the shared raised surface and motion from ./dropdown-menu.tsx, our type tokens.
+ * Changes: the shared raised surface and motion from ./dropdown-menu.tsx, our type tokens, and
+ * the positioner's collision padding and avoidance passed through (the arena's model picker keeps
+ * clear of the heading above it).
  */
 import { Popover as PopoverPrimitive } from '@base-ui/react/popover';
 import type { ComponentProps } from 'react';
@@ -27,9 +29,14 @@ export function PopoverContent({
   alignOffset = 0,
   side = 'bottom',
   sideOffset = 8,
+  collisionPadding,
+  collisionAvoidance,
   ...props
 }: PopoverPrimitive.Popup.Props &
-  Pick<PopoverPrimitive.Positioner.Props, 'align' | 'alignOffset' | 'side' | 'sideOffset'>) {
+  Pick<
+    PopoverPrimitive.Positioner.Props,
+    'align' | 'alignOffset' | 'side' | 'sideOffset' | 'collisionPadding' | 'collisionAvoidance'
+  >) {
   return (
     <PopoverPrimitive.Portal>
       <PopoverPrimitive.Positioner
@@ -37,6 +44,8 @@ export function PopoverContent({
         alignOffset={alignOffset}
         side={side}
         sideOffset={sideOffset}
+        {...(collisionPadding === undefined ? {} : { collisionPadding })}
+        {...(collisionAvoidance === undefined ? {} : { collisionAvoidance })}
         className="isolate z-50"
       >
         <PopoverPrimitive.Popup
