@@ -28,6 +28,13 @@ const pages: PageSpec[] = [
     text: 'Why blind comparison',
   },
   {
+    slug: 'credits',
+    path: '/credits/',
+    title: 'Credits and licenses · DualMind Arena',
+    h1: 'Built on the work of others.',
+    text: 'Sources and licenses',
+  },
+  {
     slug: 'how-it-works',
     path: '/how-it-works/',
     title: 'How DualMind Arena works',
@@ -223,8 +230,37 @@ for (const spec of pages) {
 }
 
 test.describe('About', () => {
-  test('lists every credit with its licence (the licence policy)', async ({ page }) => {
+  test('is a company page: mission, how it is run, open source, contact, no license wall', async ({
+    page,
+  }) => {
     await page.goto('/about/');
+    for (const name of [
+      'What it is',
+      'Why blind comparison matters',
+      'How the project is run',
+      'What is open source',
+      'Get in touch',
+    ]) {
+      await expect(page.getByRole('heading', { level: 2, name })).toBeAttached();
+    }
+    await expect(page.locator('#credits')).toHaveCount(0);
+    const main = page.locator('main');
+    await expect(main).not.toContainText('.NET');
+    await expect(main.getByRole('link', { name: 'Credits' })).toHaveAttribute('href', '/credits/');
+    await expect(main.getByRole('link', { name: 'GitHub', exact: true })).toHaveAttribute(
+      'href',
+      'https://github.com/dualmindlabs/DualMind_UI',
+    );
+    await expect(main.getByRole('link', { name: 'support@dualmindlab.tech' })).toHaveAttribute(
+      'href',
+      'mailto:support@dualmindlab.tech',
+    );
+  });
+});
+
+test.describe('Credits', () => {
+  test('lists every credit with its license (the license policy)', async ({ page }) => {
+    await page.goto('/credits/');
     const section = page.locator('#credits');
     await expect(section.getByRole('listitem')).toHaveCount(credits.length);
     for (const name of ['React Bits', 'Magic UI', 'Aceternity UI', 'Motion Primitives', 'Lucide']) {
@@ -235,6 +271,61 @@ test.describe('About', () => {
     }
     await expect(section.getByRole('link', { name: /MIT \+ Commons Clause/ })).toBeVisible();
   });
+
+  test('the footer links to it, and it is in the sitemap', async ({ page, request }) => {
+    await page.goto('/about/');
+    await expect(
+      page.getByRole('contentinfo').getByRole('link', { name: 'Credits', exact: true }),
+    ).toHaveAttribute('href', '/credits/');
+    const xml = await (await request.get('/sitemap.xml', withCookie)).text();
+    expect(xml).toContain('<loc>https://arena.dualmindlab.tech/credits/</loc>');
+    expect(xml).not.toContain('/login/');
+    expect(xml).not.toContain('/signup/');
+    expect(xml).toMatch(/<lastmod>\d{4}-\d{2}-\d{2}<\/lastmod>/);
+  });
+});
+
+test.describe('Footer', () => {
+  test('has GitHub, Contact and Credits, one tagline, and no Status link', async ({ page }) => {
+    await page.goto('/about/');
+    const footer = page.getByRole('contentinfo');
+    await expect(footer.getByRole('link', { name: 'GitHub' })).toHaveAttribute(
+      'href',
+      'https://github.com/dualmindlabs/DualMind_UI',
+    );
+    await expect(footer.getByRole('link', { name: 'Contact' })).toHaveAttribute(
+      'href',
+      'mailto:support@dualmindlab.tech',
+    );
+    await expect(footer.getByRole('link', { name: 'Credits' })).toHaveAttribute(
+      'href',
+      '/credits/',
+    );
+    await expect(footer.getByRole('link', { name: 'Status' })).toHaveCount(0);
+    await expect(footer).not.toContainText('one verdict');
+    await expect(footer).toContainText('Blind battles between AI models, ranked by votes.');
+  });
+
+  for (const viewport of [
+    { name: 'desktop', width: 1440, height: 900 },
+    { name: 'mobile', width: 390, height: 844 },
+  ]) {
+    for (const theme of ['dark', 'light'] as const) {
+      test(`screenshot: footer ${viewport.name} ${theme}`, async ({ page }) => {
+        await page.setViewportSize({ width: viewport.width, height: viewport.height });
+        await storeTheme(page, theme);
+        await page.goto('/about/');
+        await settle(page, 600);
+        const footer = page.getByRole('contentinfo');
+        await footer.scrollIntoViewIfNeeded();
+        expect(await overflowing(page)).toEqual([]);
+        await footer.screenshot({
+          path: shotPath(`info-footer-${viewport.name}-${theme}`),
+          animations: 'disabled',
+        });
+      });
+    }
+  }
 });
 
 test.describe('How it works', () => {
@@ -417,7 +508,7 @@ test.describe('404', () => {
     expect(response?.status()).toBe(404);
     await settle(page, 600);
     await expect(page.getByRole('heading', { level: 1 })).toContainText('404');
-    await expect(page.getByRole('link', { name: 'Go to the Arena' })).toHaveAttribute('href', '/');
+    await expect(page.getByRole('link', { name: 'Start a battle' })).toHaveAttribute('href', '/');
     await expect(page.getByRole('link', { name: 'See the leaderboard' })).toHaveAttribute(
       'href',
       '/leaderboard/',
@@ -487,7 +578,7 @@ test.describe('sitemap.xml and robots.txt', () => {
       expect(xml).toContain(`<loc>https://arena.dualmindlab.tech${spec.path}</loc>`);
     }
     expect(xml).toContain('<loc>https://arena.dualmindlab.tech/</loc>');
-    for (const hidden of ['/design/', '/404', '__spa-fallback', '/api/']) {
+    for (const hidden of ['/design/', '/404', '__spa-fallback', '/api/', '/login/', '/signup/']) {
       expect(xml).not.toContain(hidden);
     }
 

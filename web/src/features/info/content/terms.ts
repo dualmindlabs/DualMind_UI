@@ -80,7 +80,7 @@ export const termsContent: PageContent = {
       blocks: [
         {
           type: 'paragraph',
-          text: 'You keep ownership of the prompts you submit. You give us a worldwide, non-exclusive, royalty-free licence to store, process and display them, and the answers to them, as needed to run the Service: to show you your history, to share a conversation when you choose to, and to calculate the leaderboard.',
+          text: 'You keep ownership of the prompts you submit. You give us a worldwide, non-exclusive, royalty-free license to store, process and display them, and the answers to them, as needed to run the Service: to show you your history, to share a conversation when you choose to, and to calculate the leaderboard.',
         },
         {
           type: 'paragraph',

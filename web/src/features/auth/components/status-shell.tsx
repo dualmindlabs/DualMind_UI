@@ -5,6 +5,8 @@ import { ThemeToggle } from '@/components/layout/theme-toggle';
 import { Wordmark } from '@/components/layout/wordmark';
 import { SilkPoster } from '@/components/motion/silk-poster';
 
+import { LegalFooter } from './legal-footer';
+
 /**
  * The frame of the two email-link pages (/auth-callback.html and /update-password.html): the
  * wordmark and theme switch on top, one centred card, the still Silk poster behind it.
@@ -38,6 +40,7 @@ export function StatusShell({ children }: { children: ReactNode }) {
           {children}
         </div>
       </main>
+      <LegalFooter />
     </div>
   );
 }

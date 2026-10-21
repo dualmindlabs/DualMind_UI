@@ -44,6 +44,18 @@
     outline-offset: var(--focus-offset);
   }
 
+  /* Touch: taps fire at once (no double-tap-zoom delay) and the press state, not the browser's grey flash, is the feedback. */
+  a,
+  button,
+  summary,
+  label,
+  [role='button'],
+  [role='tab'],
+  [role='switch'] {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
   ::selection {
     background: color-mix(in oklab, var(--mind-a) 32%, transparent);
     color: var(--fg);
@@ -99,6 +111,63 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/*
+ * Forced colors (Windows High Contrast and similar): the browser replaces our colours with the
+ * user's palette, so the things that carry meaning with colour or shadow alone get system colours
+ * and real borders: the focus ring, controls, cards, badges, the pressed and current states.
+ */
+@media (forced-colors: active) {
+  :focus-visible {
+    outline: 3px solid Highlight;
+    outline-offset: 3px;
+  }
+
+  .focus-ring-demo,
+  .focus-ring-within:has(:focus-visible) {
+    outline: 3px solid Highlight;
+  }
+
+  /* Filled buttons and badges lose their fill; keep a visible edge and system text colour. */
+  [data-slot='button'],
+  [data-slot='toggle'],
+  [data-slot='toggle-group-item'],
+  [data-slot='badge'] {
+    border: 1px solid ButtonText;
+  }
+
+  [data-slot='button'][data-disabled],
+  [data-slot='button'][aria-disabled='true'],
+  :disabled {
+    border-color: GrayText;
+    color: GrayText;
+  }
+
+  /* Pressed, current and selected states do not rely on a background colour. */
+  [aria-pressed='true'],
+  [data-pressed],
+  [aria-current='page'],
+  [aria-selected='true'],
+  [data-selected] {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+
+  input,
+  textarea,
+  select,
+  [data-slot='card'],
+  [role='dialog'] {
+    border: 1px solid CanvasText;
+  }
+
+  /* Bars and swatches that carry data keep their colour, with a border so they stay visible. */
+  .recharts-rectangle {
+    forced-color-adjust: none;
+    stroke: CanvasText;
+    stroke-width: 1px;
   }
 }
 

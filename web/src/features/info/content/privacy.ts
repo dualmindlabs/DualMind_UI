@@ -203,7 +203,7 @@ export const privacyContent: PageContent = {
       blocks: [
         {
           type: 'paragraph',
-          text: 'Our providers run services in several countries, so your data may be processed outside the country you live in. We choose providers that protect data to a recognised standard.',
+          text: 'Our providers run services in several countries, so your data may be processed outside the country you live in. We choose providers that protect data to a recognized standard.',
         },
       ],
     },

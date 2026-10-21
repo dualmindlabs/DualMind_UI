@@ -5,6 +5,7 @@ import { config } from '@/config/env';
 import { supabaseConfig } from '@/config/supabase';
 import { useAuth } from '@/hooks/use-auth';
 import { browserSessionStorage, LOGIN_PATH, safeRedirect, sendWelcomeOnce } from '@/lib/supabase';
+import { cn } from '@/lib/utils/cn';
 
 import { CALLBACK_REDIRECT_SECONDS } from '../content/copy';
 import { useAutoRedirect } from '../hooks/use-auto-redirect';
@@ -14,6 +15,7 @@ import {
   type CallbackUrl,
   wantsWelcome,
 } from '../lib/callback-url';
+import { NewLinkForm } from './new-link-form';
 import { StatusCard } from './status-card';
 import { StatusShell } from './status-shell';
 
@@ -29,6 +31,18 @@ function BackToSignIn() {
     <a href={LOGIN_PATH} className={buttonVariants({ variant: 'primary' })}>
       Back to sign in
     </a>
+  );
+}
+
+/** A link that failed: a fresh one by email (reset or confirmation, by flow), or back to sign in. */
+function NewLinkActions({ link }: { link: CallbackUrl }) {
+  return (
+    <>
+      <NewLinkForm kind={link.type === 'recovery' ? 'reset' : 'confirmation'} />
+      <a href={LOGIN_PATH} className={cn(buttonVariants({ variant: 'ghost' }), 'w-full')}>
+        Back to sign in
+      </a>
+    </>
   );
 }
 
@@ -64,7 +78,11 @@ export function AuthCallbackPage({ link }: { link: CallbackUrl }) {
   let content;
   if (link.error) {
     content = (
-      <StatusCard tone="error" title="This link did not work" action={<BackToSignIn />}>
+      <StatusCard
+        tone="error"
+        title="This link did not work"
+        action={<NewLinkActions link={link} />}
+      >
         {callbackErrorMessage(link.error)}
       </StatusCard>
     );
@@ -98,7 +116,11 @@ export function AuthCallbackPage({ link }: { link: CallbackUrl }) {
     );
   } else {
     content = (
-      <StatusCard tone="error" title="We could not confirm this link" action={<BackToSignIn />}>
+      <StatusCard
+        tone="error"
+        title="We could not confirm this link"
+        action={<NewLinkActions link={link} />}
+      >
         {callbackErrorMessage(null)}
       </StatusCard>
     );

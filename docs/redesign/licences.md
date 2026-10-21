@@ -12,7 +12,7 @@ The repository stays **public for now** (free GitHub Actions minutes). The goal 
 
 1. **Any component whose terms allow use on a website may be used.** Free pieces with a restricted licence (Aceternity UI free tier, React Bits and Animate UI with Commons Clause, 21st.dev items with author licences, Hover.dev free items and similar) go into their own folder `web/src/components/vendor/<source>/` with a per-source `LICENSE-NOTES.md`, and are listed in the inventory in section 4, so they can be licensed or replaced.
 2. **Never copy paid-tier (Pro) code or anything behind a paywall, and no AGPL code** (Origin UI / coss ui). Instead the ranked [buy list](./buy-list.md) tells Harsh what is worth paying for. Nothing paid is copied until Harsh decides.
-3. **Everything else is permissive (MIT, Apache-2.0, ISC)** and is credited in a "Built with" section on `/about/` (and in `web/THIRD_PARTY_NOTICES.md`).
+3. **Everything else is permissive (MIT, Apache-2.0, ISC)** and is credited on `/credits/` (and in `web/THIRD_PARTY_NOTICES.md`).
 4. **Goal: the best-looking site possible.** Pick the best piece for the job; the licence class only decides where the file lives and what the swap plan is.
 
 ### Folder convention
@@ -39,14 +39,14 @@ web/src/components/
  */
 ```
 
-- Permissive code keeps its copyright notice in a `LICENSE.md` next to it and is credited on `/about/`.
+- Permissive code keeps its copyright notice in a `LICENSE.md` next to it and is credited on `/credits/`.
 
 ### How to remove or swap a vendor
 
 1. Find the source in the inventory (section 4) and read its "where used" column.
 2. Replace each import of `@/components/vendor/<source>/...` with the replacement named in the "swap plan" column (a permissive equivalent or our own component).
 3. Delete the folder `web/src/components/vendor/<source>/`.
-4. Remove the source's row from the inventory (or set its status to "removed") and from the `/about/` credits.
+4. Remove the source's row from the inventory (or set its status to "removed") and from the `/credits/` page.
 5. Open a PR and let CI (Build & Lint) pass. Screenshots in CI show the visual change.
 
 **Slice PRs must update the inventory table in this file whenever they add or remove vendored code.**
@@ -57,7 +57,7 @@ web/src/components/
 
 | Class | Sources | Rule |
 | --- | --- | --- |
-| **Permissive** (MIT, Apache-2.0, ISC, OFL for fonts) | shadcn/ui, Magic UI (free), Motion Primitives, prompt-kit, Kokonut UI (free), Tremor, Streamdown, Evil Charts, Smooth UI, Animata, Uiverse, Spectrum UI, Base UI, class-variance-authority, input-otp, Lucide, Motion, Sonner, cmdk, Recharts, TanStack Query, Radix UI, Fontsource fonts (OFL) | Copy freely. Keep the copyright notice and header comment. Credit on `/about/`. |
+| **Permissive** (MIT, Apache-2.0, ISC, OFL for fonts) | shadcn/ui, Magic UI (free), Motion Primitives, prompt-kit, Kokonut UI (free), Tremor, Streamdown, Evil Charts, Smooth UI, Animata, Uiverse, Spectrum UI, Base UI, class-variance-authority, input-otp, Lucide, Motion, Sonner, cmdk, Recharts, TanStack Query, Radix UI, Fontsource fonts (OFL) | Copy freely. Keep the copyright notice and header comment. Credit on `/credits/`. |
 | **Restricted-free** | See the table below | Allowed on this website. Lives in `vendor/<source>/`. Listed in section 4. Never published as a kit, template or registry. |
 | **Never** | Any paid or Pro tier (Aceternity UI Pro, Magic UI Pro, Cult UI paid agent blocks, Kokonut UI Pro, ReUI Pro, Hover.dev Pro, Skiper UI Premium, React Bits Pro, Tailwind Plus), shadcnblocks, anything AGPL (Origin UI / coss ui) | Do not copy. See the [buy list](./buy-list.md). |
 
@@ -107,7 +107,7 @@ Status values: **planned** (in the catalog, not yet written), **in use** (code e
 | 21st.dev | Per author | [terms](https://21st.dev/terms) | Community AI inputs and hero sections, checked one by one | Landing and Arena composer (only if clearly better) | Prompt-kit Prompt Input; own hero | planned (none chosen yet) |
 | Hover.dev (free) | Custom | [licence](https://www.hover.dev/license) | Encrypt Button, nav ideas | Landing CTA (optional) | Own button on shadcn Button | planned (none chosen yet) |
 
-### Permissive sources (credited on /about/)
+### Permissive sources (credited on /credits/)
 
 | Source | Class | Terms | Components | Where used | Swap or remove plan | Status |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -125,7 +125,7 @@ Status values: **planned** (in the catalog, not yet written), **in use** (code e
 | Tremor Raw | Apache-2.0 | [LICENSE](https://github.com/tremorlabs/tremor-npm/blob/main/LICENSE) | Bar List, Tracker, Spark Chart | Leaderboard | shadcn Chart | planned |
 | Streamdown | Apache-2.0 | [LICENSE](https://github.com/vercel/streamdown/blob/main/LICENSE) | Streaming Markdown (npm dependency, not vendored; hardened: no raw HTML, https-only links, no images) | Answer panes (`web/src/features/arena/components/markdown.tsx`) | react-markdown | in use (arena, slice S8) |
 
-Base UI, class-variance-authority, Lucide, Motion, Sonner, cmdk, input-otp, Recharts, TanStack Query and Fontsource fonts are npm dependencies (not vendored); they are credited on `/about/` and in `web/THIRD_PARTY_NOTICES.md`.
+Base UI, class-variance-authority, Lucide, Motion, Sonner, cmdk, input-otp, Recharts, TanStack Query and Fontsource fonts are npm dependencies (not vendored); they are credited on `/credits/` and in `web/THIRD_PARTY_NOTICES.md`.
 
 ---
 
@@ -138,5 +138,5 @@ Checklist for Harsh and for the slice PRs.
 3. Optionally email support@aceternity.com (and Hover.dev) for a written OK for a public portfolio repository.
 4. Decide on purchases with [buy-list.md](./buy-list.md). Purchased code needs either a private repo or a private package or submodule kept out of this repo.
 5. If the repo goes private: GitHub Actions minutes are limited on private repos (the free plan has a monthly quota), so check CI cost first (builds, screenshots) and move heavy jobs or add a self-hosted runner if needed.
-6. Make sure `/about/` "Built with" and `web/THIRD_PARTY_NOTICES.md` match the inventory.
+6. Make sure `/credits/` and `web/THIRD_PARTY_NOTICES.md` match the inventory.
 7. Confirm no Pro or paywalled file slipped in: search for source URLs in file headers (`pro.`, `/pro/`, `premium`).

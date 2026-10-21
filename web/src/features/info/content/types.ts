@@ -93,11 +93,10 @@ export interface PageContent {
   sections: readonly Section[];
   /** Last substantive change, as an ISO date (`YYYY-MM-DD`). Set on legal pages. */
   updated?: string;
-  /** When true, the renderer adds the "Built with" credits list after the sections. */
-  showCredits?: boolean;
 }
 
-export type PageSlug = 'about' | 'how-it-works' | 'faq' | 'privacy' | 'terms' | 'cookies';
+export type PageSlug =
+  'about' | 'credits' | 'how-it-works' | 'faq' | 'privacy' | 'terms' | 'cookies';
 
 /** Longest allowed meta description. */
 export const MAX_DESCRIPTION_LENGTH = 155;

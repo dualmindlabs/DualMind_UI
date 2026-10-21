@@ -26,6 +26,7 @@ export default {
     '/leaderboard',
     '/models',
     '/about',
+    '/credits',
     '/how-it-works',
     '/faq',
     '/privacy',

@@ -7,12 +7,7 @@ import { SilkPoster } from '@/components/motion/silk-poster';
 
 import type { BrandQuote } from '../content/copy';
 import { BrandPanel } from './brand-panel';
-
-const FOOTER_LINKS = [
-  { label: 'Privacy', href: '/privacy/' },
-  { label: 'Terms', href: '/terms/' },
-  { label: 'Cookies', href: '/cookies/' },
-] as const;
+import { LegalFooter } from './legal-footer';
 
 /**
  * The sign-in pages' frame: a form column (wordmark home link, theme switch, the form centred,
@@ -47,23 +42,7 @@ export function AuthShell({ quote, children }: { quote: BrandQuote; children: Re
         >
           <div className="w-full max-w-[26rem]">{children}</div>
         </main>
-        <footer className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 text-caption text-muted">
-          <p>DualMind Labs</p>
-          <nav aria-label="Legal">
-            <ul className="flex flex-wrap gap-x-1">
-              {FOOTER_LINKS.map(link => (
-                <li key={link.href}>
-                  <a
-                    href={link.href}
-                    className="inline-flex min-h-11 items-center rounded-sm px-2 hover:text-fg"
-                  >
-                    {link.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        </footer>
+        <LegalFooter />
       </div>
       <BrandPanel quote={quote} />
     </div>

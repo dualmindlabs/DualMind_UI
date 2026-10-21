@@ -54,7 +54,7 @@ export function SiteNav({ activePath, label = 'Main', size = 'md', className }: 
                     onMouseEnter={() => setHighlighted(link.href)}
                     onFocus={() => setHighlighted(link.href)}
                     className={cn(
-                      'relative isolate inline-flex items-center rounded-full font-medium whitespace-nowrap text-fg-soft transition-colors duration-(--dur-fast) ease-out-expo hover:text-fg aria-[current=page]:text-fg',
+                      'hit-area relative isolate inline-flex items-center rounded-full font-medium whitespace-nowrap text-fg-soft transition-colors duration-(--dur-fast) ease-out-expo hover:text-fg aria-[current=page]:text-fg',
                       size === 'md' ? 'h-9 px-3.5 text-ui-sm' : 'h-8 px-3 text-ui-sm',
                     )}
                   >
