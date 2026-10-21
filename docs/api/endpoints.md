@@ -468,6 +468,20 @@ These do not go to the DualMind API. The URL and anon key come from `window.DUAL
 
 ---
 
+## 3b. The Worker's own API: `/api/v2`
+
+Everything above is the DualMind API (v1) behind the Worker's same-origin proxy. `/api/v2` is the Worker's own API (BE-0, [design](../backend/designs/BE-0-platform.md)); it is answered by `server/v2/` and never reaches the v1 proxy. The machine-readable contract is [`openapi.v2.json`](./openapi.v2.json) (OpenAPI 3.1, generated from the zod routes, served at `GET /api/v2/openapi.json`); the error types are in [`problems.md`](./problems.md).
+
+| Method | Path | Auth | Purpose |
+| --- | --- | --- | --- |
+| GET | `/api/v2/health` | public | `{ status, apiVersion, time, environment, bindings }`: the router is alive, and which backend bindings (`DB`, `CACHE`, `EVENTS`, `PUBLIC_BUCKET`) this host has. `environment` is `production` for `arena.dualmindlab.tech` and `preview` for every other host. Never cached. |
+| GET | `/api/v2/me` | Bearer (Supabase access token) | `{ userId, role, expiresAt }` from the verified token, no database. 401 for a missing or bad token, 501 `not_enabled` when the deployment cannot verify tokens. |
+| GET | `/api/v2/openapi.json` | public | The OpenAPI document. |
+
+Conventions: JSON in and out; camelCase fields and ISO 8601 UTC times; bodies must be `application/json` (415) and at most 1 MiB (413); every response carries `X-Request-Id` (the caller's when it is 8 to 128 characters of `[A-Za-z0-9._:-]`, else a UUID) and every error body repeats it as `requestId`; authenticated responses are `Cache-Control: private, no-store`; no CORS. Errors are always RFC 9457 `application/problem+json` (`type`, `title`, `status`, `detail`, `instance`, `requestId`, plus `errors`, `retryAfter` or `feature` where the type says so), also for 404 (unknown path under `/api/v2/`, never forwarded to v1) and 405 (with `Allow`). `/api/v2` changes only additively; breaking changes need `/api/v3`.
+
+Auth: tokens are verified with the Supabase project's JWKS (`ES256`, `RS256`, `EdDSA`) from `SUPABASE_URL`, and with the legacy secret (`HS256`) when the optional `SUPABASE_JWT_SECRET` secret is set. Without a configured verifier, authenticated routes answer `501 not_enabled` (`feature: "auth"`).
+
 ## 4. Not part of the UI, but relevant: the waitlist worker
 
 The pre-launch waitlist (`waitlist-worker/`, served at `early.dualmindlab.tech`) has its own tiny API:

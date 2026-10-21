@@ -131,13 +131,22 @@ Every top-level folder of `web/src` has a README with its purpose and rules.
 `worker.js` handles every request (`run_worker_first: true`), in this order:
 
 1. **Waitlist gate.** While `FORCE_WAITLIST` is on, visitors without the `dm_preview` cookie get a 302 to the waitlist.
-2. **`/api/*`** goes to the hardened proxy (`server/api-proxy.js`).
+2. **`/api/v2` and `/api/v2/*`** go to the Worker's own API, a Hono app in `server/v2/` loaded with a dynamic `import()` (see "The `/api/v2` router" below); they never fall through to the proxy. **Other `/api/*`** goes to the hardened proxy (`server/api-proxy.js`).
 3. **Legacy redirects** from the table in `server/redirects.js` (301).
 4. **Client-only routes** of the web app get the SPA fallback page with status 200 (`SPA_FALLBACK_ROUTES`: `/update-password.html` and `/auth-callback.html` since S6).
 5. The legacy share page, `og-image.png`, then **static files** from `dist/` (including the built `robots.txt` and `sitemap.xml`) with Cache-Control from the caching table.
 6. **Anything else** gets the web app's 404 page (`dist/404.html`, see below) with status 404; plain text `Not Found` if that file is missing.
 
 Every response then leaves through `withSecurityHeaders()`: the security headers below, and the Content-Security-Policy for HTML.
+
+### The `/api/v2` router (`server/v2/`)
+
+BE-0 ([design](./backend/designs/BE-0-platform.md)). A Hono app with `@hono/zod-openapi`: routes are declared once with zod schemas (`contract/`, shared with the web app), which validate input, type handlers and generate `docs/api/openapi.v2.json` (CI fails when it is stale). Middleware: request context (request id, timer, one JSON log line per request), problem+json error handling (`server/problem-types.js` is the type registry, also usable by v1), a 1 MiB body limit, then per route `auth()` (Supabase JWT behind a verifier interface, `jose`) and `guard()` (the `not_enabled` guard: 501 when a binding or secret is missing). If the router cannot be loaded, `worker.js` answers a 503 problem and v1 and static files keep working.
+
+- **Production vs preview bindings:** `server/v2/bindings.ts` picks `DB`, `CACHE`, `EVENTS` and `PUBLIC_BUCKET` only when the request host is exactly `arena.dualmindlab.tech`, and the `*_PREVIEW` twin for every other host, never falling back to production.
+- **Configuration:** `SUPABASE_URL` is a public `vars` entry in `wrangler.jsonc`. Optional secrets, not set yet: `SUPABASE_JWT_SECRET` (legacy HS256 tokens) and `PRIVACY_SALT` (salted hashes of user ids in logs). Without them the code still works.
+- **Dependencies:** `hono`, `@hono/zod-openapi`, `jose` and `zod` are declared in `web/package.json` (the one lockfile CI and Workers Builds resolve). `scripts/link-worker-deps.mjs` links them into the root `node_modules`, where wrangler's bundler looks; `build.js` runs it.
+- **Tests and checks (`api.yml`):** `tsc` over `server/`, `contract/` and `scripts/`; Vitest in workerd through `@cloudflare/vitest-plugin` (`vitest.api.config.mts`, `tests/api/`) against the real `worker.js`; `npm run api:openapi:check`. The Node tests of the JS modules stay in `web/tests/worker` (`web.yml`).
 
 ### Caching (`server/caching.js`)
 
