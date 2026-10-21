@@ -105,6 +105,8 @@ describe('SignupPage', () => {
   it('is headed "Create your account" with the tagline as its subhead', () => {
     setup(() => <SignupPage />, '/signup/');
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Create your account');
-    expect(screen.getByText('Two models. One prompt. You decide.', { selector: 'p' })).toBeVisible();
+    expect(
+      screen.getByText('Two models. One prompt. You decide.', { selector: 'p' }),
+    ).toBeVisible();
   });
 });

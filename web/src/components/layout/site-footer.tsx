@@ -48,7 +48,7 @@ export function SiteFooter({ status, navLabel = 'Footer', className }: SiteFoote
                   <li key={link.href}>
                     <a
                       href={link.href}
-                      className="inline-flex min-h-8 items-center rounded-sm pointer-coarse:min-h-11 pointer-coarse:min-w-11 text-ui-sm text-fg-soft transition-colors duration-(--dur-fast) ease-out-expo hover:text-fg"
+                      className="inline-flex min-h-8 items-center rounded-sm text-ui-sm text-fg-soft transition-colors duration-(--dur-fast) ease-out-expo hover:text-fg pointer-coarse:min-h-11 pointer-coarse:min-w-11"
                     >
                       {link.label}
                     </a>

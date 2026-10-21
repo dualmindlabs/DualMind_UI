@@ -78,7 +78,11 @@ export function AuthCallbackPage({ link }: { link: CallbackUrl }) {
   let content;
   if (link.error) {
     content = (
-      <StatusCard tone="error" title="This link did not work" action={<NewLinkActions link={link} />}>
+      <StatusCard
+        tone="error"
+        title="This link did not work"
+        action={<NewLinkActions link={link} />}
+      >
         {callbackErrorMessage(link.error)}
       </StatusCard>
     );

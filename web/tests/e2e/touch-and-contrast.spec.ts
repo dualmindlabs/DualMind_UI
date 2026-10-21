@@ -41,11 +41,7 @@ async function targetSizes(locator: Locator): Promise<Size[]> {
       const box = element.getBoundingClientRect();
       const pseudo = getComputedStyle(element, '::before');
       const extends_ = pseudo.content !== 'none' && pseudo.position === 'absolute';
-      const label = (
-        element.getAttribute('aria-label') ??
-        element.textContent ??
-        element.tagName
-      )
+      const label = (element.getAttribute('aria-label') ?? element.textContent ?? element.tagName)
         .trim()
         .slice(0, 40);
       return {
@@ -84,13 +80,19 @@ test.describe('touch targets (phone, coarse pointer)', () => {
       page.getByRole('button', { name: /^Play the recorded battle/ }).filter({ visible: true }),
       'example chips',
     );
-    await expectTouchSized(page.getByRole('contentinfo').getByRole('link').filter({ visible: true }), 'footer links');
+    await expectTouchSized(
+      page.getByRole('contentinfo').getByRole('link').filter({ visible: true }),
+      'footer links',
+    );
 
     await banner.getByRole('button', { name: 'Open the menu' }).click();
     const menu = page.getByTestId('mobile-nav');
     await expect(menu).toBeVisible();
     await settle(page, 500);
-    await expectTouchSized(menu.locator('a, button, label').filter({ visible: true }), 'phone menu controls');
+    await expectTouchSized(
+      menu.locator('a, button, label').filter({ visible: true }),
+      'phone menu controls',
+    );
     await page.screenshot({ path: shotPath('touch-mobile-menu-mobile-dark') });
   });
 
@@ -118,7 +120,10 @@ test.describe('touch targets (phone, coarse pointer)', () => {
 
   test('sign-in pages: links and the legal footer', async ({ page }) => {
     await page.goto('/login/');
-    await expectTouchSized(page.getByRole('navigation', { name: 'Legal' }).getByRole('link'), 'legal links');
+    await expectTouchSized(
+      page.getByRole('navigation', { name: 'Legal' }).getByRole('link'),
+      'legal links',
+    );
   });
 });
 

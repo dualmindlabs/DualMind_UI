@@ -86,7 +86,10 @@ export function WinRateChart({ entries, selectedId, average }: WinRateChartProps
       >
         <BarChart
           accessibilityLayer={false}
-          data={data} margin={{ top: 10, right: 4, bottom: 6, left: 0 }} barCategoryGap={1}>
+          data={data}
+          margin={{ top: 10, right: 4, bottom: 6, left: 0 }}
+          barCategoryGap={1}
+        >
           <CartesianGrid vertical={false} stroke="var(--line)" strokeDasharray="0" />
           <XAxis dataKey="name" hide />
           <YAxis
