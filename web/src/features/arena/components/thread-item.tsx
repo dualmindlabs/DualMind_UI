@@ -25,7 +25,7 @@ export interface ThreadItemProps {
  */
 export function ThreadItem({ thread, active, time, onOpen, onRename, onDelete }: ThreadItemProps) {
   return (
-    <li className="group/item relative">
+    <li className="group/item relative min-w-0">
       <a
         href={`/?thread=${encodeURIComponent(thread.threadId)}`}
         aria-current={active ? 'page' : undefined}

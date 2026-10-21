@@ -125,7 +125,7 @@ export function Composer({
               />
             ) : (
               <span className="hidden text-caption text-muted sm:inline">
-                Two random models, names hidden until you vote
+                Names hidden until you vote
               </span>
             )}
           </div>
