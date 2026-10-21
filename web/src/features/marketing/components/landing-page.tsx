@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { lazy, Suspense, useRef } from 'react';
 
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteHeader } from '@/components/layout/site-header';
@@ -8,13 +8,14 @@ import { useShouldReduceMotion } from '@/hooks/use-should-reduce-motion';
 import { useDemoBattle } from '../hooks/use-demo-battle';
 import { useLiveStats } from '../hooks/use-live-stats';
 import { findBattleIndex } from '../lib/demo-machine';
-import { BattleSection } from './battle-section';
-import { ClosingCta } from './closing-cta';
-import { FeaturesSection } from './features-section';
 import { HeroSection } from './hero-section';
-import { LeaderboardPreview } from './leaderboard-preview';
-import { ModelStrip } from './model-strip';
-import { StepsSection } from './steps-section';
+
+// Everything below the hero is its own chunk: the browser paints and hydrates the hero first, and
+// the prerendered sections stay in the HTML (the Suspense boundary keeps them until the chunk is
+// ready). The chunk is a dynamic import, so it is not modulepreloaded in the document head.
+const BelowTheFold = lazy(() =>
+  import('./below-the-fold').then(module => ({ default: module.BelowTheFold })),
+);
 
 /**
  * The landing page (`/` for signed-out visitors): hero with the composer and live numbers, the
@@ -44,12 +45,9 @@ export function LandingPage() {
       <SiteHeader variant="marketing" overlay />
       <main id="main" tabIndex={-1} className="outline-none">
         <HeroSection onAsk={ask} stats={stats} />
-        <ModelStrip stats={stats} />
-        <BattleSection demo={demo} demoRef={demoRef} />
-        <FeaturesSection />
-        <StepsSection />
-        <LeaderboardPreview stats={stats} />
-        <ClosingCta />
+        <Suspense fallback={null}>
+          <BelowTheFold stats={stats} demo={demo} demoRef={demoRef} />
+        </Suspense>
       </main>
       <SiteFooter />
     </>

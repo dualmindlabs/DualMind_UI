@@ -16,8 +16,9 @@ interface HeroSectionProps {
 
 /**
  * The landing page's one signature moment (design-direction.md section 6, rule 1): two beams of
- * light, the headline resolving out of a blur, then the composer. Everything is in the prerendered
- * HTML: the headline animates with CSS, so it plays and stays readable without JavaScript.
+ * light, the first headline line painted at once (it is the LCP element), the Playfair line resolving out of
+ * a blur, then the composer. Everything is in the prerendered HTML: the entrance is CSS, so it
+ * plays and stays readable without JavaScript.
  */
 export function HeroSection({ onAsk, stats }: HeroSectionProps) {
   return (
@@ -41,14 +42,14 @@ export function HeroSection({ onAsk, stats }: HeroSectionProps) {
         </a>
 
         <h1 id="hero-title" className="mt-8 text-display text-fg sm:mt-10">
-          <BlurText as="span" className="block" text={HERO.headline} delay={110} blur={14} />
+          <BlurText as="span" className="block" text={HERO.headline} instant />
           <BlurText
             as="span"
             className="block pb-[0.08em]"
             text={[{ text: HERO.human, className: 'human-voice text-human' }]}
-            delay={140}
-            startDelay={480}
-            blur={14}
+            delay={120}
+            startDelay={150}
+            blur={10}
           />
         </h1>
 

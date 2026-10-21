@@ -10,7 +10,7 @@ import { apiConfig } from '@/config/api';
 import { ApiClientContext } from '@/hooks/use-api-client';
 import {
   type ApiClient,
-  createApiClientFromEnv,
+  createLazyApiClient,
   createQueryClient,
   getUserMessage,
   isRateLimitError,
@@ -48,7 +48,19 @@ export interface ApiProviderProps {
  */
 export function ApiProvider({ children, client, queryClient }: ApiProviderProps) {
   const [api] = useState(
-    () => client ?? createApiClientFromEnv(apiConfig.mock ? {} : { getAccessToken }),
+    () =>
+      client ??
+      createLazyApiClient({
+        // The client, its endpoints and the zod schemas are a separate chunk, fetched when the
+        // first request is made (after hydration). The direct path keeps the rest of the API
+        // layer's barrel out of that chunk's importers.
+        load: () =>
+          import('@/lib/api/client').then(module =>
+            module.createApiClientFromEnv(apiConfig.mock ? {} : { getAccessToken }),
+          ),
+        baseUrl: apiConfig.baseUrl,
+        isMock: apiConfig.mock,
+      }),
   );
   const [cache] = useState(
     () =>

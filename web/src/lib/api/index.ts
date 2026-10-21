@@ -3,7 +3,8 @@
  * folders. See README.md in this folder for the structure, the error model and the policies.
  */
 
-// Client
+// Client (the lazy wrapper is what the app creates up front; see lazy-client.ts)
+export { createLazyApiClient } from './lazy-client';
 export {
   type ApiClient,
   type ApiClientOptions,
@@ -53,13 +54,13 @@ export { FEATURE_FLAGS } from './endpoints/flags';
 export { type SpeechInput } from './endpoints/speech';
 export {
   type CreateThreadInput,
-  DEFAULT_THREAD_LIMIT,
   type ListThreadsInput,
   type RenameThreadInput,
   type SetThreadVisibilityInput,
   type SharedThread,
   toThreadTitle,
 } from './endpoints/threads';
+export { DEFAULT_THREAD_LIMIT } from './endpoints/thread-limits';
 export { type UserSyncInput } from './endpoints/users';
 
 // Response types
@@ -94,12 +95,12 @@ export type { UserProfile } from './schemas/users';
 export { readChatStream, readSseStream, type SseMessage, SseParser } from './sse';
 
 // Vote queue
+export { VOTE_QUEUE_STORAGE_KEY } from './vote-queue-key';
 export {
   createVoteQueue,
   type FlushResult,
   type QueuedVote,
   type StorageLike,
-  VOTE_QUEUE_STORAGE_KEY,
   type VoteQueue,
   type VoteQueueOptions,
   type VoteSubmitResult,

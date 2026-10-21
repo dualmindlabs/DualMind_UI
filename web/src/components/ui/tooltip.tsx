@@ -9,7 +9,7 @@ import { Tooltip as TooltipPrimitive } from '@base-ui/react/tooltip';
 
 import { cn } from '@/lib/utils/cn';
 
-/** Mounted once in the root: tooltips share one open delay, and skip it when moving between. */
+/** Mount it around the screen that uses tooltips (not in the root, which would load this library on every page): tooltips share one open delay, and skip it when moving between. */
 export function TooltipProvider({ delay = 400, ...props }: TooltipPrimitive.Provider.Props) {
   return <TooltipPrimitive.Provider data-slot="tooltip-provider" delay={delay} {...props} />;
 }

@@ -11,6 +11,7 @@
  * - `startDelay` offsets the whole stagger, so two lines can play one after the other.
  * - Kept the blur effect and the word and letter modes; removed the zoom, tilt, focus and drift
  *   effects, loops, hover and click replays and colour fades. `as` sets the element.
+ * - `instant` paints the text at full opacity in the first frame (no entrance), for the LCP element.
  * - Screen readers get the whole text once (visually hidden); the animated pieces are hidden.
  */
 import { type CSSProperties, type ElementType, Fragment, useEffect, useRef, useState } from 'react';
@@ -38,6 +39,8 @@ export interface BlurTextProps {
   duration?: number;
   /** Starting blur, in pixels. */
   blur?: number;
+  /** Paint the text sharp and fully opaque at once (the page's LCP text must not wait for an animation). */
+  instant?: boolean;
   /** `load`: plays as soon as it renders. `view`: the first time it scrolls into view. */
   trigger?: 'load' | 'view';
   onAnimationComplete?: () => void;
@@ -101,6 +104,7 @@ export function BlurText({
   duration,
   blur = 10,
   trigger = 'load',
+  instant = false,
   onAnimationComplete,
 }: BlurTextProps) {
   const ref = useRef<HTMLElement>(null);
@@ -136,7 +140,7 @@ export function BlurText({
     return () => observer.disconnect();
   }, [trigger, hydrated, reduce]);
 
-  const animate = !reduce && (trigger === 'load' || view === 'playing');
+  const animate = !reduce && !instant && (trigger === 'load' || view === 'playing');
   const hidden = !reduce && trigger === 'view' && view === 'waiting';
   const words = pieces.reduce<Piece[][]>((groups, piece) => {
     (groups[piece.word] ??= []).push(piece);

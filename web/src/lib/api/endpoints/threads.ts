@@ -16,8 +16,9 @@ import {
   visibilityResultSchema,
 } from '../schemas/threads';
 import { compact, oneOf, optionalPositiveInt, requireText } from './input';
+import { DEFAULT_THREAD_LIMIT } from './thread-limits';
 
-export const DEFAULT_THREAD_LIMIT = 20;
+export { DEFAULT_THREAD_LIMIT };
 export const MAX_THREAD_LIMIT = 100;
 export const THREAD_TITLE_MAX_LENGTH = 40;
 

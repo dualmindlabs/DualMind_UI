@@ -1,7 +1,7 @@
 import { queryOptions } from '@tanstack/react-query';
 
 import type { ApiClient } from '../client';
-import { DEFAULT_THREAD_LIMIT } from '../endpoints/threads';
+import { DEFAULT_THREAD_LIMIT } from '../endpoints/thread-limits';
 import { apiKeys } from './keys';
 import { STALE_TIMES } from './query-client';
 

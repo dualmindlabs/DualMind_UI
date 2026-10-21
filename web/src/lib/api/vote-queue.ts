@@ -16,7 +16,9 @@ import type { VoteInput } from './endpoints/arena';
 import { type ApiError, isApiError, isRetryableError, toApiError } from './errors';
 import { VOTE_CHOICES } from './schemas/arena';
 
-export const VOTE_QUEUE_STORAGE_KEY = 'dm.voteQueue.v1';
+import { VOTE_QUEUE_STORAGE_KEY } from './vote-queue-key';
+
+export { VOTE_QUEUE_STORAGE_KEY };
 
 export interface StorageLike {
   getItem: (key: string) => string | null;

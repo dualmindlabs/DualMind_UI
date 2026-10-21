@@ -63,7 +63,7 @@ import {
 } from '@/components/ui/sheet';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useTheme } from '@/hooks/use-theme';
 import { isThemePreference } from '@/lib/theme/theme';
 
@@ -225,6 +225,7 @@ export function KitOverlays() {
         </KitState>
 
         <KitState label="Tooltip">
+          <TooltipProvider>
           <Tooltip>
             <TooltipTrigger
               className={buttonVariants({ variant: 'outline', size: 'icon-sm' })}
@@ -236,6 +237,7 @@ export function KitOverlays() {
               How voting works <Kbd>?</Kbd>
             </TooltipContent>
           </Tooltip>
+          </TooltipProvider>
         </KitState>
 
         <KitState label="Model picker">
