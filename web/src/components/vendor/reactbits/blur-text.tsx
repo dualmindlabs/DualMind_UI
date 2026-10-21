@@ -41,6 +41,8 @@ export interface BlurTextProps {
   blur?: number;
   /** Paint the text sharp and fully opaque at once (the page's LCP text must not wait for an animation). */
   instant?: boolean;
+  /** `false`: resolve out of the blur without fading in (the text is opaque from the first frame). */
+  fade?: boolean;
   /** `load`: plays as soon as it renders. `view`: the first time it scrolls into view. */
   trigger?: 'load' | 'view';
   onAnimationComplete?: () => void;
@@ -105,6 +107,7 @@ export function BlurText({
   blur = 10,
   trigger = 'load',
   instant = false,
+  fade = true,
   onAnimationComplete,
 }: BlurTextProps) {
   const ref = useRef<HTMLElement>(null);
@@ -170,7 +173,10 @@ export function BlurText({
                     style={animate ? style : undefined}
                     className={cn(
                       'inline-block',
-                      animate && 'animate-blur-in will-change-[transform,filter,opacity]',
+                      animate &&
+                        (fade
+                          ? 'animate-blur-in will-change-[transform,filter,opacity]'
+                          : 'animate-blur-in-sharp will-change-[transform,filter]'),
                       hidden && 'opacity-0',
                       piece.className,
                     )}

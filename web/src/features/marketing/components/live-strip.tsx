@@ -1,12 +1,12 @@
 import { ArrowRight } from 'lucide-react';
 import type { ReactNode } from 'react';
 
-import { CountUp } from '@/components/vendor/reactbits/count-up';
 import { formatElo } from '@/features/leaderboard';
 import { cn } from '@/lib/utils/cn';
 
 import { LEADERBOARD_HREF } from '../content/landing';
 import type { LiveStatsState } from '../hooks/use-live-stats';
+import { LiveCount } from './live-count';
 import { LiveDot } from './live-dot';
 import { LiveStat } from './live-stat';
 
@@ -51,17 +51,17 @@ export function LiveStrip({ stats }: { stats: LiveStatsState }) {
         >
           <LiveStat label="Battles" className="border-r border-line">
             {value(data => (
-              <CountUp to={data.battles} separator="," duration={1.6} className={numberClass} />
+              <LiveCount to={data.battles} separator="," duration={1.6} className={numberClass} />
             ))}
           </LiveStat>
           <LiveStat label="Votes" className="border-r border-line">
             {value(data => (
-              <CountUp to={data.votes} separator="," duration={1.6} className={numberClass} />
+              <LiveCount to={data.votes} separator="," duration={1.6} className={numberClass} />
             ))}
           </LiveStat>
           <LiveStat label="Models" className="md:border-r md:border-line">
             {value(data => (
-              <CountUp to={data.models} duration={1.2} className={numberClass} />
+              <LiveCount to={data.models} duration={1.2} className={numberClass} />
             ))}
           </LiveStat>
           <LiveStat

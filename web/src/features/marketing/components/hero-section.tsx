@@ -49,6 +49,7 @@ export function HeroSection({ onAsk, stats }: HeroSectionProps) {
             text={[{ text: HERO.human, className: 'human-voice text-human' }]}
             delay={120}
             startDelay={150}
+            fade={false}
             blur={10}
           />
         </h1>

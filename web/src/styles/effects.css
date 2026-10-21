@@ -12,6 +12,8 @@
   --animate-fade-in: dm-fade-in var(--dur-slow) var(--ease-out-expo) both;
   --animate-blur-in: dm-blur-in var(--blur-in-duration, var(--dur-cinematic)) var(--ease-out-expo)
     both;
+  --animate-blur-in-sharp: dm-blur-in-sharp var(--blur-in-duration, var(--dur-cinematic))
+    var(--ease-out-expo) both;
   --animate-caret: dm-caret 1.1s steps(1, end) infinite;
   --animate-marquee: dm-marquee var(--marquee-duration, 40s) linear infinite;
   --animate-marquee-vertical: dm-marquee-vertical var(--marquee-duration, 40s) linear infinite;
@@ -42,6 +44,19 @@
     }
     to {
       opacity: 1;
+      filter: blur(0);
+      transform: none;
+    }
+  }
+
+  /* Blur Text without the fade: the text is opaque from the first frame (the LCP text), only the
+     blur and the offset resolve. */
+  @keyframes dm-blur-in-sharp {
+    from {
+      filter: blur(var(--blur-in-blur, 10px));
+      transform: translateY(var(--blur-in-offset, -0.6em));
+    }
+    to {
       filter: blur(0);
       transform: none;
     }

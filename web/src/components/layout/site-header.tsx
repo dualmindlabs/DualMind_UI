@@ -1,9 +1,8 @@
-import type { CSSProperties, ReactNode } from 'react';
+import { type CSSProperties, lazy, type ReactNode, Suspense } from 'react';
 import { useLocation } from 'react-router';
 
 import { CommandPaletteTrigger } from '@/components/layout/command-palette-trigger';
 import { Emblem } from '@/components/layout/emblem';
-import { MobileNav } from '@/components/layout/mobile-nav';
 import { SiteNav } from '@/components/layout/site-nav';
 import { ThemeToggle } from '@/components/layout/theme-toggle';
 import { Wordmark } from '@/components/layout/wordmark';
@@ -36,6 +35,12 @@ export interface SiteHeaderProps {
   account?: ReactNode;
   className?: string;
 }
+
+// The phone menu (a Base UI drawer) loads after hydration; its button is in the prerendered HTML,
+// and React replays a tap that lands before the code arrives.
+const MobileNav = lazy(() =>
+  import('@/components/layout/mobile-nav').then(module => ({ default: module.MobileNav })),
+);
 
 /**
  * Where the condensed pill sits, in container units of the header's row (100cqw), so previews
@@ -102,12 +107,14 @@ export function SiteHeader({
           {signInLink.label}
         </a>
       )}
-      <MobileNav
-        activePath={path}
-        label={navLabel}
-        hideSignIn={account !== undefined}
-        className="lg:hidden"
-      />
+      <Suspense fallback={null}>
+        <MobileNav
+          activePath={path}
+          label={navLabel}
+          hideSignIn={account !== undefined}
+          className="lg:hidden"
+        />
+      </Suspense>
     </>
   );
 
