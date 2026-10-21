@@ -158,6 +158,11 @@ if (process.env.SKIP_WEB_BUILD === '1') {
     run('npm ci --include=dev --no-audit --no-fund', webDir);
     run('npm run build', webDir);
 }
+// The Worker's dependencies (hono, jose, ...) live in web/package.json; link them into the root
+// node_modules so wrangler's bundler finds them (scripts/link-worker-deps.mjs).
+if (fs.existsSync(path.join(webDir, 'node_modules'))) {
+    run('node scripts/link-worker-deps.mjs', srcDir);
+}
 if (!fs.existsSync(webClientDir)) {
     fail('web/build/client is missing. Build the web app first (npm run build in web/), or unset SKIP_WEB_BUILD.');
 }

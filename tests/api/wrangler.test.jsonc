@@ -1,0 +1,28 @@
+{
+  // Miniflare config for the Workers Vitest project (vitest.api.config.ts). It runs the real
+  // worker.js with the same bindings as the root wrangler.jsonc, simulated locally, minus the
+  // production-only parts (routes, Flagship) and with a stub assets directory.
+  "name": "dualmind-arena-api-tests",
+  "main": "../../worker.js",
+  "compatibility_date": "2024-12-01",
+  "assets": { "directory": "./assets", "binding": "ASSETS", "run_worker_first": true },
+  "vars": { "SUPABASE_URL": "https://test-project.supabase.co" },
+  "d1_databases": [
+    { "binding": "DB", "database_name": "test-ledger", "database_id": "00000000-0000-0000-0000-000000000001" },
+    { "binding": "DB_PREVIEW", "database_name": "test-ledger-preview", "database_id": "00000000-0000-0000-0000-000000000002" }
+  ],
+  "kv_namespaces": [
+    { "binding": "CACHE", "id": "cache" },
+    { "binding": "CACHE_PREVIEW", "id": "cache-preview" }
+  ],
+  "queues": {
+    "producers": [
+      { "binding": "EVENTS", "queue": "arena-events" },
+      { "binding": "EVENTS_PREVIEW", "queue": "arena-events-preview" }
+    ]
+  },
+  "r2_buckets": [
+    { "binding": "PUBLIC_BUCKET", "bucket_name": "public" },
+    { "binding": "PUBLIC_BUCKET_PREVIEW", "bucket_name": "public-preview" }
+  ]
+}

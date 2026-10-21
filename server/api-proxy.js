@@ -15,6 +15,8 @@
 //   the timeout once the stream has started; other responses must finish within it.
 // - /api/health maps to the backend's /health.
 
+import { sanitizeRequestId } from './request-id.js';
+
 export const DEFAULT_BACKEND_URL = 'https://api.dualmindlab.tech';
 export const UPSTREAM_TIMEOUT_MS = 30_000;
 export const MODEL_CALL_TIMEOUT_MS = 65_000;
@@ -33,12 +35,8 @@ export const FORWARDED_REQUEST_HEADERS = Object.freeze([
   'x-request-id',
 ]);
 
-const REQUEST_ID_RE = /^[A-Za-z0-9._:-]{8,128}$/;
-
-/** @param {string | null} value */
-export function sanitizeRequestId(value) {
-  return value && REQUEST_ID_RE.test(value) ? value : null;
-}
+// The rule lives in server/request-id.js, shared with the v2 router; re-exported for v1 callers.
+export { sanitizeRequestId };
 
 /** @param {string} pathname */
 export function backendPathFor(pathname) {
