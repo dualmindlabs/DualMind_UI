@@ -121,11 +121,10 @@ function SharedView({ threadId, shared }: { threadId: string; shared: SharedThre
           <p className="flex flex-wrap items-center gap-x-2 gap-y-1 eyebrow text-muted">
             <Link2 aria-hidden="true" className="size-3.5 text-mind-a" strokeWidth={2} />
             <span className="text-fg-soft">{summary.eyebrow}</span>
-            {details.map(detail => (
-              <span key={detail} className="before:mr-2 before:content-['·']">
-                {detail}
-              </span>
-            ))}
+            {/* Phones: the details get their own line, so no line starts with a separator. */}
+            <span className="basis-full sm:basis-auto sm:before:mr-2 sm:before:content-['·']">
+              {details.join(' · ')}
+            </span>
           </p>
           <h1
             id="share-title"

@@ -149,7 +149,10 @@ describe('ShareDialog', () => {
     );
 
     await user.click(screen.getByRole('button', { name: 'Copy link' }));
-    expect(writeText).toHaveBeenCalledWith(`${window.location.origin}/share/t-recursion`);
+    // user-event installs its own clipboard; read the link back from it.
+    expect(await navigator.clipboard.readText()).toBe(
+      `${window.location.origin}/share/t-recursion`,
+    );
     expect(await screen.findByText('Link copied')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Copied' })).toBeVisible();
   });

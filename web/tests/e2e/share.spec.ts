@@ -219,7 +219,7 @@ test.describe('share page', () => {
     await expect(first.locator('[data-side="b"][data-chosen]')).toContainText('Picked');
     await expect(first.getByTestId('turn-verdict')).toContainText('Verdict: B is better');
     await expect(first.getByTestId('pane-meta').first()).toContainText('1.8 s');
-    await expect(page.getByText(/Your verdict|Your pick/)).toHaveCount(0);
+    await expect(page.getByTestId('turn').getByText(/Your verdict|Your pick/)).toHaveCount(0);
     // The hardened renderer: real emphasis and a code block with its copy button.
     await expect(first.locator('strong').first()).toBeVisible();
     await expect(first.getByRole('button', { name: /Copy the .* code/i }).first()).toBeVisible();

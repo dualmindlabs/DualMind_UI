@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, useLocation } from 'react-router';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -133,7 +133,10 @@ describe('SharePage', () => {
     expect(screen.getByTestId('share-lead')).toHaveTextContent('a verdict was cast');
     const answerA = screen.getByRole('region', { name: /Answer A/ });
     const answerB = screen.getByRole('region', { name: /Answer B/ });
-    expect(within(answerA).getByTestId('pane-model')).toHaveTextContent('Llama 3.3 70B');
+    // Display names come from the public leaderboard once it has loaded.
+    await waitFor(() =>
+      expect(within(answerA).getByTestId('pane-model')).toHaveTextContent('Llama 3.3 70B'),
+    );
     expect(within(answerB).getByTestId('pane-model')).toHaveTextContent('compound-mini');
     expect(answerB).toHaveAttribute('data-chosen');
     expect(within(answerB).getByText('Picked')).toBeVisible();

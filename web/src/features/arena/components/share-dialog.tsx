@@ -210,7 +210,7 @@ function ShareForm({ thread }: { thread: Thread }) {
         <label htmlFor={linkId} className="text-ui-sm font-medium text-fg">
           Link
         </label>
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row">
           <Input
             id={linkId}
             readOnly
