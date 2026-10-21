@@ -84,7 +84,11 @@ export function SiteHeader({
 
   const actions = (
     <>
-      <CommandPaletteTrigger appearance="icon" className="lg:hidden" />
+      {/* The compact app bar leaves room for its own controls on narrow phones. */}
+      <CommandPaletteTrigger
+        appearance="icon"
+        className={cn('lg:hidden', variant === 'app' && 'max-sm:hidden')}
+      />
       <CommandPaletteTrigger appearance="pill" className="hidden lg:inline-flex" />
       <ThemeToggle compact className="hidden lg:inline-flex" />
       {account ?? (
@@ -118,7 +122,7 @@ export function SiteHeader({
           className,
         )}
       >
-        <div className="flex h-full items-center gap-3 px-4 sm:px-6">
+        <div className="flex h-full items-center gap-2 px-3 sm:gap-3 sm:px-6">
           {leading}
           <HomeLink />
           <span aria-hidden="true" className="mx-2 hidden h-5 w-px bg-line lg:block" />

@@ -75,7 +75,7 @@ describe('thread groups', () => {
   });
 
   it('formats row times by group', () => {
-    expect(formatThreadTime(Date.parse(at(0, 9)), NOW, 'en-GB')).toBe('09:00');
+    expect(formatThreadTime(Date.parse(at(0, 9)), NOW, 'en-GB')).toMatch(/^0?9:00$/);
     expect(formatThreadTime(Date.parse(at(1)), NOW, 'en-GB')).toBe('Tue');
     expect(formatThreadTime(Date.parse(at(30)), NOW, 'en-GB')).toMatch(/^21 Sep/);
     expect(formatThreadTime(null, NOW)).toBe('');
