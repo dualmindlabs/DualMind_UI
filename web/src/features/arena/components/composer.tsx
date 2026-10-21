@@ -89,7 +89,9 @@ export function Composer({
       >
         <PromptInputTextarea
           aria-label="Your prompt"
-          placeholder={followUp ? 'Ask a follow-up, same two models' : MODE_DETAILS[mode].placeholder}
+          placeholder={
+            followUp ? 'Ask a follow-up, same two models' : MODE_DETAILS[mode].placeholder
+          }
           enterKeyHint="send"
           className={cn(variant === 'hero' && 'min-h-16')}
           onKeyDown={event => {
