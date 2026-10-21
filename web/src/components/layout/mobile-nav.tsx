@@ -116,7 +116,7 @@ export function MobileNav({
               <li key={link.href}>
                 <a
                   href={link.href}
-                  className="inline-flex min-h-6 items-center rounded-sm hover:text-fg"
+                  className="inline-flex min-h-6 items-center rounded-sm pointer-coarse:min-h-11 pointer-coarse:min-w-11 hover:text-fg"
                 >
                   {link.label}
                 </a>

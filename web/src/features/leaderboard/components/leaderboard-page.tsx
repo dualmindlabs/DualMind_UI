@@ -103,9 +103,9 @@ export function LeaderboardPage() {
         {failed ? null : (
           <section aria-labelledby="podium-title" className="pt-12 md:pt-16">
             <PageContainer className="grid gap-5">
-              <h2 id="podium-title" className="eyebrow text-muted">
+              <p id="podium-title" className="eyebrow text-muted">
                 Top three
-              </h2>
+              </p>
               <Podium
                 entries={board?.entries}
                 eloStart={board ? eloStartFor(board.summary.bottomElo) : 0}

@@ -15,7 +15,7 @@ import { cn } from '@/lib/utils/cn';
 const buttonCva = cva(
   [
     'group/button relative inline-flex shrink-0 cursor-pointer items-center justify-center rounded-md border border-transparent font-medium whitespace-nowrap select-none hit-area',
-    'transition-[background-color,border-color,color,box-shadow,scale] duration-(--dur-fast) ease-out-expo active:not-data-loading:scale-[0.98]',
+    'transition-[background-color,border-color,color,box-shadow,scale] duration-(--dur-fast) ease-out-expo motion-safe:active:not-data-loading:scale-[0.97]',
     'data-disabled:not-data-loading:pointer-events-none data-disabled:not-data-loading:border-line data-disabled:not-data-loading:bg-surface-2 data-disabled:not-data-loading:text-muted data-disabled:not-data-loading:shadow-none',
     'data-loading:cursor-progress',
     "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
@@ -51,7 +51,7 @@ const buttonCva = cva(
     },
     compoundVariants: [
       // A link reads as text: no box, no padding, no press scale.
-      { variant: 'link', className: 'h-auto rounded-sm px-0 shadow-none active:scale-100' },
+      { variant: 'link', className: 'h-auto rounded-sm px-0 shadow-none motion-safe:active:not-data-loading:scale-100' },
     ],
     defaultVariants: { variant: 'primary', size: 'md' },
   },

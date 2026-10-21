@@ -54,8 +54,9 @@ function tooltipRow(item: ChartTooltipItem) {
 /**
  * Where this model's win rate sits on the board: one column per model, sorted from the highest
  * win rate, this model in the Mind A accent and the rest neutral, with the board's average as a
- * hairline. Hover or arrow keys show each model. Loaded lazily (Recharts), only when a details
- * sheet opens; the text summary next to it carries the same facts for screen readers.
+ * hairline. Hover shows each model. Loaded lazily (Recharts), only when a details sheet opens.
+ * The chart is one image for assistive technology with a one-line summary (the text next to it
+ * has the rest), so it adds no extra tab stop.
  */
 export function WinRateChart({ entries, selectedId, average }: WinRateChartProps) {
   const reduce = useShouldReduceMotion();
@@ -69,14 +70,23 @@ export function WinRateChart({ entries, selectedId, average }: WinRateChartProps
       selected: entry.id === selectedId,
     }));
 
+  const selected = data.find(datum => datum.selected);
+  const summary = selected
+    ? `Bar chart of win rate for ${formatCount(data.length)} models, highest first. ${selected.name} wins ${formatPercent(selected.winRate)}; the board average is ${formatPercent(average)}.`
+    : `Bar chart of win rate for ${formatCount(data.length)} models, highest first. The board average is ${formatPercent(average)}.`;
+
   return (
     <div className="grid gap-2.5">
       <ChartContainer
+        role="img"
+        aria-label={summary}
         config={config}
         className="h-44 w-full"
         initialDimension={{ width: 360, height: 176 }}
       >
-        <BarChart data={data} margin={{ top: 10, right: 4, bottom: 6, left: 0 }} barCategoryGap={1}>
+        <BarChart
+          accessibilityLayer={false}
+          data={data} margin={{ top: 10, right: 4, bottom: 6, left: 0 }} barCategoryGap={1}>
           <CartesianGrid vertical={false} stroke="var(--line)" strokeDasharray="0" />
           <XAxis dataKey="name" hide />
           <YAxis

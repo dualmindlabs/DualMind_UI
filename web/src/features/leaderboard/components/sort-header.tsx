@@ -33,7 +33,7 @@ export function SortHeader({ column, sort, onSort, align = 'start', className }:
         type="button"
         onClick={() => onSort(column)}
         className={cn(
-          'group/sort relative inline-flex h-10 w-full cursor-pointer items-center gap-1.5 px-3 eyebrow whitespace-nowrap transition-colors duration-(--dur-fast) hover:text-fg focus-visible:-outline-offset-2',
+          'group/sort relative inline-flex h-10 w-full pointer-coarse:h-11 cursor-pointer items-center gap-1.5 px-3 eyebrow whitespace-nowrap transition-colors duration-(--dur-fast) hover:text-fg focus-visible:-outline-offset-2',
           align === 'end' ? 'justify-end text-right' : 'justify-start text-left',
           state === 'none' ? 'text-muted' : 'text-fg',
         )}

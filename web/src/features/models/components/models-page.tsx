@@ -134,7 +134,7 @@ export function ModelsPage() {
                 <Swords aria-hidden="true" strokeWidth={1.75} />
                 Start a battle
               </a>
-              <a href="/leaderboard/" className={cn(buttonVariants({ variant: 'ghost' }))}>
+              <a href="/leaderboard/" className={cn(buttonVariants({ variant: 'link' }))}>
                 Open the leaderboard
                 <ArrowRight aria-hidden="true" strokeWidth={1.75} />
               </a>

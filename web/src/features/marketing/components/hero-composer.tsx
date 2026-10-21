@@ -1,10 +1,20 @@
 import { useState } from 'react';
 
+import { useMediaQuery } from '@/hooks/use-media-query';
 import { PlaceholdersAndVanishInput } from '@/components/vendor/aceternity/placeholders-and-vanish-input';
 import { cn } from '@/lib/utils/cn';
 
 import { DEMO_BATTLES } from '../content/demo';
 import { EXAMPLE_PROMPTS, HERO, SIGN_IN_HREF } from '../content/landing';
+
+/** Short examples for phones: the field is one line, so a long one would be cut off. */
+const NARROW_PROMPTS: readonly string[] = [
+  'Why do benchmarks stop working?',
+  'Explain entanglement simply',
+  'Define an API in one line',
+  'Write a haiku about bugs',
+  'Which is bigger, 9.11 or 9.9?',
+];
 
 interface HeroComposerProps {
   /** Called with the prompt; the page plays the recorded demo below and scrolls to it. */
@@ -20,6 +30,7 @@ interface HeroComposerProps {
 export function HeroComposer({ onAsk, className }: HeroComposerProps) {
   const [prompt, setPrompt] = useState('');
   const [sent, setSent] = useState(false);
+  const narrow = useMediaQuery('(max-width: 30rem)');
 
   const ask = (text: string) => {
     setSent(true);
@@ -32,7 +43,7 @@ export function HeroComposer({ onAsk, className }: HeroComposerProps) {
         label={HERO.composerLabel}
         hideLabel
         size="lg"
-        placeholders={EXAMPLE_PROMPTS}
+        placeholders={narrow ? NARROW_PROMPTS : EXAMPLE_PROMPTS}
         value={prompt}
         onValueChange={setPrompt}
         onSubmit={ask}
@@ -50,7 +61,7 @@ export function HeroComposer({ onAsk, className }: HeroComposerProps) {
             aria-label={`Play the recorded battle: ${battle.prompt}`}
             className={cn(
               'hit-area relative inline-block h-8 max-w-full truncate rounded-full border border-line bg-glass px-3.5 text-caption leading-[1.875rem] text-fg-soft',
-              'transition-[border-color,color,background-color] duration-(--dur-fast) ease-out-expo hover:border-line-strong hover:bg-hover hover:text-fg',
+              'transition-[border-color,color,background-color,scale] duration-(--dur-fast) ease-out-expo hover:border-line-strong hover:bg-hover hover:text-fg active:scale-[0.97]',
               index === 2 && 'hidden md:inline-block',
             )}
           >
