@@ -35,16 +35,12 @@ export function ArenaProvider({ children }: { children: ReactNode }) {
 
   const [historyOpen, setHistoryOpen] = useState(false);
   const [shareThreadId, setShareThreadId] = useState<string | null>(null);
-<<<<<<< HEAD
   // A prompt typed on the landing page before signing in (UI audit P1-1): it opens in the box,
   // focused and not sent. Read once; the effect below clears it from the tab.
   const [landingDraft] = useState(() => readPromptDraft());
-  const [draft, setDraft] = useState(landingDraft ?? '');
-=======
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [shortcutsReturnFocus, setShortcutsReturnFocus] = useState<HTMLElement | null>(null);
-  const [draft, setDraft] = useState('');
->>>>>>> origin/master
+  const [draft, setDraft] = useState(landingDraft ?? '');
   const [announcement, setAnnouncement] = useState({ id: 0, message: '' });
   const composerRef = useRef<HTMLTextAreaElement | null>(null);
 
