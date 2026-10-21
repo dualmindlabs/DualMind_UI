@@ -375,11 +375,9 @@ test.describe('battles', () => {
     await page.keyboard.press('Enter');
     await expect(page.getByTestId('live-turn')).toHaveCount(2);
     const battles = state.bodies.filter(item => item.path === '/api/arena/dualchat');
-    expect(battles[1]?.body).toMatchObject({
-      threadId: battles[0]?.body.threadId ?? 't-new-7',
-      model1: expect.any(String) as string,
-      model2: expect.any(String) as string,
-    });
+    expect(battles[1]?.body.threadId).toBe(battles[0]?.body.threadId);
+    expect(typeof battles[1]?.body.model1).toBe('string');
+    expect(typeof battles[1]?.body.model2).toBe('string');
 
     await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
     await page.keyboard.press('n');
