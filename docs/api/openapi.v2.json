@@ -145,6 +145,122 @@
           "role",
           "expiresAt"
         ]
+      },
+      "LeaderboardResponse": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LeaderboardItem"
+            },
+            "description": "Every ranked model, best first. The list is small and returned whole, so there is no nextCursor."
+          },
+          "meta": {
+            "$ref": "#/components/schemas/LeaderboardMeta"
+          }
+        },
+        "required": [
+          "items",
+          "meta"
+        ]
+      },
+      "LeaderboardItem": {
+        "type": "object",
+        "properties": {
+          "modelId": {
+            "type": "string",
+            "description": "Stable model id"
+          },
+          "modelName": {
+            "type": "string",
+            "description": "Full model name, may carry a provider prefix such as @cf/meta/"
+          },
+          "displayName": {
+            "type": "string",
+            "description": "Name to show"
+          },
+          "providerName": {
+            "type": "string"
+          },
+          "eloScore": {
+            "type": "number",
+            "description": "Elo rating, one decimal"
+          },
+          "eloRank": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Rank by Elo; ties share a rank (1, 1, 3)"
+          },
+          "totalWins": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "totalLosses": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "totalTies": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "totalResponses": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Battles the model took part in"
+          },
+          "winRate": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Percent from 0 to 100 with two decimals; ties count as non-wins"
+          },
+          "provisional": {
+            "type": "boolean",
+            "description": "True while totalResponses is below meta.provisionalBelow"
+          }
+        },
+        "required": [
+          "modelId",
+          "modelName",
+          "displayName",
+          "providerName",
+          "eloScore",
+          "eloRank",
+          "totalWins",
+          "totalLosses",
+          "totalTies",
+          "totalResponses",
+          "winRate",
+          "provisional"
+        ]
+      },
+      "LeaderboardMeta": {
+        "type": "object",
+        "properties": {
+          "generatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the data last changed, not when it was served"
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "provisionalBelow": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "source": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "generatedAt",
+          "count",
+          "provisionalBelow",
+          "source"
+        ]
       }
     },
     "parameters": {}
@@ -221,6 +337,90 @@
           },
           "501": {
             "description": "Sign-in verification is not enabled on this deployment (not_enabled).",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/leaderboard": {
+      "get": {
+        "summary": "The public leaderboard",
+        "description": "Every ranked model with its Elo, record and win rate, served from the edge cache (HEAD works too). No sign-in. `winRate` is a percent from 0 to 100 and counts ties as non-wins. `provisional` is true while `totalResponses` is below `meta.provisionalBelow`. `meta.generatedAt` is when the data last changed, not when it was served. The list is small and returned whole, so there is no `nextCursor`. Send `If-None-Match` with the last `ETag` to get `304`. During an outage of the DualMind API the last good copy (up to 24 hours old) is served.",
+        "tags": [
+          "leaderboard"
+        ],
+        "responses": {
+          "200": {
+            "description": "The leaderboard.",
+            "headers": {
+              "ETag": {
+                "description": "Strong tag from a hash of the data, like \"lb-5e0c1b7a93d24f10\".",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "public, max-age=30, stale-while-revalidate=60, stale-if-error=86400",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Status": {
+                "description": "RFC 9211: hit, stale or miss.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeaderboardResponse"
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "The `If-None-Match` tag matches; no body."
+          },
+          "429": {
+            "description": "Rate limit hit (rate_limited).",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected error.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "The DualMind API is unreachable or invalid and no copy is stored (bad_gateway).",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "The DualMind API did not answer in time and no copy is stored (gateway_timeout).",
             "content": {
               "application/problem+json": {
                 "schema": {
