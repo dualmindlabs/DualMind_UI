@@ -1,6 +1,6 @@
 import type { User } from '@supabase/supabase-js';
 import { LockKeyhole } from 'lucide-react';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 
 import { PageContainer } from '@/components/layout/page-container';
 import { SiteFooter } from '@/components/layout/site-footer';
@@ -15,11 +15,12 @@ import { settingsLink } from '@/lib/site/links';
 import { loginUrl } from '@/lib/supabase';
 
 import type { ExportAccount } from '../lib/export-format';
+import { SETTINGS_SECTIONS } from '../lib/sections';
 import { AppearanceSection } from './appearance-section';
 import { ArenaSection } from './arena-section';
 import { DataSection } from './data-section';
 import { displayNameOf, ProfileSection } from './profile-section';
-import { SettingsNav } from './settings-nav';
+import { goToSection, SettingsNav } from './settings-nav';
 import { ShortcutsSection } from './shortcuts-section';
 
 function PageHeading({ email }: { email?: string | null | undefined }) {
@@ -102,6 +103,12 @@ function SignedIn({ user, profileName }: { user: User; profileName: string | nul
     () => ({ email: user.email ?? null, name: name || null }),
     [user.email, name],
   );
+
+  // A link to a section (/settings/#data) arrives before the sections exist: go there once.
+  useEffect(() => {
+    const id = decodeURIComponent(window.location.hash.slice(1));
+    if (SETTINGS_SECTIONS.some(section => section.id === id)) goToSection(id, false);
+  }, []);
   return (
     <div className="grid gap-10 pt-8 lg:grid-cols-[13.5rem_minmax(0,1fr)] lg:gap-14">
       <SettingsNav className="lg:sticky lg:top-24 lg:self-start" />

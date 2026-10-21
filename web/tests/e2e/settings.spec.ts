@@ -133,7 +133,7 @@ async function overflowing(page: Page) {
 }
 
 async function download(page: Page, format: RegExp, button: RegExp) {
-  await page.getByRole('radio', { name: format }).check({ force: true });
+  await page.getByRole('radio', { name: format }).check();
   const [file] = await Promise.all([
     page.waitForEvent('download'),
     page.getByRole('button', { name: button }).click(),
@@ -209,6 +209,11 @@ test.describe('sections', () => {
       'aria-current',
       'location',
     );
+    // A link to a section lands on it.
+    await page.goto('/settings/#shortcuts');
+    await expect(
+      page.getByRole('heading', { level: 2, name: 'Keyboard shortcuts' }),
+    ).toBeInViewport();
     expect(problems).toEqual([]);
     expect(csp).toEqual([]);
   });
@@ -218,19 +223,14 @@ test.describe('preferences', () => {
   test('the theme persists and applies before the first paint', async ({ page }) => {
     await mockArena(page);
     await openSettings(page);
-    await page.getByRole('group', { name: 'Theme' }).getByRole('radio', { name: 'Light' }).check({
-      force: true,
-    });
+    const theme = page.getByRole('group', { name: 'Theme', exact: true });
+    await theme.getByRole('radio', { name: 'Light' }).check();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
     await page.reload();
     // The head script set it before React ran.
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
-    await expect(
-      page.getByRole('group', { name: 'Theme' }).getByRole('radio', { name: 'Light' }),
-    ).toBeChecked();
-    await page.getByRole('group', { name: 'Theme' }).getByRole('radio', { name: 'Dark' }).check({
-      force: true,
-    });
+    await expect(theme.getByRole('radio', { name: 'Light' })).toBeChecked();
+    await theme.getByRole('radio', { name: 'Dark' }).check();
     expect(await page.evaluate(() => window.localStorage.getItem('dm.theme'))).toBe('dark');
   });
 
@@ -244,8 +244,8 @@ test.describe('preferences', () => {
       navLink.evaluate(element => Number.parseFloat(getComputedStyle(element).transitionDuration));
     expect(await duration()).toBeGreaterThan(0.1);
 
-    const motion = page.getByRole('group', { name: 'Motion' });
-    await motion.getByRole('radio', { name: 'Reduce' }).check({ force: true });
+    const motion = page.getByRole('group', { name: 'Motion', exact: true });
+    await motion.getByRole('radio', { name: 'Reduce' }).check();
     await expect(page.locator('html')).toHaveAttribute('data-motion', 'reduce');
     expect(await duration()).toBeLessThan(0.001);
     await page.reload();
@@ -254,10 +254,10 @@ test.describe('preferences', () => {
 
     // The OS asks for less motion; "Allow" keeps it, "System" follows the OS again.
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    await motion.getByRole('radio', { name: 'Allow' }).check({ force: true });
+    await motion.getByRole('radio', { name: 'Allow' }).check();
     await expect(page.locator('html')).toHaveAttribute('data-motion', 'allow');
     expect(await duration()).toBeGreaterThan(0.1);
-    await motion.getByRole('radio', { name: 'System' }).check({ force: true });
+    await motion.getByRole('radio', { name: 'System' }).check();
     await expect(page.locator('html')).not.toHaveAttribute('data-motion', /.+/);
     expect(await duration()).toBeLessThan(0.001);
     await expect(motion).toContainText('Your device asks for reduced motion');
@@ -268,8 +268,8 @@ test.describe('preferences', () => {
   }) => {
     const state = await mockArena(page);
     await openSettings(page);
-    await page.getByRole('radio', { name: 'Direct' }).check({ force: true });
-    await page.getByRole('radio', { name: 'Ctrl+Enter sends' }).check({ force: true });
+    await page.getByRole('radio', { name: 'Direct' }).check();
+    await page.getByRole('radio', { name: 'Ctrl+Enter sends' }).check();
     await page.getByRole('switch', { name: 'Use single-key shortcuts' }).click();
     await expect(page.getByText('Off', { exact: true }).first()).toBeVisible();
 
@@ -367,7 +367,7 @@ test.describe('export', () => {
     });
     await mockArena(page);
     await openSettings(page);
-    await page.getByRole('radio', { name: /^PDF/ }).check({ force: true });
+    await page.getByRole('radio', { name: /^PDF/ }).check();
     await page.getByRole('button', { name: 'Open the print view' }).click();
     await expect(page.getByTestId('export-done')).toContainText('Save as PDF');
     await expect

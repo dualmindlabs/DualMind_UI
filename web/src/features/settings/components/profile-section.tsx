@@ -190,15 +190,17 @@ function PasswordCard({ provider }: { provider: string }) {
       }
     >
       {open ? (
-        <ChangePasswordForm
-          onChanged={() => {
-            setOpen(false);
-            toast.success('Password changed', {
-              description: 'Use the new password the next time you sign in.',
-            });
-          }}
-          onCancel={() => setOpen(false)}
-        />
+        <div className="max-w-md">
+          <ChangePasswordForm
+            onChanged={() => {
+              setOpen(false);
+              toast.success('Password changed', {
+                description: 'Use the new password the next time you sign in.',
+              });
+            }}
+            onCancel={() => setOpen(false)}
+          />
+        </div>
       ) : (
         <div>
           <Button variant="secondary" size="sm" onClick={() => setOpen(true)}>

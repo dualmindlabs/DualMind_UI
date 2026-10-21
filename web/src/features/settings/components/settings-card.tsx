@@ -16,7 +16,9 @@ export function SettingsSection({ id, title, description, children }: SettingsSe
     <section
       id={id}
       aria-labelledby={`${id}-title`}
-      className="grid scroll-mt-24 gap-5"
+      // A focus target for the section nav, not a stop in the tab order.
+      tabIndex={-1}
+      className="grid scroll-mt-24 gap-5 focus:outline-none"
       data-testid={`settings-${id}`}
     >
       <header className="grid gap-1.5">

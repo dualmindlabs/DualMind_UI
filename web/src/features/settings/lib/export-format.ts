@@ -215,7 +215,7 @@ function answerHeading(answer: ExportAnswer, hidden: boolean): string {
     modelLabel(answer.model),
     formatDuration(answer.timeMs),
   ].filter((part): part is string => part !== null);
-  return [`**${label}**`, ...details.map(escapeMarkdownInline)].join(' · ');
+  return [`**${label}**`, ...details.map(part => escapeMarkdownInline(part))].join(' · ');
 }
 
 const markdownWriter: ExportWriter = {

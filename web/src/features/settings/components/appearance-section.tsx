@@ -52,6 +52,7 @@ function ThemeCard() {
       {({ descriptionId }) => (
         <ChoiceCards
           legend="Theme"
+          dense
           value={preference}
           options={THEME_OPTIONS}
           describedBy={descriptionId}
