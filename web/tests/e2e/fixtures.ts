@@ -10,16 +10,16 @@ export { expect };
  * attribute; the wait gives up after a few seconds and the test goes on.
  */
 export const test = base.extend({
-  page: async ({ page }, use) => {
+  page: async ({ page }, run) => {
     const goto = page.goto.bind(page);
-    page.goto = (async (url, options) => {
+    page.goto = async (url, options) => {
       const response = await goto(url, options);
       await page
         .locator('html[data-hydrated]')
         .waitFor({ state: 'attached', timeout: 4_000 })
         .catch(() => undefined);
       return response;
-    }) as typeof page.goto;
-    await use(page);
+    };
+    await run(page);
   },
 });

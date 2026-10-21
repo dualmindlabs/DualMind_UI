@@ -142,6 +142,25 @@ Live page: 37 `modulepreload` links in the HTML head (entry, root, 13 shared chu
 
 Rough target after #1 to #6: initial JS about 250 KB gz (from 406), fonts about 65 KB (from 130), LCP under 3 s, performance 88-92. If the first PR does not move the score, the likely culprit is the simulated-throttle cost of main-thread work and the next step is a Lighthouse trace comparison per change.
 
+### Results of fix PR 1 (measured in CI, same Lighthouse setup)
+
+| Metric (`/`, mobile, 3 runs) | Before (master run 39570236764) | After (PR run 39607044504) |
+| --- | --- | --- |
+| Performance | 73, 74, 74 | 99, 97, 95 (median 97) |
+| FCP | 3.9-4.0 s | 1.1-1.6 s |
+| LCP | 4.6-4.7 s | 2.1-2.9 s |
+| TBT | 6-122 ms | 6-9 ms |
+| CLS | 0.021 | 0.021 (unchanged) |
+| Gzipped JavaScript in the first page load (files the HTML lists) | about 290 KB | 266 KB (no longer requested before first paint) |
+| `modulepreload` links in the HTML head | 37 | 0 (added after `load`) |
+
+What moved the score, found by measuring each step:
+
+1. **Not the animation and not the byte count alone.** Making the headline opaque in the first frame (change 1) helped LCP a little (about 0.3 s), and removing the tooltip stack and the eager API client (changes 2 and 3) cut the first load from about 290 KB to about 185 KB, but FCP stayed at 3.1 s. Lighthouse's simulated mobile link (1.6 Mbit/s) counts every byte requested before the observed first paint as part of FCP, and the HTML asks for the scripts, 37 `modulepreload` chunks, the stylesheet and three fonts at the same time: FCP followed total bytes at about 5 ms per KB.
+2. **The fix is to ask for the JavaScript later.** `scripts/defer-hydration.js` (run by `build.js` on every prerendered page) moves the module script and the preloads behind the `load` event. The page paints from HTML, CSS and fonts; FCP went from 3.1 s to 1.1 s and the score to 97-99. Hydration starts a few hundred milliseconds later, so a tap in that window reaches plain HTML (the e2e suite now waits for `<html data-hydrated>`). This trade-off is the one decision for Harsh: it is one commit (`perf(web): start the prerendered pages' JavaScript after the first paint`) and can be dropped on its own, which gives the score back (about 77-88 with the other changes).
+3. **What did not work (change 4).** Splitting the sections under the hero into a lazy chunk, and gating their hydration until the first scroll, made the page worse: React Router changes context while the page hydrates, and React then client-renders every Suspense boundary that is still waiting, throwing the prerendered HTML away (the sections and the phone-menu button disappeared for a moment, CLS 0.03, TBT 300-500 ms). Those sections stay ordinary imports. Rule recorded in `web/README.md`: lazy-load what mounts after hydration, never a boundary around prerendered content.
+4. **Left for fix PR 2:** fonts (127 KB, three preloads) now set the floor of FCP (1.1 s), CSS splitting, and the Lighthouse run of the other routes. With the scripts out of the first paint, the first cold run in a job is still an outlier (one run of five scored 76 with TBT 1 s); the median of three is not affected.
+
 ---
 
 ## Fix PR plan
