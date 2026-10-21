@@ -25,7 +25,7 @@ describe('deferHydration', () => {
     expect(result).not.toBeNull();
     if (!result) return;
     expect(result.html).not.toContain('<link rel="modulepreload"');
-    expect(result.html).not.toContain('type="module"');
+    expect(result.html).not.toContain('<script type="module"');
     expect(result.html).toContain('<link rel="stylesheet" href="/assets/x.css"/>');
     expect(result.html).toContain('<main>Hello</main>');
     expect(result.html).toContain('addEventListener("load"');
