@@ -1,4 +1,4 @@
-import type { RefObject } from 'react';
+import { type RefObject, useEffect } from 'react';
 
 import type { DemoBattleControls } from '../hooks/use-demo-battle';
 import type { LiveStatsState } from '../hooks/use-live-stats';
@@ -13,10 +13,16 @@ interface BelowTheFoldProps {
   stats: LiveStatsState;
   demo: DemoBattleControls;
   demoRef: RefObject<HTMLDivElement | null>;
+  /** Called once the sections have hydrated. */
+  onHydrated: () => void;
 }
 
 /** The landing sections under the hero: one lazy chunk (see landing-page.tsx). */
-export function BelowTheFold({ stats, demo, demoRef }: BelowTheFoldProps) {
+export function BelowTheFold({ stats, demo, demoRef, onHydrated }: BelowTheFoldProps) {
+  useEffect(() => {
+    onHydrated();
+  }, [onHydrated]);
+
   return (
     <>
       <ModelStrip stats={stats} />

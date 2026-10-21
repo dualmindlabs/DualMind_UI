@@ -35,9 +35,13 @@ const splitWords = (text: string) => text.split(/\s+/).filter(Boolean);
  * after hydration: the prerendered page shows both answers, ready to vote; once hydrated they wait
  * (space kept) until the demo is on screen.
  */
-export function useDemoBattle(rootRef: RefObject<HTMLElement | null>): DemoBattleControls {
+export function useDemoBattle(
+  rootRef: RefObject<HTMLElement | null>,
+  /** False until the demo's own (lazy) section has hydrated; it waits for its server HTML. */
+  ready = true,
+): DemoBattleControls {
   const reduce = useShouldReduceMotion();
-  const hydrated = useHydrated();
+  const hydrated = useHydrated() && ready;
   const [state, dispatch] = useReducer(demoReducer, initialDemoState);
   const [progress, setProgress] = useState({ run: 0, elapsed: 0 });
   const reduceRef = useRef(reduce);

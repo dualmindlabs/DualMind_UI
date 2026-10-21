@@ -5,6 +5,9 @@
   "type": "module",
   "description": "DualMind Arena frontend: React Router (framework mode, prerendered) + Vite + Tailwind CSS. Composed into the root dist/ by build.js.",
   "license": "UNLICENSED",
+  "sideEffects": [
+    "**/*.css"
+  ],
   "engines": {
     "node": ">=22.22.0"
   },

@@ -1,4 +1,4 @@
-import { lazy, Suspense, useRef } from 'react';
+import { lazy, Suspense, useCallback, useRef, useState } from 'react';
 
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteHeader } from '@/components/layout/site-header';
@@ -6,7 +6,7 @@ import { SkipLink } from '@/components/layout/skip-link';
 import { useShouldReduceMotion } from '@/hooks/use-should-reduce-motion';
 
 import { useDemoBattle } from '../hooks/use-demo-battle';
-import { useLiveStats } from '../hooks/use-live-stats';
+import { type LiveStatsState, useLiveStats } from '../hooks/use-live-stats';
 import { findBattleIndex } from '../lib/demo-machine';
 import { HeroSection } from './hero-section';
 
@@ -17,6 +17,8 @@ const BelowTheFold = lazy(() =>
   import('./below-the-fold').then(module => ({ default: module.BelowTheFold })),
 );
 
+const LOADING: LiveStatsState = { status: 'loading' };
+
 /**
  * The landing page (`/` for signed-out visitors): hero with the composer and live numbers, the
  * model strip, how a battle works with the recorded demo, why blind battles, the four steps, the
@@ -25,7 +27,11 @@ const BelowTheFold = lazy(() =>
 export function LandingPage() {
   const stats = useLiveStats();
   const demoRef = useRef<HTMLDivElement>(null);
-  const demo = useDemoBattle(demoRef);
+  // The lazy sections hydrate after the hero, possibly after the live numbers arrived. Until they
+  // have hydrated they get the prerendered state (loading, demo waiting), so they match their HTML.
+  const [belowReady, setBelowReady] = useState(false);
+  const markBelowReady = useCallback(() => setBelowReady(true), []);
+  const demo = useDemoBattle(demoRef, belowReady);
   const reduce = useShouldReduceMotion();
 
   // A prompt from the hero: a recorded battle plays below (the matching one when the prompt is a
@@ -46,7 +52,12 @@ export function LandingPage() {
       <main id="main" tabIndex={-1} className="outline-none">
         <HeroSection onAsk={ask} stats={stats} />
         <Suspense fallback={null}>
-          <BelowTheFold stats={stats} demo={demo} demoRef={demoRef} />
+          <BelowTheFold
+            stats={belowReady ? stats : LOADING}
+            demo={demo}
+            demoRef={demoRef}
+            onHydrated={markBelowReady}
+          />
         </Suspense>
       </main>
       <SiteFooter />
