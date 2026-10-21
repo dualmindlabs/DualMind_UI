@@ -1,7 +1,8 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, type Page, test } from '@playwright/test';
+import type { Page } from '@playwright/test';
 
 import { credits } from '../../src/content/credits';
+import { expect, test } from './fixtures';
 import { passGate, PREVIEW_COOKIE, settle, shotPath, storeTheme } from './helpers';
 
 // The info, legal and 404 pages (slice S4) in Chromium, through the real Worker: prerendered

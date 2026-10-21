@@ -51,6 +51,12 @@ jobs:
         run: |
           node tests/e2e/serve-dist.mjs --port 8790 > "$RUNNER_TEMP/server.log" 2>&1 &
           for i in $(seq 1 60); do curl -fsS -o /dev/null -H 'Cookie: dm_preview=1' http://127.0.0.1:8790/ && exit 0; sleep 2; done; cat "$RUNNER_TEMP/server.log"; exit 1
+      - name: Hydration probe
+        working-directory: web
+        run: |
+          npx playwright install --with-deps chromium > /dev/null 2>&1
+          cp ../.github/probe/hydration.mjs ./hydration-probe.mjs
+          node hydration-probe.mjs | tee ../probe/hydration.txt
       - name: Lighthouse
         uses: treosh/lighthouse-ci-action@12.6.2
         with:
@@ -59,7 +65,7 @@ jobs:
           uploadArtifacts: true
           artifactName: lighthouse-probe
           temporaryPublicStorage: false
-          runs: 5
+          runs: 3
       - uses: actions/upload-artifact@v4
         if: always()
         with:

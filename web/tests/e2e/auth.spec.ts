@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, type Page, type Request, type Route, test } from '@playwright/test';
+import type { Page, Request, Route } from '@playwright/test';
 
+import { expect, test } from './fixtures';
 import { passGate, PREVIEW_COOKIE, settle, shotPath, storeTheme } from './helpers';
 
 // Slice S6: the sign-in pages through the real Worker, with every Supabase call answered by

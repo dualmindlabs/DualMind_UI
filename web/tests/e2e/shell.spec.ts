@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, type Page, test } from '@playwright/test';
+import type { Page } from '@playwright/test';
 
+import { expect, test } from './fixtures';
 import { passGate, settle, shotPath, storeTheme } from './helpers';
 
 // The site shell on /design/ (it uses the real header and footer): the keyboard path through the

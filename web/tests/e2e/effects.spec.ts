@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, type Page, test } from '@playwright/test';
+import type { Page } from '@playwright/test';
 
+import { expect, test } from './fixtures';
 import { passGate, settle, shotPath, storeTheme } from './helpers';
 
 // The effects gallery on /design/ (section 07): every vendored effect renders without errors,

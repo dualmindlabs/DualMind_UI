@@ -3,8 +3,9 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import AxeBuilder from '@axe-core/playwright';
-import { expect, type Page, type Route, test } from '@playwright/test';
+import type { Page, Route } from '@playwright/test';
 
+import { expect, test } from './fixtures';
 import { passGate, PREVIEW_COOKIE, settle, shotPath, storeTheme } from './helpers';
 
 // /leaderboard/ and /models/ through the real Worker, with GET /api/arena/model-stats answered

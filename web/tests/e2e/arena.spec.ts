@@ -1,7 +1,8 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, type Page, test } from '@playwright/test';
+import type { Page } from '@playwright/test';
 
 import { mockArena } from './arena-mocks';
+import { expect, test } from './fixtures';
 import { passGate, settle, shotPath, storeTheme } from './helpers';
 
 // Slices S8 and S9: the signed-in arena at / (the default; ?arena=legacy keeps the legacy one): the switch from the landing page, the history (groups, search, rename, delete), the
