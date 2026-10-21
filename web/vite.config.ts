@@ -11,7 +11,7 @@ const probe: Plugin = {
     const out: Record<string, string[]> = {};
     for (const [name, chunk] of Object.entries(bundle))
       if (chunk.type === 'chunk') out[name] = Object.keys(chunk.modules);
-    writeFileSync('probe.json', JSON.stringify(out));
+    writeFileSync(`probe-${String(Date.now())}.json`, JSON.stringify(out));
   },
 };
 
