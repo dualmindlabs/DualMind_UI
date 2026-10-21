@@ -266,6 +266,8 @@ const CHOICE_WORDS: Record<VoteChoice, string> = {
 function revealMessage(turn: LiveTurn, choice: VoteChoice, queued: boolean): string {
   const a = turn.a?.model?.displayName ?? turn.a?.model?.name ?? 'unknown';
   const b = turn.b?.model?.displayName ?? turn.b?.model?.name ?? 'unknown';
-  const saved = queued ? ' Your vote is saved on this device and will be sent when you are back online.' : '';
+  const saved = queued
+    ? ' Your vote is saved on this device and will be sent when you are back online.'
+    : '';
   return `${CHOICE_WORDS[choice]}. Model A was ${a}. Model B was ${b}.${saved}`;
 }

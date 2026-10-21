@@ -418,7 +418,9 @@ test.describe('battles', () => {
     await page.getByRole('radio', { name: 'Side by side' }).check({ force: true });
     await page.getByRole('button', { name: /Model for answer B/ }).click();
     await page.getByRole('option', { name: /Gemma 3n/ }).click();
-    await page.getByRole('textbox', { name: 'Your prompt' }).fill('Write a haiku about merge conflicts');
+    await page
+      .getByRole('textbox', { name: 'Your prompt' })
+      .fill('Write a haiku about merge conflicts');
     await page.keyboard.press('Enter');
     const turn = page.getByTestId('live-turn').first();
     await expect(turn).toHaveAttribute('data-phase', 'awaiting_vote', { timeout: 15_000 });

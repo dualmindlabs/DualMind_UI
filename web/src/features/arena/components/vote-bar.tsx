@@ -81,7 +81,7 @@ export function VoteBar({ onVote, chosen, optional = false, error, className }: 
             className={cn(
               'flex h-12 min-w-0 items-center justify-between gap-2 rounded-md border border-line-strong bg-surface px-3 text-ui font-medium text-fg sm:px-4 pointer-coarse:h-14',
               'transition-[background-color,border-color,scale] duration-(--dur-fast) ease-out-expo hover:bg-surface-2 active:scale-[0.98]',
-              'aria-pressed:border-human aria-pressed:bg-human-tint aria-disabled:cursor-default aria-disabled:hover:bg-surface',
+              'aria-disabled:cursor-default aria-disabled:hover:bg-surface aria-pressed:border-human aria-pressed:bg-human-tint',
               option.phoneOrder,
             )}
           >

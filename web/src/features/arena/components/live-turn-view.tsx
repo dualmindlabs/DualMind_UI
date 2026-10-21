@@ -27,10 +27,7 @@ function Metrics({ answer }: { answer: LiveAnswer }) {
   const items = [
     ['Time', formatDuration(answer.responseTimeMs)],
     ['Length', `${words.toLocaleString('en-US')} ${words === 1 ? 'word' : 'words'}`],
-    [
-      'Tokens',
-      answer.usage ? answer.usage.completionTokens.toLocaleString('en-US') : null,
-    ],
+    ['Tokens', answer.usage ? answer.usage.completionTokens.toLocaleString('en-US') : null],
   ].filter((item): item is [string, string] => item[1] !== null);
   return (
     <dl className="mt-auto flex flex-wrap gap-x-5 gap-y-1 rounded-b-[13px] border-t border-line px-4 py-2.5 font-mono text-caption sm:px-5">
@@ -104,11 +101,15 @@ export function LiveTurnView({ turn, number }: { turn: LiveTurn; number: number 
   const { battle } = useArena();
   const optional = turn.mode === 'side';
   const showVote =
-    turn.mode !== 'direct' &&
-    (turn.phase === 'awaiting_vote' || turn.phase === 'voting');
+    turn.mode !== 'direct' && (turn.phase === 'awaiting_vote' || turn.phase === 'voting');
 
   return (
-    <article aria-labelledby={promptId} className="grid gap-4" data-testid="live-turn" data-phase={turn.phase}>
+    <article
+      aria-labelledby={promptId}
+      className="grid gap-4"
+      data-testid="live-turn"
+      data-phase={turn.phase}
+    >
       <PromptCard id={promptId} number={number} prompt={turn.prompt} />
       {turn.mode === 'direct' ? (
         <LivePane turn={turn} side="solo" answer={turn.a} />
@@ -140,7 +141,10 @@ export function LiveTurnView({ turn, number }: { turn: LiveTurn; number: number 
         />
       ) : null}
       {turn.phase === 'revealed' && turn.vote ? (
-        <p className="flex flex-wrap items-center gap-2 text-ui-sm text-fg-soft" data-testid="verdict">
+        <p
+          className="flex flex-wrap items-center gap-2 text-ui-sm text-fg-soft"
+          data-testid="verdict"
+        >
           Your verdict: <span className="font-medium text-human">{VOTE_LABELS[turn.vote]}</span>
           {turn.votePending && battle.pendingVotes > 0 ? (
             <span
@@ -154,7 +158,10 @@ export function LiveTurnView({ turn, number }: { turn: LiveTurn; number: number 
         </p>
       ) : null}
       {turn.phase === 'error' ? (
-        <div role="alert" className="grid justify-items-start gap-2 rounded-lg border border-bad/50 bg-surface px-4 py-3">
+        <div
+          role="alert"
+          className="grid justify-items-start gap-2 rounded-lg border border-bad/50 bg-surface px-4 py-3"
+        >
           <p className="text-ui-sm text-fg">The answers did not arrive. {turn.error}</p>
           <Button
             variant="secondary"

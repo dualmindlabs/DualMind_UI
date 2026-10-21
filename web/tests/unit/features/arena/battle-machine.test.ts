@@ -59,7 +59,14 @@ describe('battle state machine', () => {
   it('a failed vote goes back to awaiting the vote, with the message', () => {
     const state = run(
       submitted,
-      { type: 'answers', id: 't1', comparisonId: 'c1', a: answer('A', 'a'), b: answer('B', 'b'), at: 1 },
+      {
+        type: 'answers',
+        id: 't1',
+        comparisonId: 'c1',
+        a: answer('A', 'a'),
+        b: answer('B', 'b'),
+        at: 1,
+      },
       { type: 'shown', id: 't1', at: 2 },
       { type: 'vote', id: 't1', choice: 'tie' },
       { type: 'vote-failed', id: 't1', message: 'Nope' },
@@ -103,7 +110,10 @@ describe('battle state machine', () => {
       { type: 'delta', id: 'd1', text: 'lo' },
       { type: 'stream-done', id: 'd1', usage: null, at: 50 },
     );
-    expect(direct.turns[0]).toMatchObject({ phase: 'done', a: { text: 'Hello', responseTimeMs: 50 } });
+    expect(direct.turns[0]).toMatchObject({
+      phase: 'done',
+      a: { text: 'Hello', responseTimeMs: 50 },
+    });
     expect(namesShown({ mode: 'direct', phase: 'answering' })).toBe(true);
   });
 

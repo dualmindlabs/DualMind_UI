@@ -266,7 +266,8 @@ export async function mockArena(
     if (path === '/api/arena/dualchat') {
       const body = request.postDataJSON() as Record<string, unknown>;
       state.bodies.push({ path, body });
-      if (options.battleDelayMs) await new Promise(resolve => setTimeout(resolve, options.battleDelayMs));
+      if (options.battleDelayMs)
+        await new Promise(resolve => setTimeout(resolve, options.battleDelayMs));
       battles += 1;
       const pick = (id: unknown, fallback: number) =>
         MODELS.find(model => model.modelId === id) ?? MODELS[fallback] ?? MODELS[0];
@@ -276,9 +277,17 @@ export async function mockArena(
         object: 'ai.response',
         success: true,
         message: text,
-        model: { name: model?.modelName, displayName: model?.displayName, provider: model?.providerName },
+        model: {
+          name: model?.modelName,
+          displayName: model?.displayName,
+          provider: model?.providerName,
+        },
         responseTimeMs: ms,
-        usage: { promptTokens: 12, completionTokens: Math.ceil(text.length / 4), totalTokens: 12 + Math.ceil(text.length / 4) },
+        usage: {
+          promptTokens: 12,
+          completionTokens: Math.ceil(text.length / 4),
+          totalTokens: 12 + Math.ceil(text.length / 4),
+        },
       });
       return json(route, 200, {
         success: true,

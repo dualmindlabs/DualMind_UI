@@ -140,7 +140,6 @@ export function ArenaProvider({ children }: { children: ReactNode }) {
     [setStoredShortcuts],
   );
 
-
   // The tab title follows the open thread.
   useEffect(() => {
     document.title = openThreadData

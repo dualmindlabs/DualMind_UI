@@ -90,13 +90,21 @@ function streamChat(request, response) {
   const timer = setInterval(() => {
     if (index < STREAM_WORDS.length) {
       const text = `${index === 0 ? '' : ' '}${STREAM_WORDS[index]}`;
-      response.write(`data: ${JSON.stringify({ object: 'ai.stream.delta', delta: { type: 'text', text } })}\n\n`);
+      response.write(
+        `data: ${JSON.stringify({ object: 'ai.stream.delta', delta: { type: 'text', text } })}\n\n`,
+      );
       index += 1;
       return;
     }
     clearInterval(timer);
-    const usage = { promptTokens: 9, completionTokens: STREAM_WORDS.length, totalTokens: 9 + STREAM_WORDS.length };
-    response.write(`data: ${JSON.stringify({ object: 'ai.stream.done', finishReason: 'stop', usage })}\n\n`);
+    const usage = {
+      promptTokens: 9,
+      completionTokens: STREAM_WORDS.length,
+      totalTokens: 9 + STREAM_WORDS.length,
+    };
+    response.write(
+      `data: ${JSON.stringify({ object: 'ai.stream.done', finishReason: 'stop', usage })}\n\n`,
+    );
     response.end('data: [DONE]\n\n');
   }, 60);
   response.on('close', () => clearInterval(timer));
