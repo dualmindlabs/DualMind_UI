@@ -119,7 +119,7 @@ describe('leaderboard (recorded model-stats with duplicate casing)', () => {
     expect(rows[0]).toEqual({
       modelId: 'fdbfca6d-a3d2-4a70-b0ab-426024eb5cd5',
       modelName: '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
-      displayName: 'llama-3.3-70b-instruct-fp8-fast',
+      displayName: 'Llama 3.3 70B Instruct (FP8, fast)',
       providerName: 'cloudflare',
       eloScore: 1150,
       eloRank: 1,
@@ -164,7 +164,7 @@ describe('leaderboard (recorded model-stats with duplicate casing)', () => {
       total_matches: '4',
     });
     expect(row).toMatchObject({
-      displayName: 'llama-3-8b-instruct',
+      displayName: 'Llama 3 8B Instruct',
       eloScore: 1001.5,
       eloRank: 7,
       totalWins: 3,
@@ -195,7 +195,7 @@ describe('models', () => {
     expect(list[0]).toEqual({
       modelId: 'fdbfca6d-a3d2-4a70-b0ab-426024eb5cd5',
       modelName: '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
-      displayName: 'llama-3.3-70b-instruct-fp8-fast',
+      displayName: 'Llama 3.3 70B Instruct (FP8, fast)',
       providerName: 'cloudflare',
       isFree: true,
       status: 'active',
@@ -203,7 +203,7 @@ describe('models', () => {
     expect(list[2]).toEqual({
       modelId: '1fe310c7-24d1-49a5-a042-2e409e009524',
       modelName: 'gemma-3n-e2b-it',
-      displayName: 'gemma-3n-e2b-it',
+      displayName: 'Gemma 3n E2B IT',
       providerName: 'google',
       isFree: false,
       status: 'active',

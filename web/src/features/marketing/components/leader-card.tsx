@@ -6,13 +6,12 @@ import { SpotlightCard } from '@/components/vendor/reactbits/spotlight-card';
 import {
   formatCount,
   formatPercent,
-  type LeaderboardEntry,
   ProviderBadge,
-  ProvisionalBadge,
+  type RatedEntry,
 } from '@/features/leaderboard';
 
 /** The current #1 on a Spotlight Card with a Shine Border, its Elo counting in on first view. */
-export function LeaderCard({ model }: { model: LeaderboardEntry }) {
+export function LeaderCard({ model }: { model: RatedEntry }) {
   return (
     <SpotlightCard
       data-testid="leader-card"
@@ -28,8 +27,7 @@ export function LeaderCard({ model }: { model: LeaderboardEntry }) {
         {model.name}
       </h3>
       <p className="mt-3 flex flex-wrap items-center gap-2">
-        <ProviderBadge label={model.providerLabel} />
-        {model.provisional ? <ProvisionalBadge /> : null}
+        <ProviderBadge label={model.providerLabel} via={model.servedBy} />
       </p>
       <div aria-hidden="true" className="min-h-10 flex-1" />
       <dl className="grid grid-cols-3 gap-4 border-t border-line pt-6">

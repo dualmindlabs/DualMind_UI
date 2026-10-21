@@ -14,8 +14,8 @@ const ITEMS = [
     text: 'Wins divided by battles. Ties count as non-wins, so a model that ties often shows a lower win rate than its rating suggests.',
   },
   {
-    term: 'Provisional',
-    text: `Fewer than ${PROVISIONAL_BATTLES} battles. A few votes can still move such a rating a long way, so read its rank as a first impression.`,
+    term: 'Not yet rated',
+    text: `Fewer than ${PROVISIONAL_BATTLES} battles. A few votes can still move such a rating a long way, so these models are listed apart, without a rank, and stay off the podium until they have enough battles.`,
   },
   {
     term: 'Uncertainty',

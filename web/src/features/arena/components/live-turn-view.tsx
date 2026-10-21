@@ -4,7 +4,7 @@ import { useId } from 'react';
 import { Button } from '@/components/ui/button';
 import { TextShimmer } from '@/components/vendor/motion-primitives/text-shimmer';
 import { useShouldReduceMotion } from '@/hooks/use-should-reduce-motion';
-import { displayNameFromModelName } from '@/lib/api';
+import { resolveDisplayName } from '@/lib/models/display-name';
 
 import { useArena } from '../hooks/use-arena';
 import { useRevealText } from '../hooks/use-reveal-text';
@@ -18,7 +18,7 @@ import { VoteBar } from './vote-bar';
 function modelLabel(answer: LiveAnswer | null): string | null {
   const model = answer?.model;
   if (!model) return null;
-  return model.displayName ?? displayNameFromModelName(model.name);
+  return resolveDisplayName(model.name, model.displayName);
 }
 
 /** Response time, length and tokens per side (new-features.md F-3). */

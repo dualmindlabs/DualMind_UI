@@ -8,13 +8,12 @@ import { SpotlightCard } from '@/components/vendor/reactbits/spotlight-card';
 import { cn } from '@/lib/utils/cn';
 
 import { formatCount, formatPercent, formatRank } from '../lib/format';
-import type { LeaderboardEntry } from '../types';
+import type { RatedEntry } from '../types';
 import { EloBar } from './elo-bar';
 import { ProviderBadge } from './provider-badge';
-import { ProvisionalBadge } from './provisional-badge';
 
 export interface PodiumCardProps {
-  entry: LeaderboardEntry;
+  entry: RatedEntry;
   /** 0 for the leader. */
   place: number;
   /** The rating counts up from here when the card first appears. */
@@ -56,11 +55,11 @@ export function PodiumCard({ entry, place, eloStart, onOpen }: PodiumCardProps) 
                 {formatRank(entry.rank)}
               </span>
             </p>
-            <ProviderBadge label={entry.providerLabel} />
+            <ProviderBadge label={entry.providerLabel} via={entry.servedBy} />
           </div>
 
           <div className="grid min-w-0 gap-1.5">
-            <h3 className="min-w-0 text-h3 font-semibold break-words text-fg">
+            <h3 className="min-w-0 text-h3 font-semibold break-words text-fg" title={entry.modelName}>
               <button
                 ref={buttonRef}
                 type="button"
@@ -100,7 +99,7 @@ export function PodiumCard({ entry, place, eloStart, onOpen }: PodiumCardProps) 
           <EloBar share={entry.eloShare} tone={leader ? 'lead' : 'default'} />
 
           <div className="flex min-h-6 flex-wrap items-center justify-between gap-2">
-            {entry.provisional ? <ProvisionalBadge /> : <span />}
+            <span />
             <span
               aria-hidden="true"
               className="inline-flex items-center gap-1 text-caption text-muted transition-colors duration-(--dur-fast) group-hover/podium:text-fg"

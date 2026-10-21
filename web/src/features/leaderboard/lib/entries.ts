@@ -1,12 +1,28 @@
 import type { ModelStat } from '@/lib/api';
+import {
+  modelMaker,
+  platformLabel,
+  resolveDisplayName,
+  servedBy,
+} from '@/lib/models/display-name';
 
-import type { Leaderboard, LeaderboardEntry, LeaderboardSummary, ProviderOption } from '../types';
+import type {
+  Leaderboard,
+  LeaderboardEntry,
+  LeaderboardSummary,
+  ProviderOption,
+  RatedEntry,
+} from '../types';
 import { ELO_BAR_FLOOR, PROVISIONAL_BATTLES } from './constants';
-import { providerLabel } from './format';
 
 /** The provisional rule (lib/constants.ts): fewer than PROVISIONAL_BATTLES battles. */
 export function isProvisional(battles: number): boolean {
   return battles < PROVISIONAL_BATTLES;
+}
+
+/** True for a model with a rank (enough battles to be rated). */
+export function isRated(entry: LeaderboardEntry): entry is RatedEntry {
+  return entry.rank !== null;
 }
 
 /**
@@ -20,39 +36,59 @@ export function eloShare(elo: number, lowest: number, highest: number): number {
   return ELO_BAR_FLOOR + (1 - ELO_BAR_FLOOR) * Math.min(1, Math.max(0, share));
 }
 
-/** Rank order: the API's rank, then the higher rating, then the name (stable for equal ranks). */
+/**
+ * Board order: rated models by rank, then the higher rating, then the name; models not yet rated
+ * come after them, by rating, then battles, then name.
+ */
 export function byRank(a: LeaderboardEntry, b: LeaderboardEntry): number {
-  return a.rank - b.rank || b.elo - a.elo || a.name.localeCompare(b.name, 'en');
+  if (a.rank !== null && b.rank !== null) {
+    return a.rank - b.rank || b.elo - a.elo || a.name.localeCompare(b.name, 'en');
+  }
+  if (a.rank !== null) return -1;
+  if (b.rank !== null) return 1;
+  return b.elo - a.elo || b.battles - a.battles || a.name.localeCompare(b.name, 'en');
 }
 
 /**
  * Turns the normalised `model-stats` rows (camelCase only, see lib/api/schemas/leaderboard.ts)
- * into board entries: provider names, the provisional flag and the Elo bar share, in rank order.
- * Numbers are passed through as the API reports them; nothing is recomputed except the share.
+ * into board entries: human names, makers, the provisional flag, the Elo bar share and the rank,
+ * rated models first. Elo, wins and the like are passed through as the API reports them. Ranks
+ * are recomputed among the rated models only (competition ranking: equal ratings share a rank,
+ * the next rank skips), because the API also ranks models with a handful of battles.
  */
 export function toLeaderboardEntries(stats: readonly ModelStat[]): LeaderboardEntry[] {
   if (stats.length === 0) return [];
-  const ratings = stats.map(stat => stat.eloScore);
-  const lowest = Math.min(...ratings);
-  const highest = Math.max(...ratings);
+  const ratedStats = stats.filter(stat => !isProvisional(stat.totalResponses));
+  const scale = (ratedStats.length > 0 ? ratedStats : stats).map(stat => stat.eloScore);
+  const lowest = Math.min(...scale);
+  const highest = Math.max(...scale);
+  const ratedElos = ratedStats.map(stat => stat.eloScore);
 
   return stats
-    .map((stat): LeaderboardEntry => ({
-      id: stat.modelId,
-      name: stat.displayName,
-      modelName: stat.modelName,
-      provider: stat.providerName.trim().toLowerCase(),
-      providerLabel: providerLabel(stat.providerName),
-      rank: stat.eloRank,
-      elo: stat.eloScore,
-      wins: stat.totalWins,
-      losses: stat.totalLosses,
-      ties: stat.totalTies,
-      battles: stat.totalResponses,
-      winRate: stat.winRate,
-      provisional: isProvisional(stat.totalResponses),
-      eloShare: eloShare(stat.eloScore, lowest, highest),
-    }))
+    .map((stat): LeaderboardEntry => {
+      const provisional = isProvisional(stat.totalResponses);
+      const made = modelMaker(stat.modelName, stat.providerName);
+      const platform = platformLabel(stat.providerName);
+      return {
+        id: stat.modelId,
+        name: resolveDisplayName(stat.modelName, stat.displayName),
+        modelName: stat.modelName,
+        provider: made.key,
+        providerLabel: made.label,
+        platform: stat.providerName.trim().toLowerCase(),
+        platformLabel: platform,
+        servedBy: servedBy(made, platform),
+        rank: provisional ? null : 1 + ratedElos.filter(elo => elo > stat.eloScore).length,
+        elo: stat.eloScore,
+        wins: stat.totalWins,
+        losses: stat.totalLosses,
+        ties: stat.totalTies,
+        battles: stat.totalResponses,
+        winRate: stat.winRate,
+        provisional,
+        eloShare: eloShare(stat.eloScore, lowest, highest),
+      };
+    })
     .sort(byRank);
 }
 
@@ -62,6 +98,7 @@ export function summarize(entries: readonly LeaderboardEntry[]): LeaderboardSumm
   const ratings = entries.map(entry => entry.elo);
   return {
     models: entries.length,
+    rated: entries.filter(isRated).length,
     battles: Math.round(appearances / 2),
     providers: new Set(entries.map(entry => entry.provider)).size,
     provisional: entries.filter(entry => entry.provisional).length,
@@ -91,5 +128,11 @@ export function providerOptions(entries: readonly LeaderboardEntry[]): ProviderO
 /** Everything the pages need from one `model-stats` response (TanStack Query's `select`). */
 export function toLeaderboard(stats: readonly ModelStat[]): Leaderboard {
   const entries = toLeaderboardEntries(stats);
-  return { entries, summary: summarize(entries), providers: providerOptions(entries) };
+  return {
+    entries,
+    rated: entries.filter(isRated),
+    unrated: entries.filter(entry => !isRated(entry)),
+    summary: summarize(entries),
+    providers: providerOptions(entries),
+  };
 }

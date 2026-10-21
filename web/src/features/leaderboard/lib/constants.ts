@@ -1,7 +1,8 @@
 /**
- * The provisional rule: a model with fewer battles than this is marked "Provisional". Below it,
- * a handful of votes can still move the rating a long way, so its rank is not settled yet.
- * 100 is a judgement call for a small arena (on 2026-10-21, 36 of the 53 models had at least
+ * The rating threshold: a model with fewer battles than this is "Not yet rated": it is listed in
+ * its own group without a rank, and never reaches the podium or the landing page's top five.
+ * Below it, a handful of votes can still move the rating a long way, so a rank would claim more
+ * than the data says. The number is the owner's call (Harsh's). 100 is a judgement call for a small arena (on 2026-10-21, 36 of the 53 models had at least
  * 100 battles); revisit it when confidence intervals arrive from the API (backend roadmap BE-9)
  * and the board can show real uncertainty instead.
  */

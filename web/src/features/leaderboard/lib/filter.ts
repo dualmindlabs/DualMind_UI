@@ -15,13 +15,13 @@ export function normalizeSearch(text: string): string {
 }
 
 /**
- * Matches every word of the query against the model's name, full model id and provider, in any
- * order: "llama 70b" finds "llama-3.3-70b-instruct-fp8-fast", "groq kimi" finds Kimi on Groq.
+ * Matches every word of the query against the model's name, full model id, maker and serving
+ * platform, in any order: "llama 70b" finds "llama-3.3-70b-instruct-fp8-fast", "groq kimi" finds Kimi on Groq.
  */
 export function matchesQuery(entry: LeaderboardEntry, query: string): boolean {
   const words = normalizeSearch(query).split(' ').filter(Boolean);
   if (words.length === 0) return true;
-  const haystack = normalizeSearch(`${entry.name} ${entry.modelName} ${entry.providerLabel}`);
+  const haystack = normalizeSearch(`${entry.name} ${entry.modelName} ${entry.providerLabel} ${entry.platformLabel}`);
   return words.every(word => haystack.includes(word));
 }
 

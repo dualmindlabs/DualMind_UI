@@ -14,9 +14,9 @@ export { BoardStatus, type BoardStatusProps } from './components/board-status';
 export { EloBar, type EloBarProps } from './components/elo-bar';
 export { ModelDetails, type ModelDetailsProps } from './components/model-details';
 export { ProviderBadge, type ProviderBadgeProps } from './components/provider-badge';
-export { ProvisionalBadge } from './components/provisional-badge';
 export { RankNumber, type RankNumberProps } from './components/rank-number';
 export { SortToggle, type SortToggleProps } from './components/sort-toggle';
+export { UnratedBadge } from './components/unrated-badge';
 
 // Hooks
 export { type BoardView, useBoardView } from './hooks/use-board-view';
@@ -39,6 +39,7 @@ export {
   byRank,
   eloShare,
   isProvisional,
+  isRated,
   providerOptions,
   summarize,
   toLeaderboard,
@@ -70,6 +71,7 @@ export type {
   LeaderboardFilters,
   LeaderboardSummary,
   ProviderOption,
+  RatedEntry,
   SortDirection,
   SortKey,
   SortState,

@@ -67,6 +67,6 @@ describe('ModelsPage', () => {
       'href',
       '/leaderboard/',
     );
-    expect(within(dialog).getByText(/Provisional rating\./)).toBeInTheDocument();
+    expect(within(dialog).getByText(/Not yet rated\./)).toBeInTheDocument();
   });
 });

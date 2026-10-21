@@ -9,7 +9,7 @@ import {
   formatRank,
   type LeaderboardEntry,
   ProviderBadge,
-  ProvisionalBadge,
+  UnratedBadge,
 } from '@/features/leaderboard';
 
 export interface ModelCardProps {
@@ -18,7 +18,7 @@ export interface ModelCardProps {
 }
 
 /**
- * One model in the directory: provider and rank, the name (the card's button), the full model id,
+ * One model in the directory: maker and rank (or "Not yet rated"), the name (the card's button), the raw model id,
  * and its Elo, win rate and battles. A quiet Spotlight Card: the light follows the pointer and
  * keyboard focus, nothing moves at rest.
  */
@@ -34,10 +34,14 @@ export function ModelCard({ entry, onOpen }: ModelCardProps) {
         className="group/model flex h-full flex-col gap-4 p-5 transition-[border-color] duration-(--dur-fast) hover:border-line-strong"
       >
         <div className="flex items-center justify-between gap-3">
-          <ProviderBadge label={entry.providerLabel} />
-          <span className="font-mono text-ui-sm text-muted tabular-nums">
-            <span className="sr-only">Rank </span>#{formatRank(entry.rank)}
-          </span>
+          <ProviderBadge label={entry.providerLabel} via={entry.servedBy} />
+          {entry.rank === null ? (
+            <UnratedBadge />
+          ) : (
+            <span className="font-mono text-ui-sm text-muted tabular-nums">
+              <span className="sr-only">Rank </span>#{formatRank(entry.rank)}
+            </span>
+          )}
         </div>
 
         <div className="grid min-w-0 gap-1">
@@ -47,6 +51,7 @@ export function ModelCard({ entry, onOpen }: ModelCardProps) {
               type="button"
               aria-haspopup="dialog"
               onClick={() => onOpen(entry.id, buttonRef.current)}
+              title={entry.modelName}
               className="cursor-pointer text-left outline-none group-hover/model:underline group-hover/model:decoration-line-strong group-hover/model:underline-offset-4 after:absolute after:inset-0 after:z-[2] after:rounded-lg focus-visible:after:outline-(length:--focus-width) focus-visible:after:-outline-offset-2 focus-visible:after:outline-focus focus-visible:after:outline-solid"
             >
               {entry.name}
@@ -78,7 +83,6 @@ export function ModelCard({ entry, onOpen }: ModelCardProps) {
           </div>
         </dl>
         <EloBar share={entry.eloShare} />
-        {entry.provisional ? <ProvisionalBadge /> : null}
       </SpotlightCard>
     </li>
   );

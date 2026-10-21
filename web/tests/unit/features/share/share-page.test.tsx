@@ -137,7 +137,7 @@ describe('SharePage', () => {
     await waitFor(() =>
       expect(within(answerA).getByTestId('pane-model')).toHaveTextContent('Llama 3.3 70B'),
     );
-    expect(within(answerB).getByTestId('pane-model')).toHaveTextContent('compound-mini');
+    expect(within(answerB).getByTestId('pane-model')).toHaveTextContent('Compound Mini');
     expect(answerB).toHaveAttribute('data-chosen');
     expect(within(answerB).getByText('Picked')).toBeVisible();
     expect(within(answerA).getByTestId('pane-meta')).toHaveTextContent('1.8 s');

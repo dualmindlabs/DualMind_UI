@@ -58,7 +58,7 @@ export function StatsStrip({
       <Cell label="Battles" hint="Two models each">
         {summary ? <NumberTicker value={summary.battles} stiffness={140} damping={28} /> : pending}
       </Cell>
-      <Cell label="Providers" hint="Serving the models">
+      <Cell label="Makers" hint="Behind the models">
         {summary ? <CountUp to={summary.providers} duration={0.8} trigger="load" /> : pending}
       </Cell>
       <Cell

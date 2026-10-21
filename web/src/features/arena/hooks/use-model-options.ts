@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
-import { providerLabel, useLeaderboard } from '@/features/leaderboard';
+import { useLeaderboard } from '@/features/leaderboard';
 import { useApiClient } from '@/hooks/use-api-client';
 import { modelsQuery } from '@/lib/api';
+import { modelMaker } from '@/lib/models/display-name';
 
 /** A model as the pickers show it: the catalogue entry, with its rank and Elo when known. */
 export interface ModelOption {
@@ -38,7 +39,7 @@ export function useModelOptions() {
           modelId: model.modelId,
           modelName: model.modelName,
           displayName: model.displayName,
-          provider: providerLabel(model.providerName),
+          provider: modelMaker(model.modelName, model.providerName).label,
           elo: entry?.elo ?? null,
           rank: entry?.rank ?? null,
         };

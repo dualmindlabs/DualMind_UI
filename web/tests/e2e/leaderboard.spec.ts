@@ -6,6 +6,12 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, type Page, type Route, test } from '@playwright/test';
 
 import { passGate, PREVIEW_COOKIE, settle, shotPath, storeTheme } from './helpers';
+import {
+  OG_HEIGHT,
+  OG_LEADERBOARD_TEMPLATE,
+  OG_MODELS_TEMPLATE,
+  OG_WIDTH,
+} from './og-board-template';
 
 // /leaderboard/ and /models/ through the real Worker, with GET /api/arena/model-stats answered
 // by the recorded live board (53 models, web/tests/fixtures/api/model-stats.board.recorded.json),
@@ -18,6 +24,11 @@ const BOARD = readFileSync(
   'utf8',
 );
 const STATS = '**/api/arena/model-stats';
+
+/** The recorded board has 53 models; 36 have the 100 battles that earn a rank (PROVISIONAL_BATTLES). */
+const MODELS = 53;
+const RATED = 36;
+const UNRATED = MODELS - RATED;
 const withCookie = { headers: { Cookie: PREVIEW_COOKIE }, maxRedirects: 0 };
 
 type Reply = 'ok' | 'empty' | 'error';
@@ -107,18 +118,20 @@ test.beforeEach(async ({ context, baseURL }) => {
 });
 
 test.describe('prerendered pages', () => {
-  for (const { url, title, h1, text } of [
+  for (const { url, title, h1, text, image } of [
     {
       url: '/leaderboard/',
       title: 'AI model leaderboard: Elo from blind votes · DualMind Arena',
       h1: 'blind votes.',
       text: 'How to read',
+      image: 'leaderboard',
     },
     {
       url: '/models/',
       title: 'AI models in the Arena · DualMind Arena',
       h1: 'the Arena.',
       text: 'Every model in',
+      image: 'models',
     },
   ]) {
     test(`${url} is prerendered with its SEO tags, enforced CSP and revalidation`, async ({
@@ -141,12 +154,24 @@ test.describe('prerendered pages', () => {
       expect(html).toContain(`<link rel="canonical" href="https://arena.dualmindlab.tech${url}"/>`);
       expect(html).toContain('property="og:title"');
       expect(html).toContain(`property="og:url" content="https://arena.dualmindlab.tech${url}"`);
-      expect(html).toContain('name="twitter:card"');
+      expect(html).toContain('name="twitter:card" content="summary_large_image"');
+      expect(html).toContain(
+        `property="og:image" content="https://arena.dualmindlab.tech/og/${image}.png"`,
+      );
+      expect(html).toContain('name="twitter:image"');
       expect(html).toContain(h1);
       expect(html).toContain(text);
       expect(html).toContain('<noscript>');
       // The legacy page asked visitors to sign in before it showed any data.
       expect(html).not.toMatch(/login in the main app|Login required/i);
+    });
+  }
+
+  for (const image of ['leaderboard', 'models']) {
+    test(`/og/${image}.png is served as a PNG`, async ({ request }) => {
+      const response = await request.get(`/og/${image}.png`, withCookie);
+      expect(response.status()).toBe(200);
+      expect(response.headers()['content-type']).toBe('image/png');
     });
   }
 
@@ -161,24 +186,65 @@ test.describe('/leaderboard/ (desktop)', () => {
     const errors = collectErrors(page);
     await mockStats(page);
     await page.goto('/leaderboard/');
-    await expect(bodyRows(page)).toHaveCount(53);
+    await expect(bodyRows(page)).toHaveCount(RATED);
     const podium = page.getByRole('list', { name: 'Top three models' });
     await expect(podium.getByRole('listitem')).toHaveCount(3);
-    await expect(podium.getByRole('listitem').first()).toContainText(
-      'llama-3.3-70b-instruct-fp8-fast',
+    // The API ranks a 96-battle model first; the podium only has rated models.
+    await expect(podium.getByRole('listitem').first()).toContainText('Llama 3.1 70B Instruct');
+    await expect(podium).not.toContainText('Llama 3.3 70B');
+    await expect(podium.getByRole('listitem').first()).toContainText('via Cloudflare Workers AI');
+    await expect(page.getByRole('status').filter({ hasText: 'models' })).toContainText(
+      `${MODELS} models`,
     );
-    await expect(page.getByRole('status').filter({ hasText: 'models' })).toContainText('53 models');
-    // The leader has 96 battles: provisional, and the page says so.
-    await expect(bodyRows(page).first().getByText('Provisional')).toBeVisible();
+    // The rest are in their own group, collapsed, without rank numbers.
+    await expect(page.getByRole('heading', { name: 'Not yet rated' })).toBeVisible();
+    await expect(page.getByRole('button', { name: `Show ${UNRATED} models` })).toBeVisible();
     // The legacy page asked for a sign-in first; this one only has the header's Sign in link.
     await expect(page.getByText(/login in the main app|login required/i)).toHaveCount(0);
     expect(errors).toEqual([]);
   });
 
+  test('no raw model id is a primary label; the id is in the tooltip and the details', async ({
+    page,
+  }) => {
+    await mockStats(page);
+    await page.goto('/leaderboard/');
+    await expect(bodyRows(page)).toHaveCount(RATED);
+    const labels = await page.locator('tbody th button').allTextContents();
+    expect(labels).toHaveLength(RATED);
+    for (const label of labels) {
+      expect(label).not.toMatch(/[@/]/);
+      expect(label).toMatch(/[A-Z]/);
+    }
+    await expect(firstRowName(page)).toHaveAttribute('title', '@cf/meta/llama-3.1-70b-instruct');
+  });
+
+  test('models below 100 battles sit in a collapsed "Not yet rated" group without ranks', async ({
+    page,
+  }) => {
+    await mockStats(page);
+    await page.goto('/leaderboard/');
+    await expect(bodyRows(page)).toHaveCount(RATED);
+    await expect(table(page)).toHaveCount(1);
+
+    await page.getByRole('button', { name: `Show ${UNRATED} models` }).click();
+    await expect(table(page)).toHaveCount(2);
+    const unrated = table(page).nth(1);
+    await expect(unrated.locator('tbody tr')).toHaveCount(UNRATED);
+    await expect(unrated.getByRole('columnheader', { name: 'Rank' })).toHaveCount(0);
+    await expect(unrated.locator('tbody th button').first()).toHaveText(
+      'Llama 3.3 70B Instruct (FP8, fast)',
+    );
+    await expect(page.getByRole('button', { name: `Hide ${UNRATED} models` })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+  });
+
   test('column headers sort the table and update aria-sort', async ({ page }) => {
     await mockStats(page);
     await page.goto('/leaderboard/');
-    await expect(bodyRows(page)).toHaveCount(53);
+    await expect(bodyRows(page)).toHaveCount(RATED);
     const rankHeader = page.getByRole('columnheader', { name: 'Rank' });
     const battlesHeader = page.getByRole('columnheader', { name: 'Battles' });
     await expect(rankHeader).toHaveAttribute('aria-sort', 'ascending');
@@ -187,31 +253,33 @@ test.describe('/leaderboard/ (desktop)', () => {
     await battlesHeader.getByRole('button').click();
     await expect(battlesHeader).toHaveAttribute('aria-sort', 'descending');
     await expect(rankHeader).toHaveAttribute('aria-sort', 'none');
-    await expect(firstRowName(page)).toHaveText('llama-3.2-1b-instruct');
+    await expect(firstRowName(page)).toHaveText('Llama 3.2 1B Instruct');
 
     await battlesHeader.getByRole('button').click();
     await expect(battlesHeader).toHaveAttribute('aria-sort', 'ascending');
-    await expect(firstRowName(page)).toHaveText('Gemini 2.0 Flash');
+    await expect(firstRowName(page)).toHaveText('Gemma 7B IT (LoRA)');
 
     await page.getByRole('columnheader', { name: 'Model' }).getByRole('button').click();
     await expect(page.getByRole('columnheader', { name: 'Model' })).toHaveAttribute(
       'aria-sort',
       'ascending',
     );
-    await expect(firstRowName(page)).toHaveText('Compound');
+    await expect(firstRowName(page)).toHaveText('Compound Mini');
   });
 
   test('search and the provider filter narrow the board', async ({ page }) => {
     await mockStats(page);
     await page.goto('/leaderboard/');
-    await expect(bodyRows(page)).toHaveCount(53);
+    await expect(bodyRows(page)).toHaveCount(RATED);
 
+    // Four rated and six unrated Gemma builds: a search opens the unrated group by itself.
     await page.getByRole('searchbox', { name: 'Search models' }).fill('gemma');
     await expect(bodyRows(page)).toHaveCount(10);
-    await expect(page.getByText(/^Showing/)).toHaveText('Showing 10 of 53 models');
+    await expect(page.getByText(/^Showing/)).toHaveText(`Showing 10 of ${MODELS} models`);
 
+    // Google made nine of them (the SEA-LION build is AI Singapore's).
     await page.getByRole('button', { name: /^Google/ }).click();
-    await expect(bodyRows(page)).toHaveCount(6);
+    await expect(bodyRows(page)).toHaveCount(9);
     await expect(page.getByRole('button', { name: /^Google/ })).toHaveAttribute(
       'aria-pressed',
       'true',
@@ -220,7 +288,7 @@ test.describe('/leaderboard/ (desktop)', () => {
     await page.getByRole('searchbox', { name: 'Search models' }).fill('qwen');
     await expect(page.getByText('No model matches “qwen”.')).toBeVisible();
     await page.getByRole('button', { name: 'Clear the filters' }).click();
-    await expect(bodyRows(page)).toHaveCount(53);
+    await expect(bodyRows(page)).toHaveCount(RATED);
   });
 
   test('a row opens the details sheet with the chart; Esc closes it and focus returns', async ({
@@ -229,15 +297,19 @@ test.describe('/leaderboard/ (desktop)', () => {
     const errors = collectErrors(page);
     await mockStats(page);
     await page.goto('/leaderboard/');
-    const name = page.getByRole('button', { name: 'qwq-32b', exact: true });
+    const name = page.getByRole('button', { name: 'Qwen QwQ 32B', exact: true });
     await name.focus();
     await page.keyboard.press('Enter');
 
     const sheet = page.getByRole('dialog');
     await expect(sheet).toBeVisible();
-    await expect(sheet.getByRole('heading', { level: 2 })).toHaveText('qwq-32b');
-    await expect(sheet.getByText('Rank 04 of 53')).toBeVisible();
-    await expect(sheet.getByText('-40 on the leader')).toBeVisible();
+    await expect(sheet.getByRole('heading', { level: 2 })).toHaveText('Qwen QwQ 32B');
+    // The raw id stays in the details, and the maker comes with the platform that serves it.
+    await expect(sheet.getByText('@cf/qwen/qwq-32b')).toBeVisible();
+    await expect(sheet.getByText('Alibaba Qwen')).toBeVisible();
+    await expect(sheet.getByText('via Cloudflare Workers AI')).toBeVisible();
+    await expect(sheet.getByText(`Rank 03 of ${RATED}`)).toBeVisible();
+    await expect(sheet.getByText('-30 on the leader')).toBeVisible();
     await expect(sheet.locator('.recharts-surface')).toBeVisible();
     await expect(sheet.getByRole('link', { name: 'How ratings work' })).toHaveAttribute(
       'href',
@@ -249,12 +321,12 @@ test.describe('/leaderboard/ (desktop)', () => {
     await expect(name).toBeFocused();
 
     // A click anywhere on a row opens it too (the name's button covers the whole row).
-    const cell = bodyRows(page).nth(2).locator('td').last();
+    const cell = bodyRows(page).nth(1).locator('td').last();
     const box = await cell.boundingBox();
     expect(box).not.toBeNull();
     if (box) await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
     await expect(page.getByRole('dialog').getByRole('heading', { level: 2 })).toHaveText(
-      'deepseek-r1-distill-qwen-32b',
+      'DeepSeek R1 Distill Qwen 32B',
     );
     expect(errors).toEqual([]);
   });
@@ -262,14 +334,14 @@ test.describe('/leaderboard/ (desktop)', () => {
   test('the command palette opens a model', async ({ page }) => {
     await mockStats(page);
     await page.goto('/leaderboard/');
-    await expect(bodyRows(page)).toHaveCount(53);
+    await expect(bodyRows(page)).toHaveCount(RATED);
     await page.keyboard.press('Control+K');
     const palette = page.getByRole('dialog', { name: 'Command palette' });
     await expect(palette).toBeVisible();
     await palette.getByRole('combobox').fill('kimi');
     await page.keyboard.press('Enter');
     await expect(page.getByRole('dialog').getByRole('heading', { level: 2 })).toHaveText(
-      'Kimi K2 Instruct',
+      'Kimi K2 Instruct (0905)',
     );
   });
 
@@ -283,7 +355,7 @@ test.describe('/leaderboard/ (desktop)', () => {
 
     mode = 'ok';
     await alert.getByRole('button', { name: /Try again/ }).click();
-    await expect(bodyRows(page)).toHaveCount(53);
+    await expect(bodyRows(page)).toHaveCount(RATED);
   });
 
   test('a failed background refresh keeps the board and says it may be out of date', async ({
@@ -292,13 +364,13 @@ test.describe('/leaderboard/ (desktop)', () => {
     let mode: Reply = 'ok';
     await mockStats(page, () => mode);
     await page.goto('/leaderboard/');
-    await expect(bodyRows(page)).toHaveCount(53);
+    await expect(bodyRows(page)).toHaveCount(RATED);
     mode = 'error';
     await page.getByRole('button', { name: 'Refresh the leaderboard' }).click();
     await expect(page.getByText('These numbers may be out of date.')).toBeVisible({
       timeout: 15_000,
     });
-    await expect(bodyRows(page)).toHaveCount(53);
+    await expect(bodyRows(page)).toHaveCount(RATED);
   });
 
   test('an empty board says so', async ({ page }) => {
@@ -315,20 +387,20 @@ test.describe('/leaderboard/ (phone)', () => {
     await mockStats(page);
     await page.goto('/leaderboard/');
     const list = page.getByRole('list', { name: 'Models ranked by Elo' });
-    await expect(list.getByRole('listitem')).toHaveCount(53);
+    await expect(list.getByRole('listitem')).toHaveCount(RATED);
     await expect(table(page)).toHaveCount(0);
 
     await page
       .getByRole('group', { name: 'Sort' })
       .getByRole('button', { name: 'Battles' })
       .click();
-    await expect(list.getByRole('listitem').first()).toContainText('llama-3.2-1b-instruct');
+    await expect(list.getByRole('listitem').first()).toContainText('Llama 3.2 1B Instruct');
 
-    const card = list.getByRole('button', { name: 'llama-3.2-1b-instruct' });
+    const card = list.getByRole('button', { name: 'Llama 3.2 1B Instruct' });
     await card.click();
     const drawer = page.getByRole('dialog');
     await expect(drawer).toBeVisible();
-    await expect(drawer.getByRole('heading', { level: 2 })).toHaveText('llama-3.2-1b-instruct');
+    await expect(drawer.getByRole('heading', { level: 2 })).toHaveText('Llama 3.2 1B Instruct');
     await page.keyboard.press('Escape');
     await expect(drawer).toBeHidden();
   });
@@ -340,14 +412,17 @@ test.describe('/models/', () => {
     await mockStats(page);
     await page.goto('/models/');
     const grid = page.getByRole('list', { name: 'Models' });
-    await expect(grid.getByRole('listitem')).toHaveCount(53);
+    await expect(grid.getByRole('listitem')).toHaveCount(MODELS);
 
-    await page.getByRole('button', { name: /^Groq/ }).click();
-    await expect(grid.getByRole('listitem')).toHaveCount(9);
+    // Models are grouped by who made them: OpenAI's two open-weight models, served by Groq.
+    await page.getByRole('button', { name: /^OpenAI/ }).click();
+    await expect(grid.getByRole('listitem')).toHaveCount(2);
+    await expect(grid.getByRole('listitem').first()).toContainText('via Groq');
     await page.getByRole('button', { name: 'A to Z' }).click();
-    await expect(grid.getByRole('listitem').first()).toContainText('Compound');
+    await expect(grid.getByRole('listitem').first()).toContainText('GPT OSS 20B');
 
     const card = grid.getByRole('button', { name: 'GPT OSS 120B' });
+    await expect(card).toHaveAttribute('title', 'openai/gpt-oss-120b');
     await card.click();
     const sheet = page.getByRole('dialog');
     await expect(sheet.getByRole('heading', { level: 2 })).toHaveText('GPT OSS 120B');
@@ -434,7 +509,7 @@ for (const page of ['leaderboard', 'models'] as const) {
         // The details sheet (desktop) or drawer (phone), on a model with a full record.
         await tab
           .locator('[data-model-id] button[aria-haspopup="dialog"]')
-          .filter({ hasText: /^llama-3\.1-70b-instruct$/ })
+          .filter({ hasText: /^Llama 3\.1 70B Instruct$/ })
           .first()
           .click();
         await expect(tab.getByRole('dialog')).toBeVisible();
@@ -463,3 +538,46 @@ test('screenshot: leaderboard podium with the spotlight under the pointer', asyn
   await settle(page, 700);
   await leader.screenshot({ path: shotPath('leaderboard-desktop-dark-podium-hover') });
 });
+
+test.describe('models without a rank on the models page', () => {
+  test('cards show "Not yet rated" instead of a rank', async ({ page }) => {
+    await mockStats(page);
+    await page.goto('/models/');
+    await expect(page.locator('[data-model-id]').first()).toBeVisible();
+    await expect(page.locator('[data-model-id]').locator('[data-unrated]')).toHaveCount(UNRATED);
+    const top = page.locator('[data-model-id]').filter({ hasText: 'Llama 3.1 70B Instruct' });
+    await expect(top.first()).toContainText('#01');
+  });
+});
+
+for (const card of [
+  { name: 'leaderboard', url: '/leaderboard/', template: OG_LEADERBOARD_TEMPLATE },
+  { name: 'models', url: '/models/', template: OG_MODELS_TEMPLATE },
+]) {
+  test(`render the Open Graph image (og-${card.name}.png)`, async ({ page }) => {
+    await page.setViewportSize({ width: OG_WIDTH, height: OG_HEIGHT });
+    await page.emulateMedia({ reducedMotion: 'reduce', colorScheme: 'dark' });
+    await storeTheme(page, 'dark');
+    await mockStats(page);
+    await page.goto(card.url);
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    await page.evaluate(() => document.fonts.ready);
+    // A fixed layer on top of the page: React keeps the page underneath, the card uses its
+    // fonts and tokens (same method as og-landing.png and og-share.png).
+    await page.evaluate(template => {
+      const layer = document.createElement('div');
+      layer.style.cssText = 'position: fixed; inset: 0; z-index: 2147483647';
+      layer.innerHTML = template;
+      document.body.append(layer);
+    }, card.template);
+    await page.evaluate(async () => {
+      await document.fonts.load('italic 400 70px "Playfair Display"');
+      await document.fonts.load('800 21px "Bricolage Grotesque Variable"');
+      await document.fonts.load('300 66px "Bricolage Grotesque Variable"');
+      await document.fonts.load('500 15px "DM Mono"');
+      await document.fonts.ready;
+    });
+    await page.waitForTimeout(300);
+    await page.locator('#og-card').screenshot({ path: shotPath(`og-${card.name}`) });
+  });
+}
