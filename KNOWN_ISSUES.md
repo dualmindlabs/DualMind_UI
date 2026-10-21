@@ -15,7 +15,7 @@ Last updated: 2026-10-18
 |---|---|---|---|
 | 3 | `/share/<id>` links are broken: the id is dropped by a redirect | Medium | Confirmed |
 | 10 | Last Cloudflare build of `master` failed; the live site runs an older Worker than `master` | Medium | Confirmed |
-| 7 | Text-to-speech calls `/api/audio/tts`, which the API doesn't have (`/api/speech/generate`) | Low | Confirmed |
+| 7 | Text-to-speech calls `/api/audio/tts`, which the API doesn't have (`/api/speech/generate`) | Low | Fixed by PR #49 (Worker alias) |
 | 11 | Old Vercel integration (`v0-dual-mind-ui`) fails on every push | Low | Confirmed |
 | N7 | Unused API client methods call routes that don't exist | Low | Confirmed |
 
@@ -55,11 +55,12 @@ Last updated: 2026-10-18
 
 ### 7 · Text-to-speech calls `/api/audio/tts`, which the API doesn't have (`/api/speech/generate`)
 
-- **Severity:** Low · **Status:** Confirmed (live) · **Found:** 2026-10-17 (verified 2026-10-18)
+- **Severity:** Low · **Status:** Fixed by PR #49 (the Worker forwards `/api/audio/tts` to `/api/speech/generate`; the legacy code is unchanged, the new typed client already calls the real route) · **Found:** 2026-10-17 (verified 2026-10-18)
 - **Where:** `js/api/services/ArenaService.js:89-90` posts `{ text }` to `/api/audio/tts`. The API route is `POST /api/speech/generate` with body `{ text, voice? }`, which returns `audio/wav`. The caller is `js/ui/app.js:1414`, and its fallback to the browser's `speechSynthesis` is at `js/ui/app.js:1438-1441`.
 - **How to reproduce:** `curl -X POST -H 'Content-Type: application/json' -d '{}' https://arena.dualmindlab.tech/api/audio/tts` returns 404, and so does the same request to `https://api.dualmindlab.tech/api/audio/tts`. In the app, "Read aloud" logs `Backend TTS failed, falling back to browser API`.
 - **Impact:** the server voice is never used. Users get the browser's built-in voice, or nothing on browsers without `speechSynthesis`.
-- **Suggested fix:** change `ArenaService.js:90` to `/api/speech/generate` (the `{ text }` body already fits), and keep the browser fallback.
+- **Fix:** `server/audio-alias.js` (BE-2). The alias is deprecated and removed after the legacy app is gone.
+- **Original suggested fix:** change `ArenaService.js:90` to `/api/speech/generate` (the `{ text }` body already fits), and keep the browser fallback.
 
 ### 11 · Old Vercel integration (`v0-dual-mind-ui`) fails on every push
 

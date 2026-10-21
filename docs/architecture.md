@@ -62,6 +62,8 @@ DualMind_UI/
 ├── worker.js                # the Arena Worker (entry)
 ├── server/                  # Worker modules, each with its own tests in web/tests/worker/
 │   ├── api-proxy.js         #   hardened same-origin /api/* proxy
+│   ├── problem-rewrite.js   #   opt-in problem+json errors (BE-1)
+│   ├── audio-alias.js       #   deprecated /api/audio/tts alias (BE-2)
 │   ├── caching.js           #   the Cache-Control table
 │   ├── redirects.js         #   the legacy redirect table
 │   ├── routing.js           #   hashed-asset pattern, SPA fallback routes, noindex paths
@@ -209,6 +211,8 @@ Permanent (301), same origin, query string kept (the browser keeps the `#hash`).
 - **Request ids:** the caller's `X-Request-Id` when it is 8-128 characters of `[A-Za-z0-9._:-]`, otherwise a new UUID. It is sent to the backend and echoed on the response.
 - **No CORS.** The Arena calls its own origin, so the Worker sends no `Access-Control-*` headers and strips the backend's (other sites cannot read API responses through the Arena origin). The old blanket `OPTIONS` 204 is gone; `OPTIONS /api/*` is proxied like any other method. If a cross-origin caller ever needs the proxy, add an explicit allow-list of origins here instead of `*`.
 - No `x-dualmind-proxy-*` debug headers.
+- **Opt-in problem+json (BE-1):** a request whose `Accept` names `application/problem+json` gets an RFC 9457 body for every non-2xx answer, including the Worker's own 502 and 504 (`server/problem-rewrite.js`, mapping table in [endpoints.md](./api/endpoints.md#one-error-shape-on-request-be-1)). Streams and success bodies are untouched; callers without the header (the legacy app) see the v1 bodies unchanged. At most 64 KiB of an upstream error body is read; 5xx text is logged, never forwarded. Error statuses add `Vary: Accept`.
+- **Text-to-speech alias (BE-2):** `POST /api/audio/tts` is validated and forwarded to `/api/speech/generate` as `{ text, voice? }`, with a guaranteed audio content type, `no-store`, and `Deprecation`/`Link` headers (`server/audio-alias.js`). Deprecated; the typed client calls the real route.
 - **Errors:** an upstream failure answers `502 {"error":"bad_gateway","requestId":"…"}`; no response within the route's timeout (30 s; 65 s for the model calls `POST /api/arena/dualchat` and `POST /api/arena/chat`) answers `504 {"error":"gateway_timeout","requestId":"…"}`. No error text leaks.
 - **Streaming:** bodies stream through untouched. A `text/event-stream` response is never cut once it has started; other bodies must finish within the route's timeout.
 - `/api/health` maps to the backend's `/health`; `BACKEND_URL` (Worker variable) overrides the backend origin.
@@ -221,7 +225,7 @@ Permanent (301), same origin, query string kept (the browser keeps the `#hash`).
 | Lint | ESLint flat config: typescript-eslint (type-checked), react-hooks, jsx-a11y, sorted imports, structure rules | `web.yml` check |
 | Format | Prettier with the Tailwind plugin | `web.yml` check |
 | Unit | Vitest + Testing Library (jsdom): theme, hooks, tokens and contrast, components, conventions | `web.yml` check |
-| Worker | Vitest in Node with a fake `ASSETS` binding and a fake upstream: gate, every redirect row, the caching table, security headers and CSP, the manifest, the proxy (header allow-list, request ids, 502, 504, streaming) | `web.yml` check |
+| Worker | Vitest in Node with a fake `ASSETS` binding and a fake upstream: gate, every redirect row, the caching table, security headers and CSP, the manifest, the proxy (header allow-list, request ids, 502, 504, streaming, the problem+json rewrite per mapping row, the text-to-speech alias) | `web.yml` check |
 | End to end | Playwright (Chromium) against the composed `dist/` served by the real Worker in `wrangler dev` (with a local fake backend for `/api` that answers the leaderboard with a recorded response): headers and CSP, redirects, the proxy, hydration, theme without flash, keyboard, overflow at 320 px, axe in both themes, zero report-only violations on legacy pages; on `/`: the prerendered hero and SEO tags, the page without JavaScript, the live strip and its fallback, the demo battle by keyboard, the signed-in hand-off | `web.yml` e2e |
 | Visual | Screenshots of `/` and `/design/` at 1440x900 and 390x844 in dark, light and reduced motion, the landing demo after the reveal, and the rendered Open Graph card (`web-screenshots` artifact) | `web.yml` e2e |
 | Performance | Lighthouse CI on `/` (mobile, three runs, median): accessibility 1, best practices >= 0.95 and SEO 1 fail the job; performance >= 0.9 and at most 180 KB of gzipped JavaScript loaded up front by `/` are the targets and warn for now (the shared shell, React Router, Motion and Zod load about 290 KB up front). `web/lighthouserc.json`, `lighthouse` artifact, scores in the job summary | `web.yml` e2e |

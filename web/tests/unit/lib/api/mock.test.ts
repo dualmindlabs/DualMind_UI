@@ -213,6 +213,10 @@ describe('mock scenarios (x-mock-scenario header)', () => {
     ['server-error', { kind: 'server', status: 500, code: 'INTERNAL_ERROR' }],
     ['bad-gateway', { kind: 'server', status: 502, code: 'BAD_GATEWAY' }],
     ['gateway-timeout', { kind: 'timeout', status: 504, code: 'GATEWAY_TIMEOUT' }],
+    [
+      'problem',
+      { kind: 'validation', status: 400, code: 'INVALID_REQUEST', message: 'Prompt is required' },
+    ],
     ['malformed', { kind: 'bad_response', status: 200, code: 'INVALID_JSON' }],
     ['network-error', { kind: 'network', status: 0 }],
   ] as const)('%s', async (name, expected) => {

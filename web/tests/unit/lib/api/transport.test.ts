@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 
 import { ApiError, type RequestEvent, type ResponseEvent } from '@/lib/api';
-import { createTransport, type TransportOptions } from '@/lib/api/http/transport';
+import { createTransport, type TransportOptions, withProblemJson } from '@/lib/api/http/transport';
 
 import { hangingFetch, jsonResponse, rejectionOf, scriptedFetch, UUID_V4 } from './helpers';
 
@@ -33,7 +33,7 @@ describe('requests', () => {
     expect(call?.init.method).toBe('GET');
     expect(call?.init.redirect).toBe('manual');
     expect(call?.init.credentials).toBe('same-origin');
-    expect(call?.headers.get('accept')).toBe('application/json');
+    expect(call?.headers.get('accept')).toBe('application/json, application/problem+json;q=0.9');
     expect(call?.headers.get('x-request-id')).toMatch(UUID_V4);
     expect(call?.headers.has('content-type')).toBe(false);
     expect(call?.headers.has('authorization')).toBe(false);
@@ -91,7 +91,7 @@ describe('requests', () => {
     expect(headers?.get('x-mock-scenario')).toBe('ok');
     expect(headers?.has('authorization')).toBe(false);
     expect(headers?.get('x-request-id')).toBe('fixed-id-123');
-    expect(headers?.get('accept')).toBe('application/json');
+    expect(headers?.get('accept')).toBe('application/json, application/problem+json;q=0.9');
   });
 
   it('uses the global fetch at call time when none is given', async () => {
@@ -100,6 +100,39 @@ describe('requests', () => {
     vi.stubGlobal('fetch', stub);
     await expect(transport.json(get())).resolves.toEqual({ stubbed: true });
     expect(stub).toHaveBeenCalledOnce();
+  });
+});
+
+describe('problem+json errors from the proxy', () => {
+  it('opts in with Accept once, and reads the problem body into the ApiError', async () => {
+    const { fetch, calls } = scriptedFetch(
+      jsonResponse(
+        {
+          type: 'https://arena.dualmindlab.tech/problems/validation_error',
+          title: 'Invalid request',
+          status: 400,
+          detail: 'prompt is required',
+          requestId: 'req-12345678',
+          code: 'INVALID_REQUEST',
+        },
+        { status: 400, headers: { 'content-type': 'application/problem+json' } },
+      ),
+    );
+    const error = await rejectionOf(transportWith(fetch).json(get()));
+    expect(calls[0]?.headers.get('accept')).toBe(
+      'application/json, application/problem+json;q=0.9',
+    );
+    expect(error).toMatchObject({
+      kind: 'validation',
+      status: 400,
+      code: 'INVALID_REQUEST',
+      message: 'prompt is required',
+    });
+  });
+
+  it('does not add the token twice when the caller already accepts problem+json', () => {
+    expect(withProblemJson('application/problem+json')).toBe('application/problem+json');
+    expect(withProblemJson('audio/*')).toBe('audio/*, application/problem+json;q=0.9');
   });
 });
 
@@ -404,7 +437,7 @@ describe('binary and streaming calls', () => {
     );
     const blob = await transportWith(fetch).blob(speech);
     expect(blob.size).toBe(4);
-    expect(calls[0]?.headers.get('accept')).toBe('audio/*');
+    expect(calls[0]?.headers.get('accept')).toBe('audio/*, application/problem+json;q=0.9');
   });
 
   it('rejects a non-audio or empty answer', async () => {

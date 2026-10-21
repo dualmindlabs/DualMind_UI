@@ -24,6 +24,8 @@ export const MOCK_SCENARIOS = [
   'bad-gateway',
   /** 504 from the Worker proxy (the API took longer than 30 s): `{ error: "gateway_timeout" }`. */
   'gateway-timeout',
+  /** 400 `application/problem+json` as the Worker proxy sends it to callers that opt in (BE-1). */
+  'problem',
   /** 200 with an HTML body, as when a gate or a proxy answers instead of the API. */
   'malformed',
   /** fetch rejects with a TypeError, as when offline. */

@@ -648,6 +648,20 @@ export function createMockFetch(options: MockOptions = {}): FetchLike {
         return { status: 502, json: { error: 'bad_gateway', requestId } };
       case 'gateway-timeout':
         return { status: 504, json: { error: 'gateway_timeout', requestId } };
+      case 'problem':
+        return {
+          status: 400,
+          json: {
+            type: 'https://arena.dualmindlab.tech/problems/validation_error',
+            title: 'Invalid request',
+            status: 400,
+            detail: 'Prompt is required',
+            instance: route.arena === true ? '/api/arena/dualchat' : '/api/threads',
+            requestId,
+            code: 'INVALID_REQUEST',
+          },
+          headers: { 'content-type': 'application/problem+json; charset=utf-8' },
+        };
       case 'malformed':
         return { status: 200, text: '<!doctype html><title>DualMind waitlist</title>' };
       default:
@@ -682,7 +696,9 @@ export function createMockFetch(options: MockOptions = {}): FetchLike {
       return new Response(reply.text, { status: reply.status, headers });
     }
     if (reply.json === undefined) return new Response(null, { status: reply.status, headers });
-    headers.set('content-type', 'application/json; charset=utf-8');
+    if (!headers.has('content-type')) {
+      headers.set('content-type', 'application/json; charset=utf-8');
+    }
     return new Response(JSON.stringify(reply.json), { status: reply.status, headers });
   }
 

@@ -173,6 +173,9 @@ const isErrorLike = (value: unknown): value is { name: string; message: string }
   typeof (value as { name?: unknown }).name === 'string' &&
   typeof (value as { message?: unknown }).message === 'string';
 
+/** Problem type URIs the Worker proxy sends (server/problem-rewrite.js). */
+export const PROBLEM_TYPE_PREFIX = 'https://arena.dualmindlab.tech/problems/';
+
 const ERROR_CODE_RE = /^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$/;
 
 const asText = (value: unknown): string | undefined =>
@@ -189,9 +192,28 @@ const asText = (value: unknown): string | undefined =>
  * 5. ASP.NET Core validation (ProblemDetails): `{ title, status, detail?, errors: { field: [...] } }`.
  * 6. The proposed single shape (endpoints.md, gap 6): `{ error: { code, message, details? } }`.
  * 7. Empty body (401, 404) or a non-JSON body: no message, no code.
+ * 8. RFC 9457 `application/problem+json` from the Worker proxy (BE-1), sent to callers that ask
+ *    for it: `{ type: ".../problems/<slug>", title, status, detail, requestId, code?, errors? }`.
  */
 export function parseErrorBody(body: unknown): ParsedErrorBody {
   if (!isRecord(body)) return { message: undefined, code: undefined, details: undefined };
+
+  // 8. problem+json from the proxy: the retained `code` wins over the type slug.
+  if (typeof body.type === 'string' && body.type.startsWith(PROBLEM_TYPE_PREFIX)) {
+    const slug = body.type.slice(PROBLEM_TYPE_PREFIX.length);
+    const requestId = asText(body.requestId);
+    const retryAfter = body.retryAfter;
+    const errors = Array.isArray(body.errors) ? body.errors : undefined;
+    const details: Record<string, unknown> = {};
+    if (errors !== undefined) details.errors = errors;
+    if (requestId !== undefined) details.requestId = requestId;
+    if (retryAfter !== undefined) details.retryAfter = retryAfter;
+    return {
+      message: asText(body.detail) ?? asText(body.title),
+      code: asText(body.code) ?? (slug === '' ? undefined : slug.toUpperCase()),
+      details: Object.keys(details).length > 0 ? details : undefined,
+    };
+  }
 
   // 6. Nested error object.
   if (isRecord(body.error)) {
