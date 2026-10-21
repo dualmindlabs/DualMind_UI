@@ -12,7 +12,12 @@
     "test:ui-bugs": "playwright test tests/ui-config-bugs.spec.js",
     "validate": "npm run lint && npm run test",
     "build": "node build.js",
-    "deploy": "npm run build && npx wrangler deploy"
+    "deploy": "npm run build && npx wrangler deploy",
+    "api:link": "node scripts/link-worker-deps.mjs --all",
+    "api:typecheck": "web/node_modules/.bin/tsc -p tsconfig.json",
+    "api:test": "web/node_modules/.bin/vitest run -c vitest.api.config.mts",
+    "api:openapi": "node scripts/generate-openapi.ts",
+    "api:openapi:check": "node scripts/generate-openapi.ts --check"
   },
   "repository": {
     "type": "git",

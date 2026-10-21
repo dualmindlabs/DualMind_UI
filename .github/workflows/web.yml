@@ -15,6 +15,7 @@ on:
     paths:
       - 'web/**'
       - 'server/**'
+      - 'contract/**'
       - 'worker.js'
       - 'wrangler.jsonc'
       - 'build.js'
@@ -26,6 +27,7 @@ on:
     paths:
       - 'web/**'
       - 'server/**'
+      - 'contract/**'
       - 'worker.js'
       - 'wrangler.jsonc'
       - 'build.js'

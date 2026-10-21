@@ -1,0 +1,117 @@
+name: API (v2)
+
+# The /api/v2 router in server/v2/ and its contract in contract/ (BE-0, docs/backend/designs/).
+#   typecheck:        tsc over server/, contract/ and scripts/
+#   Workers tests:    Vitest in workerd (Miniflare) through @cloudflare/vitest-plugin, against the
+#                     real worker.js (tests/api/)
+#   OpenAPI check:    fails when docs/api/openapi.v2.json or docs/api/problems.md is out of date
+# The Worker's dependencies are declared in web/package.json (one lockfile for CI and Workers
+# Builds); scripts/link-worker-deps.mjs links them into ./node_modules for the root-level tools.
+# The Node tests of the JS modules (proxy, caching, redirects, headers) stay in web.yml.
+# Nothing here deploys.
+
+on:
+  pull_request:
+    branches: [main, master]
+    paths:
+      - 'server/**'
+      - 'contract/**'
+      - 'scripts/**'
+      - 'tests/api/**'
+      - 'docs/api/**'
+      - 'worker.js'
+      - 'wrangler.jsonc'
+      - 'tsconfig.json'
+      - 'vitest.api.config.mts'
+      - 'web/package.json'
+      - 'web/package-lock.json'
+      - '.node-version'
+      - '.github/workflows/api.yml'
+  push:
+    branches: [main, master]
+    paths:
+      - 'server/**'
+      - 'contract/**'
+      - 'scripts/**'
+      - 'tests/api/**'
+      - 'docs/api/**'
+      - 'worker.js'
+      - 'wrangler.jsonc'
+      - 'tsconfig.json'
+      - 'vitest.api.config.mts'
+      - 'web/package.json'
+      - 'web/package-lock.json'
+      - '.node-version'
+      - '.github/workflows/api.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: api-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  WRANGLER_SEND_METRICS: 'false'
+
+jobs:
+  api:
+    name: Typecheck, Workers tests and OpenAPI check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies (web/, which holds the Worker dependencies)
+        working-directory: web
+        run: npm ci --include=dev --no-audit --no-fund
+
+      - name: Link the dependencies into the root node_modules
+        run: node scripts/link-worker-deps.mjs --all
+
+      - name: Typecheck
+        id: typecheck
+        run: npm run api:typecheck
+
+      - name: Workers tests (Vitest in workerd)
+        if: ${{ !cancelled() && steps.typecheck.outcome == 'success' }}
+        run: npm run api:test
+
+      # The same bundling step Workers Builds runs at deploy time, without deploying.
+      - name: Bundle the Worker (wrangler deploy --dry-run)
+        if: ${{ !cancelled() && steps.typecheck.outcome == 'success' }}
+        run: |
+          mkdir -p dist
+          web/node_modules/.bin/wrangler deploy --dry-run --outdir "$RUNNER_TEMP/worker-bundle"
+          ls -la "$RUNNER_TEMP/worker-bundle"
+
+      # The regenerated documents are always uploaded, so a stale one can be committed as is:
+      #   gh run download <run-id> -n api-generated -D /tmp/api-generated
+      #   cp /tmp/api-generated/* docs/api/
+      - name: OpenAPI and problem types are up to date
+        if: ${{ !cancelled() && steps.typecheck.outcome == 'success' }}
+        run: npm run api:openapi:check
+
+      - name: Regenerate the documents (artifact)
+        if: ${{ !cancelled() && steps.typecheck.outcome == 'success' }}
+        run: npm run api:openapi
+
+      - name: Upload the regenerated documents
+        if: ${{ !cancelled() && steps.typecheck.outcome == 'success' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-generated
+          path: |
+            docs/api/openapi.v2.json
+            docs/api/problems.md
+          retention-days: 7

@@ -8,8 +8,16 @@
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
     "rootDirs": [".", "./.react-router/types"],
+    "allowImportingTsExtensions": true,
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "hono": ["./node_modules/hono"],
+      "hono/body-limit": ["./node_modules/hono/dist/types/middleware/body-limit/index.d.ts"],
+      "hono/factory": ["./node_modules/hono/dist/types/helper/factory/index.d.ts"],
+      "hono/http-exception": ["./node_modules/hono/dist/types/http-exception.d.ts"],
+      "@hono/*": ["./node_modules/@hono/*"],
+      "jose": ["./node_modules/jose"],
+      "zod": ["./node_modules/zod"]
     },
     "allowJs": true,
     "checkJs": false,

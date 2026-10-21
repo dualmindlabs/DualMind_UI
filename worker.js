@@ -33,6 +33,8 @@
 // (server/security-headers.js, with the CSP hashes from dist/__web-manifest.json).
 // ---------------------------------------------------------------------------
 import { proxyApi } from './server/api-proxy.js';
+import { problemTypeUrl } from './server/problem-types.js';
+import { sanitizeRequestId } from './server/request-id.js';
 import { cacheControlFor } from './server/caching.js';
 import { redirectResponse } from './server/redirects.js';
 import {
@@ -58,16 +60,16 @@ const PREVIEW_MAX_AGE = 60 * 60 * 24 * 30; // 30 days, in seconds
 const PREVIEW_COOKIE_ATTRIBUTES = 'Path=/; Secure; HttpOnly; SameSite=Lax';
 
 export default {
-  async fetch(request, env) {
-    const response = await handleRequest(request, env);
+  async fetch(request, env, ctx) {
+    const response = await handleRequest(request, env, ctx);
     return withSecurityHeaders(request, env, response);
   },
 };
 
 // The pre-launch gate (see the comment at the top).
-async function handleRequest(request, env) {
+async function handleRequest(request, env, ctx) {
   if (!FORCE_WAITLIST) {
-    return serveArena(request, env);
+    return serveArena(request, env, ctx);
   }
 
   const url = new URL(request.url);
@@ -78,7 +80,7 @@ async function handleRequest(request, env) {
   }
 
   if (preview === PREVIEW_CODE) {
-    const response = await serveArena(request, env);
+    const response = await serveArena(request, env, ctx);
     const withCookie = new Response(response.body, response);
     withCookie.headers.append('Set-Cookie', `${PREVIEW_COOKIE}=1; Max-Age=${PREVIEW_MAX_AGE}; ${PREVIEW_COOKIE_ATTRIBUTES}`);
     withCookie.headers.set('Cache-Control', 'private, no-store');
@@ -86,7 +88,7 @@ async function handleRequest(request, env) {
   }
 
   if (hasPreviewCookie(request)) {
-    return serveArena(request, env);
+    return serveArena(request, env, ctx);
   }
 
   return waitlistRedirect(url);
@@ -113,9 +115,14 @@ function waitlistRedirect(url, setCookie) {
 
 // The Arena itself: what preview visitors get now, and every visitor once the gate is off.
 const arena = {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const pathname = url.pathname;
+
+    // /api/v2 is the Worker's own API (server/v2/). It never falls through to the v1 proxy.
+    if (isV2Path(pathname)) {
+      return handleV2(request, env, ctx);
+    }
 
     // 1. Same-origin API proxy (hardened: header allow-list, request ids, no CORS, timeouts).
     if (pathname.startsWith('/api/')) {
@@ -205,8 +212,46 @@ const arena = {
   },
 };
 
-function serveArena(request, env) {
-  return arena.fetch(request, env);
+function serveArena(request, env, ctx) {
+  return arena.fetch(request, env, ctx);
+}
+
+function isV2Path(pathname) {
+  return pathname === '/api/v2' || pathname.startsWith('/api/v2/');
+}
+
+// Loaded with a dynamic import so the Node tests of the other modules, which never touch
+// /api/v2, do not need the router's dependencies installed. If the router cannot be loaded,
+// v2 answers 503 and everything else (v1, static files) keeps working.
+async function handleV2(request, env, ctx) {
+  let app;
+  try {
+    app = await import('./server/v2/app.ts');
+  } catch (error) {
+    console.error(JSON.stringify({ event: 'api_v2_unavailable', error: String(error) }));
+    return v2UnavailableResponse(request);
+  }
+  return app.handle(request, env, ctx);
+}
+
+function v2UnavailableResponse(request) {
+  const requestId = sanitizeRequestId(request.headers.get('x-request-id')) ?? crypto.randomUUID();
+  const body = {
+    type: problemTypeUrl('service_unavailable'),
+    title: 'Service unavailable',
+    status: 503,
+    detail: 'The API is temporarily unavailable.',
+    instance: new URL(request.url).pathname,
+    requestId,
+  };
+  return new Response(JSON.stringify(body), {
+    status: 503,
+    headers: {
+      'Content-Type': 'application/problem+json; charset=utf-8',
+      'Cache-Control': 'no-store',
+      'X-Request-Id': requestId,
+    },
+  });
 }
 
 function isHtmlResponse(response) {
@@ -242,7 +287,7 @@ async function withSecurityHeaders(request, env, response) {
 
   if (response.status >= 300 && response.status < 400) {
     applySecurityHeaders(secured.headers, { kind: 'other' });
-  } else if (pathname.startsWith('/api/')) {
+  } else if (pathname.startsWith('/api/') || isV2Path(pathname)) {
     applySecurityHeaders(secured.headers, { kind: 'api' });
   } else if (isHtmlResponse(response)) {
     const manifest = await loadWebManifest(request, env);

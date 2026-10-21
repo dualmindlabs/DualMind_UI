@@ -1,6 +1,6 @@
 # BE-0: Platform (`/api/v2` router, request context, errors, OpenAPI, tests)
 
-Status: **proposed** (2026-10-21). Wave W1. Part of the [backend roadmap](../feature-roadmap.md); architecture in [ADR 0007](../../adr/0007-backend-on-cloudflare.md). Every other backend feature builds on this one, so this is the longest design of the wave.
+Status: **implemented in [#48](https://github.com/dualmindlabs/DualMind_UI/pull/48)** (2026-10-21). Deviations are listed in the PR. Wave W1. Part of the [backend roadmap](../feature-roadmap.md); architecture in [ADR 0007](../../adr/0007-backend-on-cloudflare.md). Every other backend feature builds on this one, so this is the longest design of the wave.
 
 ## 1. Summary
 

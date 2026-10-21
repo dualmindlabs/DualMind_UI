@@ -16,6 +16,12 @@
     // worker.js) also covers paths that match a static file, such as / and /leaderboard/.
     "run_worker_first": true
   },
+  "vars": {
+    // The public Supabase project URL (also in the web app's build config). The v2 router
+    // verifies access tokens against ${SUPABASE_URL}/auth/v1/.well-known/jwks.json. Secrets
+    // (SUPABASE_JWT_SECRET, PRIVACY_SALT) are optional and are not set here.
+    "SUPABASE_URL": "https://calqfzajyidkdzbaswjp.supabase.co"
+  },
   "flagship": [
     {
       "binding": "FLAGS",

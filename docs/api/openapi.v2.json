@@ -1,0 +1,237 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "DualMind Arena API v2",
+    "version": "2.0.0",
+    "description": "The Arena Worker API. JSON in and out, errors as RFC 9457 problem+json, every response carries X-Request-Id. /api/v2 changes only additively."
+  },
+  "servers": [
+    {
+      "url": "https://arena.dualmindlab.tech"
+    }
+  ],
+  "components": {
+    "schemas": {
+      "Health": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok"
+            ]
+          },
+          "apiVersion": {
+            "type": "string"
+          },
+          "time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "environment": {
+            "type": "string",
+            "enum": [
+              "production",
+              "preview"
+            ],
+            "description": "Which binding set this host uses"
+          },
+          "bindings": {
+            "type": "object",
+            "properties": {
+              "DB": {
+                "type": "boolean"
+              },
+              "CACHE": {
+                "type": "boolean"
+              },
+              "EVENTS": {
+                "type": "boolean"
+              },
+              "PUBLIC_BUCKET": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "DB",
+              "CACHE",
+              "EVENTS",
+              "PUBLIC_BUCKET"
+            ],
+            "description": "Which backend bindings are present for this host (names only)"
+          }
+        },
+        "required": [
+          "status",
+          "apiVersion",
+          "time",
+          "environment",
+          "bindings"
+        ]
+      },
+      "Problem": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Identifier URL of the problem type"
+          },
+          "title": {
+            "type": "string"
+          },
+          "status": {
+            "type": "integer"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "instance": {
+            "type": "string",
+            "description": "The request path"
+          },
+          "requestId": {
+            "type": "string"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "path",
+                "message"
+              ]
+            }
+          },
+          "retryAfter": {
+            "type": "integer"
+          },
+          "feature": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "title",
+          "status",
+          "instance",
+          "requestId"
+        ]
+      },
+      "Me": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "role": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "userId",
+          "role",
+          "expiresAt"
+        ]
+      }
+    },
+    "parameters": {}
+  },
+  "paths": {
+    "/api/v2/health": {
+      "get": {
+        "summary": "Health of the v2 router",
+        "description": "Public and never cached. Says only that the v2 router is alive and which backend bindings this host has; it does not call the DualMind API (that is /api/health).",
+        "tags": [
+          "platform"
+        ],
+        "responses": {
+          "200": {
+            "description": "The router is alive.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected error.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/me": {
+      "get": {
+        "summary": "What the verified token says",
+        "description": "Needs `Authorization: Bearer <Supabase access token>`. Returns the claims of the verified token and nothing from a database. The cheapest auth probe.",
+        "tags": [
+          "platform"
+        ],
+        "responses": {
+          "200": {
+            "description": "The verified user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Me"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, expired or otherwise invalid token.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected error.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Sign-in verification is not enabled on this deployment (not_enabled).",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "webhooks": {}
+}
