@@ -1,7 +1,7 @@
 import { screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import { developersMeta,DevelopersPage } from '@/features/developers';
+import { developersMeta, DevelopersPage } from '@/features/developers';
 import { buildReference } from '@/features/developers/lib/reference';
 import { openApiDocument } from '@/features/developers/lib/spec';
 

@@ -38,12 +38,9 @@ describe('buildReference on the committed OpenAPI document', () => {
       for (const response of operation.responses) {
         if (response.contentType) {
           expect(response.example, `${operation.id} ${response.status}`).not.toBeNull();
-          expect(
-            () => {
-              JSON.parse(response.example ?? '');
-            },
-            `${operation.id} ${response.status}`,
-          ).not.toThrow();
+          expect(() => {
+            JSON.parse(response.example ?? '');
+          }, `${operation.id} ${response.status}`).not.toThrow();
         } else {
           expect(response.example).toBeNull();
         }

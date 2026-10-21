@@ -75,7 +75,9 @@ test.describe(PAGE, () => {
     expect(html).toContain('<title>API reference · DualMind Arena</title>');
     expect(html).toMatch(/<meta name="description" content="[^"]{40,}"/);
     expect(html).toMatch(/<meta name="robots" content="index, follow"\/?>/);
-    expect(html).toContain('<link rel="canonical" href="https://arena.dualmindlab.tech/developers/"');
+    expect(html).toContain(
+      '<link rel="canonical" href="https://arena.dualmindlab.tech/developers/"',
+    );
     expect(html).toContain('/api/v2/leaderboard');
     expect(html).toContain('rate_limited');
     expect(html).toContain('class="human-voice');
@@ -85,7 +87,9 @@ test.describe(PAGE, () => {
     await page.route('**/assets/*.js', route => route.abort());
     await page.goto(PAGE);
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('The Arena API, in the open.');
-    await expect(page.getByRole('heading', { level: 3, name: /GET\s*\/api\/v2\/leaderboard/ })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { level: 3, name: /GET\s*\/api\/v2\/leaderboard/ }),
+    ).toBeVisible();
     await expect(page.getByRole('region', { name: 'Problem types' })).toBeVisible();
   });
 
@@ -114,7 +118,12 @@ test.describe(PAGE, () => {
   }) => {
     await page.goto(PAGE);
     const main = page.locator('main');
-    for (const href of ['/api/v2/openapi.json', '/problems/rate_limited', '/leaderboard.md', '/llms.txt']) {
+    for (const href of [
+      '/api/v2/openapi.json',
+      '/problems/rate_limited',
+      '/leaderboard.md',
+      '/llms.txt',
+    ]) {
       const link = main.locator(`a[href="${href}"]`).first();
       await expect(link).toBeAttached();
       const response = await page.request.get(href);
@@ -146,7 +155,9 @@ test.describe(PAGE, () => {
     await page.goto(PAGE);
     await settle(page, 400);
     expect(await overflowing(page)).toEqual([]);
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
+    ).toBe(true);
   });
 
   for (const viewport of [

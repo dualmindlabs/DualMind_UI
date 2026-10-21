@@ -1,4 +1,4 @@
-import { developersMeta,DevelopersPage } from '@/features/developers';
+import { developersMeta, DevelopersPage } from '@/features/developers';
 
 import type { Route } from './+types/developers';
 
