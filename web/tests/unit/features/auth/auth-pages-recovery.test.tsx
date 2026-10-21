@@ -71,7 +71,7 @@ describe('AuthCallbackPage with a link that did not work', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Resend the confirmation email' }));
     await waitFor(() => expect(auth.resend).toHaveBeenCalledTimes(1));
     expect(auth.resend).toHaveBeenCalledWith(
-      expect.objectContaining({ type: 'signup', email: 'ada@example.com' }),
+      expect.objectContaining({ type: 'signup', email: 'Ada@Example.com' }),
     );
     expect(auth.resetPasswordForEmail).not.toHaveBeenCalled();
     expect(await screen.findByText(/We sent a new confirmation email/)).toBeVisible();
