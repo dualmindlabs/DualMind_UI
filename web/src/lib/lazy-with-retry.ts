@@ -68,12 +68,12 @@ export function lazyWithRetry<P extends object>(
   load: () => Promise<{ default: ComponentType<P> }>,
   { silent = false, ...options }: RetryOptions & { silent?: boolean } = {},
 ): LazyExoticComponent<ComponentType<P>> {
-  return lazy(async () => {
+  return lazy<ComponentType<P>>(async (): Promise<{ default: ComponentType<P> }> => {
     try {
       return await importWithRetry(load, options);
     } catch (error) {
       if (!silent) throw error;
-      return { default: Nothing as ComponentType<P> };
+      return { default: Nothing };
     }
   });
 }

@@ -288,7 +288,7 @@ test.describe('arena offline', () => {
       }),
     );
     await page.goto('/');
-    await expect(page.getByRole('heading', { level: 1, name: /Two minds/ })).toBeVisible();
+    await expect(page.locator('[data-landing]')).toBeVisible();
     await expect(page.getByTestId('arena')).toHaveCount(0);
   });
 });

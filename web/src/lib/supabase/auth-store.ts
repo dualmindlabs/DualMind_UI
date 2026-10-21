@@ -116,6 +116,12 @@ export interface AuthStoreOptions {
   isOffline?: (() => boolean) | undefined;
   /** Calls `callback` at the next `online` event; returns a cancel. Default: window's event. */
   onceOnline?: ((callback: () => void) => () => void) | undefined;
+  /**
+   * How long the first session read may take. supabase-js retries a failed refresh for up to
+   * 30 s, and a visitor with a stored session should not wait that long on a loading frame:
+   * after this, the stored session is used and the real check follows. Default 8000.
+   */
+  sessionTimeoutMs?: number | undefined;
 }
 
 export interface AuthStore {
@@ -181,6 +187,24 @@ function readStoredSession(storage: ScannableStorage | null, key: string): Sessi
     // Corrupt or blocked storage: no stored session.
   }
   return null;
+}
+
+const TIMED_OUT = Symbol('timed-out');
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | typeof TIMED_OUT> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => resolve(TIMED_OUT), ms);
+    promise.then(
+      value => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (error: unknown) => {
+        clearTimeout(timer);
+        reject(error instanceof Error ? error : new Error(String(error)));
+      },
+    );
+  });
 }
 
 function onceOnlineInWindow(callback: () => void): () => void {
@@ -292,20 +316,35 @@ export function createAuthStore(options: AuthStoreOptions): AuthStore {
     cancelRecheck = null;
     let session: Session | null = null;
     let offlineFailure = false;
-    try {
-      const client = await connect();
-      // Resolves after supabase-js has read the URL (tokens or an error in the hash).
-      const { data, error } = await client.auth.getSession();
-      session = data.session;
-      if (!session && error && (isNetworkAuthError(error) || isOffline())) offlineFailure = true;
-      if (!session && !offlineFailure && config) {
-        const migrated = await migrateLegacySession(client, local, config.storageKey);
-        if (migrated.status === 'migrated') session = migrated.session;
-      }
-    } catch {
-      // supabase-js could not load, or the read threw: with no network that says nothing about
-      // the session itself.
+    const location = getLocation();
+    const fromUrl = hasAuthParams(location.search, location.hash);
+    if (config && !fromUrl && isOffline() && readStoredSession(local, config.storageKey)) {
+      // No network at all: do not wait for a refresh that cannot happen.
       offlineFailure = true;
+      void connect().catch(() => {});
+    } else {
+      try {
+        const client = await connect();
+        // Resolves after supabase-js has read the URL (tokens or an error in the hash).
+        const read = await withTimeout(client.auth.getSession(), options.sessionTimeoutMs ?? 8000);
+        if (read === TIMED_OUT) {
+          offlineFailure = true;
+        } else {
+          session = read.data.session;
+          const { error } = read;
+          if (!session && error && (isNetworkAuthError(error) || isOffline())) {
+            offlineFailure = true;
+          }
+          if (!session && !offlineFailure && config) {
+            const migrated = await migrateLegacySession(client, local, config.storageKey);
+            if (migrated.status === 'migrated') session = migrated.session;
+          }
+        }
+      } catch {
+        // supabase-js could not load, or the read threw: with no network that says nothing
+        // about the session itself.
+        offlineFailure = true;
+      }
     }
     if (!session && offlineFailure && config) {
       // Keep the visitor in the arena on the session stored on this device, and check it for

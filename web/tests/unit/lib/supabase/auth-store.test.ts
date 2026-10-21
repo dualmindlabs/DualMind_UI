@@ -323,8 +323,9 @@ describe('createAuthStore', () => {
     const retryable = () => ({ name: 'AuthRetryableFetchError', message: 'Failed to fetch' });
 
     it('keeps the stored session when an expired token cannot be refreshed', async () => {
-      const { store } = offlineSetup(() =>
-        Promise.resolve({ data: { session: null }, error: retryable() }),
+      const { store } = offlineSetup(
+        () => Promise.resolve({ data: { session: null }, error: retryable() }),
+        { offline: false },
       );
       store.start();
       await settled();
@@ -332,8 +333,31 @@ describe('createAuthStore', () => {
       expect(store.getState().session?.access_token).toBe('stored-access');
     });
 
+    it('does not wait for a refresh at all while the browser is offline', async () => {
+      const { store, auth } = offlineSetup(() => new Promise(() => {}));
+      store.start();
+      await settled();
+      expect(store.getState().status).toBe('signed-in');
+      expect(auth.getSession).not.toHaveBeenCalled();
+    });
+
+    it('falls back to the stored session when the read takes too long', async () => {
+      vi.useFakeTimers();
+      try {
+        const { store } = offlineSetup(() => new Promise(() => {}), { offline: false });
+        store.start();
+        await vi.advanceTimersByTimeAsync(8100);
+        expect(store.getState().status).toBe('signed-in');
+        expect(store.getState().session?.access_token).toBe('stored-access');
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
     it('keeps the stored session when supabase-js throws or cannot load', async () => {
-      const { store } = offlineSetup(() => Promise.reject(new TypeError('Failed to fetch')));
+      const { store } = offlineSetup(() => Promise.reject(new TypeError('Failed to fetch')), {
+        offline: false,
+      });
       store.start();
       await settled();
       expect(store.getState().status).toBe('signed-in');
@@ -344,8 +368,9 @@ describe('createAuthStore', () => {
         { data: { session: null }, error: retryable() },
         { data: { session: fakeSession({ access_token: 'fresh' }) }, error: null },
       ];
-      const { store, reconnect, hasRecheck } = offlineSetup(() =>
-        Promise.resolve(results.shift() ?? results[0]),
+      const { store, reconnect, hasRecheck } = offlineSetup(
+        () => Promise.resolve(results.shift() ?? results[0]),
+        { offline: false },
       );
       store.start();
       await settled();
@@ -360,8 +385,9 @@ describe('createAuthStore', () => {
         { data: { session: null }, error: retryable() },
         { data: { session: null }, error: null },
       ];
-      const { store, reconnect } = offlineSetup(() =>
-        Promise.resolve(results.shift() ?? results[0]),
+      const { store, reconnect } = offlineSetup(
+        () => Promise.resolve(results.shift() ?? results[0]),
+        { offline: false },
       );
       store.start();
       await settled();
