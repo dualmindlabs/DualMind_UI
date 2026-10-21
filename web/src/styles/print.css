@@ -1,0 +1,42 @@
+/*
+ * Printing (the legal pages in particular): light tokens whatever the theme, no site chrome,
+ * links followed by their address. Everything else comes from the normal styles.
+ */
+@media print {
+  :root,
+  :root[data-theme='dark'],
+  :root[data-theme='light'],
+  :root:not([data-theme='dark']) {
+    color-scheme: light;
+    --bg: #ffffff;
+    --bg-deep: #ffffff;
+    --surface: #ffffff;
+    --surface-2: #ffffff;
+    --line: #c9ccd2;
+    --fg: #000000;
+    --fg-soft: #1c1f24;
+    --muted: #4b515c;
+    --mind-a: #09738f;
+    --human: #7a3f22;
+    --human-tint: #ffffff;
+    --mind-a-tint: #ffffff;
+  }
+
+  body {
+    background: #ffffff;
+    color: #000000;
+  }
+
+  /* Command palette and toasts are never part of a printout. */
+  [data-sonner-toaster],
+  [role='dialog'] {
+    display: none !important;
+  }
+
+  .prose a[href^='http']::after {
+    content: ' (' attr(href) ')';
+    color: var(--muted);
+    font-size: 0.875em;
+    overflow-wrap: anywhere;
+  }
+}

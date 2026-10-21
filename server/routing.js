@@ -63,9 +63,51 @@ export async function serveSpaFallback(request, env) {
  */
 export function isNoindexPath(pathname) {
   return (
+    pathname === NOT_FOUND_PAGE ||
     pathname === '/design' ||
     pathname.startsWith('/design/') ||
     pathname === SPA_FALLBACK_PATH ||
     pathname === `${SPA_FALLBACK_PATH}.html`
   );
+}
+
+/** The 404 page's entry in the web manifest (build.js lists dist/404.html as /404). */
+export const NOT_FOUND_PAGE = '/404';
+
+/**
+ * The web app's 404 page (dist/404.html, prerendered from the splat route) with status 404, or
+ * null when it is missing from the assets (the Worker then answers with plain text). It is
+ * requested as `/404`, the clean URL Workers static assets serve it under; the caller's
+ * conditional headers are not forwarded, so a 304 can never turn into an empty 404.
+ * @param {Request} request
+ * @param {{ ASSETS?: { fetch: (request: Request) => Promise<Response> } }} env
+ * @returns {Promise<Response | null>}
+ */
+export async function serveNotFoundPage(request, env) {
+  if (!env?.ASSETS?.fetch) return null;
+  for (const candidate of [NOT_FOUND_PAGE, `${NOT_FOUND_PAGE}.html`]) {
+    const url = new URL(request.url);
+    url.pathname = candidate;
+    url.search = '';
+    let asset;
+    try {
+      asset = await env.ASSETS.fetch(new Request(url));
+    } catch (error) {
+      console.error('Failed to load the 404 page:', error);
+      return null;
+    }
+    if (asset && asset.status === 200) {
+      const response = new Response(asset.body, {
+        status: 404,
+        statusText: 'Not Found',
+        headers: asset.headers,
+      });
+      response.headers.set('content-type', 'text/html; charset=utf-8');
+      response.headers.set('cache-control', 'no-cache');
+      response.headers.set('X-Robots-Tag', 'noindex');
+      response.headers.delete('etag');
+      return response;
+    }
+  }
+  return null;
 }

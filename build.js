@@ -12,7 +12,8 @@
 //   4. Write dist/__web-manifest.json for the Worker: the web app's pages, the sha256 hashes of
 //      their inline scripts (the enforced Content-Security-Policy allows exactly these) and extra
 //      connect-src origins (the Supabase project from VITE_SUPABASE_URL, once auth lands).
-//   5. Check the result: every legacy file and every sitemap URL is in dist/, no web file
+//   5. Write dist/sitemap.xml and dist/robots.txt from the pages above (the public ones only).
+//   6. Check the result: every legacy file and every sitemap URL is in dist/, no web file
 //      replaced a legacy one, and every hashed file matches the Worker's immutable-cache pattern.
 const crypto = require('crypto');
 const fs = require('fs');
@@ -33,30 +34,36 @@ const filesToCopy = [
     'forgot-password.html',
     'login-modern.html',
     'manifest.json',
-    'robots.txt',
     'signup-modern.html',
-    'sitemap.xml',
     'theme.js',
     'update-password.html',
     '.assetsignore'
 ];
 
 const foldersToCopy = [
-    'about',
     'assets',
     'components',
-    'cookies',
     'css',
-    'faq',
-    'how-it-works',
     'js',
     'leaderboard',
     'login',
     'models',
-    'privacy',
-    'share',
-    'terms'
+    'share'
 ];
+
+// Public pages that are still legacy files (no web page yet): they go into the sitemap next to
+// the web app's indexable pages. A slice that migrates one drops it from this list.
+const LEGACY_PUBLIC_PAGES = ['/', '/login/'];
+
+// The public origin, for sitemap.xml and robots.txt (the same variable the web app's canonical
+// URLs use, with the same default).
+const SITE_URL = (process.env.VITE_SITE_URL || 'https://arena.dualmindlab.tech').trim().replace(/\/+$/, '');
+
+// React Router prerenders the 404 route (the splat route, listed as /404) to 404/index.html.
+// The Worker serves it as dist/404.html with status 404, so it is moved to that name.
+const NOT_FOUND_SOURCE = '404/index.html';
+const NOT_FOUND_TARGET = '404.html';
+
 
 // Legacy files that a migrated route replaces: the web build's page is copied over the legacy
 // one. The legacy files stay in the repository until the cutover (S13).
@@ -176,7 +183,9 @@ const replacedLegacyFiles = new Set();
 
 for (const file of webFiles) {
     let target = file;
-    if (file === 'index.html' && !hasOwnFallback && !replacedByWeb.has('index.html')) {
+    if (file === NOT_FOUND_SOURCE) {
+        target = NOT_FOUND_TARGET;
+    } else if (file === 'index.html' && !hasOwnFallback && !replacedByWeb.has('index.html')) {
         target = SPA_FALLBACK_FILE;
         spaFallbackSource = file;
     } else if (file === SPA_FALLBACK_FILE) {
@@ -210,6 +219,9 @@ for (const file of replacedByWeb) {
 }
 if (fs.readFileSync(path.join(distDir, 'index.html'), 'utf8').includes('data-spa-fallback')) {
     fail('dist/index.html is the SPA fallback, not the prerendered landing page. Check the prerender list in web/react-router.config.ts.');
+}
+if (!webFiles.includes(NOT_FOUND_SOURCE)) {
+    fail(`the web build has no 404 page (${NOT_FOUND_SOURCE}). Check that /404 is in prerender in web/react-router.config.ts.`);
 }
 
 // 4. The web manifest (read by worker.js through server/web-manifest.js).
@@ -266,7 +278,40 @@ const webManifest = {
 };
 fs.writeFileSync(path.join(distDir, WEB_MANIFEST_FILE), `${JSON.stringify(webManifest, null, 2)}\n`);
 
-// 5. Check the composed output.
+// 5. sitemap.xml and robots.txt, generated from the pages in dist/ (the Worker serves these
+// files as they are). A web page is listed unless its robots meta says noindex; the SPA fallback
+// and the 404 page never are.
+function isIndexable(html) {
+    for (const tag of html.matchAll(/<meta\b[^>]*>/gi)) {
+        if (/\bname\s*=\s*["']robots["']/i.test(tag[0]) && /noindex/i.test(tag[0])) return false;
+    }
+    return true;
+}
+
+const sitemapPages = [];
+for (const target of webHtmlTargets) {
+    const url = pageUrl(target);
+    if (url === '/__spa-fallback' || url === '/404') continue;
+    if (isIndexable(fs.readFileSync(path.join(distDir, target), 'utf8'))) sitemapPages.push(url);
+}
+for (const url of LEGACY_PUBLIC_PAGES) {
+    if (fs.existsSync(path.join(distDir, url === '/' ? 'index.html' : `${url.slice(1)}index.html`))) {
+        sitemapPages.push(url);
+    }
+}
+sitemapPages.sort((a, b) => (a === '/' ? -1 : b === '/' ? 1 : a.localeCompare(b)));
+const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${[...new Set(sitemapPages)].map(url => `  <url><loc>${SITE_URL}${url}</loc></url>`).join('\n')}
+</urlset>
+`;
+fs.writeFileSync(path.join(distDir, 'sitemap.xml'), sitemapXml);
+fs.writeFileSync(
+    path.join(distDir, 'robots.txt'),
+    `User-agent: *\nAllow: /\nDisallow: /api/\n\nSitemap: ${SITE_URL}/sitemap.xml\n`
+);
+
+// 6. Check the composed output.
 for (const file of legacyFiles) {
     if (!fs.existsSync(path.join(distDir, file))) {
         fail(`legacy file ${file} is missing from dist/.`);
@@ -279,20 +324,11 @@ function pagePath(urlPath) {
     return clean;
 }
 
-const sitemapUrls = [];
-const sitemap = fs.readFileSync(path.join(distDir, 'sitemap.xml'), 'utf8');
-for (const match of sitemap.matchAll(/<loc>\s*https?:\/\/[^/<]+(\/[^<\s]*)\s*<\/loc>/g)) {
-    sitemapUrls.push(match[1]);
-}
-// worker.js answers /sitemap.xml itself; check its URLs too.
-const workerSource = fs.readFileSync(path.join(srcDir, 'worker.js'), 'utf8');
-for (const match of workerSource.matchAll(/<loc>https:\/\/\$\{domain\}(\/[^<]*)<\/loc>/g)) {
-    sitemapUrls.push(match[1]);
-}
+const sitemapUrls = [...new Set(sitemapPages)];
 if (sitemapUrls.length === 0) {
-    fail('found no URLs in sitemap.xml or worker.js; the sitemap check would prove nothing.');
+    fail('the sitemap has no URLs; the sitemap check would prove nothing.');
 }
-for (const urlPath of new Set(sitemapUrls)) {
+for (const urlPath of sitemapUrls) {
     if (!fs.existsSync(path.join(distDir, pagePath(urlPath)))) {
         fail(`sitemap URL ${urlPath} has no page in dist/ (expected dist/${pagePath(urlPath)}).`);
     }

@@ -25,8 +25,10 @@
 //   1. /api/*: the same-origin proxy to the DualMind API (server/api-proxy.js)
 //   2. legacy URL redirects, 301 (server/redirects.js)
 //   3. client-only routes of the web app: the SPA fallback page (server/routing.js)
-//   4. the legacy share page, robots.txt, sitemap.xml, og-image.png
-//   5. static files from dist/ with the caching table (server/caching.js)
+//   4. the legacy share page, og-image.png
+//   5. static files from dist/ (robots.txt and sitemap.xml are built into it by build.js) with
+//      the caching table (server/caching.js)
+//   6. anything else: the 404 page (dist/404.html) with status 404
 // and every response leaves with the security headers and, for HTML, the Content-Security-Policy
 // (server/security-headers.js, with the CSP hashes from dist/__web-manifest.json).
 // ---------------------------------------------------------------------------
@@ -36,6 +38,8 @@ import { redirectResponse } from './server/redirects.js';
 import {
   isNoindexPath,
   isSpaFallbackRoute,
+  NOT_FOUND_PAGE,
+  serveNotFoundPage,
   serveSpaFallback,
   SPA_FALLBACK_PATH,
 } from './server/routing.js';
@@ -149,93 +153,6 @@ const arena = {
       }
     }
 
-    // robots.txt
-    if (pathname === '/robots.txt') {
-      const domain = url.hostname;
-      return new Response(`User-agent: *
-Allow: /
-
-Sitemap: https://${domain}/sitemap.xml`, {
-        headers: {
-          'content-type': 'text/plain; charset=utf-8',
-          'cache-control': 'public, max-age=86400'
-        },
-      });
-    }
-
-    // sitemap.xml
-    if (pathname === '/sitemap.xml') {
-      const domain = url.hostname;
-      return new Response(`<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://${domain}/</loc>
-    <lastmod>2026-01-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>1.0</priority>
-  </url>
-  <url>
-    <loc>https://${domain}/about/</loc>
-    <lastmod>2026-01-23</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://${domain}/how-it-works/</loc>
-    <lastmod>2026-01-23</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://${domain}/leaderboard/</loc>
-    <lastmod>2026-01-23</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://${domain}/models/</loc>
-    <lastmod>2026-01-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://${domain}/faq/</loc>
-    <lastmod>2026-01-23</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://${domain}/privacy/</loc>
-    <lastmod>2026-01-23</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://${domain}/terms/</loc>
-    <lastmod>2026-01-23</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://${domain}/cookies/</loc>
-    <lastmod>2026-01-23</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.4</priority>
-  </url>
-  <url>
-    <loc>https://${domain}/login/</loc>
-    <lastmod>2026-01-23</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-</urlset>`, {
-        headers: {
-          'content-type': 'application/xml; charset=utf-8',
-          'cache-control': 'public, max-age=86400'
-        },
-      });
-    }
-
     // og-image.png placeholder
     if (pathname === '/og-image.png') {
       const minimalPngBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
@@ -278,24 +195,10 @@ Sitemap: https://${domain}/sitemap.xml`, {
       }
     }
 
-    // Serve custom 404.html if asset is not found
-    if (env?.ASSETS?.fetch) {
-      try {
-        const errorUrl = new URL(request.url);
-        errorUrl.pathname = '/404.html';
-        const errorResponse = await env.ASSETS.fetch(new Request(errorUrl, request));
-        if (errorResponse && errorResponse.status !== 404) {
-          const response = new Response(errorResponse.body, {
-            status: 404,
-            statusText: 'Not Found',
-            headers: errorResponse.headers
-          });
-          response.headers.set('content-type', 'text/html; charset=utf-8');
-          return response;
-        }
-      } catch (error) {
-        console.error('Failed to load custom 404 page:', error);
-      }
+    // Nothing matched: the web app's 404 page (dist/404.html) with status 404.
+    const notFound = await serveNotFoundPage(request, env);
+    if (notFound) {
+      return notFound;
     }
 
     return new Response('Not Found', { status: 404 });
@@ -345,6 +248,8 @@ async function withSecurityHeaders(request, env, response) {
     const manifest = await loadWebManifest(request, env);
     const webPage =
       Boolean(manifest?.pages.has(pathname)) ||
+      // The 404 page is a web page, served at whatever address was not found.
+      (response.status === 404 && Boolean(manifest?.pages.has(NOT_FOUND_PAGE))) ||
       isSpaFallbackRoute(pathname) ||
       pathname === SPA_FALLBACK_PATH;
     if (webPage) {

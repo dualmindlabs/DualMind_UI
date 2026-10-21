@@ -139,6 +139,15 @@ describe('web app pages', () => {
     expect(response.headers.get('location')).toBe(`${ORIGIN}/?ref=x`);
   });
 
+  it('serves the prerendered info pages as web pages (indexable, enforced CSP)', async () => {
+    const response = await preview('/about/');
+    expect(response.status).toBe(200);
+    expect(await response.text()).toContain('About DualMind Arena');
+    expect(response.headers.get('cache-control')).toBe('no-cache');
+    expect(response.headers.get('x-robots-tag')).toBeNull();
+    expect(response.headers.get('content-security-policy')).toContain("script-src 'self' 'sha256-");
+  });
+
   it('redirects /design to /design/', async () => {
     const response = await preview('/design');
     expect(response.status).toBe(307);
@@ -161,6 +170,7 @@ describe('web app pages', () => {
 describe('legacy pages and files', () => {
   it('legacy pages: 200, no-store, security headers', async () => {
     for (const page of ['/legacy-app', '/leaderboard/', '/about/']) {
+    for (const page of ['/', '/leaderboard/', '/models/']) {
       const response = await preview(page);
       expect(response.status, page).toBe(200);
       expect(response.headers.get('cache-control'), page).toBe(LEGACY_NO_STORE);
@@ -222,8 +232,56 @@ describe('legacy pages and files', () => {
     expect(response.headers.get('location')).toBe(`${ORIGIN}/about/?from=x`);
   });
 
-  it('answers unknown paths with 404', async () => {
-    expect((await preview('/does-not-exist')).status).toBe(404);
+  it('answers unknown paths with the 404 page and status 404', async () => {
+    for (const unknown of ['/does-not-exist', '/does-not-exist/', '/about/nope?x=1']) {
+      const response = await preview(unknown);
+      expect(response.status, unknown).toBe(404);
+      expect(response.headers.get('content-type'), unknown).toContain('text/html');
+      expect(await response.text(), unknown).toContain('This page took a wrong turn.');
+      expect(response.headers.get('x-robots-tag'), unknown).toBe('noindex');
+      expect(response.headers.get('cache-control'), unknown).toBe('no-cache');
+      // The 404 page is a web page: enforced CSP with the build's script hashes.
+      expect(response.headers.get('content-security-policy'), unknown).toContain(
+        "script-src 'self' 'sha256-",
+      );
+    }
+  });
+
+  it('answers with plain text when the 404 page is not in the assets', async () => {
+    const files = { ...DIST };
+    delete files['/404.html'];
+    const response = await worker.fetch(
+      new Request(`${ORIGIN}/does-not-exist`, { headers: { Cookie: 'dm_preview=1' } }),
+      { ASSETS: fakeAssets(files) },
+    );
+    expect(response.status).toBe(404);
+    expect(await response.text()).toBe('Not Found');
+  });
+
+  it('a conditional request for an unknown path still gets the full 404 page', async () => {
+    const request = new Request(`${ORIGIN}/does-not-exist`, {
+      headers: { Cookie: 'dm_preview=1', 'If-None-Match': '"/404.html"' },
+    });
+    const response = await worker.fetch(request, { ASSETS: assets });
+    expect(response.status).toBe(404);
+    expect(await response.text()).toContain('wrong turn');
+  });
+
+  it('serves robots.txt and sitemap.xml from the built files, not from inline text', async () => {
+    const robots = await preview('/robots.txt');
+    expect(robots.status).toBe(200);
+    expect(await robots.text()).toContain('Sitemap: https://arena.dualmindlab.tech/sitemap.xml');
+    const sitemap = await preview('/sitemap.xml');
+    expect(sitemap.status).toBe(200);
+    expect(sitemap.headers.get('content-type')).toContain('xml');
+    expect(await sitemap.text()).toContain('<loc>https://arena.dualmindlab.tech/about/</loc>');
+    expect(assets.requested).toEqual(expect.arrayContaining(['/robots.txt', '/sitemap.xml']));
+  });
+
+  it('worker.js no longer generates a sitemap or robots.txt', () => {
+    const source = readFileSync(path.join(repoRoot, 'worker.js'), 'utf8');
+    expect(source).not.toContain('<urlset');
+    expect(source).not.toContain('User-agent');
   });
 });
 

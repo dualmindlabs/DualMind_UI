@@ -57,7 +57,7 @@ test('hashed build files are immutable; legacy files keep their headers', async 
 });
 
 test('legacy pages are still served', async ({ request }) => {
-  for (const page of ['/legacy-app', '/about/', '/how-it-works/', '/login/']) {
+  for (const page of ['/legacy-app', '/login/']) {
     const response = await request.get(page, withCookie);
     expect(response.status(), page).toBe(200);
     expect(response.headers()['content-type'], page).toContain('text/html');
@@ -132,7 +132,7 @@ test('/design/: security headers, enforced CSP with script hashes, ETag revalida
 });
 
 test('legacy pages: report-only CSP, no-store, no X-XSS-Protection', async ({ request }) => {
-  for (const page of ['/legacy-app', '/about/', '/login/']) {
+  for (const page of ['/legacy-app', '/login/']) {
     const headers = (await request.get(page, withCookie)).headers();
     expect(headers['content-security-policy'], page).toBeUndefined();
     expect(headers['content-security-policy-report-only'], page).toContain(

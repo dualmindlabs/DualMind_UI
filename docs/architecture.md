@@ -76,6 +76,17 @@ DualMind_UI/
 
 Every top-level folder of `web/src` has a README with its purpose and rules.
 
+### Routes served by the web app
+
+| Route | Page | Notes |
+| --- | --- | --- |
+| `/design/` | Style guide | `noindex` |
+| `/about/`, `/how-it-works/`, `/faq/` | Info pages (`features/info`) | Indexed. How it works has `#rating`; the FAQ has a deep link per question and FAQPage JSON-LD |
+| `/privacy/`, `/terms/`, `/cookies/` | Legal pages (`features/info`) | Indexed, printable, no effects |
+| everything else | 404 page (`*` route, prerendered as `/404`) | `build.js` moves `404/index.html` to `dist/404.html`; the Worker serves it with status 404, `noindex` and the web CSP |
+
+`build.js` also writes `dist/sitemap.xml` and `dist/robots.txt` from these pages (a page is listed unless its robots meta says `noindex`; the SPA fallback and the 404 page never are), plus the legacy pages that are still static files (`LEGACY_PUBLIC_PAGES`). The Worker no longer generates either file.
+
 ## 3. Data flow in the browser
 
 - **Rendering:** a prerendered page arrives as complete HTML (readable without JavaScript), then React hydrates it. Route modules in `src/app/routes/` only compose a feature's page component.
@@ -111,7 +122,8 @@ Every top-level folder of `web/src` has a README with its purpose and rules.
 2. **`/api/*`** goes to the hardened proxy (`server/api-proxy.js`).
 3. **Legacy redirects** from the table in `server/redirects.js` (301).
 4. **Client-only routes** of the web app get the SPA fallback page (`SPA_FALLBACK_ROUTES`, empty until S5).
-5. The legacy share page, `robots.txt`, `sitemap.xml`, `og-image.png`, then **static files** from `dist/` with Cache-Control from the caching table.
+5. The legacy share page, `og-image.png`, then **static files** from `dist/` (including the built `robots.txt` and `sitemap.xml`) with Cache-Control from the caching table.
+6. **Anything else** gets the web app's 404 page (`dist/404.html`, see below) with status 404; plain text `Not Found` if that file is missing.
 
 Every response then leaves through `withSecurityHeaders()`: the security headers below, and the Content-Security-Policy for HTML.
 

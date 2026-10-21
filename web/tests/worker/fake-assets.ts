@@ -10,6 +10,8 @@ const CONTENT_TYPES: Record<string, string> = {
   '.json': 'application/json',
   '.png': 'image/png',
   '.svg': 'image/svg+xml',
+  '.xml': 'application/xml',
+  '.txt': 'text/plain; charset=utf-8',
   '.woff2': 'font/woff2',
 };
 
@@ -78,7 +80,13 @@ export const DIST: Record<string, string> = {
   '/index.html': '<!doctype html><title>DualMind Arena: blind battles between AI models</title>',
   '/legacy-app.html': '<!doctype html><title>Legacy arena</title>',
   '/leaderboard/index.html': '<!doctype html><title>Legacy leaderboard</title>',
-  '/about/index.html': '<!doctype html><title>Legacy about</title>',
+  '/models/index.html': '<!doctype html><title>Legacy models</title>',
+  '/about/index.html': '<!doctype html><title>About DualMind Arena</title>',
+  '/404.html':
+    '<!doctype html><title>Page not found · DualMind Arena</title><p>This page took a wrong turn.</p>',
+  '/robots.txt': 'User-agent: *\nAllow: /\n\nSitemap: https://arena.dualmindlab.tech/sitemap.xml\n',
+  '/sitemap.xml':
+    '<?xml version="1.0" encoding="UTF-8"?><urlset><url><loc>https://arena.dualmindlab.tech/about/</loc></url></urlset>',
   '/assets/logo.png': 'png',
   '/js/apiInstance.js': 'console.log("legacy");',
   '/css/tokens.css': ':root{}',
@@ -86,7 +94,7 @@ export const DIST: Record<string, string> = {
   '/__spa-fallback.html': '<!doctype html><title>Loading</title>',
   '/__web-manifest.json': JSON.stringify({
     version: 1,
-    pages: ['/', '/__spa-fallback', '/design/'],
+    pages: ['/', '/404', '/__spa-fallback', '/about/', '/design/'],
     scriptHashes: ['CihokcEcBW4atb/CW/XWsvWwbTjqwQlE9nj9ii5ww5M='],
     connectSrc: [],
   }),

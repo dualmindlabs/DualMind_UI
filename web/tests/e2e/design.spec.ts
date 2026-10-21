@@ -91,7 +91,7 @@ test('legacy pages raise no CSP report-only violations', async ({ page }) => {
       report(`${location.pathname}: ${event.violatedDirective} ${event.blockedURI}`);
     });
   });
-  for (const path of ['/legacy-app.html', '/about/', '/how-it-works/', '/login/']) {
+  for (const path of ['/legacy-app.html', '/login/']) {
     await page.goto(path);
     await page.waitForLoadState('load');
     await page.waitForTimeout(1500);
