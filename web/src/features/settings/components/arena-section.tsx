@@ -22,7 +22,7 @@ import {
 import { useModifierKey } from '@/hooks/use-modifier-key';
 
 import { useSavedFlash } from '../hooks/use-saved-flash';
-import { ChoiceCards,type ChoiceOption } from './choice-cards';
+import { ChoiceCards, type ChoiceOption } from './choice-cards';
 import { SavedNote, SettingsCard, SettingsSection } from './settings-card';
 
 const MODE_ICONS: Record<ArenaMode, LucideIcon> = {

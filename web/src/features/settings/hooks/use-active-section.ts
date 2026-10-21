@@ -3,9 +3,13 @@ import { useEffect, useState } from 'react';
 /**
  * The section the reader is in, for the section nav: the last section whose top has passed a
  * line just under the sticky header (the last one at the very bottom of the page). A passive
- * scroll listener, read once per frame; it starts on the first section.
+ * scroll listener, read once per frame; it starts on the first section. The setter lets a clicked link mark its section at once (a
+ * short page may have nothing to scroll, so no scroll event would ever move the mark).
  */
-export function useActiveSection(ids: readonly string[], offset = 120): string | undefined {
+export function useActiveSection(
+  ids: readonly string[],
+  offset = 120,
+): readonly [string | undefined, (id: string) => void] {
   const [active, setActive] = useState<string | undefined>(ids[0]);
 
   useEffect(() => {
@@ -41,5 +45,5 @@ export function useActiveSection(ids: readonly string[], offset = 120): string |
     };
   }, [ids, offset]);
 
-  return active;
+  return [active, setActive];
 }

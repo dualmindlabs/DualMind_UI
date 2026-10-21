@@ -7,7 +7,7 @@ import type { MotionPreference } from '@/lib/motion/motion-preference';
 import type { ThemePreference } from '@/lib/theme/theme';
 
 import { useSavedFlash } from '../hooks/use-saved-flash';
-import { ChoiceCards,type ChoiceOption } from './choice-cards';
+import { ChoiceCards, type ChoiceOption } from './choice-cards';
 import { SavedNote, SettingsCard, SettingsSection } from './settings-card';
 import { ThemePreview } from './theme-preview';
 

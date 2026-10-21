@@ -38,14 +38,17 @@ export function goToSection(id: string, smooth: boolean): boolean {
  * In-page links (they work without JavaScript too), handled by goToSection().
  */
 export function SettingsNav({ className }: { className?: string }) {
-  const active = useActiveSection(IDS);
+  const [active, setActive] = useActiveSection(IDS);
   const reduce = useReducedMotion();
   const onClick = (event: MouseEvent<HTMLAnchorElement>, id: string) => {
     // New tabs and windows keep the browser's own handling.
     if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
       return;
     }
-    if (goToSection(id, !reduce)) event.preventDefault();
+    if (goToSection(id, !reduce)) {
+      event.preventDefault();
+      setActive(id);
+    }
   };
   return (
     <nav aria-label="Settings sections" className={className}>

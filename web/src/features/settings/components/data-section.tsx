@@ -22,7 +22,7 @@ import { cn } from '@/lib/utils/cn';
 
 import { type ExportState, useExport } from '../hooks/use-export';
 import { EXPORT_THREAD_LIMIT, type ExportAccount, type ExportFormat } from '../lib/export-format';
-import { ChoiceCards,type ChoiceOption } from './choice-cards';
+import { ChoiceCards, type ChoiceOption } from './choice-cards';
 import { PrintExport, printExport } from './print-export';
 import { SettingsCard, SettingsSection } from './settings-card';
 
