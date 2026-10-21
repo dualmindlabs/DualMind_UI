@@ -1,0 +1,68 @@
+name: Perf probe (temporary)
+
+on:
+  push:
+    branches: [perf/landing-critical-path]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Build
+        env:
+          VITE_SUPABASE_URL: https://e2eproject.supabase.co
+          VITE_SUPABASE_ANON_KEY: e2e-anon-key-not-a-real-key
+          PERF_PROBE: '1'
+        run: node build.js
+      - name: Chunk report
+        run: |
+          mkdir -p probe
+          python3 - <<'PY' > probe/chunks.txt
+          import re,json,os,gzip
+          html=open('dist/index.html').read()
+          files=sorted(set(re.findall(r'assets/([A-Za-z0-9._-]+\.js)',html)))
+          print('modulepreload+script files on /:',len(files))
+          tot=0
+          for f in files:
+              b=open('dist/assets/'+f,'rb').read(); g=len(gzip.compress(b,9)); tot+=g
+              srcs=[]
+              try:
+                  m=json.load(open('dist/assets/'+f+'.map'))
+                  srcs=[s.replace('../','') for s in m['sources']]
+              except Exception as e: srcs=['(no map)']
+              short=[s for s in srcs if 'node_modules' not in s]
+              nm=sorted({s.split('node_modules/')[-1].split('/')[0] if not s.split('node_modules/')[-1].startswith('@') else '/'.join(s.split('node_modules/')[-1].split('/')[:2]) for s in srcs if 'node_modules' in s})
+              print(f'\n{f} gz={g}\n  src: {short[:25]}\n  libs: {nm}')
+          print('\nTOTAL gz',tot)
+          PY
+          cat probe/chunks.txt
+      - name: Serve
+        working-directory: web
+        run: |
+          node tests/e2e/serve-dist.mjs --port 8790 > "$RUNNER_TEMP/server.log" 2>&1 &
+          for i in $(seq 1 60); do curl -fsS -o /dev/null -H 'Cookie: dm_preview=1' http://127.0.0.1:8790/ && exit 0; sleep 2; done; cat "$RUNNER_TEMP/server.log"; exit 1
+      - name: Lighthouse
+        uses: treosh/lighthouse-ci-action@12.6.2
+        with:
+          urls: http://127.0.0.1:8790/?preview=dualmind-preview
+          configPath: ./web/lighthouserc.json
+          uploadArtifacts: true
+          artifactName: lighthouse-probe
+          temporaryPublicStorage: false
+          runs: 5
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: probe-chunks
+          path: probe/

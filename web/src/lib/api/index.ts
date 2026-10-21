@@ -4,7 +4,6 @@
  */
 
 // Client (the lazy wrapper is what the app creates up front; see lazy-client.ts)
-export { createLazyApiClient } from './lazy-client';
 export {
   type ApiClient,
   type ApiClientOptions,
@@ -25,6 +24,7 @@ export type {
   ResponseEvent,
   RetryPolicy,
 } from './http/types';
+export { createLazyApiClient } from './lazy-client';
 
 // Errors
 export {
@@ -52,6 +52,7 @@ export {
 } from './endpoints/arena';
 export { FEATURE_FLAGS } from './endpoints/flags';
 export { type SpeechInput } from './endpoints/speech';
+export { DEFAULT_THREAD_LIMIT } from './endpoints/thread-limits';
 export {
   type CreateThreadInput,
   type ListThreadsInput,
@@ -60,7 +61,6 @@ export {
   type SharedThread,
   toThreadTitle,
 } from './endpoints/threads';
-export { DEFAULT_THREAD_LIMIT } from './endpoints/thread-limits';
 export { type UserSyncInput } from './endpoints/users';
 
 // Response types
@@ -95,7 +95,6 @@ export type { UserProfile } from './schemas/users';
 export { readChatStream, readSseStream, type SseMessage, SseParser } from './sse';
 
 // Vote queue
-export { VOTE_QUEUE_STORAGE_KEY } from './vote-queue-key';
 export {
   createVoteQueue,
   type FlushResult,
@@ -105,6 +104,7 @@ export {
   type VoteQueueOptions,
   type VoteSubmitResult,
 } from './vote-queue';
+export { VOTE_QUEUE_STORAGE_KEY } from './vote-queue-key';
 
 // Mock adapter: reached through `createApiClient({ mock })`, which loads it lazily so it stays
 // out of the main bundle. Unit tests import `@/lib/api/mock/mock-fetch` directly.

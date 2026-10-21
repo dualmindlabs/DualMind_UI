@@ -226,17 +226,17 @@ export function KitOverlays() {
 
         <KitState label="Tooltip">
           <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger
-              className={buttonVariants({ variant: 'outline', size: 'icon-sm' })}
-              aria-label="How voting works"
-            >
-              <CircleQuestionMark aria-hidden="true" strokeWidth={1.75} />
-            </TooltipTrigger>
-            <TooltipContent>
-              How voting works <Kbd>?</Kbd>
-            </TooltipContent>
-          </Tooltip>
+            <Tooltip>
+              <TooltipTrigger
+                className={buttonVariants({ variant: 'outline', size: 'icon-sm' })}
+                aria-label="How voting works"
+              >
+                <CircleQuestionMark aria-hidden="true" strokeWidth={1.75} />
+              </TooltipTrigger>
+              <TooltipContent>
+                How voting works <Kbd>?</Kbd>
+              </TooltipContent>
+            </Tooltip>
           </TooltipProvider>
         </KitState>
 

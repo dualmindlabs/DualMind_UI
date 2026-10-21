@@ -5,9 +5,9 @@ import { createLazyApiClient } from '@/lib/api/lazy-client';
 
 function fakeClient(): ApiClient {
   return {
-    getLeaderboard: vi.fn(async () => ['row']),
+    getLeaderboard: vi.fn(() => Promise.resolve(['row'])),
     streamChat: async function* () {
-      yield 'a';
+      yield await Promise.resolve('a');
       yield 'b';
     },
   } as unknown as ApiClient;
@@ -24,7 +24,7 @@ describe('createLazyApiClient', () => {
 
   it('loads once on the first call and forwards arguments and results', async () => {
     const real = fakeClient();
-    const load = vi.fn(async () => real);
+    const load = vi.fn(() => Promise.resolve(real));
     const client = createLazyApiClient({ load, baseUrl: '', isMock: false });
     const options = { signal: new AbortController().signal };
     await expect(client.getLeaderboard(options)).resolves.toEqual(['row']);
@@ -34,7 +34,11 @@ describe('createLazyApiClient', () => {
   });
 
   it('streams through the real client', async () => {
-    const client = createLazyApiClient({ load: async () => fakeClient(), baseUrl: '', isMock: false });
+    const client = createLazyApiClient({
+      load: () => Promise.resolve(fakeClient()),
+      baseUrl: '',
+      isMock: false,
+    });
     const seen: unknown[] = [];
     for await (const event of client.streamChat({} as never)) seen.push(event);
     expect(seen).toEqual(['a', 'b']);

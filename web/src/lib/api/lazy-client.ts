@@ -31,11 +31,17 @@ export function createLazyApiClient({ load, baseUrl, isMock }: LazyApiClientOpti
       if (!method) {
         method = STREAM_METHODS.has(property)
           ? async function* (...args: unknown[]) {
-              const client = (await real()) as unknown as Record<string, (...a: unknown[]) => AsyncGenerator>;
+              const client = (await real()) as unknown as Record<
+                string,
+                (...a: unknown[]) => AsyncGenerator
+              >;
               yield* client[property]!(...args);
             }
           : async (...args: unknown[]) => {
-              const client = (await real()) as unknown as Record<string, (...a: unknown[]) => unknown>;
+              const client = (await real()) as unknown as Record<
+                string,
+                (...a: unknown[]) => unknown
+              >;
               return client[property]!(...args);
             };
         cache.set(property, method);
