@@ -23,7 +23,11 @@ Cloudflare Workers Builds deploys production from `master` and uploads a preview
 
 The account already has a D1 database named `dualmind_arena` (`755b2a52-…`) that predates this work. It is not used or changed by the backend phase.
 
-## Still to decide (needs Harsh)
+## Migrations
 
-- How D1 migrations reach production (GitHub Actions on merge, or applied by hand): not approved yet.
+Approved by Harsh on 2026-10-21: additive D1 migrations are applied by GitHub Actions, to the preview database first and to production after the PR merges. Additive only (new tables, columns, indexes), never drops or rewrites, always reviewed in a PR with a rollback note.
+
+## Still to decide
+
+
 - Queue consumers are added with the first feature that processes events; Queues may need the Workers Paid plan for consumers at volume.

@@ -2,12 +2,15 @@
 
 The running log of the Arena redesign: what merged, what is in progress, what comes next. One line per change, newest first, written so it can be copied into Notion as is. Plan and slice numbers: [migration-plan.md](./migration-plan.md) section 8. Things that need Harsh: [needs-harsh.md](./needs-harsh.md).
 
-Last updated: 2026-10-21 02:55 UTC.
+Last updated: 2026-10-21 04:15 UTC.
 
 ## Merged
 
 | Date (UTC) | PR | What |
 | --- | --- | --- |
+| 2026-10-21 | [#46](https://github.com/dualmindlabs/DualMind_UI/pull/46) | Backend resources created on Cloudflare (D1, KV, Queues, R2, each with a preview copy) and bound to the Worker; [resources.md](../backend/resources.md) |
+| 2026-10-21 | [#45](https://github.com/dualmindlabs/DualMind_UI/pull/45) | Backend wave 1 design documents ([BE-0 to BE-5](../backend/designs/README.md)) |
+| 2026-10-21 | [#44](https://github.com/dualmindlabs/DualMind_UI/pull/44) | Status log and morning summary update |
 | 2026-10-21 | [#41](https://github.com/dualmindlabs/DualMind_UI/pull/41) | **S4 info, legal, 404:** about (with credits and licences), how it works (timeline, beam diagram, rating section), FAQ (deep links, FAQPage data), privacy, terms, cookies (summary, table of contents, print styles), 404 with a real status; sitemap and robots generated at build |
 | 2026-10-21 | [#40](https://github.com/dualmindlabs/DualMind_UI/pull/40) | **S3 landing:** live hero with the real prompt box, live numbers, model strip, playable recorded demo battle with reveal, "fair by design" bento, timeline, live top 5, OG image; signed-in visitors handed to the old app until the arena slice. Lighthouse mobile: accessibility, best practices and SEO 100, performance 80-83 |
 | 2026-10-21 | [#38](https://github.com/dualmindlabs/DualMind_UI/pull/38) | **S7 leaderboard and models:** public live data without sign-in, podium, sortable and searchable table, provider filter, provisional badge under 100 battles, details sheet with chart, phone card layout; live model directory |
