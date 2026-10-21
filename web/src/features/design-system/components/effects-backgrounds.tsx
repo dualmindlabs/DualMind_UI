@@ -1,19 +1,21 @@
-import { lazy } from 'react';
 
 import { LightRaysPoster } from '@/components/motion/light-rays-poster';
 import { SilkPoster } from '@/components/motion/silk-poster';
 import { WebGLGate } from '@/components/motion/webgl-gate';
 
 import { EffectFrame } from './effect-frame';
+import { lazyWithRetry } from '@/lib/lazy-with-retry';
 
 // Code-split: the shaders load only when a gate opens.
-const LightRays = lazy(() =>
+const LightRays = lazyWithRetry(() =>
   import('@/components/vendor/reactbits/light-rays').then(module => ({
     default: module.LightRays,
   })),
+  { silent: true },
 );
-const Silk = lazy(() =>
+const Silk = lazyWithRetry(() =>
   import('@/components/vendor/reactbits/silk').then(module => ({ default: module.Silk })),
+  { silent: true },
 );
 
 /** Light Rays (landing hero) and Silk (sign-in brand panel), each behind a WebGLGate. */

@@ -1,11 +1,13 @@
-import { lazy, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { WebGLGate } from '@/components/motion/webgl-gate';
+import { lazyWithRetry } from '@/lib/lazy-with-retry';
 
-const ElectricBorder = lazy(() =>
+const ElectricBorder = lazyWithRetry(() =>
   import('@/components/vendor/reactbits/electric-border').then(module => ({
     default: module.ElectricBorder,
   })),
+  { silent: true },
 );
 
 /** Milliseconds the current runs before it fades into the pane's static terra outline. */

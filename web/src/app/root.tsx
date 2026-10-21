@@ -7,7 +7,7 @@ import '@/styles/app.css';
 
 import dmMonoLatin from '@fontsource/dm-mono/files/dm-mono-latin-500-normal.woff2?url';
 import bricolageLatin from '@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-opsz-normal.woff2?url';
-import type { ReactNode } from 'react';
+import { type ReactNode, useEffect } from 'react';
 import {
   isRouteErrorResponse,
   Links,
@@ -22,6 +22,10 @@ import { AppProviders } from '@/components/layout/app-providers';
 import { SessionHandoffScript } from '@/components/layout/session-handoff-script';
 import { ThemeScript } from '@/components/layout/theme-script';
 import { Wordmark } from '@/components/layout/wordmark';
+import { Button } from '@/components/ui/button';
+import { useOnlineStatus } from '@/hooks/use-online-status';
+import { isChunkLoadError } from '@/lib/network/chunk-error';
+import { reloadWhenOnline } from '@/lib/network/reload-when-online';
 import { wantsSessionHandoff } from '@/lib/session/handoff';
 import { backgrounds } from '@/styles/tokens';
 
@@ -97,25 +101,59 @@ export function HydrateFallback() {
   );
 }
 
+/**
+ * The last-resort screen, for what no nearer boundary caught. A dropped network (or a code chunk
+ * that never arrived) is not "something went wrong": it says so, keeps the way back one tap
+ * away, and reloads once by itself when the connection returns. Pages with a nearer boundary
+ * (the arena has its own, in place) rarely get here.
+ */
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
+  const online = useOnlineStatus();
   const notFound = isRouteErrorResponse(error) && error.status === 404;
-  const title = notFound ? 'This page does not exist.' : 'Something went wrong.';
+  const offline = !online && !notFound;
+  const chunk = isChunkLoadError(error);
+  const recoverable = (offline || chunk) && !notFound;
+
+  useEffect(() => {
+    if (!recoverable) return;
+    return reloadWhenOnline();
+  }, [recoverable]);
+
+  const lead = notFound ? '404. ' : offline ? '' : chunk ? 'Update. ' : 'Error. ';
+  const title = notFound
+    ? 'This page does not exist.'
+    : offline
+      ? 'You are offline.'
+      : chunk
+        ? 'A newer version is available.'
+        : 'Something went wrong.';
   const detail =
     import.meta.env.DEV && error instanceof Error
       ? error.message
       : notFound
         ? 'Check the address, or go back to the Arena.'
-        : 'Reload the page to try again.';
+        : offline
+          ? 'Your drafts and votes are kept on this device. This page reloads by itself when you are back online.'
+          : chunk
+            ? 'Part of the page could not load. Reload to get the latest version.'
+            : 'Try again, or reload the page.';
 
   return (
-    <main className="mx-auto grid min-h-svh max-w-page content-center gap-6 px-4 sm:px-6">
+    <main
+      className="mx-auto grid min-h-svh max-w-page content-center gap-6 px-4 sm:px-6"
+      data-testid="root-error"
+      data-kind={notFound ? 'not-found' : offline ? 'offline' : chunk ? 'chunk' : 'error'}
+    >
       <Wordmark className="h-4" />
       <h1 className="text-h1 font-medium">
-        {notFound ? '404. ' : 'Error. '}
+        {lead}
         <span className="human-voice text-human">{title}</span>
       </h1>
-      <p className="max-w-reading text-fg-soft">{detail}</p>
-      <p>
+      <p className="max-w-reading text-fg-soft" role="status">
+        {detail}
+      </p>
+      <p className="flex flex-wrap items-center gap-4">
+        {notFound ? null : <Button onClick={() => window.location.reload()}>Try again</Button>}
         <a className="text-mind-a underline underline-offset-4" href="/">
           Back to DualMind Arena
         </a>

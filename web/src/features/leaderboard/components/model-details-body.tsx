@@ -1,4 +1,4 @@
-import { lazy, type ReactNode, Suspense } from 'react';
+import { type ReactNode, Suspense } from 'react';
 
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -13,10 +13,12 @@ import {
 } from '../lib/format';
 import type { Leaderboard, LeaderboardEntry } from '../types';
 import { RecordBar } from './record-bar';
+import { lazyWithRetry } from '@/lib/lazy-with-retry';
 
 // Recharts stays out of the page bundles: it loads when a details sheet first opens.
-const WinRateChart = lazy(() =>
+const WinRateChart = lazyWithRetry(() =>
   import('./win-rate-chart').then(module => ({ default: module.WinRateChart })),
+  { silent: true },
 );
 
 function Stat({ label, value, hint }: { label: string; value: ReactNode; hint: ReactNode }) {

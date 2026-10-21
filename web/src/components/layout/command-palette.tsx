@@ -27,6 +27,7 @@ import { Kbd } from '@/components/ui/kbd';
 import { useAuth } from '@/hooks/use-auth';
 import { type CommandAction, useCommandPalette } from '@/hooks/use-command-palette';
 import { useTheme } from '@/hooks/use-theme';
+import { blockOfflineNavigation } from '@/lib/network/online-status';
 import { primaryNav, settingsLink } from '@/lib/site/links';
 import type { ThemePreference } from '@/lib/theme/theme';
 
@@ -46,6 +47,8 @@ const navKeywords: Record<string, readonly string[]> = {
 
 /** Legacy pages are not React routes yet, so navigation is a full page load. */
 function goTo(href: string) {
+  // Offline, where the screen says so (the arena), stay on the page instead of the browser's.
+  if (blockOfflineNavigation()) return;
   window.location.assign(href);
 }
 
