@@ -311,12 +311,14 @@ describe('routing helpers (server/routing.js)', () => {
     expect(buildScript).toContain(`/${HASHED_ASSET_RE.source}/`);
   });
 
-  it('lists the email targets and the share page, and matches paths and prefixes', () => {
+  it('lists the email targets, the share and settings pages, and matches paths and prefixes', () => {
     expect(SPA_FALLBACK_ROUTES).toEqual([
       '/update-password.html',
       '/auth-callback.html',
       '/share',
       '/share/*',
+      '/settings',
+      '/settings/',
     ]);
     expect(isSpaFallbackRoute('/auth-callback.html')).toBe(true);
     expect(isSpaFallbackRoute('/update-password.html')).toBe(true);
@@ -327,7 +329,9 @@ describe('routing helpers (server/routing.js)', () => {
     expect(isSpaFallbackRoute('/settings', routes)).toBe(false);
     expect(isSpaFallbackRoute('/share/abc123', routes)).toBe(true);
     expect(isSpaFallbackRoute('/shared', routes)).toBe(false);
-    expect(isSpaFallbackRoute('/settings/')).toBe(false);
+    expect(isSpaFallbackRoute('/settings/')).toBe(true);
+    expect(isSpaFallbackRoute('/settings')).toBe(true);
+    expect(isSpaFallbackRoute('/settings/x')).toBe(false);
     expect(isSpaFallbackRoute('/share')).toBe(true);
     expect(isSpaFallbackRoute('/share/')).toBe(true);
     expect(isSpaFallbackRoute('/share/index.html')).toBe(true);
@@ -343,6 +347,17 @@ describe('routing helpers (server/routing.js)', () => {
     expect(response?.headers.get('content-type')).toBe('text/html; charset=utf-8');
     expect(await response?.text()).toContain('Loading');
     expect(assets.requested).toContain('/__spa-fallback');
+    expect(response?.headers.get('X-Robots-Tag')).toBeNull();
+  });
+
+  it('keeps the settings page out of search results', async () => {
+    const response = await serveSpaFallback(new Request(`${ORIGIN}/settings/`), {
+      ASSETS: assets,
+    });
+    expect(response?.status).toBe(200);
+    expect(response?.headers.get('X-Robots-Tag')).toBe('noindex, nofollow');
+    expect(isNoindexPath('/settings/')).toBe(true);
+    expect(isNoindexPath('/settings')).toBe(true);
   });
 
   it('returns null when the fallback page is missing', async () => {

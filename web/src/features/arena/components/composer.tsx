@@ -7,13 +7,16 @@ import {
   PromptInputActions,
   PromptInputTextarea,
 } from '@/components/vendor/prompt-kit/prompt-input';
+import { useModifierKey } from '@/hooks/use-modifier-key';
 import { cn } from '@/lib/utils/cn';
 
 import { useArena } from '../hooks/use-arena';
 import { useDraft } from '../hooks/use-draft';
 import { useModelChoices } from '../hooks/use-model-choices';
 import { type ModelOption, useModelOptions } from '../hooks/use-model-options';
+import { useStoredValue } from '../hooks/use-stored-value';
 import { MODE_DETAILS } from '../lib/modes';
+import { ARENA_PREFERENCE_KEYS, sendKeyFrom } from '../lib/preferences';
 import { ModeSwitch } from './mode-switch';
 import { ModelPicker } from './model-picker';
 
@@ -45,7 +48,8 @@ export interface ComposerProps {
 /**
  * The prompt box (prompt-kit Prompt Input): the mode switch, the model pickers for Side by side
  * and Direct, a textarea that grows with the text, and Send. Enter or Ctrl/Cmd+Enter sends,
- * Shift+Enter adds a line, Esc stops answers in progress or leaves the box.
+ * Shift+Enter adds a line (or, with the setting on /settings/, only Ctrl/Cmd+Enter sends and Enter
+ * adds a line), Esc stops answers in progress or leaves the box.
  */
 export function Composer({
   onSend,
@@ -58,6 +62,8 @@ export function Composer({
   const { mode, selectMode, composerRef, battle } = useArena();
   const followUp = mode === 'battle' && battle.state.turns.some(turn => turn.b?.model);
   const { draft, setDraft } = useDraft();
+  const sendKey = sendKeyFrom(useStoredValue(ARENA_PREFERENCE_KEYS.send)[0]);
+  const modifier = useModifierKey();
   const { options } = useModelOptions();
   const choices = useModelChoices(mode === 'battle' ? undefined : options);
   const empty = draft.trim() === '';
@@ -90,6 +96,7 @@ export function Composer({
         onSubmit={send}
         isLoading={busy}
         textareaRef={composerRef}
+        submitOn={sendKey}
         maxHeight={variant === 'hero' ? '16rem' : '12rem'}
         className={cn(variant === 'dock' && 'bg-glass backdrop-blur-md')}
       >
@@ -98,7 +105,7 @@ export function Composer({
           placeholder={
             followUp ? 'Ask a follow-up, same two models' : MODE_DETAILS[mode].placeholder
           }
-          enterKeyHint="send"
+          enterKeyHint={sendKey === 'mod-enter' ? 'enter' : 'send'}
           className={cn(variant === 'hero' && 'min-h-16')}
           onKeyDown={event => {
             if (event.key !== 'Escape') return;
@@ -162,7 +169,7 @@ export function Composer({
           </div>
           <div className="ml-auto flex items-center gap-2">
             <span aria-hidden="true" className="hidden font-mono text-caption text-muted md:inline">
-              Enter to send
+              {sendKey === 'mod-enter' ? `${modifier}+Enter to send` : 'Enter to send'}
             </span>
             {busy ? (
               <Button

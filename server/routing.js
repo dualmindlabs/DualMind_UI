@@ -17,7 +17,7 @@ export function isHashedAsset(pathname) {
 /**
  * Client-only routes of the web app, answered with React Router's SPA fallback page
  * (dist/__spa-fallback.html, written by build.js) and status 200. Each entry is an exact path,
- * or a prefix ending in `*` (`/share/*`). A later slice adds /settings/.
+ * or a prefix ending in `*` (`/share/*`).
  * @type {readonly string[]}
  */
 export const SPA_FALLBACK_ROUTES = [
@@ -29,6 +29,10 @@ export const SPA_FALLBACK_ROUTES = [
   // no-store and the link-preview tags).
   '/share',
   '/share/*',
+  // Slice S12: the signed-in settings page (the page sends signed-out visitors to /login/).
+  // Never indexed (isNoindexPath).
+  '/settings',
+  '/settings/',
 ];
 
 /** Where the fallback is served from. Workers assets serve dist/__spa-fallback.html here. */
@@ -62,11 +66,15 @@ export async function serveSpaFallback(request, env) {
   const response = new Response(asset.body, { status: 200, headers: asset.headers });
   response.headers.set('content-type', 'text/html; charset=utf-8');
   response.headers.set('cache-control', 'no-cache');
+  if (isNoindexPath(new URL(request.url).pathname)) {
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+  }
   return response;
 }
 
 /**
- * Pages that must stay out of search results: the style guide and the SPA fallback itself.
+ * Pages that must stay out of search results: the style guide, the SPA fallback itself and the
+ * signed-in settings page.
  * @param {string} pathname
  */
 export function isNoindexPath(pathname) {
@@ -74,6 +82,8 @@ export function isNoindexPath(pathname) {
     pathname === NOT_FOUND_PAGE ||
     pathname === '/design' ||
     pathname.startsWith('/design/') ||
+    pathname === '/settings' ||
+    pathname === '/settings/' ||
     pathname === SPA_FALLBACK_PATH ||
     pathname === `${SPA_FALLBACK_PATH}.html`
   );

@@ -1,4 +1,4 @@
-import { Keyboard, LogOut, Undo2 } from 'lucide-react';
+import { Keyboard, LogOut, Settings, Undo2 } from 'lucide-react';
 import { useContext, useRef } from 'react';
 
 import { buttonVariants } from '@/components/ui/button';
@@ -8,11 +8,13 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuLinkItem,
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/use-auth';
+import { settingsLink } from '@/lib/site/links';
 import { cn } from '@/lib/utils/cn';
 
 import { ArenaContext } from '../hooks/use-arena';
@@ -23,8 +25,9 @@ function initialOf(name: string): string {
 }
 
 /**
- * The signed-in visitor's menu: who is signed in, the keyboard shortcuts, the classic arena, and
- * sign out.
+ * The signed-in visitor's menu: who is signed in, the keyboard shortcuts, settings, the classic
+ * arena, and sign out. The name set on /settings/ (Supabase `full_name`) comes first, then the API
+ * profile's.
  */
 export function AccountMenu() {
   const { user, profile, signOut } = useAuth();
@@ -32,11 +35,11 @@ export function AccountMenu() {
   const openShortcuts = useContext(ArenaContext)?.openShortcuts;
   const trigger = useRef<HTMLButtonElement>(null);
   const metadata = (user?.user_metadata ?? {}) as Record<string, unknown>;
-  const name =
-    profile?.name ??
-    (typeof metadata.full_name === 'string' ? metadata.full_name : null) ??
-    user?.email ??
-    'You';
+  const fullName =
+    typeof metadata.full_name === 'string' && metadata.full_name.trim() !== ''
+      ? metadata.full_name.trim()
+      : null;
+  const name = fullName ?? profile?.name ?? user?.email ?? 'You';
   const email = user?.email ?? null;
 
   return (
@@ -68,6 +71,10 @@ export function AccountMenu() {
             <DropdownMenuShortcut>?</DropdownMenuShortcut>
           </DropdownMenuItem>
         ) : null}
+        <DropdownMenuLinkItem href={settingsLink.href}>
+          <Settings aria-hidden="true" strokeWidth={1.75} />
+          {settingsLink.label}
+        </DropdownMenuLinkItem>
         <DropdownMenuItem onClick={leaveForClassicArena}>
           <Undo2 aria-hidden="true" strokeWidth={1.75} />
           Open the classic arena

@@ -6,7 +6,8 @@
  * - Our tokens and the 20px composer radius; the focus ring is drawn on the card while the
  *   textarea inside has focus (the textarea itself keeps no outline of its own).
  * - Keys: Enter sends (Shift+Enter is a new line), Ctrl+Enter or Cmd+Enter always sends, and
- *   nothing is sent while an input method is composing (Japanese, Chinese, Korean...).
+ *   nothing is sent while an input method is composing (Japanese, Chinese, Korean...). With
+ *   `submitOn="mod-enter"` (a setting) only Ctrl/Cmd+Enter sends and Enter adds a line.
  * - The card focuses the textarea on a pointer press on its empty area, without a click handler
  *   on a non-interactive element (keyboard users reach the textarea directly).
  * - Auto-grow from one line up to `maxHeight`, re-measured when the value changes from outside
@@ -35,7 +36,11 @@ interface PromptInputContextValue {
   onSubmit: (() => void) | undefined;
   disabled: boolean;
   textareaRef: RefObject<HTMLTextAreaElement | null>;
+  submitOn: SubmitOn;
 }
+
+/** `enter`: Enter or Ctrl/Cmd+Enter sends. `mod-enter`: only Ctrl/Cmd+Enter sends. */
+export type SubmitOn = 'enter' | 'mod-enter';
 
 const PromptInputContext = createContext<PromptInputContextValue | null>(null);
 
@@ -56,6 +61,8 @@ export type PromptInputProps = {
   disabled?: boolean;
   /** Lets the caller focus or measure the textarea (the arena's `/` shortcut, starters). */
   textareaRef?: RefObject<HTMLTextAreaElement | null>;
+  /** Which key sends; default `enter`. */
+  submitOn?: SubmitOn;
 } & Omit<ComponentProps<'div'>, 'onSubmit'>;
 
 /** The composer card: a textarea that grows with its text, and a row of actions under it. */
@@ -69,6 +76,7 @@ export function PromptInput({
   children,
   disabled = false,
   textareaRef: externalRef,
+  submitOn = 'enter',
   onPointerDown,
   ...props
 }: PromptInputProps) {
@@ -98,6 +106,7 @@ export function PromptInput({
         onSubmit,
         disabled,
         textareaRef,
+        submitOn,
       }}
     >
       <div
@@ -131,9 +140,16 @@ function fitHeight(element: HTMLTextAreaElement, maxHeight: number | string) {
       : `min(${element.scrollHeight}px, ${maxHeight})`;
 }
 
-/** True for the keys that send: Enter without Shift, or Ctrl/Cmd+Enter. */
-export function isSubmitKey(event: Pick<KeyboardEvent, 'key' | 'shiftKey' | 'nativeEvent'>) {
+/**
+ * True for the keys that send: Enter without Shift, or Ctrl/Cmd+Enter; with `mod-enter`, only
+ * Ctrl/Cmd+Enter.
+ */
+export function isSubmitKey(
+  event: Pick<KeyboardEvent, 'key' | 'shiftKey' | 'ctrlKey' | 'metaKey' | 'nativeEvent'>,
+  submitOn: SubmitOn = 'enter',
+) {
   if (event.key !== 'Enter' || event.nativeEvent.isComposing) return false;
+  if (submitOn === 'mod-enter') return event.ctrlKey || event.metaKey;
   return !event.shiftKey;
 }
 
@@ -144,7 +160,8 @@ export function PromptInputTextarea({
   disableAutosize = false,
   ...props
 }: PromptInputTextareaProps) {
-  const { value, setValue, maxHeight, onSubmit, disabled, textareaRef } = usePromptInput();
+  const { value, setValue, maxHeight, onSubmit, disabled, textareaRef, submitOn } =
+    usePromptInput();
 
   useLayoutEffect(() => {
     const element = textareaRef.current;
@@ -154,7 +171,7 @@ export function PromptInputTextarea({
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
     onKeyDown?.(event);
     if (event.defaultPrevented) return;
-    if (isSubmitKey(event)) {
+    if (isSubmitKey(event, submitOn)) {
       event.preventDefault();
       onSubmit?.();
     }
