@@ -64,6 +64,7 @@ DualMind_UI/
 │   ├── api-proxy.js         #   hardened same-origin /api/* proxy
 │   ├── problem-rewrite.js   #   opt-in problem+json errors (BE-1)
 │   ├── audio-alias.js       #   deprecated /api/audio/tts alias (BE-2)
+│   ├── rate-limit.js        #   per-user rate limits with standard headers (BE-3)
 │   ├── caching.js           #   the Cache-Control table
 │   ├── redirects.js         #   the legacy redirect table
 │   ├── routing.js           #   hashed-asset pattern, SPA fallback routes, noindex paths
@@ -133,7 +134,7 @@ Every top-level folder of `web/src` has a README with its purpose and rules.
 `worker.js` handles every request (`run_worker_first: true`), in this order:
 
 1. **Waitlist gate.** While `FORCE_WAITLIST` is on, visitors without the `dm_preview` cookie get a 302 to the waitlist.
-2. **`/api/v2` and `/api/v2/*`** go to the Worker's own API, a Hono app in `server/v2/` loaded with a dynamic `import()` (see "The `/api/v2` router" below); they never fall through to the proxy. **Other `/api/*`** goes to the hardened proxy (`server/api-proxy.js`).
+2. **Rate limits (BE-3).** Every `/api/*` request first passes `checkRateLimit()` (`server/rate-limit.js`); over the limit it is answered with a 429 right there (see "Rate limits" below). Then **`/api/v2` and `/api/v2/*`** go to the Worker's own API, a Hono app in `server/v2/` loaded with a dynamic `import()` (see "The `/api/v2` router" below); they never fall through to the proxy. **Other `/api/*`** goes to the hardened proxy (`server/api-proxy.js`).
 3. **Legacy redirects** from the table in `server/redirects.js` (301).
 4. **Client-only routes** of the web app get the SPA fallback page with status 200 (`SPA_FALLBACK_ROUTES`: `/update-password.html` and `/auth-callback.html` since S6).
 5. The legacy share page, `og-image.png`, then **static files** from `dist/` (including the built `robots.txt` and `sitemap.xml`) with Cache-Control from the caching table.
@@ -149,6 +150,15 @@ BE-0 ([design](./backend/designs/BE-0-platform.md)). A Hono app with `@hono/zod-
 - **Configuration:** `SUPABASE_URL` is a public `vars` entry in `wrangler.jsonc`. Optional secrets, not set yet: `SUPABASE_JWT_SECRET` (legacy HS256 tokens) and `PRIVACY_SALT` (salted hashes of user ids in logs). Without them the code still works.
 - **Dependencies:** `hono`, `@hono/zod-openapi`, `jose` and `zod` are declared in `web/package.json` (the one lockfile CI and Workers Builds resolve). `scripts/link-worker-deps.mjs` links them into the root `node_modules`, where wrangler's bundler looks; `build.js` runs it.
 - **Tests and checks (`api.yml`):** `tsc` over `server/`, `contract/` and `scripts/`; Vitest in workerd through `@cloudflare/vitest-plugin` (`vitest.api.config.mts`, `tests/api/`) against the real `worker.js`; `npm run api:openapi:check`. The Node tests of the JS modules stay in `web/tests/worker` (`web.yml`).
+
+### Rate limits (`server/rate-limit.js`)
+
+BE-3 ([design](./backend/designs/BE-3-rate-limits.md), table of limits in [endpoints.md](./api/endpoints.md#rate-limits-be-3)). `worker.js` calls `checkRateLimit()` for every `/api/*` request (v1 and v2) before the proxy or the router runs. The request is classified into a group (`battle`, `vote`, `speech`, `write`, `read`; health checks and `OPTIONS` are exempt), keyed, and counted with that group's Workers Rate Limiting binding (`RL_BATTLE`, `RL_VOTE`, `RL_SPEECH`, `RL_WRITE`, `RL_READ`, declared under `ratelimits` in `wrangler.jsonc` with `namespace_id` 1001 to 1005, which are account-wide: do not reuse them in other Workers; no account resource is needed, and a test fails when `wrangler.jsonc` and `RATE_LIMIT_GROUPS` disagree). Allowed responses carry `RateLimit-Policy`; over the limit the Worker answers 429 with `Retry-After`, before any upstream call.
+
+- **Key:** `u:<user id>` when the Bearer token verifies through the BE-0 verifier (the token is never decoded otherwise, so forged `sub` values cannot reset a counter); else `ip:` plus the first 32 hex characters of HMAC-SHA-256(`PRIVACY_SALT`, `ip:<CF-Connecting-IP>`). `PRIVACY_SALT` is an optional Worker secret that Harsh sets with `wrangler secret put PRIVACY_SALT` (not done yet). Until it is set, the raw `CF-Connecting-IP` is the in-memory key handed to the binding; this code never logs or stores it, and `ratelimit_unsalted` is logged once per isolate as a reminder.
+- **Fail open:** a missing, throwing or slow (over 50 ms) binding lets the request through with `X-RateLimit-Status: skipped` and a `ratelimit_unavailable` log line. Kill switch: remove a binding from `wrangler.jsonc` or raise its limit.
+- **Logs:** `rate_limited` (`requestId`, `group`, `keyKind`, `keyHash8`, `route`; `keyHash8` is null without the salt) and `ratelimit_unavailable`. No address, token or user id is logged.
+- **Client:** the typed client reads the 429 into `ApiError` kind `rate_limited` with `retryAfterMs`; `ApiProvider` shows one toast ("Too many requests. Try again in N seconds."); the vote queue waits at least `Retry-After` before it re-sends.
 
 ### Caching (`server/caching.js`)
 

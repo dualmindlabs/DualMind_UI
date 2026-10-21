@@ -190,12 +190,13 @@ export function createVoteQueue(options: VoteQueueOptions): VoteQueue {
     timer = undefined;
   }
 
-  function scheduleRetry(): void {
+  /** `minDelayMs`: a 429's Retry-After, so the vote is not re-sent before the server allows it. */
+  function scheduleRetry(minDelayMs = 0): void {
     clearTimer();
     if (started === 0) return;
     const exponential = Math.min(maxDelayMs, baseDelayMs * 2 ** failures);
     failures += 1;
-    const delay = Math.round(exponential / 2 + random() * (exponential / 2));
+    const delay = Math.max(Math.round(exponential / 2 + random() * (exponential / 2)), minDelayMs);
     timer = setTimeout(() => {
       timer = undefined;
       void flush();
@@ -221,6 +222,7 @@ export function createVoteQueue(options: VoteQueueOptions): VoteQueue {
     }
 
     let blocked: 'retry' | 'wait' | null = null;
+    let retryAfterMs = 0;
     for (const entry of fresh) {
       if (!isOnline()) {
         blocked = 'retry';
@@ -259,11 +261,12 @@ export function createVoteQueue(options: VoteQueueOptions): VoteQueue {
         );
       }
       blocked = next;
+      retryAfterMs = failure?.retryAfterMs ?? 0;
       break;
     }
 
     result.remaining = load().length;
-    if (result.remaining > 0 && blocked === 'retry') scheduleRetry();
+    if (result.remaining > 0 && blocked === 'retry') scheduleRetry(retryAfterMs);
     if (result.remaining === 0 || blocked === null) {
       failures = 0;
       clearTimer();
@@ -294,7 +297,7 @@ export function createVoteQueue(options: VoteQueueOptions): VoteQueue {
       const apiError = toApiError(error);
       if (!isApiError(error) || !isRetryableError(apiError)) throw apiError;
       enqueue(vote, apiError);
-      scheduleRetry();
+      scheduleRetry(apiError.retryAfterMs ?? 0);
       return { status: 'queued', error: apiError };
     }
   }

@@ -47,7 +47,10 @@ The leaderboard modal source comment says model-stats "requires auth". It does n
 | `x-request-id` | request | UUID | **Proposed** for the new client. Not sent today. Lets one id follow a call through the Worker, the API and logs. |
 | `x-correlation-id` | response | short hex, e.g. `471afe95` | Returned by the API (seen live). Log it next to errors. |
 | `www-authenticate` | response | `Bearer` | On 401. |
-| `Retry-After` | response | seconds | Read on 429 by `errors.js`. Never seen live (no rate limit was triggered). |
+| `Retry-After` | response | seconds | On 429 from the Worker's rate limits (BE-3, see "Rate limits" below): the window length, 10 or 60. |
+| `RateLimit-Policy` | response | `"battle";q=6;w=60` | BE-3: on every response of a limited `/api/*` route: group, quota, window in seconds (IETF `draft-ietf-httpapi-ratelimit-headers`). |
+| `RateLimit` | response | `"battle";r=0;t=60` | BE-3: on 429 only. |
+| `X-RateLimit-Status` | response | `skipped` | BE-3: present only when the limiter could not run (binding missing, erroring or slow) and the request was let through. |
 | `access-control-allow-origin` | response | `*` | API and Worker proxy. |
 
 ### Response envelope quirks
@@ -74,7 +77,7 @@ The leaderboard modal source comment says model-stats "requires auth". It does n
 | 404 | unknown route or thread | `GET /api/users/me` gives an empty 404 (live); threads give `{ success, error, code }` | `ApiError` | no |
 | 408 | client timeout (synthetic) | none | `TimeoutError` | yes |
 | 422 | not used by the API as far as seen; client maps it like 400 | n/a | `ValidationError` | no |
-| 429 | rate limit | unknown shape; `Retry-After` read if present | `RateLimitError` | yes, with the backoff below (the header is read but ignored for delay) |
+| 429 | rate limit (the Worker's own, BE-3: see "Rate limits") | `{ "error": "rate_limited", "requestId", "retryAfter" }`, or problem+json `rate_limited` on request and on `/api/v2`; `Retry-After`, `RateLimit` and `RateLimit-Policy` headers | `ApiError` kind `rate_limited` with `retryAfterMs` | `GET`: yes, after the wait when it is at most 20 s; `POST`: never automatically (the vote queue re-sends after the wait) |
 | 5xx | provider or server failure | arena routes: `{ object: "ai.error", code: "API_ERROR" or "STREAM_ERROR", message }`; others `{ success: false, error, code }` | `ApiError` | yes |
 | 502 | Worker could not reach the backend | `{ error: "bad_gateway", requestId }` since the proxy hardening (#24); before it `{ success: false, message: "Backend API Error: ...", error: "<error.toString()>" }` | `ApiError` | yes |
 | 504 | Worker got no answer from the backend in time (30 s; 65 s for `dualchat` and `chat`, per #30; event streams are never cut) | `{ error: "gateway_timeout", requestId }` | n/a (new) | n/a |
@@ -594,3 +597,25 @@ The mock adapter (`VITE_API_MOCK=1`, Playwright, unit tests) implements every ro
 | --- | --- | --- |
 | 2026-10-20 | `b921669` (DualMind_UI `master`) | Section 6, client mapping for the typed client (S5). 502/504 bodies of the hardened Worker proxy in the error table. |
 | 2026-10-20 | `cee9356` (DualMind_UI `master`) | First version. Live `GET` probes: `/health`, `/api/health`, `/api/arena/model-stats`, `/api/settings/feature-flag/public_sharing`, unauthenticated `/api/models` (401) and `/api/users/me` (404). All other behaviour read from code and the published OpenAPI document. |
+
+## Rate limits (BE-3)
+
+The Worker counts requests per route group before any upstream call, so a limited caller costs no model call ([design](../backend/designs/BE-3-rate-limits.md)). The key is the verified user id (a Supabase token the Worker has verified; an unverified token is never read), otherwise the client address (an HMAC of it when the `PRIVACY_SALT` secret is set). Counting is approximate and per Cloudflare location, so these are abuse limits, not quotas.
+
+| Group | Routes | Limit |
+| --- | --- | --- |
+| `battle` | `POST /api/arena/dualchat`, `/api/arena/chat`, `/api/arena/chat/stream` (a stream counts once, at its start) | 6 per 60 s |
+| `vote` | `POST /api/arena/model-vote` | 10 per 10 s |
+| `speech` | `POST /api/speech/generate`, `/api/audio/tts` | 10 per 60 s |
+| `write` | any other `POST`, `PATCH`, `PUT`, `DELETE` under `/api/` (v1 and `/api/v2`) | 30 per 60 s |
+| `read` | any other `GET` or `HEAD` under `/api/` | 30 per 10 s |
+
+Not limited: `OPTIONS`, `GET /api/health`, `GET /api/v2/health`, static files and pages.
+
+Every response of a limited route carries `RateLimit-Policy: "<group>";q=<limit>;w=<seconds>`. There is no `RateLimit-Remaining`: the platform binding answers only allowed or not, and a made-up count would be wrong. Over the limit the answer is `429` with `Retry-After: <seconds>` (the full window, a safe upper bound), `RateLimit: "<group>";r=0;t=<seconds>`, `Cache-Control: no-store` and `X-Request-Id`:
+
+```json
+{ "error": "rate_limited", "requestId": "6b0b2f64-5d0e-4a45-93a1-1f0f7d1d9a7e", "retryAfter": 42 }
+```
+
+or, for callers that send `Accept: application/problem+json` and always on `/api/v2`, an RFC 9457 `rate_limited` problem with `detail` ("Too many battles. Try again in 60 seconds.") and `retryAfter`. If the limiter cannot run (binding missing, erroring or slower than 50 ms) the request is allowed and the response says `X-RateLimit-Status: skipped`.

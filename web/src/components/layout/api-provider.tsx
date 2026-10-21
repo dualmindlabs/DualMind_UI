@@ -1,10 +1,34 @@
-import { type QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import {
+  MutationCache,
+  type QueryClient,
+  QueryCache,
+  QueryClientProvider,
+} from '@tanstack/react-query';
 import { type ReactNode, useState } from 'react';
 
 import { apiConfig } from '@/config/api';
 import { ApiClientContext } from '@/hooks/use-api-client';
-import { type ApiClient, createApiClientFromEnv, createQueryClient } from '@/lib/api';
+import {
+  type ApiClient,
+  createApiClientFromEnv,
+  createQueryClient,
+  getUserMessage,
+  isRateLimitError,
+} from '@/lib/api';
 import { getAccessToken } from '@/lib/supabase';
+
+/**
+ * A request the server refused with 429 (BE-3) is the one failure every screen would explain the
+ * same way, so it is toasted here: "Too many requests. Try again in N seconds." One toast at a
+ * time (a fixed id), only after the transport and query retries have given up. The toast code is
+ * loaded on demand, so pages do not pay for it up front.
+ */
+export function notifyRateLimited(error: unknown): void {
+  if (!isRateLimitError(error)) return;
+  void import('@/components/ui/sonner').then(({ toast }) =>
+    toast.error(getUserMessage(error), { id: 'api-rate-limited' }),
+  );
+}
 
 export interface ApiProviderProps {
   children: ReactNode;
@@ -26,7 +50,14 @@ export function ApiProvider({ children, client, queryClient }: ApiProviderProps)
   const [api] = useState(
     () => client ?? createApiClientFromEnv(apiConfig.mock ? {} : { getAccessToken }),
   );
-  const [cache] = useState(() => queryClient ?? createQueryClient());
+  const [cache] = useState(
+    () =>
+      queryClient ??
+      createQueryClient({
+        queryCache: new QueryCache({ onError: notifyRateLimited }),
+        mutationCache: new MutationCache({ onError: notifyRateLimited }),
+      }),
+  );
 
   return (
     <ApiClientContext.Provider value={api}>

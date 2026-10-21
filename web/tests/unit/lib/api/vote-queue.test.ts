@@ -262,6 +262,30 @@ describe('start, backoff and sign-out', () => {
     stop();
   });
 
+  it('keeps a rate-limited vote and waits at least Retry-After before sending it again', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    const { queue, send } = setup();
+    const limited = new ApiError({
+      kind: 'rate_limited',
+      status: 429,
+      message: 'rate_limited',
+      code: 'RATE_LIMITED',
+      retryAfterMs: 10_000,
+    });
+    send.mockRejectedValueOnce(limited);
+    const stop = queue.start();
+
+    await expect(queue.submit(vote('a'))).resolves.toMatchObject({ status: 'queued' });
+    expect(queue.size()).toBe(1);
+    // The plain backoff would be 500 ms; Retry-After holds the vote for 10 s.
+    await vi.advanceTimersByTimeAsync(9_999);
+    expect(send).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(send).toHaveBeenCalledTimes(2);
+    expect(queue.size()).toBe(0);
+    stop();
+  });
+
   it('does not schedule anything until started', async () => {
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
     const { queue, send } = setup();
