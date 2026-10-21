@@ -4,7 +4,7 @@ This file lists verified bugs in the Arena frontend (this repo) and its hosting:
 
 Found a security problem? Please report it privately to the maintainers instead of opening a public issue.
 
-Last updated: 2026-10-18
+Last updated: 2026-10-21
 
 **Status:** Confirmed = reproduced in code and/or live. Likely = strong evidence, not reproduced end to end. Not reproduced = could not confirm.
 **Numbering:** `#1`–`#11` are the Arena bugs reported on 2026-10-17. The backend file uses the same numbers. `N7` was found while verifying them on 2026-10-18.
@@ -13,7 +13,7 @@ Last updated: 2026-10-18
 
 | # | Issue | Severity | Status |
 |---|---|---|---|
-| 3 | `/share/<id>` links are broken: the id is dropped by a redirect | Medium | Confirmed |
+| 3 | `/share/<id>` links are broken: the id is dropped by a redirect | Medium | Fixed by PR #58 (share page, slice S11) |
 | 10 | Last Cloudflare build of `master` failed; the live site runs an older Worker than `master` | Medium | Confirmed |
 | 7 | Text-to-speech calls `/api/audio/tts`, which the API doesn't have (`/api/speech/generate`) | Low | Fixed by PR #49 (Worker alias) |
 | 11 | Old Vercel integration (`v0-dual-mind-ui`) fails on every push | Low | Confirmed |
@@ -25,7 +25,7 @@ Last updated: 2026-10-18
 
 ### 3 · `/share/<id>` links are broken: the id is dropped by a redirect
 
-- **Severity:** Medium · **Status:** Confirmed (live) · **Found:** 2026-10-17 (verified 2026-10-18)
+- **Severity:** Medium · **Status:** Fixed by [PR #58](https://github.com/dualmindlabs/DualMind_UI/pull/58) (redesign slice S11): every share link form (`/share/<id>`, `/share/?id=`, `?thread=`, `?threadId=`) now answers 200 with the web app's share page, never a redirect, and the legacy `share/` page is no longer deployed (`server/share.js`, `server/routing.js`) · **Found:** 2026-10-17 (verified 2026-10-18)
 - **Where:**
   - `components/ShareModal.js:33-34` builds links as `/share/<threadId>`.
   - `worker.js:78-96` rewrites every `/share*` request to `/share/index.html` (`:83`) and passes the asset response through. With the default `html_handling` (nothing set in `wrangler.jsonc:12-15`), the asset server answers `/share/index.html` with `307 → /share/`, a relative redirect that loses the id.

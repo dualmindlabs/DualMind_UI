@@ -1,4 +1,4 @@
-import { SharePage, shareDocumentTitle } from '@/features/share';
+import { shareDocumentTitle, SharePage } from '@/features/share';
 
 import type { Route } from './+types/share';
 

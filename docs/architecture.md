@@ -120,7 +120,7 @@ Every top-level folder of `web/src` has a README with its purpose and rules.
 1. **Build the web app:** `npm ci` and `npm run build` in `web/` (`react-router build`, Vite). Skipped with `SKIP_WEB_BUILD=1` when a CI job built it already.
 2. **Copy the legacy allowlist** (the static Arena files) into `dist/`.
 3. **Overlay `web/build/client`:** new pages at their paths, hashed files into `dist/assets/` next to the legacy images. With `/` prerendered (slice S3), React Router writes its SPA fallback as `__spa-fallback.html` and the landing page as `index.html`, which replaces the legacy home page (`replacedByWeb`); the legacy page is first copied to `dist/legacy-app.html` for the signed-in hand-off. The build fails if a `replacedByWeb` file was not written by the web app, or if `dist/index.html` turns out to be the SPA fallback.
-4. **Write `dist/__web-manifest.json`** for the Worker: the web app's pages, the sha256 hashes of their inline scripts (for the CSP, section 6) and extra `connect-src` origins: the Supabase project from the `VITE_SUPABASE_URL` build variable (https and wss; a warning, not a failure, when it is unset) and `https://api.pwnedpasswords.com` for the sign-up breach check. Since S6 the legacy sign-in pages (`login-modern.html`, `signup-modern.html`, `forgot-password.html`, `auth-callback.html`, `update-password.html` and the `login/` folder) are no longer copied: their URLs redirect or are served by the web app.
+4. **Write `dist/__web-manifest.json`** for the Worker: the web app's pages, the sha256 hashes of their inline scripts (for the CSP, section 6) and extra `connect-src` origins: the Supabase project from the `VITE_SUPABASE_URL` build variable (https and wss; a warning, not a failure, when it is unset) and `https://api.pwnedpasswords.com` for the sign-up breach check. Since S6 the legacy sign-in pages (`login-modern.html`, `signup-modern.html`, `forgot-password.html`, `auth-callback.html`, `update-password.html` and the `login/` folder) are no longer copied: their URLs redirect or are served by the web app. Since S11 the legacy `share/` folder is not copied either: `/share/<id>` is the web app's share page.
 5. **Check the result** and fail the build when a legacy file or a sitemap URL is missing, when a web file would replace a legacy one (unless its slice lists it in `replacedByWeb`: today `leaderboard/index.html` and `models/index.html`), or when a file in `assets/` has no content hash.
 
 ## 5. Deploy and previews
@@ -137,8 +137,8 @@ Every top-level folder of `web/src` has a README with its purpose and rules.
 1. **Waitlist gate.** While `FORCE_WAITLIST` is on, visitors without the `dm_preview` cookie get a 302 to the waitlist.
 2. **Rate limits (BE-3).** Every `/api/*` request first passes `checkRateLimit()` (`server/rate-limit.js`); over the limit it is answered with a 429 right there (see "Rate limits" below). Then **`/api/v2` and `/api/v2/*`** go to the Worker's own API, a Hono app in `server/v2/` loaded with a dynamic `import()` (see "The `/api/v2` router" below); they never fall through to the proxy. **Other `/api/*`** goes to the hardened proxy (`server/api-proxy.js`).
 3. **Legacy redirects** from the table in `server/redirects.js` (301).
-4. **Client-only routes** of the web app get the SPA fallback page with status 200 (`SPA_FALLBACK_ROUTES`: `/update-password.html` and `/auth-callback.html` since S6).
-5. The legacy share page, `og-image.png`, then **static files** from `dist/` (including the built `robots.txt` and `sitemap.xml`) with Cache-Control from the caching table.
+4. **Client-only routes** of the web app get the SPA fallback page with status 200 (`SPA_FALLBACK_ROUTES`: `/update-password.html` and `/auth-callback.html` since S6, `/share` and `/share/*` since S11). Share links get it never cached and with their link-preview tags (see "Share page and link previews" below).
+5. `og-image.png`, then **static files** from `dist/` (including the built `robots.txt` and `sitemap.xml`) with Cache-Control from the caching table.
 6. **Anything else** gets the web app's 404 page (`dist/404.html`, see below) with status 404; plain text `Not Found` if that file is missing.
 
 Every response then leaves through `withSecurityHeaders()`: the security headers below, and the Content-Security-Policy for HTML.
@@ -168,12 +168,24 @@ One table; the first matching row wins, and without a match the Workers static a
 | Row | Applies to | Cache-Control |
 | --- | --- | --- |
 | hashed-build-file | Vite output, `/assets/<name>-<hash>.<ext>` (pattern `HASHED_ASSET_RE`, checked against the build by `build.js`) | `public, max-age=31536000, immutable` |
-| share | `/share` and everything below it (legacy share page) | `no-store, no-cache, must-revalidate` |
+| share | `/share` and everything below it: the share page, set by `server/share.js` | `no-store, no-cache, must-revalidate` |
 | web-page | HTML pages of the web app (from the manifest) and the SPA fallback | `no-cache`: revalidated on every visit, cheap because Workers static assets send an ETag (a matching `If-None-Match` gets a 304) |
 | legacy-code | legacy HTML (also directory URLs and clean URLs such as `/legacy-app` or `/login-modern`), JS, CSS and JSON | `no-store, no-cache, must-revalidate, max-age=0`, until the cutover |
 | image | `.png .jpg .jpeg .webp .gif .svg .ico` | `public, max-age=31536000, immutable`, as before |
 
 `/design/` and `/__spa-fallback` also send `X-Robots-Tag: noindex, nofollow`.
+
+### Share page and link previews (`server/share.js`)
+
+Slice S11; fixes KNOWN_ISSUES #3, where the legacy rewrite to `/share/index.html` answered with a 307 to `/share/` and lost the id.
+
+- **Routes:** `GET` or `HEAD` of `/share`, `/share/<id>` and the old forms `/share/?id=<id>`, `?thread=<id>`, `?threadId=<id>` (also under `/share/index.html`) answer the SPA fallback page with status 200 and `Cache-Control: no-store, no-cache, must-revalidate`, never a redirect. The web app's route `share/:threadId?` reads the id with the same rules (`web/src/lib/site/share.ts`; a Worker test checks both parsers against one table), renders the page and replaces old forms with `/share/<id>`. The legacy `share/` folder is no longer copied to `dist/`, and `build.js` and `web.yml` fail if `dist/share/` comes back.
+- **Link-preview tags:** chat apps and search engines do not run JavaScript, so the Worker writes the tags into the fallback HTML with `HTMLRewriter`: the `<title>` is filled, any description, robots, canonical, Open Graph or Twitter tag already in the page is removed, and a fresh set goes at the end of `<head>` (`og:type` article, `og:title`, `og:description`, `og:url` and canonical on `/share/<id>`, `og:image` `/og/share.png` 1200 x 630, `twitter:card` `summary_large_image`).
+- **Where the words come from:** the Worker calls `GET /api/threads/{id}` and `/messages` on the backend like any visitor: no `Authorization`, no cookie, whatever the visitor sent. Only a thread the API returns as `public` or `unlisted` gets its own tags: the title is the first prompt (one line, cut at about 90 characters), the description says what kind of thread it is ("Two anonymous AI models answered. See which one won." for a voted battle). Model names are never written, so a battle stays blind in its preview. Private, unknown, slow or failing look-ups get generic tags, so the page never fails because of the preview.
+- **Search engines:** public threads are indexable; unlisted threads and the generic tags carry `robots` `noindex, nofollow` and the same `X-Robots-Tag`.
+- **Budget and cache:** one look-up has 1.5 s; its answer stays in the edge cache (Cache API, keyed by id) for 2 minutes, or 30 s when the thread is not shared; timeouts and errors are not cached. The log line `share_meta_fallback` has the outcome and the time, never the id (an unlisted link is the key to its thread).
+- **Tests:** `web/tests/worker/share.test.ts` (Node: ids, tags, look-up, cache, routing, headers), `tests/api/share.test.ts` (workerd: the real `HTMLRewriter` and Cache API through `worker.js`), `web/tests/e2e/share.spec.ts` (the tags from `wrangler dev`, the page and the dialog in Chromium).
+- **Later:** a per-battle preview image (BE-19) replaces the static card.
 
 ### Security headers (`server/security-headers.js`)
 

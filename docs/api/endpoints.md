@@ -418,8 +418,8 @@ type Thread = {
 | `GET /api/threads/{threadId}` | none | `Thread` | Public for `public` and `unlisted` threads while `public_sharing` is on, otherwise owner only. 403 not allowed, 404 unknown. |
 | `PATCH /api/threads/{threadId}` | `{ title: string }` | `{ success, message }` | Owner only. Idempotent. |
 | `DELETE /api/threads/{threadId}` | none | `{ success, message }` | Owner only. Idempotent in effect (second call is 404). |
-| `GET /api/threads/{threadId}/messages` | none | `{ items: ThreadMessage[] }` | Oldest first. With a token, `voteChoice` and `hasVoted` reflect the caller's own votes. |
-| `PATCH /api/threads/{threadId}/visibility` | `{ visibility: Visibility }` | `{ success, message, visibility }` | Owner only. Share link is `https://arena.dualmindlab.tech/share/{threadId}` (but see KNOWN_ISSUES #3). Idempotent. |
+| `GET /api/threads/{threadId}/messages` | none | `{ items: ThreadMessage[] }` | Oldest first. With a token, `voteChoice` and `hasVoted` reflect the caller's own votes. Without a token (a shared thread), they reflect any vote on the comparison, which in practice is the owner's (`ThreadMessagesService.GetThreadMessagesAsync` filters by `comparison_id` only): the share page uses this to apply the reveal only to voted battles. Model names are returned either way, so a blind battle is blind in the UI only (KNOWN_ISSUES #2). |
+| `PATCH /api/threads/{threadId}/visibility` | `{ visibility: Visibility }` | `{ success, message, visibility }` | Owner only. Share link is `https://arena.dualmindlab.tech/share/{threadId}` (works since slice S11; KNOWN_ISSUES #3 is fixed). Idempotent. |
 
 ```ts
 type ThreadMessage = {
@@ -435,7 +435,7 @@ type ThreadMessage = {
 ```
 
 - Messages are battle-shaped (two responses per row). Direct-chat turns are rebuilt from the same rows (`app.js:1752+`, simplified).
-- Auth detail: shared views call `GET /api/threads/{id}` and `/messages` **without** a token (`SharedThreadView.js:64`, `share/index.html:106`), so a private thread returns 401 or 403 there and the page shows "Failed to load thread".
+- Auth detail: shared views call `GET /api/threads/{id}` and `/messages` **without** a token (`getSharedThread` in the typed client; before S11 `SharedThreadView.js:64` and `share/index.html:106`), so a private thread returns 401 (or 403) and the share page says the link is private or does not exist. The Worker makes the same anonymous calls for the link-preview tags of `/share/<id>` (`server/share.js`: 1.5 s timeout, 2 minutes in the edge cache, 30 s for a thread that is not shared).
 - Base URL for shared views: `https://api.dualmindlab.tech` on `dualmindlab.tech` and `workers.dev` hosts, config value or `http://localhost:5079` elsewhere (`SharedThreadView.js:getBaseUrl`).
 - **Broken: owner-side visibility read.** `app.js:1761` calls `this.api.fetchThread(threadId)`, but `DualMindApi` has no `fetchThread` (only the deprecated `js/auth/api-service.js` does). The call throws, the `catch` sets `currentThreadVisibility = 'private'`, so a thread that is already public shows as private after reload. `ThreadService.getThread` is the right method.
 - **Direct `fetch` for visibility.** `ShareModal.js:262` looks for `api.updateThreadVisibility`, which also does not exist on `DualMindApi`, so it always takes the direct `fetch` fallback. That path reads the base URL from `DUALMIND_CONFIG.apiBaseUrl` or `serverUrl` (not `backendUrl`) and the token from `DualMindAuth`. The new client should have `setThreadVisibility`.

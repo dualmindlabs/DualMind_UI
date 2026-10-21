@@ -25,10 +25,18 @@ interface FakeApi {
   visibility: string;
   failPatch: boolean;
   flag: boolean;
+  /** The thread read never answers (the loading state). */
+  hangThread: boolean;
 }
 
 function fakeApi(): { api: FakeApi; fetch: (url: string, init: RequestInit) => Promise<Response> } {
-  const api: FakeApi = { calls: [], visibility: 'private', failPatch: false, flag: true };
+  const api: FakeApi = {
+    calls: [],
+    visibility: 'private',
+    failPatch: false,
+    flag: true,
+    hangThread: false,
+  };
   const fetch = (url: string, init: RequestInit) => {
     const body = typeof init.body === 'string' ? (JSON.parse(init.body) as unknown) : undefined;
     api.calls.push({ url, init, headers: new Headers(init.headers), body });
@@ -49,6 +57,7 @@ function fakeApi(): { api: FakeApi; fetch: (url: string, init: RequestInit) => P
       );
     }
     if (path === '/api/threads/t-recursion') {
+      if (api.hangThread) return new Promise<Response>(() => {});
       return Promise.resolve(jsonResponse({ ...THREAD, visibility: api.visibility }));
     }
     return Promise.resolve(jsonResponse({ success: false }, { status: 404 }));
@@ -92,19 +101,23 @@ afterEach(() => {
 });
 
 describe('ShareDialog', () => {
-  it('loads, then shows a private thread with the link turned off', async () => {
-    const { fetch } = fakeApi();
+  it('shows a loading state until the thread is read', async () => {
+    const { api, fetch } = fakeApi();
+    api.hangThread = true;
     renderDialog(fetch);
     const dialog = await screen.findByRole('dialog', { name: 'Share this thread' });
     expect(within(dialog).getByText('Loading the sharing settings')).toBeInTheDocument();
+    expect(within(dialog).queryByRole('radio')).not.toBeInTheDocument();
+  });
+
+  it('shows a private thread with the link turned off', async () => {
+    const { fetch } = fakeApi();
+    renderDialog(fetch);
     expect(await screen.findByRole('dialog', { name: 'Share this battle' })).toBeVisible();
     expect(screen.getByRole('radio', { name: /Private/ })).toBeChecked();
     expect(screen.getByRole('radio', { name: /Unlisted/ })).not.toBeChecked();
     expect(screen.getByRole('textbox', { name: 'Link' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Copy link' })).toHaveAttribute(
-      'aria-disabled',
-      'true',
-    );
+    expect(screen.getByRole('button', { name: 'Copy link' })).toBeDisabled();
     expect(screen.getByText('Choose Unlisted or Public to turn the link on.')).toBeVisible();
     expect(screen.queryByRole('link', { name: /Open the page/ })).not.toBeInTheDocument();
   });

@@ -37,7 +37,7 @@ Status marks: ✅ done · 🟡 partly done · ⬜ not started. Last reviewed: 20
 | F3 | Accessibility AA (axe in CI, keyboard, reduced motion) | 🟡 | axe zero serious/critical on every page ✅; manual screen-reader pass ⬜ |
 | F4 | Lighthouse 90+ on every page | 🟡 | A11y/best practices/SEO 100; performance 80-83 on `/` (shared JS ~300 KB): S14 |
 | F5 | Performance budgets enforced in CI | 🟡 | Budgets exist but warn; make them fail after S14 |
-| F6 | SEO + OG cards | 🟡 | Meta, canonical, JSON-LD, sitemap ✅; OG image on `/` only |
+| F6 | SEO + OG cards | 🟡 | Meta, canonical, JSON-LD, sitemap ✅; OG image on `/`; shared battles get per-link tags (first prompt) and a share card from the Worker (S11, [#58](https://github.com/dualmindlabs/DualMind_UI/pull/58)); leaderboard and models images next; per-battle images are BE-19 |
 | F7 | i18n-ready (strings out of components) | ⬜ | Content files exist for info pages; extract UI strings in S14 |
 | F8 | Analytics-free privacy page that matches reality | ✅ | [#35](https://github.com/dualmindlabs/DualMind_UI/pull/35), [#41](https://github.com/dualmindlabs/DualMind_UI/pull/41) |
 | F9 | Interaction feel: press/hover/focus states, motion tokens, reduced motion | ✅ | Kit + effects library |

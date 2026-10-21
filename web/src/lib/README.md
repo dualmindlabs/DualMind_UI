@@ -2,10 +2,10 @@
 
 Framework-free code shared across features: plain TypeScript, no React components.
 
-- `utils/`: small helpers (`cn()` for class names, WCAG contrast maths, `css-color.ts` to read colour tokens for canvas and WebGL effects).
+- `utils/`: small helpers (`cn()` for class names, WCAG contrast maths, `css-color.ts` to read colour tokens for canvas and WebGL effects, `clipboard.ts` for copy and the system share sheet).
 - `theme/`: the theme preference store and the inline script that applies it before the first paint.
 - `motion/`: `webgl-policy.ts`, when a WebGL effect may run (reduced motion, Save-Data, memory, touch-first small screens, WebGL2).
-- `site/`: the site's links (header, phone menu, footer, command palette), `isActivePath()`, and `pageMeta()` for a route's title, description, canonical, social tags, preview image, robots and JSON-LD.
+- `site/`: the site's links (header, phone menu, footer, command palette), `isActivePath()`, `pageMeta()` for a route's title, description, canonical, social tags, preview image, robots and JSON-LD, and `share.ts` for share links (`/share/<id>` and the old `?id=` forms, the same rules as the Worker's `server/share.js`).
 - `api/`: the typed API client (slice S5): endpoints, schemas, errors, SSE, the vote queue, the mock adapter and TanStack Query bindings. See its README.
 - `session/`: `handoff.ts`, the landing page's signed-in hand-off to the legacy arena (the rules and the inline `<head>` script built from them), until the arena slice S8.
 - `supabase/`: the auth layer (slice S6): the lazily loaded Supabase client, the auth store and its state machine, the legacy session migration, the safe redirect, the route guard rule, field and password checks, and the auth emails. See its README.

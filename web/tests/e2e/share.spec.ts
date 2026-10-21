@@ -6,7 +6,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, type Page, test } from '@playwright/test';
 
 import { mockArena } from './arena-mocks';
-import { PREVIEW_COOKIE, passGate, settle, shotPath, storeTheme } from './helpers';
+import { passGate, PREVIEW_COOKIE, settle, shotPath, storeTheme } from './helpers';
 import { OG_HEIGHT, OG_SHARE_TEMPLATE, OG_WIDTH } from './og-share-template';
 
 // Slice S11: sharing. The dialog in the arena (Supabase and the API mocked by arena-mocks.ts),

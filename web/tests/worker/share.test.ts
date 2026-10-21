@@ -58,6 +58,9 @@ const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
 
 type FetchFn = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+
+const urlOf = (input: RequestInfo | URL) =>
+  typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
 type Upstream = Mock<FetchFn>;
 
 /** A fake API: the thread and its messages, or a status for both. */
@@ -65,7 +68,7 @@ function upstream(
   answer: { thread?: unknown; messages?: unknown; status?: number } = {},
 ): Upstream {
   return vi.fn<FetchFn>(input => {
-    const url = String(input);
+    const url = urlOf(input);
     if (answer.status && answer.status !== 200) {
       return Promise.resolve(json({ success: false, code: 'X' }, answer.status));
     }
@@ -238,7 +241,7 @@ describe('loadShareFacts', () => {
       { fetchImpl, cache: null, log: silent },
     );
     expect(facts?.prompt).toBe('Explain recursion');
-    const urls = fetchImpl.mock.calls.map(([input]) => String(input)).sort();
+    const urls = fetchImpl.mock.calls.map(([input]) => urlOf(input)).sort();
     expect(urls).toEqual([
       `https://backend.test/api/threads/${ID}`,
       `https://backend.test/api/threads/${ID}/messages`,
@@ -372,7 +375,7 @@ describe('the share page through the Worker', () => {
     );
     expect(backend).toHaveBeenCalledTimes(2);
     for (const [input, init] of backend.mock.calls) {
-      expect(String(input)).toMatch(/^https:\/\/backend\.test\/api\/threads\//);
+      expect(urlOf(input)).toMatch(/^https:\/\/backend\.test\/api\/threads\//);
       expect(new Headers(init?.headers).get('authorization')).toBeNull();
     }
   });
