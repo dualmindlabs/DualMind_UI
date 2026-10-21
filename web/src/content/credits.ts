@@ -107,7 +107,7 @@ export const credits: readonly Credit[] = [
     licenceUrl: 'https://github.com/vercel/streamdown/blob/main/LICENSE',
     kind: 'dependency',
     restricted: false,
-    uses: ['Model answers as Markdown, sanitised and hardened'],
+    uses: ['Model answers as Markdown, sanitized and hardened'],
   },
   {
     id: 'motion',
