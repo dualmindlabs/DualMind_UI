@@ -49,9 +49,7 @@ describe('OfflineNotice', () => {
   it('leaves the count out when no vote waits', () => {
     renderNotice(0);
     go(false);
-    expect(screen.getByRole('status')).toHaveTextContent(
-      'votes are saved on this device.',
-    );
+    expect(screen.getByRole('status')).toHaveTextContent('votes are saved on this device.');
     expect(screen.getByRole('status')).not.toHaveTextContent('waiting');
   });
 

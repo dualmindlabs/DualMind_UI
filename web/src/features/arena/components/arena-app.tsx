@@ -81,33 +81,33 @@ function ArenaLayout() {
           <ArenaErrorBoundary resetKey={threadId}>
             {empty ? (
               <>
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-0 dot-grid [mask-image:radial-gradient(ellipse_60%_50%_at_50%_45%,black,transparent)] opacity-70"
-              />
-              <div className="relative mx-auto grid w-full max-w-3xl gap-8 px-4 py-8 sm:px-6">
-                <EmptyState headingRef={heading} />
-                <Composer
-                  variant="hero"
-                  avoidRef={heading}
-                  onSend={send}
-                  busy={battle.busy}
-                  onStop={battle.stop}
-                  className="max-md:order-2"
-                />
-                <PromptStarters className="max-md:order-1" />
-              </div>
-            </>
-          ) : (
-            <>
-              <ThreadView threadId={threadId} />
-              <div className="relative mx-auto w-full max-w-3xl px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6">
                 <div
                   aria-hidden="true"
-                  className="pointer-events-none absolute inset-x-0 -top-8 h-8 bg-linear-to-t from-bg to-transparent"
+                  className="pointer-events-none absolute inset-0 dot-grid [mask-image:radial-gradient(ellipse_60%_50%_at_50%_45%,black,transparent)] opacity-70"
                 />
-                <Composer onSend={send} busy={battle.busy} onStop={battle.stop} />
-              </div>
+                <div className="relative mx-auto grid w-full max-w-3xl gap-8 px-4 py-8 sm:px-6">
+                  <EmptyState headingRef={heading} />
+                  <Composer
+                    variant="hero"
+                    avoidRef={heading}
+                    onSend={send}
+                    busy={battle.busy}
+                    onStop={battle.stop}
+                    className="max-md:order-2"
+                  />
+                  <PromptStarters className="max-md:order-1" />
+                </div>
+              </>
+            ) : (
+              <>
+                <ThreadView threadId={threadId} />
+                <div className="relative mx-auto w-full max-w-3xl px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6">
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-x-0 -top-8 h-8 bg-linear-to-t from-bg to-transparent"
+                  />
+                  <Composer onSend={send} busy={battle.busy} onStop={battle.stop} />
+                </div>
               </>
             )}
           </ArenaErrorBoundary>

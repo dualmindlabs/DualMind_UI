@@ -5,10 +5,11 @@ import { useHydrated } from '@/hooks/use-hydrated';
 import { lazyWithRetry } from '@/lib/lazy-with-retry';
 
 // The palette's code (cmdk, the dialog primitives, its icons) is a separate chunk.
-const CommandPalette = lazyWithRetry(() =>
-  import('@/components/layout/command-palette').then(module => ({
-    default: module.CommandPalette,
-  })),
+const CommandPalette = lazyWithRetry(
+  () =>
+    import('@/components/layout/command-palette').then(module => ({
+      default: module.CommandPalette,
+    })),
   { silent: true },
 );
 

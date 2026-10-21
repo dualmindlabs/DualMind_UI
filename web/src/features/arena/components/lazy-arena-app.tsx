@@ -1,4 +1,3 @@
-
 import { lazyWithRetry } from '@/lib/lazy-with-retry';
 /**
  * The arena's code (Streamdown, the history, the composer...) loads only for signed-in visitors

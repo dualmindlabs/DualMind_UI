@@ -4,8 +4,8 @@ import { useHydrated } from '@/hooks/use-hydrated';
 import { lazyWithRetry } from '@/lib/lazy-with-retry';
 
 // Sonner and the toast styles are a separate chunk, loaded after the page has hydrated.
-const Toaster = lazyWithRetry(() =>
-  import('@/components/ui/sonner').then(module => ({ default: module.Toaster })),
+const Toaster = lazyWithRetry(
+  () => import('@/components/ui/sonner').then(module => ({ default: module.Toaster })),
   { silent: true },
 );
 

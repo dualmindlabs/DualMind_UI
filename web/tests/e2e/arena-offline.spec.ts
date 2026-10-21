@@ -284,7 +284,10 @@ test.describe('arena offline', () => {
       route.fulfill({
         status: 400,
         headers: { 'access-control-allow-origin': '*', 'content-type': 'application/json' },
-        body: JSON.stringify({ error: 'invalid_grant', error_description: 'Invalid Refresh Token' }),
+        body: JSON.stringify({
+          error: 'invalid_grant',
+          error_description: 'Invalid Refresh Token',
+        }),
       }),
     );
     await page.goto('/');
@@ -359,7 +362,7 @@ test.describe('offline screenshots', () => {
         await mockArena(page);
         await page.addInitScript(() => {
           // eslint-disable-next-line @typescript-eslint/unbound-method -- patched back with .apply
-      const real = Number.prototype.toLocaleString;
+          const real = Number.prototype.toLocaleString;
           Number.prototype.toLocaleString = function (...args: Parameters<typeof real>) {
             if (window.location.search.includes('thread=')) throw new Error('forced crash');
             return real.apply(this, args);
@@ -376,7 +379,10 @@ test.describe('offline screenshots', () => {
         await storeTheme(page, theme);
         await page.addInitScript(() => {
           // Offline, and something outside the arena throws on its first effect.
-          Object.defineProperty(window.navigator, 'onLine', { configurable: true, get: () => false });
+          Object.defineProperty(window.navigator, 'onLine', {
+            configurable: true,
+            get: () => false,
+          });
           const real = window.matchMedia.bind(window);
           window.matchMedia = (query: string) => {
             if (!query.includes('prefers-color-scheme')) throw new Error('forced crash');

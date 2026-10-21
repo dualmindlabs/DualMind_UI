@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { setNavigatorOnline } from './navigator-online';
-
 import { isOnline, subscribeOnline, waitForOnline } from '@/lib/network/online-status';
+
+import { setNavigatorOnline } from './navigator-online';
 
 afterEach(() => vi.restoreAllMocks());
 

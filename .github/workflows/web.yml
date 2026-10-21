@@ -70,19 +70,15 @@ jobs:
         run: npm ci --no-audit --no-fund
 
       - name: Typecheck (react-router typegen + tsc)
-        continue-on-error: true # TEMP-OFFLINE-DEBUG
         run: npm run typecheck
 
       - name: Lint (ESLint)
-        continue-on-error: true # TEMP-OFFLINE-DEBUG
         run: npm run lint
 
       - name: Check formatting (Prettier)
-        continue-on-error: true # TEMP-OFFLINE-DEBUG
         run: npm run format:check
 
       - name: Unit and Worker tests (Vitest)
-        continue-on-error: true # TEMP-OFFLINE-DEBUG
         run: npm test
 
       # Coverage of the typed API client (src/lib/api and its config), in the job summary.
@@ -105,7 +101,7 @@ jobs:
       # When formatting or fixable lint rules fail, offer the fix as a patch:
       #   gh run download <run-id> -n web-autofix && git apply web-autofix.patch
       - name: Prepare an autofix patch
-        if: always() # TEMP-OFFLINE-DEBUG
+        if: failure()
         run: |
           npx --no-install prettier --write . > /dev/null 2>&1 || true
           npx --no-install eslint . --fix > /dev/null 2>&1 || true
@@ -114,7 +110,7 @@ jobs:
           echo "Autofix patch: $(grep -c '^diff --git' "$RUNNER_TEMP/autofix/web-autofix.patch" || true) files" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload the autofix patch
-        if: always() # TEMP-OFFLINE-DEBUG
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: web-autofix
@@ -293,7 +289,7 @@ jobs:
 
       - name: Run Playwright (wrangler dev + Chromium)
         working-directory: web
-        run: npx playwright test arena-offline --reporter=list
+        run: npx playwright test
 
       # Lighthouse (mobile, simulated throttling) on the landing page through the same Worker,
       # with the preview cookie on every request. Budgets in web/lighthouserc.json: accessibility 1,

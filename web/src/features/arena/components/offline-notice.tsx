@@ -69,7 +69,11 @@ export function OfflineNotice() {
         >
           {phase === 'offline' ? (
             <>
-              <WifiOff aria-hidden="true" className="size-4 shrink-0 text-human" strokeWidth={1.75} />
+              <WifiOff
+                aria-hidden="true"
+                className="size-4 shrink-0 text-human"
+                strokeWidth={1.75}
+              />
               <span>
                 You are offline. New battles wait until you are back; votes are saved on this device
                 {pendingVotes > 0 ? ` (${pendingVotes} waiting)` : ''}.
