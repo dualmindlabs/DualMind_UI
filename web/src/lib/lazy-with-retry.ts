@@ -64,7 +64,9 @@ function Nothing(): null {
  * when the chunk cannot be loaded it resolves to a component that renders nothing, so the
  * Suspense fallback or poster stays and nothing throws.
  */
-export function lazyWithRetry<T extends ComponentType<never>>(
+// `any` for the props, exactly as React.lazy's own signature has it: the component keeps its type.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function lazyWithRetry<T extends ComponentType<any>>(
   load: () => Promise<{ default: T }>,
   { silent = false, ...options }: RetryOptions & { silent?: boolean } = {},
 ): LazyExoticComponent<T> {

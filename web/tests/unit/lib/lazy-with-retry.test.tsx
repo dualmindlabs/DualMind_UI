@@ -1,5 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import { Suspense } from 'react';
+import { type ComponentType, Suspense } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { importWithRetry, lazyWithRetry } from '@/lib/lazy-with-retry';
@@ -102,7 +102,7 @@ describe('lazyWithRetry', () => {
   });
 
   it('a silent component renders nothing when the chunk never arrives', async () => {
-    const Lazy = lazyWithRetry(() => Promise.reject(chunkError()), {
+    const Lazy = lazyWithRetry<ComponentType>(() => Promise.reject(chunkError()), {
       silent: true,
       retries: 0,
       isOnline: () => true,
