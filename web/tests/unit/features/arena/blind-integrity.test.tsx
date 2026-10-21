@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { LiveTurnView } from '@/features/arena/components/live-turn-view';
 import type { LiveTurn } from '@/features/arena/lib/battle-machine';
 
-import { fakeBattle, FakeArena } from './arena-context';
+import { FakeArena, fakeBattle } from './arena-context';
 
 // UI audit P0-2: response time, answer length and token counts are fingerprints of a model (a
 // small fast model against a large slow one), so a blind battle shows none of them, and no model
@@ -17,13 +17,18 @@ const turn = (overrides: Partial<LiveTurn> = {}): LiveTurn => ({
   phase: 'awaiting_vote',
   a: {
     text: 'A function that calls itself on a smaller piece of the problem.',
-    model: { name: '@cf/meta/llama-3.3-70b-instruct-fp8-fast', displayName: 'Llama 3.3 70B' },
+    model: {
+      id: null,
+      name: '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
+      displayName: 'Llama 3.3 70B',
+      provider: 'cloudflare',
+    },
     responseTimeMs: 1840,
     usage: { promptTokens: 12, completionTokens: 345, totalTokens: 357 },
   },
   b: {
     text: 'Like opening nesting dolls until one does not open.',
-    model: { name: 'groq/compound-mini', displayName: 'Compound Mini' },
+    model: { id: null, name: 'groq/compound-mini', displayName: 'Compound Mini', provider: 'groq' },
     responseTimeMs: 2310,
     usage: { promptTokens: 12, completionTokens: 678, totalTokens: 690 },
   },
@@ -80,7 +85,10 @@ describe('blind battle integrity (P0-2)', () => {
       for (const pattern of TEXT_FINGERPRINTS) expect(text, String(pattern)).not.toMatch(pattern);
       const values = attributes(container);
       for (const pattern of ATTRIBUTE_FINGERPRINTS) {
-        expect(values.filter(value => pattern.test(value)), String(pattern)).toEqual([]);
+        expect(
+          values.filter(value => pattern.test(value)),
+          String(pattern),
+        ).toEqual([]);
       }
       expect(container).toHaveTextContent('Hidden until you vote');
     });

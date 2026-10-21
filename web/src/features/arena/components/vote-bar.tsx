@@ -88,7 +88,7 @@ export function VoteBar({ onVote, chosen, optional = false, error, className }: 
               'hover:border-fg-soft hover:bg-surface-2 active:bg-surface-3',
               // Sent: the pick turns terra; the others stay readable, but quiet and inert.
               'aria-pressed:border-human aria-pressed:bg-human-tint aria-pressed:hover:border-human aria-pressed:hover:bg-human-tint',
-              'aria-disabled:cursor-default aria-disabled:hover:border-line-strong aria-disabled:hover:bg-surface aria-disabled:active:scale-100 aria-disabled:not-aria-pressed:opacity-60',
+              'aria-disabled:cursor-default aria-disabled:not-aria-pressed:opacity-60 aria-disabled:hover:border-line-strong aria-disabled:hover:bg-surface aria-disabled:active:scale-100',
               option.phoneOrder,
             )}
           >

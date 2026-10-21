@@ -51,7 +51,9 @@ function ShortcutRow({
       </dt>
       <dd className="shrink-0">
         <KbdGroup>
-          {entry.keys.map(key => <KeyCap key={key} name={key} modifier={modifier} />)}
+          {entry.keys.map(key => (
+            <KeyCap key={key} name={key} modifier={modifier} />
+          ))}
         </KbdGroup>
       </dd>
     </div>
@@ -90,8 +92,8 @@ export function ShortcutsDialog() {
         <DialogHeader>
           <DialogTitle>Keyboard shortcuts</DialogTitle>
           <DialogDescription>
-            Battle, vote and move around without the mouse. Single keys work when you are not
-            typing in a field.
+            Battle, vote and move around without the mouse. Single keys work when you are not typing
+            in a field.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4">

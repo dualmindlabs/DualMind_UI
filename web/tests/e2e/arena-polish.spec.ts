@@ -90,9 +90,9 @@ test.describe('model picker (P1-11)', () => {
         // Every model of the board (Random + 53), in a list that scrolls.
         await expect(picker.getByRole('option')).toHaveCount(54);
         const scroller = picker.locator('[cmdk-list]');
-        expect(await scroller.evaluate(element => element.scrollHeight > element.clientHeight)).toBe(
-          true,
-        );
+        expect(
+          await scroller.evaluate(element => element.scrollHeight > element.clientHeight),
+        ).toBe(true);
         await expect(picker.getByText('Ranked', { exact: true })).toBeVisible();
         const top = picker.getByRole('option', { name: /Llama 3\.1 70B Instruct/ });
         await expect(top).toContainText('Meta');
@@ -111,7 +111,9 @@ test.describe('model picker (P1-11)', () => {
           await page.screenshot({ path: shotPath(`arena-model-picker-unrated-${theme}`) });
         }
         await unrated.click();
-        await expect(page.getByRole('button', { name: /Model for answer A: Gemma 3n E2B IT/ })).toBeVisible();
+        await expect(
+          page.getByRole('button', { name: /Model for answer A: Gemma 3n E2B IT/ }),
+        ).toBeVisible();
       });
     }
   }
@@ -148,10 +150,7 @@ test.describe('syntax highlighting', () => {
     expect(scripts.filter(path => /\/assets\/python-[\w-]+\.js$/.test(path))).toEqual([]);
 
     await openArena(page, '/?thread=t-recursion');
-    const block = page
-      .getByTestId('turn')
-      .first()
-      .getByRole('figure', { name: 'Code, python' });
+    const block = page.getByTestId('turn').first().getByRole('figure', { name: 'Code, python' });
     const pre = block.locator('pre');
     await expect(pre).toHaveAttribute('data-highlighted', 'true', { timeout: 15_000 });
     expect(scripts.some(path => /\/assets\/python-[\w-]+\.js$/.test(path))).toBe(true);
@@ -175,10 +174,7 @@ test.describe('syntax highlighting', () => {
       await storeTheme(page, theme);
       await mockArena(page);
       await openArena(page, '/?thread=t-recursion');
-      const block = page
-        .getByTestId('turn')
-        .first()
-        .getByRole('figure', { name: 'Code, python' });
+      const block = page.getByTestId('turn').first().getByRole('figure', { name: 'Code, python' });
       await expect(block.locator('pre')).toHaveAttribute('data-highlighted', 'true', {
         timeout: 15_000,
       });
@@ -335,9 +331,9 @@ test.describe('phone polish (P2-9)', () => {
       const [titleBox, timeBox] = [await box(title), await box(time)];
       expect(timeBox.y).toBeGreaterThanOrEqual(titleBox.y + titleBox.height - 1);
       // The title is not cut to a few words: at most two lines, nothing hidden past them.
-      expect(await title.evaluate(element => element.scrollHeight <= element.clientHeight + 1)).toBe(
-        true,
-      );
+      expect(
+        await title.evaluate(element => element.scrollHeight <= element.clientHeight + 1),
+      ).toBe(true);
     }
 
     await page.setViewportSize({ width: 1440, height: 900 });
@@ -348,9 +344,9 @@ test.describe('phone polish (P2-9)', () => {
       await box(link.locator('span').first()),
       await box(link.getByTestId('thread-time')),
     ];
-    expect(Math.abs(titleBox.y + titleBox.height / 2 - (timeBox.y + timeBox.height / 2))).toBeLessThan(
-      4,
-    );
+    expect(
+      Math.abs(titleBox.y + titleBox.height / 2 - (timeBox.y + timeBox.height / 2)),
+    ).toBeLessThan(4);
   });
 });
 
@@ -403,7 +399,10 @@ test.describe('button feel on touch screens', () => {
     await send.click();
     const turn = page.getByTestId('live-turn').first();
     await expect(turn).toHaveAttribute('data-phase', 'awaiting_vote', { timeout: 15_000 });
-    await expectTouchSized(turn.getByRole('group', { name: 'Your verdict' }).getByRole('button'), 'vote');
+    await expectTouchSized(
+      turn.getByRole('group', { name: 'Your verdict' }).getByRole('button'),
+      'vote',
+    );
     await turn.getByRole('button', { name: /B is better/ }).click();
     await expect(turn).toHaveAttribute('data-phase', 'revealed');
     await expectTouchSized(turn.getByRole('button', { name: /^Copy/ }), 'copy');

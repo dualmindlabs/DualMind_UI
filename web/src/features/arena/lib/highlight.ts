@@ -183,9 +183,7 @@ function loadGrammar(core: HighlighterCore, language: CodeLanguage): Promise<voi
   if (core.getLoadedLanguages().includes(language)) return Promise.resolve();
   let pending = loading.get(language);
   if (!pending) {
-    pending = core
-      .loadLanguage(GRAMMARS[language])
-      .finally(() => loading.delete(language));
+    pending = core.loadLanguage(GRAMMARS[language]).finally(() => loading.delete(language));
     loading.set(language, pending);
   }
   return pending;
