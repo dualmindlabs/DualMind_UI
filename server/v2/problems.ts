@@ -1,6 +1,7 @@
 // RFC 9457 problem details for every error the v2 router sends (BE-0 design, section 6.3).
 
 import type { Context } from 'hono';
+import { HTTPException } from 'hono/http-exception';
 import { PROBLEM_TYPES, problemTypeUrl } from '../problem-types.js';
 import type { Problem } from '../../contract/common.ts';
 import { PROBLEM_CONTENT_TYPE } from '../../contract/common.ts';
@@ -69,6 +70,14 @@ export function problemFor(c: Context, slug: ProblemSlug, options: ProblemOption
 export function onError(error: unknown, c: Context): Response {
   if (error instanceof ProblemError) {
     return problemFor(c, error.slug, error.options);
+  }
+  // Errors Hono and zod-openapi raise themselves (an unsupported media type, malformed JSON, a body
+  // over the limit) keep their status, in problem+json.
+  if (error instanceof HTTPException && error.status < 500) {
+    const slug = Object.keys(PROBLEM_TYPES).find(key => PROBLEM_TYPES[key]!.status === error.status);
+    if (slug) {
+      return problemFor(c, slug, { detail: error.status === 400 ? 'The request could not be read.' : undefined });
+    }
   }
   // Anything else is a bug: stack in the logs only, a generic body for the caller.
   log({
