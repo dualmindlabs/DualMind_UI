@@ -38,7 +38,8 @@ const VIEWPORTS = [
 const THEMES = ['dark', 'light'] as const;
 
 /** Chrome logs every failed request ("Failed to load resource"): expected while forcing errors. */
-const EXPECTED_NOISE = /Failed to load resource|net::ERR_|ERR_INTERNET_DISCONNECTED|Failed to fetch/;
+const EXPECTED_NOISE =
+  /Failed to load resource|net::ERR_|ERR_INTERNET_DISCONNECTED|Failed to fetch/;
 
 async function blockingViolations(page: Page) {
   const results = await new AxeBuilder({ page })
@@ -134,7 +135,7 @@ function boardScenarios(screen: 'leaderboard' | 'models'): Scenario[] {
       run: async ({ page }) => {
         const { release } = await mockBoard(page, 'hold');
         await page.goto(url);
-        const busy = page.locator('[aria-busy="true"]');
+        const busy = page.locator('div[aria-busy="true"]');
         await expect(busy).toBeVisible();
         await expect(busy.getByRole('status')).toHaveText(
           screen === 'models' ? 'Loading the models' : 'Loading the leaderboard',
@@ -261,7 +262,10 @@ async function mockAuth(page: Page, mode: AuthMode) {
   // The breach check on the sign-up page: a clean range.
   await page.route('https://api.pwnedpasswords.com/range/*', async route => {
     if (route.request().method() === 'OPTIONS') {
-      await route.fulfill({ status: 204, headers: { ...CORS, 'access-control-allow-headers': '*' } });
+      await route.fulfill({
+        status: 204,
+        headers: { ...CORS, 'access-control-allow-headers': '*' },
+      });
       return;
     }
     await route.fulfill({
