@@ -9,6 +9,8 @@
  * - Reduced motion: no travelling light, the path is drawn in the start colour instead.
  * - The path is measured in a ResizeObserver callback (none in old browsers or jsdom: measured
  *   once on the next frame). Decorative (aria-hidden).
+ * - `play` and `repeat`: a beam can wait at rest and run a set number of times (a beam tied to an
+ *   event, such as a demo battle starting), instead of looping forever.
  */
 import { m } from 'motion/react';
 import { type RefObject, useEffect, useId, useState } from 'react';
@@ -34,6 +36,10 @@ export interface AnimatedBeamProps {
   /** Seconds per run. */
   duration?: number;
   repeatDelay?: number;
+  /** Extra runs after the first (Infinity loops). */
+  repeat?: number;
+  /** False keeps the beam at rest (only the resting path shows) until it turns true. */
+  play?: boolean;
   startXOffset?: number;
   startYOffset?: number;
   endXOffset?: number;
@@ -61,6 +67,8 @@ export function AnimatedBeam({
   delay = 0,
   duration = 4,
   repeatDelay = 0.5,
+  repeat = Infinity,
+  play = true,
   startXOffset = 0,
   startYOffset = 0,
   endXOffset = 0,
@@ -135,12 +143,12 @@ export function AnimatedBeam({
               id={id}
               gradientUnits="userSpaceOnUse"
               initial={{ x1: '0%', x2: '0%', y1: '0%', y2: '0%' }}
-              animate={coordinates}
+              {...(play ? { animate: coordinates } : {})}
               transition={{
                 delay,
                 duration,
                 ease: ease.outExpo,
-                repeat: Infinity,
+                repeat,
                 repeatDelay,
               }}
             >

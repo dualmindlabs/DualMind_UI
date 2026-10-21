@@ -6,9 +6,9 @@
 //      root build stays self-contained.
 //   2. Copy the legacy allowlist (the static Arena pages) into dist/.
 //   3. Overlay web/build/client: new pages at their own paths, hashed files into dist/assets/
-//      next to the legacy images, and React Router's SPA fallback as dist/__spa-fallback.html
-//      (it is written as index.html while / is not prerendered, and must not replace the legacy
-//      dist/index.html).
+//      next to the legacy images, and React Router's SPA fallback as dist/__spa-fallback.html.
+//      Since slice S3 the landing page is prerendered at /, so the web app's index.html replaces
+//      the legacy one; the legacy arena keeps working as dist/legacy-app.html (see LEGACY_APP_FILE).
 //   4. Write dist/__web-manifest.json for the Worker: the web app's pages, the sha256 hashes of
 //      their inline scripts (the enforced Content-Security-Policy allows exactly these) and extra
 //      connect-src origins (the Supabase project from VITE_SUPABASE_URL, once auth lands).
@@ -59,16 +59,23 @@ const foldersToCopy = [
 ];
 
 // Legacy files that a migrated route replaces: the web build's page is copied over the legacy
-// one (for example 'index.html' when / is prerendered in slice S3). The legacy files stay in the
-// repository until the cutover (S13).
+// one. The legacy files stay in the repository until the cutover (S13).
 const replacedByWeb = new Set([
+    // Slice S3: the landing page is prerendered at /.
+    'index.html',
     // Slice S7: the live leaderboard and the model directory.
     'leaderboard/index.html',
     'models/index.html',
 ]);
 
-// React Router writes its SPA fallback as index.html while / is not prerendered, and as
-// __spa-fallback.html once it is. Either way it ends up here (served by server/routing.js).
+// While the arena is still the legacy app (until slice S8), its page lives on as a copy of the
+// legacy index.html at the ROOT of dist/, so its relative paths (./config.js, js/..., css/...)
+// still resolve. The landing page's inline hand-off script (web/src/lib/session/handoff.ts) sends
+// signed-in visitors and Supabase auth returns there, query string and hash included.
+const LEGACY_APP_FILE = 'legacy-app.html';
+
+// React Router writes its SPA fallback as __spa-fallback.html when / is prerendered (it would be
+// index.html otherwise). It ends up here either way (served by server/routing.js).
 const SPA_FALLBACK_FILE = '__spa-fallback.html';
 
 // Same pattern as HASHED_ASSET_RE in server/routing.js (web/tests/worker checks they match).
@@ -145,6 +152,11 @@ for (const folder of foldersToCopy) {
     copyDir(path.join(srcDir, folder), path.join(distDir, folder));
 }
 
+if (fs.existsSync(path.join(srcDir, LEGACY_APP_FILE))) {
+    fail(`${LEGACY_APP_FILE} is written by build.js from index.html; remove the file from the repository root.`);
+}
+fs.copyFileSync(path.join(srcDir, 'index.html'), path.join(distDir, LEGACY_APP_FILE));
+
 const legacyFiles = listFiles(distDir);
 const legacySet = new Set(legacyFiles);
 
@@ -160,6 +172,7 @@ const webFiles = listFiles(webClientDir).filter(file => !file.startsWith('.vite/
 const hasOwnFallback = webFiles.includes(SPA_FALLBACK_FILE);
 let spaFallbackSource = null;
 const webHtmlTargets = [];
+const replacedLegacyFiles = new Set();
 
 for (const file of webFiles) {
     let target = file;
@@ -172,6 +185,9 @@ for (const file of webFiles) {
 
     if (legacySet.has(target) && !replacedByWeb.has(target)) {
         fail(`web/build/client/${file} would replace the legacy dist/${target}. Add it to replacedByWeb once its slice migrates that URL.`);
+    }
+    if (legacySet.has(target)) {
+        replacedLegacyFiles.add(target);
     }
     if (target.startsWith('assets/') && !HASHED_ASSET_RE.test(`/${target}`)) {
         fail(`web/build/client/${file} has no content hash, so the Worker would not cache it. Check the Vite output names.`);
@@ -186,6 +202,14 @@ for (const file of webFiles) {
 
 if (!spaFallbackSource) {
     fail('the web build has no SPA fallback page (index.html or __spa-fallback.html).');
+}
+for (const file of replacedByWeb) {
+    if (!replacedLegacyFiles.has(file)) {
+        fail(`replacedByWeb lists ${file}, but the web build did not write it. Prerender its route or drop it from the list.`);
+    }
+}
+if (fs.readFileSync(path.join(distDir, 'index.html'), 'utf8').includes('data-spa-fallback')) {
+    fail('dist/index.html is the SPA fallback, not the prerendered landing page. Check the prerender list in web/react-router.config.ts.');
 }
 
 // 4. The web manifest (read by worker.js through server/web-manifest.js).
@@ -275,5 +299,5 @@ for (const urlPath of new Set(sitemapUrls)) {
 }
 
 const webPages = webFiles.filter(file => file.endsWith('.html')).length;
-console.log(`\nFrontend built to /dist successfully: ${legacyFiles.length} legacy files, ${webFiles.length} web files (${webPages} HTML), SPA fallback from web/build/client/${spaFallbackSource} at dist/${SPA_FALLBACK_FILE}.`);
+console.log(`\nFrontend built to /dist successfully: ${legacyFiles.length} legacy files, ${webFiles.length} web files (${webPages} HTML), SPA fallback from web/build/client/${spaFallbackSource} at dist/${SPA_FALLBACK_FILE}, legacy arena at dist/${LEGACY_APP_FILE}, replaced by the web app: ${[...replacedLegacyFiles].join(', ') || 'none'}.`);
 console.log(`Web manifest: ${webManifest.pages.join(', ')}; ${webManifest.scriptHashes.length} inline script hashes for the CSP; connect-src extras: ${webManifest.connectSrc.join(' ') || 'none'}.`);

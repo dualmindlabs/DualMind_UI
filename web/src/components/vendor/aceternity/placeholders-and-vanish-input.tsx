@@ -15,6 +15,7 @@
  * - The examples slide with CSS animations (styles/effects.css) instead of AnimatePresence, so
  *   the field needs no Motion features; design tokens instead of the zinc/neutral palette, our
  *   focus ring, a Lucide arrow.
+ * - `size`: `lg` is the landing hero's taller field (56px, body text size).
  */
 import { ArrowUp } from 'lucide-react';
 import { type FormEvent, useEffect, useId, useRef, useState } from 'react';
@@ -29,7 +30,7 @@ export interface PlaceholdersAndVanishInputProps {
   /** Keep the label for screen readers only. */
   hideLabel?: boolean;
   /** Example prompts, shown in turn while the field is empty. */
-  placeholders: string[];
+  placeholders: readonly string[];
   value: string;
   onValueChange: (value: string) => void;
   /** Called with the text when the visitor presses Enter or the send button. */
@@ -39,6 +40,8 @@ export interface PlaceholdersAndVanishInputProps {
   submitLabel?: string;
   /** Milliseconds between two examples. */
   interval?: number;
+  /** `lg`: the hero's taller field. */
+  size?: 'md' | 'lg';
   className?: string;
 }
 
@@ -62,8 +65,12 @@ export function PlaceholdersAndVanishInput({
   name,
   submitLabel = 'Send',
   interval = 3000,
+  size = 'md',
   className,
 }: PlaceholdersAndVanishInputProps) {
+  const large = size === 'lg';
+  const inset = large ? 'pl-5 sm:pl-7' : 'pl-4 sm:pl-6';
+  const textSize = large ? 'text-body' : 'text-ui';
   const id = useId();
   const inputId = `${id}-input`;
   const hintId = `${id}-hint`;
@@ -213,7 +220,8 @@ export function PlaceholdersAndVanishInput({
       ) : null}
       <div
         className={cn(
-          'relative h-12 overflow-hidden rounded-full border border-line-strong bg-surface-2 shadow-raise transition-colors duration-(--dur-fast)',
+          'relative overflow-hidden rounded-full border border-line-strong bg-surface-2 shadow-raise transition-colors duration-(--dur-fast)',
+          large ? 'h-14' : 'h-12',
           'hover:border-fg-soft has-[input:focus-visible]:outline-(length:--focus-width) has-[input:focus-visible]:outline-offset-2 has-[input:focus-visible]:outline-focus has-[input:focus-visible]:outline-solid',
         )}
       >
@@ -221,7 +229,8 @@ export function PlaceholdersAndVanishInput({
           ref={canvasRef}
           aria-hidden="true"
           className={cn(
-            'pointer-events-none absolute top-[20%] left-4 origin-top-left scale-50 pr-20 sm:left-6',
+            'pointer-events-none absolute origin-top-left scale-50 pr-20',
+            large ? 'top-[22%] left-5 sm:left-7' : 'top-[20%] left-4 sm:left-6',
             animating ? 'opacity-100' : 'opacity-0',
           )}
         />
@@ -240,7 +249,10 @@ export function PlaceholdersAndVanishInput({
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           className={cn(
-            'relative z-10 h-full w-full rounded-full border-none bg-transparent pr-14 pl-4 text-ui text-fg outline-none sm:pl-6',
+            'relative z-10 h-full w-full rounded-full border-none bg-transparent text-fg outline-none',
+            large ? 'pr-16' : 'pr-14',
+            inset,
+            textSize,
             animating && 'text-transparent',
           )}
         />
@@ -248,7 +260,10 @@ export function PlaceholdersAndVanishInput({
           type="submit"
           disabled={!value.trim() || animating}
           aria-label={submitLabel}
-          className="absolute top-1/2 right-1.5 z-10 flex size-9 -translate-y-1/2 items-center justify-center rounded-full bg-mind-a text-on-accent transition-colors duration-(--dur-fast) disabled:bg-surface disabled:text-muted"
+          className={cn(
+            'absolute top-1/2 right-1.5 z-10 flex -translate-y-1/2 items-center justify-center rounded-full bg-mind-a text-on-accent transition-colors duration-(--dur-fast) disabled:bg-surface disabled:text-muted',
+            large ? 'right-2 size-10' : 'size-9',
+          )}
         >
           <ArrowUp aria-hidden="true" className="size-4" strokeWidth={2.25} />
         </button>
@@ -259,7 +274,11 @@ export function PlaceholdersAndVanishInput({
           {value === '' && previous !== null && rotating ? (
             <p
               key={`out-${examples.previous}`}
-              className="absolute inset-y-0 flex w-[calc(100%-4rem)] animate-placeholder-out items-center truncate pl-4 text-left text-ui text-muted sm:pl-6"
+              className={cn(
+                'absolute inset-y-0 flex w-[calc(100%-4rem)] animate-placeholder-out items-center truncate text-left text-muted',
+                inset,
+                textSize,
+              )}
               onAnimationEnd={() => setExamples(state => ({ ...state, previous: null }))}
             >
               {previous}
@@ -270,7 +289,9 @@ export function PlaceholdersAndVanishInput({
               key={`in-${examples.current}`}
               data-placeholder="current"
               className={cn(
-                'w-[calc(100%-4rem)] truncate pl-4 text-left text-ui text-muted sm:pl-6',
+                'w-[calc(100%-4rem)] truncate text-left text-muted',
+                inset,
+                textSize,
                 examples.previous !== null && 'animate-placeholder-in',
               )}
             >

@@ -19,7 +19,8 @@ const cases: Array<[path: string, webPage: boolean, expected: string | null]> = 
   // Legacy share page: never cached.
   ['/share/', false, SHARE_NO_STORE],
   ['/share/abc123', false, SHARE_NO_STORE],
-  // Web app pages: revalidate with the ETag.
+  // Web app pages: revalidate with the ETag (the landing page at / since slice S3).
+  ['/', true, REVALIDATE],
   ['/design/', true, REVALIDATE],
   ['/__spa-fallback', false, REVALIDATE],
   // Legacy HTML, JS, CSS and JSON: no-store until the cutover.
@@ -50,5 +51,17 @@ describe('caching table', () => {
         rule.name,
       ).toBe(true);
     }
+  });
+
+  it('treats legacy HTML at a clean URL as legacy code; web pages stay revalidated', () => {
+    // /legacy-app.html is served at /legacy-app (html_handling), like /login-modern.
+    expect(cacheControlFor({ pathname: '/legacy-app', webPage: false, html: true })).toBe(
+      LEGACY_NO_STORE,
+    );
+    expect(cacheControlFor({ pathname: '/login-modern', webPage: false, html: true })).toBe(
+      LEGACY_NO_STORE,
+    );
+    expect(cacheControlFor({ pathname: '/', webPage: true, html: true })).toBe(REVALIDATE);
+    expect(cacheControlFor({ pathname: '/robots.txt', webPage: false, html: false })).toBeNull();
   });
 });

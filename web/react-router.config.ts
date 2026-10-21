@@ -6,9 +6,10 @@ import type { Config } from '@react-router/dev/config';
  *
  * - `ssr: false` + `prerender`: each listed path is rendered to HTML at build time
  *   (`/design` -> build/client/design/index.html) and hydrates in the browser.
- * - Because `/` is not prerendered yet, React Router writes its SPA fallback (the root route's
- *   HydrateFallback) to build/client/index.html. build.js renames it to dist/__spa-fallback.html
- *   so it never replaces the legacy dist/index.html; the Worker serves it for client-only routes.
+ * - `/` is prerendered (the landing page, slice S3), so React Router writes its SPA fallback (the
+ *   root route's HydrateFallback) to build/client/__spa-fallback.html; build.js copies it to
+ *   dist/ and the Worker serves it for client-only routes. The landing page replaces the legacy
+ *   dist/index.html, whose copy lives on as dist/legacy-app.html until the arena slice (S8).
  *
  * Add a path here when its slice moves a page to this app (see docs/redesign/migration-plan.md).
  */
@@ -16,5 +17,5 @@ export default {
   appDirectory: 'src/app',
   buildDirectory: 'build',
   ssr: false,
-  prerender: ['/design', '/leaderboard', '/models'],
+  prerender: ['/', '/design', '/leaderboard', '/models'],
 } satisfies Config;

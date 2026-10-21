@@ -15,11 +15,14 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useMatches,
 } from 'react-router';
 
 import { AppProviders } from '@/components/layout/app-providers';
+import { SessionHandoffScript } from '@/components/layout/session-handoff-script';
 import { ThemeScript } from '@/components/layout/theme-script';
 import { Wordmark } from '@/components/layout/wordmark';
+import { wantsSessionHandoff } from '@/lib/session/handoff';
 import { backgrounds } from '@/styles/tokens';
 
 import type { Route } from './+types/root';
@@ -39,6 +42,10 @@ export const links: Route.LinksFunction = () => [
 ];
 
 export function Layout({ children }: { children: ReactNode }) {
+  // The landing page (`/`) sends signed-in visitors to the legacy arena before the first paint,
+  // until the arena slice renders it here (lib/session/handoff.ts).
+  const handoff = useMatches().some(match => wantsSessionHandoff(match.handle));
+
   return (
     // The theme script sets data-theme on <html> before React hydrates.
     <html lang="en" suppressHydrationWarning>
@@ -52,6 +59,7 @@ export function Layout({ children }: { children: ReactNode }) {
           content={backgrounds.light}
           media="(prefers-color-scheme: light)"
         />
+        {handoff ? <SessionHandoffScript /> : null}
         <ThemeScript />
         <Meta />
         <Links />

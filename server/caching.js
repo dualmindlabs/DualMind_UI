@@ -15,7 +15,7 @@ const IMAGE_RE = /\.(png|jpe?g|webp|gif|svg|ico)$/;
 const LEGACY_CODE_RE = /\.(html|js|css|json)$/;
 
 /**
- * @typedef {{ pathname: string, webPage: boolean }} CacheContext
+ * @typedef {{ pathname: string, webPage: boolean, html?: boolean }} CacheContext
  * @typedef {{ name: string, applies: string, cacheControl: string, test: (context: CacheContext) => boolean }} CacheRule
  */
 
@@ -42,11 +42,12 @@ export const CACHE_RULES = [
   },
   {
     name: 'legacy-code',
-    applies: 'Legacy HTML (incl. directory pages), JS, CSS and JSON, until the cutover',
+    applies:
+      'Legacy HTML (incl. directory pages and clean URLs such as /legacy-app), JS, CSS and JSON, until the cutover',
     cacheControl: LEGACY_NO_STORE,
-    test: ({ pathname }) => {
+    test: ({ pathname, html = false }) => {
       const lower = pathname.toLowerCase();
-      return lower.endsWith('/') || LEGACY_CODE_RE.test(lower);
+      return lower.endsWith('/') || LEGACY_CODE_RE.test(lower) || html;
     },
   },
   {

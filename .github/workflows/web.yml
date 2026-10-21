@@ -133,6 +133,7 @@ jobs:
           cache-dependency-path: web/package-lock.json
 
       - name: Build the composed site (node build.js)
+        id: build
         run: node build.js
 
       - name: Check the composed dist/ and report sizes
@@ -142,8 +143,15 @@ jobs:
           test -f dist/__spa-fallback.html
           grep -q 'Two minds' dist/design/index.html
           grep -q 'noindex' dist/design/index.html
-          # The legacy home page must not be replaced by the SPA fallback.
+          # / is the prerendered landing page (slice S3), never the SPA fallback; the legacy arena
+          # lives on as dist/legacy-app.html for the signed-in hand-off.
+          grep -q 'Two models. One prompt.' dist/index.html
+          grep -q 'legacy-app.html' dist/index.html
           ! grep -q 'data-spa-fallback' dist/index.html
+          ! grep -q 'noindex' dist/index.html
+          grep -q '<title>DualMind - Battle Arena</title>' dist/legacy-app.html
+          grep -q 'data-spa-fallback' dist/__spa-fallback.html
+          test -f dist/og/landing.png
           # Slice S7: the web app's leaderboard and models pages replace the legacy files.
           grep -q 'blind votes' dist/leaderboard/index.html
           ! grep -q 'leaderboardPage.js' dist/leaderboard/index.html
@@ -154,7 +162,7 @@ jobs:
             echo
             echo "| File | Size | Gzip |"
             echo "| --- | ---: | ---: |"
-            for f in dist/design/index.html dist/leaderboard/index.html dist/models/index.html dist/__spa-fallback.html $(ls -S dist/assets/*.js dist/assets/*.css); do
+            for f in dist/index.html dist/design/index.html dist/leaderboard/index.html dist/models/index.html dist/__spa-fallback.html $(ls -S dist/assets/*.js dist/assets/*.css); do
               echo "| \`${f#dist/}\` | $(wc -c < "$f") | $(gzip -9c "$f" | wc -c) |"
             done
           } >> "$GITHUB_STEP_SUMMARY"
@@ -175,8 +183,11 @@ jobs:
             fi
             lazy+=("$file")
           done
-          # Script files the /design/ HTML loads up front (modulepreload and module scripts).
+          # Script files each prerendered page loads up front (modulepreload and module scripts).
           eager=$(grep -oE 'assets/[A-Za-z0-9._-]+\.js' dist/design/index.html | sort -u | sed 's#^#dist/#')
+          landing=$(grep -oE 'assets/[A-Za-z0-9._-]+\.js' dist/index.html | sort -u | sed 's#^#dist/#')
+          landing_css=$(grep -oE 'assets/[A-Za-z0-9._-]+\.css' dist/index.html | sort -u | sed 's#^#dist/#')
+          landing_total=$(total $landing)
           {
             echo "### Bundle report"
             echo
@@ -184,14 +195,34 @@ jobs:
             echo "| --- | ---: | ---: |"
             echo "| All JavaScript | $(ls dist/assets/*.js | wc -l) | $(total dist/assets/*.js) |"
             echo "| All CSS | $(ls dist/assets/*.css | wc -l) | $(total dist/assets/*.css) |"
+            echo "| Loaded up front by / (budget 184320) | $(echo "$landing" | wc -l) | ${landing_total} |"
+            echo "| CSS loaded by / | $(echo "$landing_css" | wc -l) | $(total $landing_css) |"
             echo "| Loaded up front by /design/ | $(echo "$eager" | wc -l) | $(total $eager) |"
             echo "| Lazy effect chunks (WebGL, Motion features) | ${#lazy[@]} | $(total "${lazy[@]}") |"
             echo
             echo "Lazy chunks: $(for f in "${lazy[@]}"; do printf '\`%s\` (%s B) ' "${f#dist/assets/}" "$(gz "$f")"; done)"
+            echo
+            echo "Up front on /, with the libraries each chunk carries (string markers):"
+            echo
+            echo "| Chunk | Gzip | Libraries |"
+            echo "| --- | ---: | --- |"
+            for f in $landing; do
+              libs=""
+              grep -q 'cmdk-' "$f" && libs="$libs cmdk"
+              grep -q 'data-sonner-toaster' "$f" && libs="$libs sonner"
+              grep -q 'vaul-drawer' "$f" && libs="$libs vaul"
+              grep -q 'invalid_type' "$f" && libs="$libs zod"
+              grep -q 'getClippingRect' "$f" && libs="$libs floating-ui"
+              grep -q 'framerAppearId\|data-framer' "$f" && libs="$libs motion"
+              grep -q 'useQueryClient\|QueryClientProvider\|No QueryClient set' "$f" && libs="$libs tanstack-query"
+              grep -q 'react-router\|React Router' "$f" && libs="$libs react-router"
+              grep -q 'react-dom\|__reactContainer' "$f" && libs="$libs react-dom"
+              echo "| \`${f#dist/assets/}\` | $(gz "$f") |${libs:- (app code)} |"
+            done
           } >> "$GITHUB_STEP_SUMMARY"
           for f in "${lazy[@]}"; do
-            if echo "$eager" | grep -qx "$f"; then
-              echo "::error::${f} is loaded up front by /design/; it must stay lazy"
+            if echo "$eager" | grep -qx "$f" || echo "$landing" | grep -qx "$f"; then
+              echo "::error::${f} is loaded up front by a prerendered page; it must stay lazy"
               exit 1
             fi
           done
@@ -215,6 +246,8 @@ jobs:
             echo "| Loaded up front by /${page}/ | $(echo "$upfront" | wc -l) | $(total $upfront) |" >> "$GITHUB_STEP_SUMMARY"
           done
           echo "| Win-rate chart with Recharts (lazy) | 1 | $(gz "$chart") |" >> "$GITHUB_STEP_SUMMARY"
+          # Checked after the tests (last step), so an overrun still gets screenshots and Lighthouse.
+          echo "LANDING_JS_GZIP=${landing_total}" >> "$GITHUB_ENV"
 
       - name: Install Playwright Chromium
         working-directory: web
@@ -223,6 +256,62 @@ jobs:
       - name: Run Playwright (wrangler dev + Chromium)
         working-directory: web
         run: npx playwright test
+
+      # Lighthouse (mobile, simulated throttling) on the landing page through the same Worker,
+      # with the preview cookie on every request. Budgets in web/lighthouserc.json: accessibility 1,
+      # best practices >= 0.95 and SEO 1 fail the job; performance >= 0.9 is the target but only
+      # warns for now: the shared shell, React Router, Motion and Zod load about 290 KB of gzipped
+      # JavaScript up front, which caps the simulated mobile score near 0.8 (PR #40). The scores are
+      # in the job summary on every run. Reports: the `lighthouse` artifact.
+      - name: Start the Worker for Lighthouse
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        working-directory: web
+        run: |
+          node tests/e2e/serve-dist.mjs --port 8790 > "$RUNNER_TEMP/lighthouse-server.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/lighthouse-server.pid"
+          for attempt in $(seq 1 60); do
+            if curl -fsS -o /dev/null -H 'Cookie: dm_preview=1' http://127.0.0.1:8790/; then exit 0; fi
+            sleep 2
+          done
+          cat "$RUNNER_TEMP/lighthouse-server.log"
+          exit 1
+
+      - name: Lighthouse CI (/, mobile)
+        id: lighthouse
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        uses: treosh/lighthouse-ci-action@12.6.2
+        with:
+          # ?preview= sets the preview cookie on the first response, so the robots.txt fetch passes
+          # the waitlist gate too (extraHeaders in lighthouserc.json cover the page itself).
+          urls: http://127.0.0.1:8790/?preview=dualmind-preview
+          configPath: ./web/lighthouserc.json
+          uploadArtifacts: true
+          artifactName: lighthouse
+          temporaryPublicStorage: false
+
+      - name: Lighthouse scores in the job summary
+        if: always() && steps.lighthouse.outcome != 'skipped'
+        env:
+          MANIFEST: ${{ steps.lighthouse.outputs.manifest }}
+        run: |
+          node -e '
+            const runs = JSON.parse(process.env.MANIFEST || "[]");
+            const representative = runs.find(run => run.isRepresentativeRun) || runs[0];
+            const pct = value => (value === undefined ? "n/a" : Math.round(value * 100));
+            console.log("### Lighthouse (/, mobile)\n");
+            if (!representative) { console.log("No Lighthouse run."); process.exit(0); }
+            console.log("| Run | Performance | Accessibility | Best practices | SEO |");
+            console.log("| --- | ---: | ---: | ---: | ---: |");
+            for (const run of runs) {
+              const s = run.summary || {};
+              console.log(`| ${run.isRepresentativeRun ? "median" : "run"} | ${pct(s.performance)} | ${pct(s.accessibility)} | ${pct(s["best-practices"])} | ${pct(s.seo)} |`);
+            }
+          ' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Stop the Lighthouse Worker
+        if: always()
+        run: |
+          if [ -f "$RUNNER_TEMP/lighthouse-server.pid" ]; then kill "$(cat "$RUNNER_TEMP/lighthouse-server.pid")" || true; fi
 
       - name: Upload screenshots
         if: always()
@@ -237,7 +326,7 @@ jobs:
         if: always()
         run: |
           {
-            echo "### Screenshots of /design/, /leaderboard/ and /models/"
+            echo "### Screenshots of /, /design/, /leaderboard/ and /models/"
             echo
             echo "Download the \`web-screenshots\` artifact from [this run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifacts):"
             echo
@@ -245,6 +334,18 @@ jobs:
               [ -e "$f" ] && echo "- \`$(basename "$f")\`"
             done
           } >> "$GITHUB_STEP_SUMMARY"
+
+      # Marketing pages: at most 180 KB of gzipped JavaScript before any interaction
+      # (docs/redesign/migration-plan.md section 7). Reported as a warning until the shared shell
+      # is slimmed down (see the Lighthouse note above); the number is in the bundle report.
+      - name: Check the JavaScript budget of /
+        if: ${{ !cancelled() && env.LANDING_JS_GZIP != '' }}
+        run: |
+          if [ "$LANDING_JS_GZIP" -gt 184320 ]; then
+            echo "::warning::/ loads ${LANDING_JS_GZIP} bytes of gzipped JavaScript up front; the budget is 184320 (180 KB)"
+          else
+            echo "/ loads ${LANDING_JS_GZIP} bytes of gzipped JavaScript up front (budget 184320)."
+          fi
 
       - name: Upload Playwright report
         if: failure()
