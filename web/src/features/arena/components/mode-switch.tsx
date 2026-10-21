@@ -24,7 +24,10 @@ export function ModeSwitch({ value, onChange, disabled = false, className }: Mod
       className={cn('inline-flex rounded-full border border-line bg-surface p-0.5', className)}
     >
       <legend className="sr-only">Mode</legend>
-      <AnimatedBackground value={value} className="rounded-full bg-mind-a-tint ring-1 ring-mind-a/45">
+      <AnimatedBackground
+        value={value}
+        className="rounded-full bg-mind-a-tint ring-1 ring-mind-a/45"
+      >
         {ARENA_MODES.map(mode => (
           <label
             key={mode}

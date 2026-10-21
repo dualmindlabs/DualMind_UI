@@ -72,12 +72,7 @@ export function groupThreads(threads: readonly Thread[], now: number): ThreadGro
 
 /** Lower case without accents, for matching ("Café" finds "cafe"). */
 export function foldText(text: string): string {
-  return text
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .replace(/\s+/g, ' ')
-    .trim();
+  return text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
 }
 
 /** Threads whose title contains every word of the query, in any order. */

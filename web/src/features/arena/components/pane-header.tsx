@@ -74,9 +74,7 @@ export function PaneHeader({
         {meta ? (
           <p className="font-mono text-caption whitespace-nowrap text-muted tabular-nums">{meta}</p>
         ) : null}
-        {copyText === null ? null : (
-          <CopyButton text={copyText} label={`Copy ${style.title}`} />
-        )}
+        {copyText === null ? null : <CopyButton text={copyText} label={`Copy ${style.title}`} />}
       </div>
     </header>
   );

@@ -112,7 +112,10 @@ export function ThreadView({ threadId }: { threadId: string }) {
     <ChatContainerRoot className="min-h-0 flex-1">
       <ChatContainerContent
         scrollClassName="overscroll-contain"
-        className={cn('mx-auto w-full gap-10 px-4 pt-6 pb-10 sm:px-6', wide ? 'max-w-6xl' : 'max-w-3xl')}
+        className={cn(
+          'mx-auto w-full gap-10 px-4 pt-6 pb-10 sm:px-6',
+          wide ? 'max-w-6xl' : 'max-w-3xl',
+        )}
       >
         <header className="grid gap-1.5">
           <p className="eyebrow text-muted">
@@ -126,7 +129,9 @@ export function ThreadView({ threadId }: { threadId: string }) {
             ) : null}
           </p>
           {thread ? (
-            <h1 className="text-h3 font-semibold text-balance text-fg sm:text-h2">{thread.title}</h1>
+            <h1 className="text-h3 font-semibold text-balance text-fg sm:text-h2">
+              {thread.title}
+            </h1>
           ) : (
             <Skeleton className="h-8 w-2/3" />
           )}

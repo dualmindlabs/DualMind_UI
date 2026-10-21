@@ -32,7 +32,13 @@ export interface ComposerProps {
  * and Direct, a textarea that grows with the text, and Send. Enter or Ctrl/Cmd+Enter sends,
  * Shift+Enter adds a line, Esc stops answers in progress or leaves the box.
  */
-export function Composer({ onSend, busy = false, onStop, variant = 'dock', className }: ComposerProps) {
+export function Composer({
+  onSend,
+  busy = false,
+  onStop,
+  variant = 'dock',
+  className,
+}: ComposerProps) {
   const { mode, selectMode, composerRef } = useArena();
   const { draft, setDraft } = useDraft();
   const { options } = useModelOptions();

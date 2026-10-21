@@ -71,7 +71,7 @@ export function PanePair({ a, b, label, className }: PanePairProps) {
         onScroll={onScroll}
         className={cn(
           // Phones: one row, one pane per screen width, snapping; overscroll stays inside.
-          'flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+          'flex snap-x snap-mandatory [scrollbar-width:none] gap-3 overflow-x-auto overscroll-x-contain [&::-webkit-scrollbar]:hidden',
           '*:w-full *:shrink-0 *:snap-center *:snap-always',
           // From md: a plain two-column grid.
           'md:grid md:grid-cols-2 md:gap-4 md:overflow-visible md:*:w-auto',

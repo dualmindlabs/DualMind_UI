@@ -58,7 +58,9 @@ async function overflowing(page: Page) {
         return box.width > 0 && box.right > limit && !clipped(element);
       })
       .slice(0, 5)
-      .map(element => `${element.tagName.toLowerCase()}.${element.className.toString().slice(0, 60)}`);
+      .map(
+        element => `${element.tagName.toLowerCase()}.${element.className.toString().slice(0, 60)}`,
+      );
     if (document.documentElement.scrollWidth > limit) offenders.push('documentElement');
     return offenders;
   });
@@ -74,7 +76,9 @@ test.describe('the switch at /', () => {
     await openArena(page);
     await expect(page).toHaveURL(/\/$/);
     expect(await page.evaluate(() => window.localStorage.getItem('dm.arena'))).toBe('new');
-    await expect(page.getByRole('heading', { level: 1, name: /Two minds\.\s*Your verdict\./ })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { level: 1, name: /Two minds\.\s*Your verdict\./ }),
+    ).toBeVisible();
     await expect(page.locator('[data-landing]')).toHaveCount(0);
     await expect(page).toHaveTitle('Arena · DualMind Arena');
     // A reload keeps the arena without the parameter.
@@ -124,9 +128,13 @@ test.describe('history', () => {
     await title.fill('SQL review, grouped by customer');
     await page.getByRole('button', { name: 'Save' }).click();
     await expect(page.getByText('Thread renamed')).toBeVisible();
-    await expect(history.getByRole('link', { name: /SQL review, grouped by customer/ })).toBeVisible();
+    await expect(
+      history.getByRole('link', { name: /SQL review, grouped by customer/ }),
+    ).toBeVisible();
 
-    await history.getByRole('button', { name: 'Actions for Plan three days in Lisbon on a budget' }).click();
+    await history
+      .getByRole('button', { name: 'Actions for Plan three days in Lisbon on a budget' })
+      .click();
     await page.getByRole('menuitem', { name: 'Delete' }).click();
     await page.getByRole('dialog').getByRole('button', { name: 'Delete' }).click();
     await expect(page.getByText('Thread deleted')).toBeVisible();
@@ -171,9 +179,10 @@ test.describe('threads', () => {
     await expect(link).toHaveAttribute('rel', 'noopener noreferrer nofollow');
     await expect(link).toContainText('docs.python.org');
     // The history marks the open thread.
-    await expect(
-      page.getByRole('link', { name: /Explain recursion/ }).first(),
-    ).toHaveAttribute('aria-current', 'page');
+    await expect(page.getByRole('link', { name: /Explain recursion/ }).first()).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
     await expect(page).toHaveTitle('Explain recursion to a ten-year-old · DualMind Arena');
     expect(problems).toEqual([]);
   });
@@ -214,7 +223,9 @@ test.describe('composer', () => {
     expect(await page.evaluate(() => window.localStorage.getItem('battle.model.left'))).toBe(
       'groq/compound-mini',
     );
-    await expect(page.getByRole('button', { name: /Model for answer A: Compound Mini/ })).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: /Model for answer A: Compound Mini/ }),
+    ).toBeVisible();
 
     await page.getByRole('radio', { name: 'Direct' }).check({ force: true });
     await expect(page.getByRole('button', { name: /^Model: random/ })).toBeVisible();
@@ -247,7 +258,13 @@ test.describe('quality', () => {
           .analyze();
         const blocking = results.violations
           .filter(violation => violation.impact === 'serious' || violation.impact === 'critical')
-          .map(violation => `${violation.id}: ${violation.nodes.map(node => node.target.join(' ')).slice(0, 3).join(', ')}`);
+          .map(
+            violation =>
+              `${violation.id}: ${violation.nodes
+                .map(node => node.target.join(' '))
+                .slice(0, 3)
+                .join(', ')}`,
+          );
         expect(blocking, path).toEqual([]);
       }
     });

@@ -173,10 +173,10 @@ export async function mockArena(
 ): Promise<ArenaMockState> {
   const state: ArenaMockState = { threads: options.threads ?? seedThreads(), requests: [] };
   const session = sessionJson();
-  await page.addInitScript(
-    ([key, value]) => window.localStorage.setItem(key, value),
-    [SESSION_KEY, session] as const,
-  );
+  await page.addInitScript(([key, value]) => window.localStorage.setItem(key, value), [
+    SESSION_KEY,
+    session,
+  ] as const);
 
   await page.route(`${SUPABASE}/**`, async route => {
     const request = route.request();
@@ -232,14 +232,16 @@ export async function mockArena(
       });
     }
     if (path === '/api/threads' && method === 'GET') {
-      if (options.failThreads) return json(route, 500, { success: false, error: 'Boom', code: 'INTERNAL_ERROR' });
+      if (options.failThreads)
+        return json(route, 500, { success: false, error: 'Boom', code: 'INTERNAL_ERROR' });
       return json(route, 200, { items: state.threads });
     }
     const match = /^\/api\/threads\/([^/]+)(\/messages)?$/.exec(path);
     if (match) {
       const id = decodeURIComponent(match[1] ?? '');
       const thread = state.threads.find(item => item.threadId === id);
-      if (!thread) return json(route, 404, { success: false, error: 'Thread not found', code: 'NOT_FOUND' });
+      if (!thread)
+        return json(route, 404, { success: false, error: 'Thread not found', code: 'NOT_FOUND' });
       if (match[2]) return json(route, 200, { items: messagesFor(id) });
       if (method === 'GET') return json(route, 200, thread);
       if (method === 'PATCH') {
@@ -253,7 +255,11 @@ export async function mockArena(
       }
     }
     if (path === '/api/health') return json(route, 200, { status: 'healthy' });
-    return json(route, 404, { success: false, error: `unmocked ${method} ${path}`, code: 'NOT_FOUND' });
+    return json(route, 404, {
+      success: false,
+      error: `unmocked ${method} ${path}`,
+      code: 'NOT_FOUND',
+    });
   });
 
   return state;

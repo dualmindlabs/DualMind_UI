@@ -112,7 +112,9 @@ export function ThreadDialogs({ renaming, deleting, onClose, onDeleted }: Thread
             <DialogTitle>Rename thread</DialogTitle>
             <DialogDescription>The new title shows in your history.</DialogDescription>
           </DialogHeader>
-          {renaming ? <RenameForm key={renaming.threadId} thread={renaming} onDone={onClose} /> : null}
+          {renaming ? (
+            <RenameForm key={renaming.threadId} thread={renaming} onDone={onClose} />
+          ) : null}
         </DialogContent>
       </Dialog>
       <Dialog open={deleting !== null} onOpenChange={open => (open ? undefined : onClose())}>
@@ -120,8 +122,8 @@ export function ThreadDialogs({ renaming, deleting, onClose, onDeleted }: Thread
           <DialogHeader>
             <DialogTitle>Delete this thread?</DialogTitle>
             <DialogDescription>
-              {deleting ? `“${deleting.title}”` : 'The thread'} and its answers are removed for good.
-              Votes you cast stay counted on the leaderboard.
+              {deleting ? `“${deleting.title}”` : 'The thread'} and its answers are removed for
+              good. Votes you cast stay counted on the leaderboard.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

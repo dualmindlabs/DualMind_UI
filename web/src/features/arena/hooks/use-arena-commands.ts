@@ -11,10 +11,7 @@ import {
 } from 'lucide-react';
 import { useMemo } from 'react';
 
-import {
-  type CommandGroupDefinition,
-  useCommandPaletteGroup,
-} from '@/hooks/use-command-palette';
+import { type CommandGroupDefinition, useCommandPaletteGroup } from '@/hooks/use-command-palette';
 import type { Thread } from '@/lib/api';
 
 import { leaveForClassicArena } from '../lib/classic-arena';

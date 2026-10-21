@@ -53,7 +53,7 @@ function ArenaLayout() {
             <>
               <div
                 aria-hidden="true"
-                className="pointer-events-none absolute inset-0 dot-grid opacity-70 [mask-image:radial-gradient(ellipse_60%_50%_at_50%_45%,black,transparent)]"
+                className="pointer-events-none absolute inset-0 dot-grid [mask-image:radial-gradient(ellipse_60%_50%_at_50%_45%,black,transparent)] opacity-70"
               />
               <div className="relative mx-auto grid w-full max-w-3xl gap-8 px-4 py-8 sm:px-6">
                 <EmptyState />

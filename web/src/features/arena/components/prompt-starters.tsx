@@ -30,7 +30,7 @@ export function PromptStarters({ className }: { className?: string }) {
       <h2 id="starters-title" className="sr-only">
         Prompt starters
       </h2>
-      <div className="flex min-w-0 items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] md:flex-wrap md:justify-center md:overflow-visible">
+      <div className="flex min-w-0 [scrollbar-width:none] items-center gap-2 overflow-x-auto pb-1 md:flex-wrap md:justify-center md:overflow-visible">
         <div role="group" aria-label="Starter category" className="flex shrink-0 gap-1">
           {STARTER_CATEGORIES.map(item => (
             <button
@@ -54,7 +54,7 @@ export function PromptStarters({ className }: { className?: string }) {
           Surprise me
         </Button>
       </div>
-      <ul className="flex min-w-0 gap-2 overflow-x-auto pb-1 [scrollbar-width:none] md:flex-wrap md:justify-center md:overflow-visible">
+      <ul className="flex min-w-0 [scrollbar-width:none] gap-2 overflow-x-auto pb-1 md:flex-wrap md:justify-center md:overflow-visible">
         {active?.prompts.map(prompt => (
           <li key={prompt} className="max-w-[80vw] shrink-0 md:max-w-[22rem]">
             <PromptSuggestion title={prompt} onClick={() => fill(prompt)} className="w-full">

@@ -1,7 +1,6 @@
 import { Check, ChevronsUpDown, Dices } from 'lucide-react';
 import { useState } from 'react';
 
-import { RoleBadge } from '@/components/ui/role-badge';
 import { buttonVariants } from '@/components/ui/button';
 import {
   Command,
@@ -13,6 +12,7 @@ import {
   CommandShortcut,
 } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { RoleBadge } from '@/components/ui/role-badge';
 import { cn } from '@/lib/utils/cn';
 
 import type { ModelOption } from '../hooks/use-model-options';
@@ -63,13 +63,20 @@ export function ModelPicker({ side, options, value, onChange, label, disabled }:
           <CommandList className="max-h-72">
             <CommandEmpty>No model matches.</CommandEmpty>
             <CommandGroup>
-              <CommandItem value={RANDOM} keywords={['random', 'any', 'surprise']} onSelect={() => choose(null)}>
+              <CommandItem
+                value={RANDOM}
+                keywords={['random', 'any', 'surprise']}
+                onSelect={() => choose(null)}
+              >
                 <Dices aria-hidden="true" strokeWidth={1.75} />
                 Random
                 <Check
                   aria-hidden="true"
                   strokeWidth={2.25}
-                  className={cn('ml-auto text-mind-a', value === null ? 'opacity-100' : 'opacity-0')}
+                  className={cn(
+                    'ml-auto text-mind-a',
+                    value === null ? 'opacity-100' : 'opacity-0',
+                  )}
                 />
               </CommandItem>
             </CommandGroup>
@@ -91,7 +98,9 @@ export function ModelPicker({ side, options, value, onChange, label, disabled }:
                   />
                   <span className="min-w-0 flex-1 truncate">{option.displayName}</span>
                   <CommandShortcut className="font-mono tabular-nums">
-                    {option.rank === null ? option.provider : `#${option.rank} · ${Math.round(option.elo ?? 0)}`}
+                    {option.rank === null
+                      ? option.provider
+                      : `#${option.rank} · ${Math.round(option.elo ?? 0)}`}
                   </CommandShortcut>
                 </CommandItem>
               ))}

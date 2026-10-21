@@ -30,7 +30,9 @@ const CORPUS = [
 describe('Markdown (model answers)', () => {
   it('renders no raw HTML, scripts, frames, forms, images or event handlers', () => {
     const { container } = render(<Markdown>{CORPUS}</Markdown>);
-    expect(container.querySelector('script, iframe, svg[onload], style, form, img, object, embed')).toBeNull();
+    expect(
+      container.querySelector('script, iframe, svg[onload], style, form, img, object, embed'),
+    ).toBeNull();
     for (const element of container.querySelectorAll('*')) {
       for (const attribute of element.attributes) {
         expect(attribute.name.startsWith('on'), `${element.tagName} ${attribute.name}`).toBe(false);
@@ -45,7 +47,9 @@ describe('Markdown (model answers)', () => {
   it('keeps only https links, opened safely with the host shown', () => {
     const { container } = render(
       <Markdown>
-        {'See [the docs](https://example.com/guide), [plain](http://insecure.example) and [local](/x).'}
+        {
+          'See [the docs](https://example.com/guide), [plain](http://insecure.example) and [local](/x).'
+        }
       </Markdown>,
     );
     const links = container.querySelectorAll('a');
@@ -66,9 +70,7 @@ describe('Markdown (model answers)', () => {
   });
 
   it('renders code blocks with a language label and a copy button', () => {
-    const { container, getByRole } = render(
-      <Markdown>{'```ts\nconst a = 1;\n```'}</Markdown>,
-    );
+    const { container, getByRole } = render(<Markdown>{'```ts\nconst a = 1;\n```'}</Markdown>);
     expect(container.querySelector('pre code')?.textContent).toBe('const a = 1;');
     expect(getByRole('button', { name: /copy the ts code/i })).toBeInTheDocument();
   });

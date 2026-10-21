@@ -125,7 +125,8 @@ export function usesNewArena(choice: ArenaChoice | null): boolean {
 }
 
 /** What `/` shows: the landing page, the new arena, or a hand-off to the legacy arena. */
-export type LandingView = { kind: 'landing' } | { kind: 'arena' } | { kind: 'legacy'; target: string };
+export type LandingView =
+  { kind: 'landing' } | { kind: 'arena' } | { kind: 'legacy'; target: string };
 
 /**
  * Decides what `/` shows. Storage that cannot be read (blocked cookies, private mode) counts as

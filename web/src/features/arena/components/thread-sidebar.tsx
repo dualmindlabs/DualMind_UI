@@ -68,7 +68,11 @@ export function ThreadSidebar() {
     >
       {sidebarCollapsed ? (
         <div className="flex flex-col items-center gap-1 pt-3">
-          <RailButton label="Show the history" shortcut="[" onClick={() => setSidebarCollapsed(false)}>
+          <RailButton
+            label="Show the history"
+            shortcut="["
+            onClick={() => setSidebarCollapsed(false)}
+          >
             <PanelLeftOpen aria-hidden="true" strokeWidth={1.75} />
           </RailButton>
           <RailButton label="New battle" shortcut="N" onClick={newBattle}>
@@ -82,7 +86,11 @@ export function ThreadSidebar() {
         <>
           <div className="flex h-12 items-center justify-between border-b border-line pr-2 pl-5">
             <h2 className="eyebrow text-muted">History</h2>
-            <RailButton label="Hide the history" shortcut="[" onClick={() => setSidebarCollapsed(true)}>
+            <RailButton
+              label="Hide the history"
+              shortcut="["
+              onClick={() => setSidebarCollapsed(true)}
+            >
               <PanelLeftClose aria-hidden="true" strokeWidth={1.75} />
             </RailButton>
           </div>

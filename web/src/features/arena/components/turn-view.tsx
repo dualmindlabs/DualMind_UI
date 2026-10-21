@@ -3,7 +3,13 @@ import { useId } from 'react';
 
 import { displayNameFromModelName } from '@/lib/api';
 
-import { countWords, formatDuration, type PaneData, type TurnData, VOTE_LABELS } from '../lib/turns';
+import {
+  countWords,
+  formatDuration,
+  type PaneData,
+  type TurnData,
+  VOTE_LABELS,
+} from '../lib/turns';
 import { AnswerPane } from './answer-pane';
 import { PanePair } from './pane-pair';
 import { PromptCard } from './prompt-card';
@@ -16,7 +22,10 @@ export interface TurnViewProps {
 
 function paneMeta(pane: PaneData): string {
   const words = countWords(pane.text);
-  return [formatDuration(pane.timeMs), `${words.toLocaleString('en-US')} ${words === 1 ? 'word' : 'words'}`]
+  return [
+    formatDuration(pane.timeMs),
+    `${words.toLocaleString('en-US')} ${words === 1 ? 'word' : 'words'}`,
+  ]
     .filter(Boolean)
     .join(' · ');
 }
