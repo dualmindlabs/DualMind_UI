@@ -57,6 +57,8 @@ jobs:
           npx playwright install --with-deps chromium > /dev/null 2>&1
           cp ../.github/probe/hydration.mjs ./hydration-probe.mjs
           node hydration-probe.mjs | tee ../probe/hydration.txt
+          cp ../dist/assets/jsx-runtime-*.js ../probe/ || true
+          cp ../dist/assets/entry.client-*.js ../probe/ || true
       - name: Lighthouse
         uses: treosh/lighthouse-ci-action@12.6.2
         with:
