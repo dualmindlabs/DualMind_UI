@@ -70,12 +70,13 @@ export function WinRateChart({ entries, selectedId, average }: WinRateChartProps
     }));
 
   return (
-    <ChartContainer
+    <div className="grid gap-2.5">
+      <ChartContainer
       config={config}
       className="h-44 w-full"
       initialDimension={{ width: 360, height: 176 }}
     >
-      <BarChart data={data} margin={{ top: 8, right: 4, bottom: 0, left: 0 }} barCategoryGap={1}>
+      <BarChart data={data} margin={{ top: 10, right: 4, bottom: 6, left: 0 }} barCategoryGap={1}>
         <CartesianGrid vertical={false} stroke="var(--line)" strokeDasharray="0" />
         <XAxis dataKey="name" hide />
         <YAxis
@@ -84,19 +85,13 @@ export function WinRateChart({ entries, selectedId, average }: WinRateChartProps
           tickFormatter={(value: number) => `${value}%`}
           tickLine={false}
           axisLine={false}
-          width={36}
+          width={44}
         />
         <ReferenceLine
           y={average}
           stroke="var(--fg-soft)"
           strokeWidth={1}
           ifOverflow="extendDomain"
-          label={{
-            value: `Average ${formatPercent(average)}`,
-            position: 'insideTopRight',
-            fill: 'var(--muted)',
-            fontSize: 12,
-          }}
         />
         <ChartTooltip
           cursor={{ fill: 'var(--hover)' }}
@@ -112,6 +107,22 @@ export function WinRateChart({ entries, selectedId, average }: WinRateChartProps
           ))}
         </Bar>
       </BarChart>
-    </ChartContainer>
+      </ChartContainer>
+      <ul className="flex flex-wrap gap-x-4 gap-y-1 text-caption text-fg-soft">
+        <li className="inline-flex items-center gap-1.5">
+          <span aria-hidden="true" className="size-2.5 rounded-[2px] bg-mind-a" />
+          This model
+        </li>
+        <li className="inline-flex items-center gap-1.5">
+          <span aria-hidden="true" className="size-2.5 rounded-[2px] bg-line-strong/55" />
+          Other models
+        </li>
+        <li className="inline-flex items-center gap-1.5">
+          <span aria-hidden="true" className="h-px w-3.5 bg-fg-soft" />
+          Board average{' '}
+          <span className="font-mono text-fg tabular-nums">{formatPercent(average)}</span>
+        </li>
+      </ul>
+    </div>
   );
 }

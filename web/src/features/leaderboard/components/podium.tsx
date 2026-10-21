@@ -8,6 +8,8 @@ import { PodiumCard } from './podium-card';
 export interface PodiumProps {
   /** The board in rank order; undefined while it loads. */
   entries: readonly LeaderboardEntry[] | undefined;
+  /** Ratings count up from here once the board arrives (the board's lowest round hundred). */
+  eloStart: number;
   onOpen: (id: string, trigger: HTMLElement | null) => void;
   className?: string;
 }
@@ -38,7 +40,7 @@ function PodiumSkeleton() {
 }
 
 /** The top three, leader first (and widest). Reading order and visual order are the same. */
-export function Podium({ entries, onOpen, className }: PodiumProps) {
+export function Podium({ entries, eloStart, onOpen, className }: PodiumProps) {
   if (entries === undefined) {
     return (
       <div className={className}>
@@ -53,7 +55,13 @@ export function Podium({ entries, onOpen, className }: PodiumProps) {
     <div className={className}>
       <ol aria-label="Top three models" className={cn(GRID)}>
         {top.map((entry, place) => (
-          <PodiumCard key={entry.id} entry={entry} place={place} onOpen={onOpen} />
+          <PodiumCard
+            key={entry.id}
+            entry={entry}
+            place={place}
+            eloStart={eloStart}
+            onOpen={onOpen}
+          />
         ))}
       </ol>
     </div>

@@ -1,9 +1,8 @@
 import { useRef } from 'react';
 
-import { NumberTicker } from '@/components/vendor/magicui/number-ticker';
 import { cn } from '@/lib/utils/cn';
 
-import { formatCount, formatPercent } from '../lib/format';
+import { formatCount, formatElo, formatPercent } from '../lib/format';
 import type { LeaderboardEntry, SortKey, SortState } from '../types';
 import { EloBar } from './elo-bar';
 import { ProvisionalBadge } from './provisional-badge';
@@ -16,8 +15,6 @@ export interface LeaderboardTableProps {
   sort: SortState;
   onSort: (column: SortKey) => void;
   onOpen: (id: string, trigger: HTMLElement | null) => void;
-  /** Elo values count up from here the first time they appear (the board's lowest hundred). */
-  eloStart: number;
   /** The leader's id: its bar is drawn at full strength. */
   leaderId?: string | undefined;
   className?: string;
@@ -26,12 +23,10 @@ export interface LeaderboardTableProps {
 function Row({
   entry,
   onOpen,
-  eloStart,
   leader,
 }: {
   entry: LeaderboardEntry;
   onOpen: LeaderboardTableProps['onOpen'];
-  eloStart: number;
   leader: boolean;
 }) {
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -69,12 +64,9 @@ function Row({
       </td>
       <td className="py-3.5 pr-3 pl-3 align-middle">
         <span className="flex items-center gap-3">
-          <NumberTicker
-            value={entry.elo}
-            startValue={eloStart}
-            grouping={false}
-            className="w-12 text-right font-mono text-ui font-medium text-fg"
-          />
+          <span className="w-12 text-right font-mono text-ui font-medium text-fg tabular-nums">
+            {formatElo(entry.elo)}
+          </span>
           <EloBar
             share={entry.eloShare}
             tone={leader ? 'lead' : 'default'}
@@ -115,7 +107,6 @@ export function LeaderboardTable({
   sort,
   onSort,
   onOpen,
-  eloStart,
   leaderId,
   className,
 }: LeaderboardTableProps) {
@@ -161,7 +152,6 @@ export function LeaderboardTable({
               key={entry.id}
               entry={entry}
               onOpen={onOpen}
-              eloStart={eloStart}
               leader={entry.id === leaderId}
             />
           ))}

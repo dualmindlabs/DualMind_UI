@@ -81,7 +81,6 @@ export function LeaderboardPage() {
         sort={view.sort}
         onSort={view.toggleSort}
         onOpen={details.openModel}
-        eloStart={eloStartFor(board.summary.bottomElo)}
         leaderId={leaderId}
       />
     ) : (
@@ -107,7 +106,11 @@ export function LeaderboardPage() {
               <h2 id="podium-title" className="eyebrow text-muted">
                 Top three
               </h2>
-              <Podium entries={board?.entries} onOpen={details.openModel} />
+              <Podium
+                entries={board?.entries}
+                eloStart={board ? eloStartFor(board.summary.bottomElo) : 0}
+                onOpen={details.openModel}
+              />
             </PageContainer>
           </section>
         )}

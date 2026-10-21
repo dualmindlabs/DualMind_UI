@@ -11,7 +11,8 @@
  * - Reduced motion (useShouldReduceMotion) jumps straight to each value.
  * - Writes to React's own text node; screen readers get the settled value (visually hidden).
  * - Token colours (inherits the text colour) and `tabular-nums`; removed `direction`.
- * - `grouping={false}` drops the thousands separator (Elo ratings are written "1150").
+ * - `grouping={false}` drops the thousands separator (Elo ratings are written "1150");
+ *   `stiffness` and `damping` tune the spring (the defaults are Magic UI's, slow to settle).
  */
 import { useMotionValue, useSpring } from 'motion/react';
 import { type ComponentProps, useEffect, useRef, useState } from 'react';
@@ -29,6 +30,10 @@ export interface NumberTickerProps extends Omit<ComponentProps<'span'>, 'childre
   decimalPlaces?: number;
   /** Thousands separators ("7,152"). Default true. */
   grouping?: boolean;
+  /** Spring stiffness; higher settles faster. Default 100. */
+  stiffness?: number;
+  /** Spring damping; higher overshoots less. Default 60. */
+  damping?: number;
 }
 
 function format(value: number, decimals: number, grouping = true): string {
@@ -47,6 +52,8 @@ export function NumberTicker({
   className,
   decimalPlaces = 0,
   grouping = true,
+  stiffness = 100,
+  damping = 60,
   ...props
 }: NumberTickerProps) {
   const ref = useRef<HTMLSpanElement>(null);
@@ -57,7 +64,7 @@ export function NumberTicker({
   // Prerendered tickers start at the value; tickers that mount later count in.
   const [initial] = useState(() => (hydrated ? startValue : value));
   const motionValue = useMotionValue(initial);
-  const spring = useSpring(motionValue, { damping: 60, stiffness: 100 });
+  const spring = useSpring(motionValue, { damping, stiffness });
 
   useEffect(() => {
     if (!inView) return undefined;

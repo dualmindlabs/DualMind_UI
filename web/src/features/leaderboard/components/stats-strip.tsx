@@ -22,7 +22,7 @@ export interface StatsStripProps {
 
 function Cell({ label, children, hint }: { label: string; children: ReactNode; hint?: ReactNode }) {
   return (
-    <div className="grid content-start gap-2 border-line px-4 py-4 not-first:border-l max-sm:nth-3:border-l-0 max-sm:nth-[n+3]:border-t sm:px-6 sm:py-5">
+    <div className="grid content-start gap-2 bg-surface px-4 py-4 sm:px-6 sm:py-5">
       <dt className="eyebrow text-muted">{label}</dt>
       <dd className="text-h2 leading-none font-light text-fg tabular-nums">{children}</dd>
       {hint ? <dd className="text-caption text-muted">{hint}</dd> : null}
@@ -48,7 +48,7 @@ export function StatsStrip({
     <dl
       aria-busy={summary === undefined}
       className={cn(
-        'grid grid-cols-2 overflow-hidden rounded-lg border border-line bg-surface shadow-raise sm:grid-cols-4',
+        'grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-line bg-line shadow-raise sm:grid-cols-4 lg:grid-cols-2',
         className,
       )}
     >
@@ -56,7 +56,7 @@ export function StatsStrip({
         {summary ? <CountUp to={summary.models} duration={1.2} trigger="load" /> : pending}
       </Cell>
       <Cell label="Battles" hint="Two models each">
-        {summary ? <NumberTicker value={summary.battles} /> : pending}
+        {summary ? <NumberTicker value={summary.battles} stiffness={140} damping={28} /> : pending}
       </Cell>
       <Cell label="Providers" hint="Serving the models">
         {summary ? <CountUp to={summary.providers} duration={0.8} trigger="load" /> : pending}

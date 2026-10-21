@@ -138,8 +138,7 @@ describe('LeaderboardPage', () => {
   it('opens the details sheet from a row; Esc closes it and focus returns to the row', async () => {
     const user = userEvent.setup();
     renderPage();
-    await table();
-    const name = screen.getByRole('button', { name: 'llama-3.1-70b-instruct' });
+    const name = within(await table()).getByRole('button', { name: 'llama-3.1-70b-instruct' });
     await user.click(name);
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByRole('heading', { level: 2 })).toHaveTextContent(

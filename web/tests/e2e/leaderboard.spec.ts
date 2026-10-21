@@ -419,7 +419,7 @@ for (const page of ['leaderboard', 'models'] as const) {
         await storeTheme(tab, mode.theme);
         await tab.goto(`/${page}/`);
         await expect(tab.locator('[data-model-id]').first()).toBeVisible();
-        await settle(tab, 2600);
+        await settle(tab, 3000);
         await tab.screenshot({
           path: shotPath(`${page}-${viewport.name}-${mode.name}-fold`),
           animations: 'disabled',

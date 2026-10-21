@@ -26,7 +26,7 @@ export function LeaderboardHero({ summary, updatedAt, refreshing, stale }: Leade
         aria-hidden="true"
         className="absolute inset-0 -z-10 dot-grid [mask-image:radial-gradient(ellipse_70%_80%_at_70%_0%,black,transparent)] opacity-60"
       />
-      <PageContainer className="grid gap-10 pt-14 pb-12 md:pt-20 md:pb-16">
+      <PageContainer className="grid gap-10 pt-14 pb-12 md:pt-20 md:pb-16 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:items-end lg:gap-14">
         <div className="grid max-w-3xl gap-6">
           <p className="flex items-center gap-3">
             <span className="eyebrow text-muted">Leaderboard</span>

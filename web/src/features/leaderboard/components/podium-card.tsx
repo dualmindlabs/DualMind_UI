@@ -2,11 +2,12 @@ import { ArrowUpRight } from 'lucide-react';
 import { useRef } from 'react';
 
 import { ShineBorder } from '@/components/vendor/magicui/shine-border';
+import { CountUp } from '@/components/vendor/reactbits/count-up';
 import { DecryptedText } from '@/components/vendor/reactbits/decrypted-text';
 import { SpotlightCard } from '@/components/vendor/reactbits/spotlight-card';
 import { cn } from '@/lib/utils/cn';
 
-import { formatCount, formatElo, formatPercent, formatRank } from '../lib/format';
+import { formatCount, formatPercent, formatRank } from '../lib/format';
 import type { LeaderboardEntry } from '../types';
 import { EloBar } from './elo-bar';
 import { ProviderBadge } from './provider-badge';
@@ -16,6 +17,8 @@ export interface PodiumCardProps {
   entry: LeaderboardEntry;
   /** 0 for the leader. */
   place: number;
+  /** The rating counts up from here when the card first appears. */
+  eloStart: number;
   onOpen: (id: string, trigger: HTMLElement | null) => void;
 }
 
@@ -24,7 +27,7 @@ export interface PodiumCardProps {
  * the name decoding into place the first time it scrolls into view, and the three numbers that
  * matter. The whole card opens the details sheet through the name's button.
  */
-export function PodiumCard({ entry, place, onOpen }: PodiumCardProps) {
+export function PodiumCard({ entry, place, eloStart, onOpen }: PodiumCardProps) {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const leader = place === 0;
 
@@ -76,7 +79,9 @@ export function PodiumCard({ entry, place, onOpen }: PodiumCardProps) {
           <dl className="mt-auto grid grid-cols-3 gap-3 border-t border-line pt-4">
             <div className="grid gap-1">
               <dt className="eyebrow text-muted">Elo</dt>
-              <dd className="text-h3 font-medium text-fg tabular-nums">{formatElo(entry.elo)}</dd>
+              <dd className="text-h3 font-medium text-fg tabular-nums">
+                <CountUp from={eloStart} to={Math.round(entry.elo)} duration={1.4} trigger="load" />
+              </dd>
             </div>
             <div className="grid gap-1">
               <dt className="eyebrow text-muted">Win rate</dt>
