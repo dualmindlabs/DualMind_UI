@@ -61,11 +61,19 @@ interface Ctx {
   context: BrowserContext;
 }
 
-/** Forces the state, asserts it, and may return a cleanup (release a held response). */
+/**
+ * Forces the state and asserts it. Returns the element that shows it (scrolled into view for
+ * the screenshots: the states sit below a long hero) and may return a cleanup (release a held
+ * response).
+ */
+interface Shown {
+  focus: Locator;
+  cleanup?: () => void;
+}
 type Scenario = {
   screen: string;
   state: string;
-  run: (ctx: Ctx) => Promise<(() => void) | void>;
+  run: (ctx: Ctx) => Promise<Shown>;
 };
 
 // --- Board (leaderboard and models) ---------------------------------------------------------
@@ -140,7 +148,7 @@ function boardScenarios(screen: 'leaderboard' | 'models'): Scenario[] {
         await expect(busy.getByRole('status')).toHaveText(
           screen === 'models' ? 'Loading the models' : 'Loading the leaderboard',
         );
-        return release;
+        return { focus: busy, cleanup: release };
       },
     },
     {
@@ -154,6 +162,7 @@ function boardScenarios(screen: 'leaderboard' | 'models'): Scenario[] {
         await expect(alert).toContainText('Something went wrong on our side.');
         await expect(alert.getByRole('button', { name: /Try again/ })).toBeVisible();
         await expectRequestId(alert, seen);
+        return { focus: alert };
       },
     },
     {
@@ -165,6 +174,7 @@ function boardScenarios(screen: 'leaderboard' | 'models'): Scenario[] {
         const status = page.getByRole('status').filter({ hasText: 'No model is ranked yet.' });
         await expect(status).toBeVisible();
         await expect(status.getByRole('link', { name: 'Start the first battle' })).toBeVisible();
+        return { focus: status };
       },
     },
     {
@@ -177,6 +187,7 @@ function boardScenarios(screen: 'leaderboard' | 'models'): Scenario[] {
         await page.getByRole('searchbox', { name: 'Search models' }).fill('zzzz-no-such-model');
         await expect(page.getByText('No model matches “zzzz-no-such-model”.')).toBeVisible();
         await expect(page.getByRole('button', { name: 'Clear the filters' })).toBeVisible();
+        return { focus: page.getByRole('button', { name: 'Clear the filters' }) };
       },
     },
     {
@@ -190,6 +201,7 @@ function boardScenarios(screen: 'leaderboard' | 'models'): Scenario[] {
         await expect(alert).toContainText('Too many requests. Try again in 30 seconds.');
         await expect(alert.getByRole('button', { name: /Try again/ })).toBeVisible();
         await expectRequestId(alert, seen);
+        return { focus: alert };
       },
     },
   ];
@@ -305,6 +317,7 @@ const authScenarios: Scenario[] = [
       await mockAuth(page, 'wrong-password');
       await submitLogin(page);
       await expect(authAlert(page, 'That email and password do not match')).toBeVisible();
+      return { focus: authAlert(page, 'That email and password do not match') };
     },
   },
   {
@@ -313,9 +326,9 @@ const authScenarios: Scenario[] = [
     run: async ({ page }) => {
       await mockAuth(page, 'limited');
       await submitLogin(page);
-      await expect(
-        authAlert(page, 'Too many attempts. Wait a few minutes, then try again.'),
-      ).toBeVisible();
+      const alert = authAlert(page, 'Too many attempts. Wait a few minutes, then try again.');
+      await expect(alert).toBeVisible();
+      return { focus: alert };
     },
   },
   {
@@ -325,6 +338,7 @@ const authScenarios: Scenario[] = [
       await mockAuth(page, 'offline');
       await submitLogin(page);
       await expect(authAlert(page, 'We could not reach the sign-in service.')).toBeVisible();
+      return { focus: authAlert(page, 'We could not reach the sign-in service.') };
     },
   },
   {
@@ -334,6 +348,7 @@ const authScenarios: Scenario[] = [
       await mockAuth(page, 'exists');
       await submitSignup(page);
       await expect(authAlert(page, 'An account with this email already exists.')).toBeVisible();
+      return { focus: authAlert(page, 'An account with this email already exists.') };
     },
   },
   {
@@ -342,9 +357,9 @@ const authScenarios: Scenario[] = [
     run: async ({ page }) => {
       await mockAuth(page, 'limited');
       await submitSignup(page);
-      await expect(
-        authAlert(page, 'Too many attempts. Wait a few minutes, then try again.'),
-      ).toBeVisible();
+      const alert = authAlert(page, 'Too many attempts. Wait a few minutes, then try again.');
+      await expect(alert).toBeVisible();
+      return { focus: alert };
     },
   },
   {
@@ -354,6 +369,7 @@ const authScenarios: Scenario[] = [
       await mockAuth(page, 'offline');
       await submitSignup(page);
       await expect(authAlert(page, 'We could not reach the sign-in service.')).toBeVisible();
+      return { focus: authAlert(page, 'We could not reach the sign-in service.') };
     },
   },
 ];
@@ -406,6 +422,7 @@ const arenaScenarios: Scenario[] = [
       await expect(alert).toBeVisible({ timeout: 15_000 });
       await expect(alert).toContainText('Something went wrong on our side.');
       await expect(alert.getByRole('button', { name: /Try again/ })).toBeVisible();
+      return { focus: alert };
     },
   },
   {
@@ -418,6 +435,7 @@ const arenaScenarios: Scenario[] = [
       await expect(alert).toBeVisible({ timeout: 15_000 });
       await expect(alert).toContainText('Too many requests. Try again in 30 seconds.');
       await expect(alert.getByRole('button', { name: /Try again/ })).toBeVisible();
+      return { focus: alert };
     },
   },
   {
@@ -428,11 +446,20 @@ const arenaScenarios: Scenario[] = [
       await sendPrompt(page);
       const turn = page.getByTestId('live-turn').first();
       await expect(turn).toHaveAttribute('data-phase', 'awaiting_vote', { timeout: 15_000 });
+      // The phone layout loads a lazy chunk: visit it online so a resize while offline (the
+      // screenshots go from desktop to phone) does not need the network.
+      await page.setViewportSize({ width: VIEWPORTS[1].width, height: VIEWPORTS[1].height });
+      await settle(page, 800);
+      await page.setViewportSize({ width: VIEWPORTS[0].width, height: VIEWPORTS[0].height });
+      await settle(page, 400);
       await context.setOffline(true);
       await turn.getByRole('button', { name: /A is better/ }).click();
       await expect(turn.getByTestId('vote-pending')).toBeVisible();
       await expect(turn.getByTestId('vote-pending')).toContainText('Saved offline');
-      return () => void context.setOffline(false);
+      return {
+        focus: turn.getByTestId('vote-pending'),
+        cleanup: () => void context.setOffline(false),
+      };
     },
   },
 ];
@@ -463,10 +490,11 @@ for (const scenario of SCENARIOS) {
 
       await storeTheme(page, theme);
       await page.setViewportSize({ width: VIEWPORTS[0].width, height: VIEWPORTS[0].height });
-      const cleanup = await scenario.run({ page, context });
+      const { focus, cleanup } = await scenario.run({ page, context });
 
       for (const viewport of VIEWPORTS) {
         await page.setViewportSize({ width: viewport.width, height: viewport.height });
+        await focus.evaluate(element => element.scrollIntoView({ block: 'center' }));
         await settle(page, 500);
         expect(await blockingViolations(page), `axe on ${viewport.name}`).toEqual([]);
         await page.screenshot({
