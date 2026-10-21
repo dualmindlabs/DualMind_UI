@@ -85,7 +85,7 @@ One policy (`http/retry.ts`), used by exactly one layer per request:
 
 ## TanStack Query
 
-`createQueryClient()` sets the defaults (30 s stale time, 5 min garbage collection, the retry policy above, no mutation retries). `apiKeys` is the key factory: hierarchical, so `invalidateQueries({ queryKey: apiKeys.threads.all })` covers every thread query; the share view has its own keys. Query builders (`leaderboardQuery(api)`, `threadsQuery(api)`, `threadQuery(api, id)`, ...) carry the key, the function (with TanStack's abort signal) and a stale time per resource (`STALE_TIMES`). Mutation builders (`startBattleMutation(api)`, `voteMutation(queue)`, `createThreadMutation(api, queryClient)`, ...) keep the thread cache in step. The `<QueryClientProvider>` is added to `root.tsx` by the first slice that renders server data.
+`createQueryClient()` sets the defaults (30 s stale time, 5 min garbage collection, the retry policy above, no mutation retries). `apiKeys` is the key factory: hierarchical, so `invalidateQueries({ queryKey: apiKeys.threads.all })` covers every thread query; the share view has its own keys. Query builders (`leaderboardQuery(api)`, `threadsQuery(api)`, `threadQuery(api, id)`, ...) carry the key, the function (with TanStack's abort signal) and a stale time per resource (`STALE_TIMES`). Mutation builders (`startBattleMutation(api)`, `voteMutation(queue)`, `createThreadMutation(api, queryClient)`, ...) keep the thread cache in step. `ApiProvider` (`components/layout/api-provider.tsx`, mounted once by `AppProviders`) creates the app's client (`createApiClientFromEnv()`) and its `QueryClient`; components read the client with `useApiClient()` (`hooks/use-api-client.ts`), and tests pass their own `client` and `queryClient` props.
 
 ## Zod
 
