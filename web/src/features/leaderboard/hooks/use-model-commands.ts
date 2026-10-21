@@ -24,9 +24,15 @@ export function useModelCommands(
             actions: entries.map(entry => ({
               id: `model-${entry.id}`,
               label: `Open ${entry.name}`,
-              keywords: [entry.modelName, entry.providerLabel, 'model', 'details'],
+              keywords: [
+                entry.modelName,
+                entry.providerLabel,
+                entry.platformLabel,
+                'model',
+                'details',
+              ],
               icon: ChartNoAxesColumn,
-              hint: `#${formatRank(entry.rank)}`,
+              hint: entry.rank === null ? 'Not yet rated' : `#${formatRank(entry.rank)}`,
               perform: () => openModel(entry.id),
             })),
           },

@@ -16,8 +16,12 @@ export const DEFAULT_SORT: SortState = { key: 'rank', direction: 'asc' };
 /** Ascending comparison on one column. */
 function compareBy(key: SortKey, a: LeaderboardEntry, b: LeaderboardEntry): number {
   switch (key) {
-    case 'rank':
-      return a.rank - b.rank;
+    case 'rank': {
+      // Models not yet rated have no rank: they sort after every rated model.
+      const rankA = a.rank ?? Number.POSITIVE_INFINITY;
+      const rankB = b.rank ?? Number.POSITIVE_INFINITY;
+      return rankA === rankB ? 0 : rankA < rankB ? -1 : 1;
+    }
     case 'name':
       return a.name.localeCompare(b.name, 'en', { numeric: true, sensitivity: 'base' });
     case 'provider':

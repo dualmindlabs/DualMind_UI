@@ -1,7 +1,8 @@
 import { z } from 'zod';
 
+import { resolveDisplayName } from '@/lib/models/display-name';
+
 import { count, listOf, numeric, optionalString, withAliases } from './common';
-import { displayNameFromModelName } from './models';
 
 /**
  * One row of `GET /api/arena/model-stats`. The live API sends every field twice (camelCase and
@@ -35,7 +36,7 @@ export const modelStatSchema = withAliases(
   },
 ).transform(({ winRate, ...stat }) => ({
   ...stat,
-  displayName: stat.displayName ?? displayNameFromModelName(stat.modelName),
+  displayName: resolveDisplayName(stat.modelName, stat.displayName),
   // Same formula as the API (ties count as non-wins), rounded to two decimals like it.
   winRate:
     winRate ??

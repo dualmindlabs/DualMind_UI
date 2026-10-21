@@ -28,7 +28,6 @@ import { formatRank } from '../lib/format';
 import type { Leaderboard } from '../types';
 import { ModelDetailsBody } from './model-details-body';
 import { ProviderBadge } from './provider-badge';
-import { ProvisionalBadge } from './provisional-badge';
 
 export interface ModelDetailsProps {
   board: Leaderboard | undefined;
@@ -85,11 +84,12 @@ export function ModelDetails({
 
   const eyebrow = (
     <p className="flex flex-wrap items-center gap-2">
-      <span className="eyebrow text-mind-a">
-        Rank {formatRank(entry.rank)} of {board.summary.models}
+      <span className={entry.rank === null ? 'eyebrow text-warn' : 'eyebrow text-mind-a'}>
+        {entry.rank === null
+          ? 'Not yet rated'
+          : `Rank ${formatRank(entry.rank)} of ${board.summary.rated}`}
       </span>
-      <ProviderBadge label={entry.providerLabel} />
-      {entry.provisional ? <ProvisionalBadge /> : null}
+      <ProviderBadge label={entry.providerLabel} via={entry.servedBy} />
     </p>
   );
 
@@ -104,7 +104,10 @@ export function ModelDetails({
           <SheetHeader className="gap-3">
             {eyebrow}
             <SheetTitle className="text-h2 font-medium break-words">{entry.name}</SheetTitle>
-            <SheetDescription className="font-code break-all">{entry.modelName}</SheetDescription>
+            <SheetDescription className="font-code break-all">
+              <span className="sr-only">Model id: </span>
+              {entry.modelName}
+            </SheetDescription>
           </SheetHeader>
           <SheetBody className="pb-2">
             <ModelDetailsBody entry={entry} board={board} />
@@ -126,7 +129,10 @@ export function ModelDetails({
             <DrawerCloseButton className="-mt-1 -mr-2 shrink-0" />
           </div>
           <DrawerTitle className="text-h3 break-words">{entry.name}</DrawerTitle>
-          <DrawerDescription className="font-code break-all">{entry.modelName}</DrawerDescription>
+          <DrawerDescription className="font-code break-all">
+            <span className="sr-only">Model id: </span>
+            {entry.modelName}
+          </DrawerDescription>
         </DrawerHeader>
         <div className="px-5 pb-2">
           <ModelDetailsBody entry={entry} board={board} />

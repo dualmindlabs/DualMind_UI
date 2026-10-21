@@ -169,6 +169,8 @@ jobs:
           grep -q '<title>DualMind - Battle Arena</title>' dist/legacy-app.html
           grep -q 'data-spa-fallback' dist/__spa-fallback.html
           test -f dist/og/landing.png
+          test -f dist/og/leaderboard.png
+          test -f dist/og/models.png
           # Slice S7: the web app's leaderboard and models pages replace the legacy files.
           grep -q 'blind votes' dist/leaderboard/index.html
           ! grep -q 'leaderboardPage.js' dist/leaderboard/index.html

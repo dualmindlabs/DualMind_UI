@@ -2,12 +2,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils/cn';
 
 import { PODIUM_SIZE } from '../lib/constants';
-import type { LeaderboardEntry } from '../types';
+import type { RatedEntry } from '../types';
 import { PodiumCard } from './podium-card';
 
 export interface PodiumProps {
-  /** The board in rank order; undefined while it loads. */
-  entries: readonly LeaderboardEntry[] | undefined;
+  /** The rated models in rank order (never the ones not yet rated); undefined while it loads. */
+  entries: readonly RatedEntry[] | undefined;
   /** Ratings count up from here once the board arrives (the board's lowest round hundred). */
   eloStart: number;
   onOpen: (id: string, trigger: HTMLElement | null) => void;

@@ -96,7 +96,9 @@ export function ModelPicker({ side, options, value, onChange, label, disabled }:
                       value?.modelId === option.modelId ? 'opacity-100' : 'opacity-0',
                     )}
                   />
-                  <span className="min-w-0 flex-1 truncate">{option.displayName}</span>
+                  <span className="min-w-0 flex-1 truncate" title={option.modelName}>
+                    {option.displayName}
+                  </span>
                   <CommandShortcut className="font-mono tabular-nums">
                     {option.rank === null
                       ? option.provider

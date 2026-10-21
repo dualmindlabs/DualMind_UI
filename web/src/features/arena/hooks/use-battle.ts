@@ -13,6 +13,7 @@ import {
   type VoteChoice,
   type VoteQueue,
 } from '@/lib/api';
+import { resolveDisplayName } from '@/lib/models/display-name';
 
 import {
   battleReducer,
@@ -263,9 +264,15 @@ const CHOICE_WORDS: Record<VoteChoice, string> = {
   'both-bad': 'You said both are bad',
 };
 
+function modelTitle(
+  model: { name: string; displayName?: string | null | undefined } | null | undefined,
+) {
+  return model ? resolveDisplayName(model.name, model.displayName) : 'unknown';
+}
+
 function revealMessage(turn: LiveTurn, choice: VoteChoice, queued: boolean): string {
-  const a = turn.a?.model?.displayName ?? turn.a?.model?.name ?? 'unknown';
-  const b = turn.b?.model?.displayName ?? turn.b?.model?.name ?? 'unknown';
+  const a = modelTitle(turn.a?.model);
+  const b = modelTitle(turn.b?.model);
   const saved = queued
     ? ' Your vote is saved on this device and will be sent when you are back online.'
     : '';

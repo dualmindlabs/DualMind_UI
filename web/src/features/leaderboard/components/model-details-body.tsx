@@ -49,10 +49,11 @@ export interface ModelDetailsBodyProps {
  * its win rate sits on the board.
  */
 export function ModelDetailsBody({ entry, board }: ModelDetailsBodyProps) {
-  const { entries, summary } = board;
-  const leader = entries[0];
+  const { entries, rated, summary } = board;
+  const leader = rated[0];
   const gap = leader ? entry.elo - leader.elo : 0;
-  const sharing = entries.filter(other => other.rank === entry.rank).length - 1;
+  const sharing =
+    entry.rank === null ? 0 : rated.filter(other => other.rank === entry.rank).length - 1;
   const winRateRank = 1 + entries.filter(other => other.winRate > entry.winRate).length;
   const recorded = entry.wins + entry.losses + entry.ties;
 
@@ -63,15 +64,27 @@ export function ModelDetailsBody({ entry, board }: ModelDetailsBodyProps) {
           label="Elo"
           value={formatElo(entry.elo)}
           hint={
-            leader === undefined || leader.id === entry.id || gap === 0
-              ? 'Top of the board'
-              : `${formatEloDelta(gap)} on the leader`
+            entry.provisional
+              ? 'Can still move a lot'
+              : leader === undefined || leader.id === entry.id || gap === 0
+                ? 'Top of the board'
+                : `${formatEloDelta(gap)} on the leader`
           }
         />
         <Stat
           label="Rank"
-          value={`${formatCount(entry.rank)} of ${formatCount(summary.models)}`}
-          hint={sharing > 0 ? `Shared with ${pluralize(sharing, 'other model')}` : 'By Elo rating'}
+          value={
+            entry.rank === null
+              ? 'Not yet rated'
+              : `${formatCount(entry.rank)} of ${formatCount(summary.rated)}`
+          }
+          hint={
+            entry.rank === null
+              ? `Ranked from ${formatCount(PROVISIONAL_BATTLES)} battles`
+              : sharing > 0
+                ? `Shared with ${pluralize(sharing, 'other model')}`
+                : 'Among rated models'
+          }
         />
         <Stat
           label="Win rate"
@@ -83,7 +96,7 @@ export function ModelDetailsBody({ entry, board }: ModelDetailsBodyProps) {
           value={formatCount(entry.battles)}
           hint={
             entry.provisional
-              ? `Provisional below ${formatCount(PROVISIONAL_BATTLES)}`
+              ? `${formatCount(Math.max(0, PROVISIONAL_BATTLES - entry.battles))} more to be rated`
               : `Past the ${formatCount(PROVISIONAL_BATTLES)}-battle mark`
           }
         />
@@ -91,10 +104,9 @@ export function ModelDetailsBody({ entry, board }: ModelDetailsBodyProps) {
 
       {entry.provisional ? (
         <p className="rounded-md border border-warn/40 bg-surface px-3.5 py-3 text-ui-sm text-fg-soft">
-          <span className="font-medium text-fg">Provisional rating.</span> With{' '}
+          <span className="font-medium text-fg">Not yet rated.</span> With{' '}
           {pluralize(entry.battles, 'battle')}, a few votes can still move this rating a long way.
-          The board marks a rating provisional until it has {formatCount(PROVISIONAL_BATTLES)}{' '}
-          battles.
+          The board gives a model a rank once it has {formatCount(PROVISIONAL_BATTLES)} battles.
         </p>
       ) : null}
 

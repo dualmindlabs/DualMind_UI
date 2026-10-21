@@ -41,21 +41,34 @@ describe('sortEntries', () => {
       'Compound Mini',
       'Gemma 3 1B IT',
       'Gemma 3n E2B IT',
-      'hermes-2-pro-mistral-7b',
-      'llama-3.1-70b-instruct',
-      'llama-3.2-11b-vision-instruct',
-      'llama-3.3-70b-instruct-fp8-fast',
+      'Hermes 2 Pro Mistral 7B',
+      'Llama 3.1 70B Instruct',
+      'Llama 3.2 11B Vision Instruct',
+      'Llama 3.3 70B Instruct (FP8, fast)',
     ]);
 
     const byProvider = sortEntries(entries, { key: 'provider', direction: 'asc' });
     expect(byProvider.map(item => item.providerLabel)).toEqual([
-      'Cloudflare',
-      'Cloudflare',
-      'Cloudflare',
-      'Cloudflare',
       'Google',
       'Google',
       'Groq',
+      'Meta',
+      'Meta',
+      'Meta',
+      'Nous Research',
+    ]);
+  });
+
+  it('sorts models without a rank after every rated model', () => {
+    const mixed = [
+      entry({ id: 'u', name: 'Unrated', rank: null, elo: 1200, provisional: true }),
+      entry({ id: 'b', name: 'B', rank: 2 }),
+      entry({ id: 'a', name: 'A', rank: 1 }),
+    ];
+    expect(names(sortEntries(mixed, { key: 'rank', direction: 'asc' }))).toEqual([
+      'A',
+      'B',
+      'Unrated',
     ]);
   });
 
@@ -112,7 +125,7 @@ describe('search and provider filter', () => {
     expect(matchesQuery(llama, 'llama 70b')).toBe(true);
     expect(matchesQuery(llama, '70B LLAMA')).toBe(true);
     expect(matchesQuery(llama, 'meta')).toBe(true);
-    expect(matchesQuery(llama, 'cloudflare fp8')).toBe(true);
+    expect(matchesQuery(llama, 'cloudflare instruct')).toBe(true);
     expect(matchesQuery(llama, 'llama groq')).toBe(false);
     expect(matchesQuery(llama, '   ')).toBe(true);
   });
@@ -127,8 +140,13 @@ describe('search and provider filter', () => {
       'Gemma 3 1B IT',
     ]);
     expect(filterEntries(entries, { query: 'gemma', provider: 'groq' })).toEqual([]);
-    expect(filterEntries(fullBoard.entries, { query: 'gpt oss', provider: 'groq' })).toHaveLength(
+    expect(filterEntries(fullBoard.entries, { query: 'gpt oss', provider: 'openai' })).toHaveLength(
       2,
+    );
+    // The serving platform is searchable too.
+    expect(filterEntries(entries, { query: 'workers ai', provider: 'groq' })).toEqual([]);
+    expect(filterEntries(entries, { query: 'workers ai', provider: ALL_PROVIDERS })).toHaveLength(
+      4,
     );
   });
 

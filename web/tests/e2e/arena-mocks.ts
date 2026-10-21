@@ -1,3 +1,7 @@
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import type { Page, Route } from '@playwright/test';
 
 // The arena's backend for the e2e tests: Supabase answered by Playwright routes (the build uses
@@ -7,6 +11,19 @@ import type { Page, Route } from '@playwright/test';
 
 export const SUPABASE = 'https://e2eproject.supabase.co';
 export const SESSION_KEY = 'sb-e2eproject-auth-token';
+
+// The picker's ranks and ratings come from the same recorded board as the leaderboard page, so
+// the two never disagree in the review screenshots.
+const BOARD = readFileSync(
+  path.join(
+    path.dirname(fileURLToPath(import.meta.url)),
+    '..',
+    'fixtures',
+    'api',
+    'model-stats.board.recorded.json',
+  ),
+  'utf8',
+);
 
 const USER = {
   id: '00000000-0000-4000-8000-000000000001',
@@ -232,19 +249,7 @@ export async function mockArena(
     }
     if (path === '/api/models') return json(route, 200, { items: MODELS });
     if (path === '/api/arena/model-stats') {
-      return json(route, 200, {
-        success: true,
-        items: MODELS.map((model, index) => ({
-          ...model,
-          eloScore: 1150 - index * 40,
-          eloRank: index + 1,
-          totalWins: 60 - index * 10,
-          totalLosses: 30,
-          totalTies: 9,
-          totalResponses: 99 - index * 10,
-          winRate: 60 - index * 8,
-        })),
-      });
+      return json(route, 200, JSON.parse(BOARD));
     }
     // Direct chat streams from the e2e backend (serve-dist.mjs), in real chunks.
     if (path === '/api/arena/chat/stream') return route.continue();

@@ -12,12 +12,13 @@ import { SectionHeading } from './section-heading';
 const PREVIEW_SIZE = 5;
 
 /**
- * 04, the top five right now, live from the public leaderboard: #1 on a Spotlight Card with a
+ * 04, the top five rated models right now (models not yet rated are left out, as on the
+ * leaderboard), live from the public leaderboard: #1 on a Spotlight Card with a
  * Shine Border, ranks 2 to 5 next to it. Loading keeps the layout; a failure says so and links to
  * the leaderboard page (no numbers that did not come from the API).
  */
 export function LeaderboardPreview({ stats }: { stats: LiveStatsState }) {
-  const top = stats.status === 'ready' ? stats.stats.ranked.slice(0, PREVIEW_SIZE) : [];
+  const top = stats.status === 'ready' ? stats.stats.top.slice(0, PREVIEW_SIZE) : [];
   const [leader, ...rest] = top;
 
   return (
@@ -62,6 +63,14 @@ export function LeaderboardPreview({ stats }: { stats: LiveStatsState }) {
                 </ol>
               </div>
             </>
+          ) : stats.status === 'ready' ? (
+            <div className="rounded-lg border border-line bg-surface p-6 sm:p-8 lg:col-span-2">
+              <p className="text-h3 font-normal text-fg">No model is rated yet.</p>
+              <p className="mt-2 text-ui text-fg-soft">
+                A model gets a rank once it has enough battles. Open the leaderboard to see how the
+                models are doing so far.
+              </p>
+            </div>
           ) : stats.status === 'error' ? (
             <div className="rounded-lg border border-line bg-surface p-6 sm:p-8 lg:col-span-2">
               <p className="text-h3 font-normal text-fg">
