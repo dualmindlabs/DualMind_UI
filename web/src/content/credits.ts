@@ -9,6 +9,8 @@ export type CreditId =
   | 'magicui'
   | 'motion-primitives'
   | 'aceternity'
+  | 'prompt-kit'
+  | 'streamdown'
   | 'motion'
   | 'lucide'
   | 'react-router'
@@ -86,6 +88,26 @@ export const credits: readonly Credit[] = [
     kind: 'vendored',
     restricted: true,
     uses: ['Placeholders And Vanish Input', 'Glowing Effect', 'Bento Grid', 'Timeline'],
+  },
+  {
+    id: 'prompt-kit',
+    name: 'prompt-kit',
+    url: 'https://www.prompt-kit.com',
+    licence: 'MIT',
+    licenceUrl: 'https://github.com/ibelick/prompt-kit/blob/main/LICENCE.md',
+    kind: 'vendored',
+    restricted: false,
+    uses: ['Prompt Input', 'Prompt Suggestion', 'Chat Container', 'Scroll Button'],
+  },
+  {
+    id: 'streamdown',
+    name: 'Streamdown',
+    url: 'https://streamdown.ai',
+    licence: 'Apache-2.0',
+    licenceUrl: 'https://github.com/vercel/streamdown/blob/main/LICENSE',
+    kind: 'dependency',
+    restricted: false,
+    uses: ['Model answers as Markdown, sanitised and hardened'],
   },
   {
     id: 'motion',

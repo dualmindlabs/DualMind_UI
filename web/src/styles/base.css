@@ -159,3 +159,17 @@
     }
   }
 }
+
+/*
+ * The signed-in arena at `/` (src/lib/session/handoff.ts): the inline head script marks
+ * <html data-arena> before the first paint, so the prerendered landing page stays hidden and the
+ * arena's loading frame shows until the app takes over. Unlayered on purpose: these must win over
+ * any utility on the same element (the landing wrapper is `display: contents`).
+ */
+html[data-arena] [data-landing] {
+  display: none;
+}
+
+html:not([data-arena]) [data-arena-boot] {
+  display: none;
+}

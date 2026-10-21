@@ -21,6 +21,8 @@ export interface MobileNavProps {
   activePath?: string;
   /** The landmark's name inside the drawer. */
   label?: string;
+  /** Leaves out the sign-in button (the visitor is signed in; the header has an account menu). */
+  hideSignIn?: boolean;
   className?: string;
 }
 
@@ -33,7 +35,12 @@ const smallLinks = footerColumns
  * dismiss) with the main links, the theme switch and sign in. Focus is trapped inside while it is
  * open and returns to the menu button. It closes by itself when the route changes.
  */
-export function MobileNav({ activePath, label = 'Main', className }: MobileNavProps) {
+export function MobileNav({
+  activePath,
+  label = 'Main',
+  hideSignIn = false,
+  className,
+}: MobileNavProps) {
   const location = useLocation();
   const path = activePath ?? location.pathname;
   // Open "for" one location: when the route changes the key differs, so the drawer closes
@@ -96,12 +103,14 @@ export function MobileNav({ activePath, label = 'Main', className }: MobileNavPr
           <ThemeToggle />
         </div>
         <div className="grid gap-4 px-5 pt-5 pb-6">
-          <a
-            href={signInLink.href}
-            className={cn(buttonVariants({ variant: 'primary', size: 'md' }), 'w-full')}
-          >
-            {signInLink.label}
-          </a>
+          {hideSignIn ? null : (
+            <a
+              href={signInLink.href}
+              className={cn(buttonVariants({ variant: 'primary', size: 'md' }), 'w-full')}
+            >
+              {signInLink.label}
+            </a>
+          )}
           <ul className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-caption text-muted">
             {smallLinks.map(link => (
               <li key={link.href}>

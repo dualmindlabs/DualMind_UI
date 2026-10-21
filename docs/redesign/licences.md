@@ -119,10 +119,11 @@ Status values: **planned** (in the catalog, not yet written), **in use** (code e
 | shadcn/ui | MIT | as above | Sidebar, Data Table | Arena sidebar (the leaderboard table is our own on a plain `<table>`) | Base UI directly | planned |
 | Motion Primitives | MIT | [LICENCE](https://github.com/ibelick/motion-primitives/blob/main/LICENCE.md) | Text Shimmer (`text-shimmer.tsx`), Animated Background (`animated-background.tsx`), Sliding Number (`sliding-number.tsx`), Border Trail (`border-trail.tsx`) | `web/src/components/vendor/motion-primitives/`; `/design/`; `/leaderboard/`: Sliding Number for the ranks in the table; Arena and header next | Own with Motion | in use (/design/, /leaderboard/) |
 | Motion Primitives | MIT | as above | Text Effect, Morphing Dialog | Arena reveal (alternate), Models | Own with Motion | planned |
-| prompt-kit | MIT | [LICENSE](https://github.com/ibelick/prompt-kit/blob/main/LICENSE) | Prompt Input, Chat Container, Scroll Button, Thinking Bar, Feedback Bar, Code Block | Arena composer and panes | Own with shadcn | planned |
+| prompt-kit | MIT | [LICENCE](https://github.com/ibelick/prompt-kit/blob/main/LICENCE.md) | Prompt Input (`prompt-input.tsx`), Prompt Suggestion (`prompt-suggestion.tsx`), Chat Container (`chat-container.tsx`, on the `use-stick-to-bottom` npm package, MIT), Scroll Button (`scroll-button.tsx`) | `web/src/components/vendor/prompt-kit/`; the arena at `/` (`web/src/features/arena/`): the composer, the prompt starters, the thread view | Own textarea and scroll container with shadcn | in use (arena, slice S8) |
+| prompt-kit | MIT | as above | Thinking Bar, Feedback Bar | Arena battle flow | Own with shadcn | planned (S9) |
 | Kokonut UI (free) | MIT | [LICENSE](https://github.com/kokonut-labs/kokonutui/blob/main/LICENSE) | AI Text Loading, AI State Loading, AI Diff Review (patterns) | Arena | Own | planned |
 | Tremor Raw | Apache-2.0 | [LICENSE](https://github.com/tremorlabs/tremor-npm/blob/main/LICENSE) | Bar List, Tracker, Spark Chart | Leaderboard | shadcn Chart | planned |
-| Streamdown | Apache-2.0 | [LICENSE](https://github.com/vercel/streamdown/blob/main/LICENSE) | Streaming markdown | Answer panes | react-markdown | planned |
+| Streamdown | Apache-2.0 | [LICENSE](https://github.com/vercel/streamdown/blob/main/LICENSE) | Streaming Markdown (npm dependency, not vendored; hardened: no raw HTML, https-only links, no images) | Answer panes (`web/src/features/arena/components/markdown.tsx`) | react-markdown | in use (arena, slice S8) |
 
 Base UI, class-variance-authority, Lucide, Motion, Sonner, cmdk, input-otp, Recharts, TanStack Query and Fontsource fonts are npm dependencies (not vendored); they are credited on `/about/` and in `web/THIRD_PARTY_NOTICES.md`.
 
