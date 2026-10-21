@@ -279,10 +279,12 @@ test.describe('quality', () => {
     await expect(page.getByTestId('turn').first()).toBeVisible();
     expect(await overflowing(page)).toEqual([]);
     // The phone switch shows answer B.
-    await page.getByTestId('turn').first().getByRole('button', { name: 'Answer B', exact: true }).click();
-    await expect(
-      page.getByTestId('turn').first().getByRole('button', { name: 'Answer B', exact: true }),
-    ).toHaveAttribute('aria-pressed', 'true');
+    const answerB = page
+      .getByTestId('turn')
+      .first()
+      .getByRole('button', { name: 'Answer B', exact: true });
+    await answerB.click();
+    await expect(answerB).toHaveAttribute('aria-pressed', 'true');
     await page.getByRole('button', { name: 'Open the history' }).click();
     await expect(page.getByRole('dialog', { name: 'History' })).toBeVisible();
   });
