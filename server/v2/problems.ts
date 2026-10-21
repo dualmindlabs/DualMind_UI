@@ -76,7 +76,7 @@ export function onError(error: unknown, c: Context): Response {
   if (error instanceof HTTPException && error.status < 500) {
     const slug = Object.keys(PROBLEM_TYPES).find(key => PROBLEM_TYPES[key]!.status === error.status);
     if (slug) {
-      return problemFor(c, slug, { detail: error.status === 400 ? 'The request could not be read.' : undefined });
+      return problemFor(c, slug, error.status === 400 ? { detail: 'The request could not be read.' } : {});
     }
   }
   // Anything else is a bug: stack in the logs only, a generic body for the caller.

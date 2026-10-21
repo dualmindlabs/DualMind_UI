@@ -52,7 +52,7 @@ function allowedMethods(app: OpenAPIHono<AppEnv>, pathname: string): string[] {
 export function createApp(options: AppOptions = {}): OpenAPIHono<AppEnv> {
   const getVerifier = options.verifier ?? buildVerifier;
   const app = new OpenAPIHono<AppEnv>({
-    defaultHook: (result, c) => {
+    defaultHook: result => {
       if (!result.success) {
         throw new ProblemError('validation_error', {
           detail: 'The request did not match the schema.',
