@@ -29,7 +29,7 @@ export function SiteFooter({ status, navLabel = 'Footer', className }: SiteFoote
           <a
             href="/"
             aria-label="DualMind Arena, home"
-            className="inline-flex w-fit items-center gap-2.5 rounded-sm"
+            className="inline-flex w-fit items-center gap-2.5 rounded-sm pointer-coarse:min-h-11"
           >
             <Emblem className="size-7" />
             <Wordmark title={null} className="h-3.5" />
@@ -52,7 +52,7 @@ export function SiteFooter({ status, navLabel = 'Footer', className }: SiteFoote
                       {...(link.external && link.href.startsWith('https:')
                         ? { rel: 'noopener noreferrer' }
                         : {})}
-                      className="inline-flex min-h-8 items-center rounded-sm text-ui-sm text-fg-soft transition-colors duration-(--dur-fast) ease-out-expo hover:text-fg"
+                      className="inline-flex min-h-8 items-center rounded-sm text-ui-sm text-fg-soft transition-colors duration-(--dur-fast) ease-out-expo hover:text-fg pointer-coarse:min-h-11 pointer-coarse:min-w-11"
                     >
                       {link.label}
                     </a>

@@ -46,7 +46,7 @@ export function LeaderboardHero({ summary, updatedAt, refreshing, stale }: Leade
               <Swords aria-hidden="true" strokeWidth={1.75} />
               Start a battle
             </a>
-            <a href={RATINGS_HELP_HREF} className={cn(buttonVariants({ variant: 'ghost' }))}>
+            <a href={RATINGS_HELP_HREF} className={cn(buttonVariants({ variant: 'link' }))}>
               How ratings work
               <ArrowRight aria-hidden="true" strokeWidth={1.75} />
             </a>

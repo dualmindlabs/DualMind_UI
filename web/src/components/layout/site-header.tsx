@@ -54,7 +54,7 @@ function HomeLink({ className }: { className?: string }) {
       href="/"
       aria-label="DualMind Arena, home"
       className={cn(
-        'pointer-events-auto inline-flex shrink-0 items-center gap-2.5 rounded-sm',
+        'pointer-events-auto hit-area relative inline-flex shrink-0 items-center gap-2.5 rounded-sm',
         className,
       )}
     >
