@@ -47,6 +47,7 @@ export const footerColumns: readonly FooterColumn[] = [
       { label: 'Arena', href: '/' },
       { label: 'Leaderboard', href: '/leaderboard/' },
       { label: 'Models', href: '/models/' },
+      { label: 'API', href: '/developers/' },
     ],
   },
   {
