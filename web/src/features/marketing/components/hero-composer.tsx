@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
-import { useMediaQuery } from '@/hooks/use-media-query';
 import { PlaceholdersAndVanishInput } from '@/components/vendor/aceternity/placeholders-and-vanish-input';
+import { useMediaQuery } from '@/hooks/use-media-query';
 import { cn } from '@/lib/utils/cn';
 
 import { DEMO_BATTLES } from '../content/demo';
