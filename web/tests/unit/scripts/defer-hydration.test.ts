@@ -7,8 +7,8 @@ interface Deferred {
   bootFile: string;
   bootCode: string;
 }
-const require = createRequire(import.meta.url);
-const { deferHydration } = require('../../../../scripts/defer-hydration.js') as {
+const nodeRequire = createRequire(import.meta.url);
+const { deferHydration } = nodeRequire('../../../../scripts/defer-hydration.js') as {
   deferHydration: (html: string) => Deferred | null;
 };
 
