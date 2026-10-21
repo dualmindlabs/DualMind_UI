@@ -12,7 +12,9 @@ export const ApiClientContext = createContext<ApiClient | null>(null);
 export function useApiClient(): ApiClient {
   const client = useContext(ApiClientContext);
   if (!client) {
-    throw new Error('useApiClient() needs <ApiProvider> (see components/layout/app-providers.tsx).');
+    throw new Error(
+      'useApiClient() needs <ApiProvider> (see components/layout/app-providers.tsx).',
+    );
   }
   return client;
 }
