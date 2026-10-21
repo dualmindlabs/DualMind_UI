@@ -64,12 +64,12 @@ describe('LandingPage', () => {
     renderLanding();
     const strip = screen.getByTestId('live-strip');
     await waitFor(() => expect(strip).toHaveAttribute('data-state', 'ready'));
-    expect(within(strip).getByText('Llama 3.1 70B Instruct')).toBeInTheDocument();
+    expect(within(strip).getByText('Llama 3.3 70B Instruct (FP8, fast)')).toBeInTheDocument();
     expect(within(strip).getByText(/Live from the public leaderboard/)).toBeInTheDocument();
     expect(screen.getByTestId('model-strip-source')).toHaveTextContent('Live · 53 models');
     const preview = screen.getByTestId('leaderboard-preview');
     expect(within(preview).getByText('#1 right now')).toBeInTheDocument();
-    expect(within(preview).getAllByRole('listitem')).toHaveLength(4);
+    expect(within(preview).getAllByRole('listitem')).toHaveLength(5);
     // One request feeds the strip, the model list and the preview.
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
