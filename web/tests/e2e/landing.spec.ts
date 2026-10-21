@@ -117,10 +117,9 @@ test('the live strip shows the leaderboard numbers and the #1', async ({ page })
   await page.goto('/');
   const strip = page.getByTestId('live-strip');
   await expect(strip).toHaveAttribute('data-state', 'ready');
-  // The #1 is the best rated model: the 96-battle model the API ranks first is not yet rated.
-  await expect(strip).toContainText('Llama 3.1 70B Instruct');
-  await expect(strip).toContainText('1140 Elo · Meta');
-  await expect(strip).not.toContainText('Llama 3.3 70B');
+  // The #1 is the API's own leader: 96 battles are enough to be rated (the threshold is 5).
+  await expect(strip).toContainText('Llama 3.3 70B Instruct');
+  await expect(strip).toContainText('1150 Elo · Meta');
   await expect(strip).toContainText('Live from the public leaderboard');
   await expect(page.getByTestId('model-strip-source')).toHaveText('Live · 53 models');
 });

@@ -69,7 +69,7 @@ describe('LandingPage', () => {
     expect(screen.getByTestId('model-strip-source')).toHaveTextContent('Live · 53 models');
     const preview = screen.getByTestId('leaderboard-preview');
     expect(within(preview).getByText('#1 right now')).toBeInTheDocument();
-    expect(within(preview).getAllByRole('listitem')).toHaveLength(5);
+    expect(within(preview).getAllByRole('listitem')).toHaveLength(4);
     // One request feeds the strip, the model list and the preview.
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });

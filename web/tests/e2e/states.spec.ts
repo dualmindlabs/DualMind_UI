@@ -458,9 +458,12 @@ const arenaScenarios: Scenario[] = [
       return {
         focus: turn.getByTestId('vote-pending'),
         cleanup: () =>
-          void page.evaluate(() => {
-            Reflect.deleteProperty(navigator, 'onLine');
-          }),
+          // The test may already be over when this runs; there is nothing left to restore then.
+          void page
+            .evaluate(() => {
+              Reflect.deleteProperty(navigator, 'onLine');
+            })
+            .catch(() => {}),
       };
     },
   },
