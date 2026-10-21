@@ -67,7 +67,7 @@ export function ArenaProvider({ children }: { children: ReactNode }) {
         return params;
       });
     },
-    [setSearchParams],
+    [setSearchParams, setHistoryOpen],
   );
 
   const newBattle = useCallback(() => {
@@ -78,7 +78,7 @@ export function ArenaProvider({ children }: { children: ReactNode }) {
       return params;
     });
     focusComposer();
-  }, [setSearchParams, focusComposer]);
+  }, [setSearchParams, focusComposer, setHistoryOpen, setDraft]);
 
   const selectMode = useCallback(
     (next: ArenaMode) => {
@@ -102,7 +102,7 @@ export function ArenaProvider({ children }: { children: ReactNode }) {
   const toggleHistory = useCallback(() => {
     if (wide) setSidebarCollapsed(!sidebarCollapsed);
     else setHistoryOpen(open => !open);
-  }, [wide, sidebarCollapsed, setSidebarCollapsed]);
+  }, [wide, sidebarCollapsed, setSidebarCollapsed, setHistoryOpen]);
 
   const setShortcutsEnabled = useCallback(
     (enabled: boolean) => setStoredShortcuts(enabled ? null : 'off'),
@@ -111,7 +111,7 @@ export function ArenaProvider({ children }: { children: ReactNode }) {
 
   const announce = useCallback((message: string) => {
     setAnnouncement(current => ({ id: current.id + 1, message }));
-  }, []);
+  }, [setAnnouncement]);
 
   // The tab title follows the open thread.
   useEffect(() => {
@@ -156,10 +156,11 @@ export function ArenaProvider({ children }: { children: ReactNode }) {
       setShortcutsEnabled,
       focusComposer,
       announce,
+      setHistoryOpen,
     ],
   );
 
-  const draftValue = useMemo<DraftState>(() => ({ draft, setDraft }), [draft]);
+  const draftValue = useMemo<DraftState>(() => ({ draft, setDraft }), [draft, setDraft]);
 
   return (
     <ArenaContext.Provider value={value}>
