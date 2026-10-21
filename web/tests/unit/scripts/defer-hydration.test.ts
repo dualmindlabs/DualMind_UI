@@ -24,7 +24,7 @@ describe('deferHydration', () => {
     const result = deferHydration(PAGE);
     expect(result).not.toBeNull();
     if (!result) return;
-    expect(result.html).not.toContain('modulepreload"');
+    expect(result.html).not.toContain('<link rel="modulepreload"');
     expect(result.html).not.toContain('type="module"');
     expect(result.html).toContain('<link rel="stylesheet" href="/assets/x.css"/>');
     expect(result.html).toContain('<main>Hello</main>');
@@ -38,7 +38,7 @@ describe('deferHydration', () => {
   });
 
   it('names the boot file after its content', () => {
-    const other = PAGE.replace('b-abcdefgh', 'c-abcdefgh');
+    const other = PAGE.replaceAll('b-abcdefgh', 'c-abcdefgh');
     expect(deferHydration(PAGE)?.bootFile).not.toBe(deferHydration(other)?.bootFile);
     expect(deferHydration(PAGE)?.bootFile).toBe(deferHydration(PAGE)?.bootFile);
   });
