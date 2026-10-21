@@ -1,21 +1,17 @@
-# Morning summary
+# Summary for Harsh
 
-Phone-readable summary of the overnight run. Full log: [status.md](./status.md). For Harsh: [needs-harsh.md](./needs-harsh.md).
+Phone-readable. Full log: [status.md](./status.md). Quality bar: [startup-grade-checklist.md](./startup-grade-checklist.md). Needs you: [needs-harsh.md](./needs-harsh.md).
 
-Updated: 2026-10-21 02:55 UTC.
+Updated: 2026-10-21 09:00 UTC.
 
-**Shipped overnight (all merged, CI green; production still behind the waitlist):**
-1. Landing page `/`: live hero, real prompt box, playable demo battle, live top 5: [#40](https://github.com/dualmindlabs/DualMind_UI/pull/40)
-2. Leaderboard + models on live data, no sign-in needed: [#38](https://github.com/dualmindlabs/DualMind_UI/pull/38)
+**Live on the new design (behind the waitlist; open https://arena.dualmindlab.tech/?preview=dualmind-preview first):**
+1. Landing `/` with a live hero and a playable demo battle: [#40](https://github.com/dualmindlabs/DualMind_UI/pull/40)
+2. Leaderboard + models on live data: [#38](https://github.com/dualmindlabs/DualMind_UI/pull/38)
 3. About, how it works, FAQ, privacy, terms, cookies, 404: [#41](https://github.com/dualmindlabs/DualMind_UI/pull/41)
-4. UI kit, header, command palette: [#34](https://github.com/dualmindlabs/DualMind_UI/pull/34); 27 effects: [#36](https://github.com/dualmindlabs/DualMind_UI/pull/36)
-5. Typed API client: [#33](https://github.com/dualmindlabs/DualMind_UI/pull/33); Worker security (CSP, headers, redirects): [#24](https://github.com/dualmindlabs/DualMind_UI/pull/24)
-6. Backend plan (research, 25-feature roadmap, ADR 0007): [#32](https://github.com/dualmindlabs/DualMind_UI/pull/32)
+4. Sign-in, sign-up, password reset (old links redirect): [#43](https://github.com/dualmindlabs/DualMind_UI/pull/43)
+5. API v2 platform + one error shape + TTS fix + rate limits: [#48](https://github.com/dualmindlabs/DualMind_UI/pull/48), [#49](https://github.com/dualmindlabs/DualMind_UI/pull/49), [#51](https://github.com/dualmindlabs/DualMind_UI/pull/51)
+6. Cloudflare resources created and bound: [#46](https://github.com/dualmindlabs/DualMind_UI/pull/46); API repo reviewed: [#54](https://github.com/dualmindlabs/DualMind_UI/pull/54)
 
-**See it:** https://arena.dualmindlab.tech/?preview=dualmind-preview (sets a preview cookie), then /leaderboard/, /about/, /design/.
+**In progress:** the arena itself (battle, vote, reveal, history): [#52](https://github.com/dualmindlabs/DualMind_UI/pull/52), [#53](https://github.com/dualmindlabs/DualMind_UI/pull/53).
 
-**Screenshots:** landing https://github.com/dualmindlabs/DualMind_UI/actions/runs/39532315889/artifacts/12315739074 · leaderboard https://github.com/dualmindlabs/DualMind_UI/actions/runs/39530192992/artifacts/12314189940 · info pages https://github.com/dualmindlabs/DualMind_UI/actions/runs/39533833408/artifacts/12317112907
-
-**In progress:** sign-in on the new app (S6). **Next:** the arena itself (signed-in `/`, battles, reveal), share, settings, then cleanup and backend.
-
-**Harsh to do:** see needs-harsh.md (Supabase preview URL and build variables for sign-in, failing Vercel project, a governing-law choice for the terms, optional buy list).
+**Next:** arena merge, then .NET safety fixes in DualMind_Back (needs your go to deploy), developer portal, quality pass.
