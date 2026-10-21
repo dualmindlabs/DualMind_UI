@@ -33,7 +33,7 @@ export interface FuzzyTextProps {
   intro?: boolean;
 }
 
-const INTRO_MS = 1400;
+const INTRO_MS = 1000;
 const INTRO_PEAK = 2;
 
 /** Text that jitters like a bad signal: the 404 page. */

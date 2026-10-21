@@ -2,7 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, type Page, test } from '@playwright/test';
 
 import { credits } from '../../src/content/credits';
-import { passGate, PREVIEW_COOKIE, settle, shotPath, storeTheme } from './helpers';
+import { fullPageShot, passGate, PREVIEW_COOKIE, settle, shotPath, storeTheme } from './helpers';
 
 // The info, legal and 404 pages (slice S4) in Chromium, through the real Worker: prerendered
 // content without JavaScript, SEO tags, console and CSP errors, axe in both themes, overflow,
@@ -218,7 +218,7 @@ for (const spec of pages) {
             animations: 'disabled',
           });
           await scrollThrough(page);
-          await page.screenshot({
+          await fullPageShot(page, {
             path: shotPath(`info-${spec.slug}-${viewport.name}-${theme}-full`),
             fullPage: true,
             animations: 'disabled',
@@ -558,7 +558,7 @@ test.describe('404', () => {
           path: shotPath(`info-404-${viewport.name}-${theme}-fold`),
           animations: 'disabled',
         });
-        await page.screenshot({
+        await fullPageShot(page, {
           path: shotPath(`info-404-${viewport.name}-${theme}-full`),
           fullPage: true,
           animations: 'disabled',

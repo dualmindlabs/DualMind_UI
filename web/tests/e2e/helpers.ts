@@ -26,3 +26,20 @@ export async function settle(page: Page, ms = 1800) {
 export function shotPath(name: string) {
   return path.join(here, '..', '..', 'screenshots', `${name}.png`);
 }
+
+/**
+ * A screenshot for review. Full-page captures show the sticky site header wherever the page was
+ * scrolled to (audit P2-10), which misleads reviewers: for the capture the header sits in the
+ * flow at the top instead. Fold shots (not `fullPage`) are taken as they are.
+ */
+export async function fullPageShot(page: Page, options: Parameters<Page['screenshot']>[0]) {
+  if (!options?.fullPage) return page.screenshot(options);
+  const handle = await page.addStyleTag({
+    content: '[data-slot="site-header"] { position: static !important; }',
+  });
+  try {
+    return await page.screenshot(options);
+  } finally {
+    await handle.evaluate(node => node.remove());
+  }
+}

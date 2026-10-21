@@ -4,7 +4,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, type Page, type Route, test } from '@playwright/test';
 
 import { mockArena, SUPABASE } from './arena-mocks';
-import { passGate, PREVIEW_COOKIE, settle, shotPath, storeTheme } from './helpers';
+import { fullPageShot, passGate, PREVIEW_COOKIE, settle, shotPath, storeTheme } from './helpers';
 
 // Slice S12: /settings/ through the real Worker (client-only, noindex), with Supabase and the
 // API answered by Playwright routes (arena-mocks.ts): the signed-out redirect, every section,
@@ -380,7 +380,7 @@ test.describe('export', () => {
     await expect(page.getByTestId('print-export')).toContainText(
       'Explain recursion to a ten-year-old',
     );
-    await page.screenshot({ path: shotPath('settings-print'), fullPage: true });
+    await fullPageShot(page, { path: shotPath('settings-print'), fullPage: true });
     await page.emulateMedia({ media: 'screen' });
     await page.getByRole('button', { name: 'Close the print view' }).click();
     await expect(page.getByTestId('print-export')).toHaveCount(0);
@@ -500,7 +500,7 @@ test.describe('screenshots', () => {
         await expect(page.getByTestId('export-count')).toBeVisible();
         await settle(page, 600);
         await page.screenshot({ path: shotPath(`settings-${viewport.label}-${theme}`) });
-        await page.screenshot({
+        await fullPageShot(page, {
           path: shotPath(`settings-full-${viewport.label}-${theme}`),
           fullPage: true,
         });

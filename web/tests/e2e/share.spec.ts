@@ -6,7 +6,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, type Page, test } from '@playwright/test';
 
 import { mockArena } from './arena-mocks';
-import { passGate, PREVIEW_COOKIE, settle, shotPath, storeTheme } from './helpers';
+import { fullPageShot, passGate, PREVIEW_COOKIE, settle, shotPath, storeTheme } from './helpers';
 import { OG_HEIGHT, OG_SHARE_TEMPLATE, OG_WIDTH } from './og-share-template';
 
 // Slice S11: sharing. The dialog in the arena (Supabase and the API mocked by arena-mocks.ts),
@@ -419,7 +419,7 @@ test.describe('screenshots', () => {
         await expect(page.getByTestId('turn').first()).toBeVisible();
         await settle(page, 700);
         await page.screenshot({ path: shotPath(`share-page-${viewport.label}-${theme}`) });
-        await page.screenshot({
+        await fullPageShot(page, {
           path: shotPath(`share-page-full-${viewport.label}-${theme}`),
           fullPage: true,
         });
