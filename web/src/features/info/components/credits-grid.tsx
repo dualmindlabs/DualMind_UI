@@ -4,26 +4,26 @@ import { Badge } from '@/components/ui/badge';
 import { credits } from '@/content/credits';
 
 /**
- * "Built with": every third-party source with what we use from it and its licence. Kept next to
- * the licence inventory in docs/redesign/licences.md, which the licence policy requires.
+ * "Built with": every third-party source with what we use from it and its license. Kept next to
+ * the license inventory in docs/redesign/licences.md, which the license policy requires. Rendered
+ * on /credits/.
  */
 export function CreditsGrid() {
   return (
     <section
       id="credits"
       aria-labelledby="credits-title"
-      className="scroll-mt-24 border-t border-line bg-bg-deep py-16 md:py-24 print:break-before-page"
+      className="scroll-mt-24 pt-4 pb-16 md:pb-24"
     >
       <div className="mx-auto max-w-page px-4 sm:px-6">
-        <p className="eyebrow text-muted">Credits</p>
-        <h2 id="credits-title" className="mt-3 text-h2 font-medium text-fg">
-          Credits and <span className="human-voice text-human">licences</span>
+        <h2 id="credits-title" className="sr-only">
+          Sources and licenses
         </h2>
-        <p className="mt-5 max-w-reading text-body [text-wrap:pretty] text-fg-soft">
-          DualMind Arena stands on open-source and free-to-use work. Each source below keeps its own
-          licence, and its licence file ships next to the code we copied in.
+        <p className="max-w-reading text-body [text-wrap:pretty] text-fg-soft">
+          Each source keeps its own license, and its license file ships next to the code we copied
+          in.
         </p>
-        <ul className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {credits.map(credit => (
             <li
               key={credit.id}
@@ -52,7 +52,7 @@ export function CreditsGrid() {
               </div>
               <p className="text-ui-sm text-fg-soft">{credit.uses.join(', ')}</p>
               <p className="mt-auto text-caption text-muted">
-                Licence:{' '}
+                License:{' '}
                 <a
                   href={credit.licenceUrl}
                   target="_blank"

@@ -17,6 +17,7 @@ export default [
 
   // Info and legal pages (slice S4).
   route('about', 'routes/about.tsx'),
+  route('credits', 'routes/credits.tsx'),
   route('how-it-works', 'routes/how-it-works.tsx'),
   route('faq', 'routes/faq.tsx'),
   route('privacy', 'routes/privacy.tsx'),

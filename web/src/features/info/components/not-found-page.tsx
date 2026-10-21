@@ -25,20 +25,20 @@ export function NotFoundPage() {
       >
         <div className="grid justify-items-center gap-8">
           <p className="eyebrow text-muted">Error 404</p>
-          <h1 id="not-found-title" className="text-muted">
-            <FuzzyText>404</FuzzyText>
+          <h1 id="not-found-title" className="text-fg-soft">
+            <FuzzyText baseIntensity={0}>404</FuzzyText>
             <span className="sr-only">. Page not found</span>
           </h1>
           <p className="max-w-[24ch] human-voice text-h2 text-balance text-human">
             This page took a wrong turn.
           </p>
           <p className="max-w-[44ch] text-body [text-wrap:pretty] text-fg-soft">
-            The address may have a typo, or the page may have moved. Start a battle, or look at how
-            the models rank.
+            The address may have a typo, or the page may have moved. Head back to the Arena, or look
+            at how the models rank.
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <a href="/" className={buttonVariants({ variant: 'primary', size: 'md' })}>
-              Go to the Arena
+              Start a battle
             </a>
             <a href="/leaderboard/" className={buttonVariants({ variant: 'outline', size: 'md' })}>
               See the leaderboard

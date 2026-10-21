@@ -9,7 +9,6 @@ export const aboutContent: PageContent = {
   heading: { text: 'Compare AI models,', human: 'blind.' },
   intro:
     'DualMind Arena puts two anonymous AI answers next to each other and asks you to pick the better one. Your votes feed a public Elo leaderboard. It is built by DualMind Labs.',
-  showCredits: true,
   sections: [
     {
       id: 'what-it-is',
@@ -76,17 +75,74 @@ export const aboutContent: PageContent = {
         },
         {
           type: 'paragraph',
-          text: 'The exact method, including the update formula and what counts as a fair vote, is on the How it works page.',
+          text: 'The exact method, including the update formula and what counts as a fair vote, is on the [How it works](/how-it-works/#rating) page.',
         },
       ],
     },
     {
-      id: 'built-with',
-      heading: 'What it is built with',
+      id: 'how-we-run-it',
+      heading: 'How the project is',
+      human: 'run',
+      blocks: [
+        {
+          type: 'definitions',
+          items: [
+            {
+              term: 'Blind votes',
+              description:
+                'Model names stay hidden until you have voted, and the order of the two answers is random. Only votes cast on anonymous battles count toward the leaderboard.',
+            },
+            {
+              term: 'Open methodology',
+              description:
+                'The rating formula, what counts as a fair vote and the known limits of the method are written down on the [How it works](/how-it-works/#rating) page. We change them in public, not quietly.',
+            },
+            {
+              term: 'Privacy',
+              description:
+                'We store your account, your prompts and the answers, and your votes so the Arena works. There are no analytics, no advertising and no tracking pixels, and we do not sell your data. The details are in the [Privacy Policy](/privacy/).',
+            },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'open-source',
+      heading: 'What is',
+      human: 'open source',
       blocks: [
         {
           type: 'paragraph',
-          text: 'The web app uses React and runs on Cloudflare Workers. Sign-in and account data use Supabase. Battles, votes and threads go through the DualMind API, which is a .NET service. The open-source libraries behind the interface are credited below.',
+          text: 'The source code of this web app is public on [GitHub](https://github.com/dualmindlabs/DualMind_UI). You can read how the Arena is built, report a problem or suggest a change there.',
+        },
+        {
+          type: 'paragraph',
+          text: 'The interface stands on open-source libraries and free-to-use components. Thank you to everyone who made them: the full list, with licenses, is on the [Credits](/credits/) page.',
+        },
+      ],
+    },
+    {
+      id: 'contact',
+      heading: 'Get in',
+      human: 'touch',
+      blocks: [
+        {
+          type: 'definitions',
+          items: [
+            {
+              term: 'Help and feedback',
+              description: 'support@dualmindlab.tech',
+            },
+            {
+              term: 'Privacy and data deletion',
+              description: 'privacy@dualmindlab.tech',
+            },
+            {
+              term: 'Code and bug reports',
+              description:
+                '[github.com/dualmindlabs/DualMind_UI](https://github.com/dualmindlabs/DualMind_UI)',
+            },
+          ],
         },
       ],
     },

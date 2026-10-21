@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import { type Block, infoPages, MAX_DESCRIPTION_LENGTH, type PageContent } from '@/features/info';
+import { BRAND_PRIMARY, BRAND_SUPPORTING } from '@/content/brand';
+import {
+  type Block,
+  creditsContent,
+  infoPages,
+  MAX_DESCRIPTION_LENGTH,
+  type PageContent,
+} from '@/features/info';
 
 function blockText(block: Block): string[] {
   switch (block.type) {
@@ -115,5 +122,35 @@ describe('info page content', () => {
         expect(text).not.toMatch(/—/);
       }
     }
+  });
+
+  it('keeps the credits page out of the editorial list but gives it a heading and description', () => {
+    expect(infoPages.map(page => page.slug)).not.toContain('credits');
+    expect(creditsContent.slug).toBe('credits');
+    expect(creditsContent.description.length).toBeLessThanOrEqual(MAX_DESCRIPTION_LENGTH);
+  });
+
+  it('uses en-US spelling in info copy', () => {
+    for (const page of [...infoPages, creditsContent]) {
+      for (const text of allText(page)) {
+        // "licence" (noun, British) is wrong; "license" is right.
+        expect(text, page.slug).not.toMatch(/\blicences?\b/i);
+        expect(text, page.slug).not.toMatch(/\b(optimis|recognis|colour|behaviour)/i);
+      }
+    }
+  });
+
+  it('About does not name internal services and links the credits and the repository', () => {
+    const about = infoPages.find(page => page.slug === 'about');
+    const text = about ? allText(about).join('\n') : '';
+    expect(text).not.toMatch(/\.NET|Supabase|Cloudflare/);
+    expect(text).toContain('(/credits/)');
+    expect(text).toContain('https://github.com/dualmindlabs/DualMind_UI');
+    expect(text).toContain('support@dualmindlab.tech');
+  });
+
+  it('has one brand line pair', () => {
+    expect(BRAND_PRIMARY).toBe('Two models. One prompt. You decide.');
+    expect(BRAND_SUPPORTING.length).toBeLessThan(70);
   });
 });
