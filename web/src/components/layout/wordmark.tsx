@@ -1,13 +1,59 @@
+/**
+ * The DualMind Arena wordmark: DUALMIND in Bricolage Grotesque 800 caps with the ARENA suffix in
+ * Mind A cyan (design-direction.md section 2). Inline SVG paths, so it needs no font and looks
+ * the same before the web fonts load. Outlines generated from Bricolage Grotesque (OFL) at wght
+ * 800, opsz 24, with 0.12em tracking.
+ */
 import { cn } from '@/lib/utils/cn';
 
-/**
- * Text wordmark: DUALMIND in Bricolage 800 caps with the product suffix in Mind A cyan. The
- * SVG-path version without a font dependency arrives with the shell in slice S2.
- */
-export function Wordmark({ suffix = 'Arena', className }: { suffix?: string; className?: string }) {
+const DUALMIND = [
+  'M141 660V529H329Q380 529 414 508Q449 487 467 443Q485 400 485 332Q485 279 474 241Q463 203 441 178',
+  'Q419 154 386 142Q353 131 309 131H141V0H303Q425 0 503 39Q580 78 616 150Q653 223 653 324',
+  'Q653 402 634 459Q615 516 583 555Q551 593 510 617Q469 640 424 650Q378 660 334 660ZM66 660V0H227',
+  'V660ZM1176 674Q1114 674 1065 661Q1017 649 981 625Q946 601 923 567Q900 533 888 491',
+  'Q877 448 877 398V0H1039V393Q1039 441 1054 472Q1069 503 1099 517Q1129 532 1175 532',
+  'Q1222 532 1252 517Q1282 503 1297 472Q1312 441 1312 393V0H1474V398Q1474 529 1400 602',
+  'Q1326 674 1176 674ZM1668 660 1891 0H2124L2348 660H2172L2015 127H2001L1843 660ZM1799 537V428H2239',
+  'V537ZM2546 660V0H2707V660ZM2575 660V525H2973V660ZM3169 660V0H3410L3578 474H3582L3746 0H3976V660',
+  'H3823L3832 164H3821L3635 660H3503L3321 164H3310L3319 660ZM4228 660V0H4392V660ZM4643 660V0H4853',
+  'L5130 444H5140L5132 0H5289V660H5098L4802 193H4792L4800 660ZM5616 660V529H5804Q5855 529 5889 508',
+  'Q5924 487 5942 443Q5960 400 5960 332Q5960 279 5949 241Q5938 203 5916 178Q5894 154 5861 142',
+  'Q5828 131 5784 131H5616V0H5778Q5900 0 5978 39Q6055 78 6091 150Q6128 223 6128 324',
+  'Q6128 402 6109 459Q6090 516 6058 555Q6026 593 5985 617Q5944 640 5899 650Q5853 660 5809 660Z',
+  'M5541 660V0H5702V660Z',
+].join('');
+
+const ARENA = [
+  'M6523 660 6746 0H6979L7203 660H7027L6870 127H6856L6698 660ZM6654 537V428H7094V537ZM7401 660V0',
+  'H7681Q7734 0 7778 8Q7823 17 7857 33Q7891 49 7915 73Q7939 96 7951 127Q7963 157 7963 195',
+  'Q7963 229 7952 257Q7941 285 7919 306Q7896 327 7863 341Q7829 354 7783 360V374Q7840 379 7872 399',
+  'Q7904 419 7921 451Q7939 484 7951 528L7989 660H7810L7781 538Q7773 498 7757 477Q7742 455 7719 446',
+  'Q7695 437 7658 437H7562V660ZM7562 317H7669Q7729 317 7762 294Q7795 270 7795 220Q7795 171 7765 147',
+  'Q7735 123 7673 123H7562ZM8200 660V0H8362V660ZM8317 660V529H8717V660ZM8317 386V269H8667V386Z',
+  'M8317 130V0H8715V130ZM8941 660V0H9151L9428 444H9438L9430 0H9587V660H9396L9100 193H9090L9098 660Z',
+  'M9786 660 10009 0H10242L10466 660H10290L10133 127H10119L9961 660ZM9917 537V428H10357V537Z',
+].join('');
+
+export interface WordmarkProps {
+  className?: string;
+  /**
+   * The accessible name. Pass `null` when the wordmark sits inside a link or heading that already
+   * names it, so it is not read twice.
+   */
+  title?: string | null;
+}
+
+/** Sized by height: set `h-*` (for example `h-3.5` in the header); the width follows. */
+export function Wordmark({ className, title = 'DualMind Arena' }: WordmarkProps) {
   return (
-    <span className={cn('inline-flex items-baseline gap-[0.45em] wordmark', className)}>
-      <span className="text-fg">DualMind</span> <span className="text-mind-a">{suffix}</span>
-    </span>
+    <svg
+      viewBox="66 0 10400 674"
+      className={cn('block h-3.5 w-auto shrink-0 overflow-visible', className)}
+      {...(title ? { role: 'img', 'aria-label': title } : { 'aria-hidden': true })}
+      focusable="false"
+    >
+      <path d={DUALMIND} className="fill-fg" />
+      <path d={ARENA} className="fill-mind-a" />
+    </svg>
   );
 }

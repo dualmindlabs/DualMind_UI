@@ -17,7 +17,7 @@ export function EffectDemoNumberTicker() {
           <span className="eyebrow text-muted">Votes today</span>
           <NumberTicker value={votes} startValue={12000} className="text-h2 font-medium text-fg" />
         </p>
-        <Button size="sm" variant="ghost" onClick={() => setVotes(value => value + 37)}>
+        <Button size="sm" variant="outline" onClick={() => setVotes(value => value + 37)}>
           <Plus aria-hidden="true" className="size-4" strokeWidth={2} />
           Add 37 votes
         </Button>

@@ -86,13 +86,13 @@
   }
 }
 
-/* Eyebrows, badges and keyboard hints: the DM Mono label voice. */
+/* Eyebrows, badges and keyboard hints: the DM Mono label voice, 12px caps (never smaller). */
 @utility eyebrow {
   font-family: var(--font-mono);
   font-size: var(--text-label);
   font-weight: 500;
   line-height: 1.2;
-  letter-spacing: 0.26em;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
 }
 
@@ -134,4 +134,28 @@
     transparent 1.2px
   );
   background-size: 24px 24px;
+}
+
+/*
+ * Pointer target without changing the visible size: at least 24 by 24px everywhere (WCAG 2.5.8)
+ * and 44 by 44px on touch screens. The element must be positioned (relative or absolute); the
+ * target is its ::before pseudo-element, centred on it.
+ */
+@utility hit-area {
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, 24px);
+    height: max(100%, 24px);
+    translate: -50% -50%;
+  }
+
+  @media (pointer: coarse) {
+    &::before {
+      width: max(100%, 44px);
+      height: max(100%, 44px);
+    }
+  }
 }

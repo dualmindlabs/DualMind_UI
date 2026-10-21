@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 
@@ -7,9 +7,13 @@ import { DesignSystemPage } from '@/features/design-system';
 import { effects } from '@/features/design-system/lib/effects';
 import { designSections } from '@/features/design-system/lib/sections';
 
+import { renderWithShell } from '../../render-with-shell';
+
+const renderPage = () => renderWithShell(<DesignSystemPage />);
+
 describe('DesignSystemPage', () => {
   it('has landmarks, a skip link and one h1', () => {
-    render(<DesignSystemPage />);
+    renderPage();
     expect(screen.getByRole('banner')).toBeInTheDocument();
     expect(screen.getByRole('main')).toHaveAttribute('id', 'main');
     expect(screen.getByRole('contentinfo')).toBeInTheDocument();
@@ -19,7 +23,7 @@ describe('DesignSystemPage', () => {
   });
 
   it('never skips a heading level', () => {
-    render(<DesignSystemPage />);
+    renderPage();
     const levels = screen.getAllByRole('heading').map(heading => Number(heading.tagName.slice(1)));
     levels.forEach((level, index) => {
       if (index > 0) expect(level - (levels[index - 1] ?? 1)).toBeLessThanOrEqual(1);
@@ -27,7 +31,7 @@ describe('DesignSystemPage', () => {
   });
 
   it('links every section from the in-page navigation', () => {
-    const { container } = render(<DesignSystemPage />);
+    const { container } = renderPage();
     const nav = screen.getByRole('navigation', { name: 'On this page' });
     for (const section of designSections) {
       expect(within(nav).getByRole('link', { name: new RegExp(section.title) })).toHaveAttribute(
@@ -39,7 +43,7 @@ describe('DesignSystemPage', () => {
   });
 
   it('labels both answer panes and the verdict buttons', () => {
-    render(<DesignSystemPage />);
+    renderPage();
     expect(screen.getByRole('region', { name: 'Answer A' })).toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'Answer B' })).toBeInTheDocument();
     const verdict = screen.getByRole('group', { name: 'Your verdict' });
@@ -53,14 +57,14 @@ describe('DesignSystemPage', () => {
   });
 
   it('links the email error to its field', () => {
-    render(<DesignSystemPage />);
+    renderPage();
     const email = screen.getByLabelText('Email');
     expect(email).toHaveAttribute('aria-invalid', 'true');
     expect(email).toHaveAccessibleDescription(/Enter a full email address/);
   });
 
   it('shows every vendored effect once, credited to its source', () => {
-    const { container } = render(<DesignSystemPage />);
+    const { container } = renderPage();
     const frames = [...container.querySelectorAll('figure[data-effect]')];
     expect(frames.map(frame => frame.getAttribute('data-effect')).sort()).toEqual(
       effects.map(effect => effect.id).sort(),
@@ -77,7 +81,7 @@ describe('DesignSystemPage', () => {
 
   it('previews the reduced-motion versions of the effects', async () => {
     const user = userEvent.setup();
-    const { container } = render(<DesignSystemPage />);
+    const { container } = renderPage();
     const toggle = screen.getByRole('button', { name: 'Preview reduced motion' });
     expect(toggle).toHaveAttribute('aria-pressed', 'false');
     expect(container.querySelector('[data-reduced-motion="true"]')).toBeNull();
@@ -88,5 +92,38 @@ describe('DesignSystemPage', () => {
     for (const gate of container.querySelectorAll('[data-webgl]')) {
       expect(gate).toHaveAttribute('data-webgl', 'static');
     }
+  });
+});
+
+describe('DesignSystemPage, UI kit and shell', () => {
+  it('uses the site header and footer as its landmarks', () => {
+    renderPage();
+    const banner = screen.getByRole('banner');
+    expect(within(banner).getByRole('link', { name: 'DualMind Arena, home' })).toHaveAttribute(
+      'href',
+      '/',
+    );
+    expect(within(banner).getByRole('navigation', { name: 'Main' })).toBeInTheDocument();
+    const footer = screen.getByRole('contentinfo');
+    expect(within(footer).getByRole('link', { name: 'Privacy' })).toHaveAttribute(
+      'href',
+      '/privacy/',
+    );
+  });
+
+  it('gives every navigation landmark its own name', () => {
+    renderPage();
+    const names = screen
+      .getAllByRole('navigation')
+      .map(nav => nav.getAttribute('aria-label') ?? '');
+    expect(new Set(names).size).toBe(names.length);
+  });
+
+  it('labels the one-time code input as one field', () => {
+    renderPage();
+    expect(screen.getByRole('textbox', { name: 'Verification code' })).toHaveAttribute(
+      'autocomplete',
+      'one-time-code',
+    );
   });
 });

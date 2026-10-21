@@ -51,7 +51,7 @@ export const typeScale: ReadonlyArray<{
   },
   {
     name: 'Label',
-    spec: 'DM Mono 0.6875rem / 1.2, 500, 0.26em caps',
+    spec: 'DM Mono 0.75rem / 1.2, 500, 0.22em caps',
     use: 'Eyebrows, badges, key hints',
     sample: 'Model A / 1.2 s / 63 words',
     className: 'eyebrow text-fg-soft',

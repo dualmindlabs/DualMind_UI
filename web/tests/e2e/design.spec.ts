@@ -24,11 +24,13 @@ test('loads without console errors and hydrates (the theme toggle works)', async
   await page.goto('/design/');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Two minds, one verdict.');
 
-  await page.locator('label').filter({ hasText: 'Light' }).click();
+  // The theme switch in the page header (the style guide shows more copies in its previews).
+  const themeSwitch = page.getByRole('banner').getByRole('group', { name: 'Colour theme' });
+  await themeSwitch.locator('label').filter({ hasText: 'Light' }).click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
   expect(await page.evaluate(() => window.localStorage.getItem('dm.theme'))).toBe('light');
 
-  await page.locator('label').filter({ hasText: 'System' }).click();
+  await themeSwitch.locator('label').filter({ hasText: 'System' }).click();
   await expect(page.locator('html')).not.toHaveAttribute('data-theme');
 
   await page.getByRole('button', { name: 'B is better' }).click();

@@ -11,12 +11,18 @@ const OPTIONS: ReadonlyArray<{ value: ThemePreference; label: string; icon: Luci
   { value: 'light', label: 'Light', icon: Sun },
 ];
 
+export interface ThemeToggleProps {
+  className?: string;
+  /** Icons only at every width (the header); the labels stay readable by screen readers. */
+  compact?: boolean;
+}
+
 /**
  * System / Dark / Light as a native radio group, so arrow keys move between the options. The
  * choice is stored in localStorage (`dm.theme`) and applied at once; on the next visit the inline
  * theme script applies it before the first paint.
  */
-export function ThemeToggle({ className }: { className?: string }) {
+export function ThemeToggle({ className, compact = false }: ThemeToggleProps) {
   const { preference, setPreference } = useTheme();
   const name = useId();
 
@@ -31,7 +37,11 @@ export function ThemeToggle({ className }: { className?: string }) {
       {OPTIONS.map(({ value, label, icon: Icon }) => (
         <label
           key={value}
-          className="relative inline-flex h-8 min-w-8 cursor-pointer items-center justify-center gap-1.5 rounded-full px-2 text-ui-sm text-muted focus-ring-within transition-colors duration-(--dur-fast) ease-out-expo hover:text-fg has-checked:bg-surface-2 has-checked:text-fg has-checked:shadow-raise sm:px-3"
+          title={compact ? `${label} theme` : undefined}
+          className={cn(
+            'hit-area relative inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-full text-ui-sm text-muted focus-ring-within transition-colors duration-(--dur-fast) ease-out-expo hover:text-fg has-checked:bg-surface-2 has-checked:text-fg has-checked:shadow-raise',
+            compact ? 'size-7' : 'h-8 min-w-8 px-2 sm:px-3',
+          )}
         >
           <input
             type="radio"
@@ -42,7 +52,7 @@ export function ThemeToggle({ className }: { className?: string }) {
             className="sr-only"
           />
           <Icon aria-hidden="true" className="size-4" strokeWidth={1.75} />
-          <span className="max-sm:sr-only">{label}</span>
+          <span className={compact ? 'sr-only' : 'max-sm:sr-only'}>{label}</span>
         </label>
       ))}
     </fieldset>

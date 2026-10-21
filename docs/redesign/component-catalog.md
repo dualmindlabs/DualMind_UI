@@ -121,7 +121,7 @@ Primary pick first; alternates in brackets. "RB" React Bits, "MU" Magic UI, "AC"
 | | Numbers | MP **Sliding Number** for rank and Elo |
 | | Charts | sh **Chart** (Recharts) with Evil Charts polish; TR **Spark Chart** for trends (B-3) |
 | **Models** | Cards | RB **Spotlight Card** [AC **Card Spotlight**] |
-| | Detail | MP **Morphing Dialog** (desktop), Vaul drawer (phones) |
+| | Detail | MP **Morphing Dialog** (desktop), sh **Drawer** on the Base UI Drawer (phones) |
 | **Auth** | Brand panel | RB **Silk** (static poster on phones) |
 | | Form | sh Form, sh **Input OTP**, sh Tabs; KK **AI Input** styling cues not needed |
 | **Share** (`/share/<id>`) | Transcript | Same panes as the arena (read-only), MU **Blur Fade** entrance |

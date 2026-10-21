@@ -1,13 +1,15 @@
+import { SiteFooter } from '@/components/layout/site-footer';
+import { SiteHeader } from '@/components/layout/site-header';
 import { SkipLink } from '@/components/layout/skip-link';
 
 import { ColorSection } from './color-section';
+import { ComponentsSection } from './components-section';
 import { ControlsSection } from './controls-section';
-import { DesignFooter } from './design-footer';
-import { DesignHeader } from './design-header';
 import { EffectsSection } from './effects-section';
 import { Hero } from './hero';
 import { MotionSection } from './motion-section';
 import { RolesSection } from './roles-section';
+import { ShellSection } from './shell-section';
 import { SpaceSection } from './space-section';
 import { TypeSection } from './type-section';
 
@@ -16,7 +18,7 @@ export function DesignSystemPage() {
   return (
     <>
       <SkipLink />
-      <DesignHeader />
+      <SiteHeader overlay />
       <main id="main" tabIndex={-1} className="outline-none">
         <Hero />
         <ColorSection />
@@ -25,9 +27,11 @@ export function DesignSystemPage() {
         <ControlsSection />
         <SpaceSection />
         <MotionSection />
+        <ComponentsSection />
+        <ShellSection />
         <EffectsSection />
       </main>
-      <DesignFooter />
+      <SiteFooter />
     </>
   );
 }

@@ -20,7 +20,7 @@ export function DurationBars() {
     <div className="rounded-lg border border-line bg-surface p-5 shadow-raise sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h3 className="text-h3 font-semibold">Durations</h3>
-        <Button size="sm" variant="ghost" onClick={() => setRun(count => count + 1)}>
+        <Button size="sm" variant="outline" onClick={() => setRun(count => count + 1)}>
           <RotateCcw aria-hidden="true" className="size-4" strokeWidth={2} />
           Replay
         </Button>
