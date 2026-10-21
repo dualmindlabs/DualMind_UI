@@ -26,12 +26,12 @@ function memoryStorage(entries: Record<string, string>) {
 
 /** Runs the inline <head> script with a fake location and storage; returns where it went. */
 function runScript(
-  { search = '', hash = '' }: { search?: string; hash?: string },
+  { search = '', hash = '', pathname = '/' }: { search?: string; hash?: string; pathname?: string },
   storage: ReturnType<typeof memoryStorage> | 'throws',
 ): string | null {
   const replace = vi.fn<(url: string) => void>();
   const window = {
-    location: { search, hash, replace },
+    location: { pathname, search, hash, replace },
     get localStorage() {
       if (storage === 'throws') throw new Error('SecurityError');
       return storage;
@@ -158,4 +158,17 @@ describe('signed-in hand-off', () => {
     expect(wantsSessionHandoff(undefined)).toBe(false);
     expect(wantsSessionHandoff(null)).toBe(false);
   });
+});
+
+describe('the hand-off outside the landing page', () => {
+  // The SPA fallback page is rendered from the / route, so the script is in its HTML too.
+  it.each(['/auth-callback.html', '/update-password.html', '/login/'])(
+    'does nothing on %s, even with tokens and a session',
+    pathname => {
+      const hash = '#access_token=a&refresh_token=b&type=recovery';
+      const storage = { 'dualmind.auth.supabase': '{"access_token":"x"}' };
+      expect(runScript({ pathname, hash }, memoryStorage(storage))).toBeNull();
+      expect(handoffDestination({ pathname, search: '', hash }, memoryStorage(storage))).toBeNull();
+    },
+  );
 });

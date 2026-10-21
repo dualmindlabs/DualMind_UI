@@ -7,7 +7,8 @@
 //                    (/careers, /careers/, /careers/team)
 //   to     where it goes; the query string is kept (the browser keeps the #hash)
 //
-// The auth .html rows (/login-modern.html -> /login/ ...) are added with the auth slice (S6).
+// Supabase email targets (/auth-callback.html, /update-password.html) are never redirected: they
+// render in place (SPA_FALLBACK_ROUTES in server/routing.js). Only their clean forms move there.
 
 /** @typedef {{ from: string, match: 'exact' | 'folder', to: string, reason: string }} RedirectRule */
 
@@ -39,6 +40,36 @@ export const LEGACY_REDIRECTS = [
     reason: 'Developer diagnostics page, not for visitors',
   },
   { from: '/verify.html', match: 'exact', to: '/', reason: 'Developer diagnostics page' },
+  // Slice S6: sign-in pages on clean canonical paths. The query is kept, so ?redirect= survives.
+  { from: '/login-modern.html', match: 'exact', to: '/login/', reason: 'Old sign-in page' },
+  { from: '/login-modern', match: 'exact', to: '/login/', reason: 'Old sign-in page, clean URL' },
+  { from: '/login/index.html', match: 'exact', to: '/login/', reason: 'One URL for sign-in' },
+  {
+    from: '/login/login',
+    match: 'folder',
+    to: '/login/',
+    reason: 'Third copy of the sign-in page (and its redirect.html)',
+  },
+  { from: '/signup-modern.html', match: 'exact', to: '/signup/', reason: 'Old sign-up page' },
+  { from: '/signup-modern', match: 'exact', to: '/signup/', reason: 'Old sign-up page, clean URL' },
+  {
+    from: '/forgot-password.html',
+    match: 'exact',
+    to: '/forgot-password/',
+    reason: 'Old password reset request page',
+  },
+  {
+    from: '/auth-callback',
+    match: 'exact',
+    to: '/auth-callback.html',
+    reason: 'Clean URL of the email callback; the page itself stays at .html',
+  },
+  {
+    from: '/update-password',
+    match: 'exact',
+    to: '/update-password.html',
+    reason: 'Clean URL of the reset page; the page itself stays at .html',
+  },
 ];
 
 /**

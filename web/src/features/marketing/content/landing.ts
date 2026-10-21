@@ -6,8 +6,8 @@ import { DEMO_BATTLES } from './demo';
  * only ever come from the live leaderboard.
  */
 
-/** Sign-in for now goes to the legacy page; the auth slice (S6) moves it to /login/. */
-export const SIGN_IN_HREF = '/login-modern.html';
+/** The sign-in page (slice S6); the old /login-modern.html answers with a 301 to it. */
+export const SIGN_IN_HREF = '/login/';
 export const LEADERBOARD_HREF = '/leaderboard/';
 export const HOW_IT_WORKS_HREF = '/how-it-works/';
 

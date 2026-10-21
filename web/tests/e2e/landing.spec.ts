@@ -192,7 +192,7 @@ test('a prompt from the hero plays the recorded demo and offers the sign-in', as
   );
   await expect(
     page.getByTestId('asked-note').getByRole('link', { name: 'Sign in to battle real models' }),
-  ).toHaveAttribute('href', '/login-modern.html');
+  ).toHaveAttribute('href', '/login/');
   await expect(page.getByText('Playing a recorded demo below.')).toBeVisible();
 });
 

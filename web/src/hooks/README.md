@@ -11,6 +11,8 @@ React hooks shared by more than one feature.
 - `use-scrolled.ts`: true once the page has scrolled past a threshold (the header condenses).
 - `use-modifier-key.ts`: `Cmd` on Apple platforms, `Ctrl` elsewhere, for shortcut hints.
 - `use-api-client.ts`: the app's API client from `ApiProvider` (components/layout), for the query builders in `@/lib/api`.
+- `use-auth.ts`: the auth state from `AuthProvider` (components/layout): status, session, user, profile, `client()` and `signOut()`.
+- `use-require-auth.ts`: the route guard for pages that need a session (sign-in redirect with the loop guard).
 - `use-command-palette.ts`: the command palette's state, and `useCommandPaletteGroup()` for features to add their own commands.
 
 **Rules:** file names `use-*.ts`, one hook per file, exported as `useX`. SSR-safe: hooks read browser APIs through `useSyncExternalStore` with a server snapshot, because pages are prerendered. Tests live in `tests/unit/hooks/`.

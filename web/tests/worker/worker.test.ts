@@ -311,8 +311,12 @@ describe('routing helpers (server/routing.js)', () => {
     expect(buildScript).toContain(`/${HASHED_ASSET_RE.source}/`);
   });
 
-  it('has no SPA fallback routes yet, and matches exact paths and prefixes', () => {
-    expect(SPA_FALLBACK_ROUTES).toEqual([]);
+  it('lists the two Supabase email targets, and matches exact paths and prefixes', () => {
+    expect(SPA_FALLBACK_ROUTES).toEqual(['/update-password.html', '/auth-callback.html']);
+    expect(isSpaFallbackRoute('/auth-callback.html')).toBe(true);
+    expect(isSpaFallbackRoute('/update-password.html')).toBe(true);
+    expect(isSpaFallbackRoute('/auth-callback')).toBe(false);
+    expect(isSpaFallbackRoute('/auth-callback.html/x')).toBe(false);
     const routes = ['/settings/', '/share/*'];
     expect(isSpaFallbackRoute('/settings/', routes)).toBe(true);
     expect(isSpaFallbackRoute('/settings', routes)).toBe(false);

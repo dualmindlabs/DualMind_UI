@@ -12,6 +12,8 @@ import type { Config } from '@react-router/dev/config';
  *   dist/index.html, whose copy lives on as dist/legacy-app.html until the arena slice (S8).
  *
  * Add a path here when its slice moves a page to this app (see docs/redesign/migration-plan.md).
+ * Client-only routes (/update-password.html, /auth-callback.html) are not listed: the Worker
+ * answers them with the SPA fallback (server/routing.js, SPA_FALLBACK_ROUTES).
  */
 export default {
   appDirectory: 'src/app',
@@ -28,6 +30,10 @@ export default {
     '/privacy',
     '/terms',
     '/cookies',
+    // Sign-in (slice S6). /update-password.html and /auth-callback.html are client-only.
+    '/login',
+    '/signup',
+    '/forgot-password',
     // The splat route renders the 404 page; build.js turns 404/index.html into dist/404.html.
     '/404',
   ],

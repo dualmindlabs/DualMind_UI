@@ -151,7 +151,7 @@ describe('LandingPage', () => {
     expect(note).toHaveTextContent('You asked: “Write a sonnet about tabs and spaces”');
     expect(
       within(note).getByRole('link', { name: 'Sign in to battle real models' }),
-    ).toHaveAttribute('href', '/login-modern.html');
+    ).toHaveAttribute('href', '/login/');
     expect(screen.getByText(/Playing a recorded demo below\./)).toBeInTheDocument();
     expect(demo()).toHaveFocus();
   });
