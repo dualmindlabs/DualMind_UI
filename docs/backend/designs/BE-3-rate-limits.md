@@ -1,6 +1,6 @@
 # BE-3: Rate limits with headers
 
-Status: **proposed** (2026-10-21). Wave W1. Uses the Workers Rate Limiting binding ([research.md, part 3](../research.md)). Depends on the verifier from [BE-0](./BE-0-platform.md) and the problem registry; produces the `429` shape the typed client already understands.
+Status: **built** (2026-10-21; PR awaiting merge). Deviations from this design: one limiter call in `worker.js` for v1 and v2 instead of a Hono middleware; a missing binding also sets `X-RateLimit-Status: skipped`; `PRIVACY_SALT` is optional and, until Harsh sets it, the raw address is the in-memory binding key (never logged) instead of a development salt; the BE-5 text routes are not classified yet (they do not exist); read and write limits in the Miniflare test config are raised so other tests do not trip them. Wave W1. Uses the Workers Rate Limiting binding ([research.md, part 3](../research.md)). Depends on the verifier from [BE-0](./BE-0-platform.md) and the problem registry; produces the `429` shape the typed client already understands.
 
 ## 1. Summary
 
