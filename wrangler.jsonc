@@ -63,6 +63,19 @@
     { "binding": "PUBLIC_BUCKET", "bucket_name": "dualmind-arena-public" },
     { "binding": "PUBLIC_BUCKET_PREVIEW", "bucket_name": "dualmind-arena-public-preview" }
   ],
+  // Rate limits (BE-3, server/rate-limit.js). The Workers Rate Limiting binding needs no account
+  // resource, only a namespace_id: account-wide positive integers chosen here, so do not reuse
+  // 1001 to 1005 in other Workers. period is 10 or 60 seconds. The numbers here must equal
+  // RATE_LIMIT_GROUPS in server/rate-limit.js (a test fails when they differ). Counting is
+  // approximate and per Cloudflare location. Kill switch: remove an entry (that group then
+  // fails open) or raise its limit. PRIVACY_SALT (optional secret) makes anonymous keys HMACs.
+  "ratelimits": [
+    { "name": "RL_BATTLE", "namespace_id": "1001", "simple": { "limit": 6, "period": 60 } },
+    { "name": "RL_VOTE", "namespace_id": "1002", "simple": { "limit": 10, "period": 10 } },
+    { "name": "RL_SPEECH", "namespace_id": "1003", "simple": { "limit": 10, "period": 60 } },
+    { "name": "RL_WRITE", "namespace_id": "1004", "simple": { "limit": 30, "period": 60 } },
+    { "name": "RL_READ", "namespace_id": "1005", "simple": { "limit": 30, "period": 10 } }
+  ],
   "observability": {
     "logs": {
       "enabled": false,

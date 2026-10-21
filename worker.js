@@ -34,6 +34,7 @@
 // ---------------------------------------------------------------------------
 import { proxyApi } from './server/api-proxy.js';
 import { problemTypeUrl } from './server/problem-types.js';
+import { checkRateLimit } from './server/rate-limit.js';
 import { sanitizeRequestId } from './server/request-id.js';
 import { cacheControlFor } from './server/caching.js';
 import { redirectResponse } from './server/redirects.js';
@@ -119,14 +120,25 @@ const arena = {
     const url = new URL(request.url);
     const pathname = url.pathname;
 
-    // /api/v2 is the Worker's own API (server/v2/). It never falls through to the v1 proxy.
-    if (isV2Path(pathname)) {
-      return handleV2(request, env, ctx);
-    }
-
-    // 1. Same-origin API proxy (hardened: header allow-list, request ids, no CORS, timeouts).
+    // Rate limits (server/rate-limit.js, BE-3) run first for every /api/ request, so a limited
+    // caller costs no upstream call. Allowed responses carry RateLimit-Policy.
     if (pathname.startsWith('/api/')) {
-      return proxyApi(request, env);
+      const gate = await checkRateLimit(request, env, { verifyUser: verifiedUserId });
+      if (gate.response) {
+        return gate.response;
+      }
+      // Keep the request id the limiter chose, so the 429, the logs and the upstream agree.
+      let forwarded = request;
+      if (gate.requestId && request.headers.get('x-request-id') !== gate.requestId) {
+        const headers = new Headers(request.headers);
+        headers.set('x-request-id', gate.requestId);
+        forwarded = new Request(request, { headers });
+      }
+      // /api/v2 is the Worker's own API (server/v2/). It never falls through to the v1 proxy.
+      // Everything else under /api/ is the same-origin proxy (hardened: header allow-list,
+      // request ids, no CORS, timeouts).
+      const response = isV2Path(pathname) ? await handleV2(forwarded, env, ctx) : await proxyApi(forwarded, env);
+      return gate.decorate(response);
     }
 
     // 2. Permanent redirects for legacy URLs, from the table in server/redirects.js.
@@ -218,6 +230,21 @@ function serveArena(request, env, ctx) {
 
 function isV2Path(pathname) {
   return pathname === '/api/v2' || pathname.startsWith('/api/v2/');
+}
+
+// The id of the user a Bearer token verifies to (the BE-0 verifier), or null. Only a verified
+// token picks the rate-limit key: an unverified `sub` is never read. Lazy import, like handleV2.
+async function verifiedUserId(request, env) {
+  try {
+    const { buildVerifier } = await import('./server/v2/auth/composite.ts');
+    const verifier = buildVerifier(env);
+    if (!verifier) return null;
+    const match = /^Bearer\s+(\S+)\s*$/i.exec(request.headers.get('authorization') || '');
+    if (!match) return null;
+    return (await verifier.verify(match[1])).id;
+  } catch {
+    return null;
+  }
 }
 
 // Loaded with a dynamic import so the Node tests of the other modules, which never touch
