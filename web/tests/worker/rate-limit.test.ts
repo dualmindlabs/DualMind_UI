@@ -24,10 +24,15 @@ function request(method: string, path: string, headers: Record<string, string> =
 
 function fakeBinding(success: boolean) {
   const keys: string[] = [];
-  return { keys, binding: { limit: vi.fn(({ key }: { key: string }) => {
-      keys.push(key);
-      return Promise.resolve({ success });
-    }) } };
+  return {
+    keys,
+    binding: {
+      limit: vi.fn(({ key }: { key: string }) => {
+        keys.push(key);
+        return Promise.resolve({ success });
+      }),
+    },
+  };
 }
 
 describe('classify', () => {
@@ -66,7 +71,8 @@ describe('classify', () => {
 });
 
 describe('limiterKey', () => {
-  const ip = (value?: string) => request('GET', '/api/arena/models', value ? { 'CF-Connecting-IP': value } : {});
+  const ip = (value?: string) =>
+    request('GET', '/api/arena/models', value ? { 'CF-Connecting-IP': value } : {});
 
   it('uses the verified user id', async () => {
     expect((await limiterKey(ip('203.0.113.7'), {}, USER)).key).toBe(`u:${USER}`);
@@ -99,7 +105,11 @@ describe('limiterKey', () => {
 describe('checkRateLimit', () => {
   it('does nothing for exempt requests', async () => {
     const { binding } = fakeBinding(false);
-    const gate = await checkRateLimit(request('GET', '/api/health'), { RL_READ: binding }, { log: noLog });
+    const gate = await checkRateLimit(
+      request('GET', '/api/health'),
+      { RL_READ: binding },
+      { log: noLog },
+    );
     expect(gate.group).toBeNull();
     expect(gate.response).toBeNull();
     expect(binding.limit).not.toHaveBeenCalled();
@@ -107,7 +117,11 @@ describe('checkRateLimit', () => {
 
   it('allows and adds RateLimit-Policy', async () => {
     const { binding } = fakeBinding(true);
-    const gate = await checkRateLimit(request('POST', '/api/arena/dualchat'), { RL_BATTLE: binding }, { log: noLog });
+    const gate = await checkRateLimit(
+      request('POST', '/api/arena/dualchat'),
+      { RL_BATTLE: binding },
+      { log: noLog },
+    );
     expect(gate.response).toBeNull();
     const response = gate.decorate(new Response('ok'));
     expect(response.headers.get('ratelimit-policy')).toBe('"battle";q=6;w=60');
@@ -130,7 +144,11 @@ describe('checkRateLimit', () => {
     expect(response.headers.get('ratelimit-policy')).toBe('"battle";q=6;w=60');
     expect(response.headers.get('cache-control')).toBe('no-store');
     expect(response.headers.get('x-request-id')).toBe('req-12345678');
-    expect(await response.json()).toEqual({ error: 'rate_limited', requestId: 'req-12345678', retryAfter: 60 });
+    expect(await response.json()).toEqual({
+      error: 'rate_limited',
+      requestId: 'req-12345678',
+      retryAfter: 60,
+    });
   });
 
   it('answers 429 as problem+json for opted-in callers and on /api/v2', async () => {
@@ -140,9 +158,15 @@ describe('checkRateLimit', () => {
       { RL_BATTLE: binding },
       { log: noLog },
     );
-    const v2 = await checkRateLimit(request('GET', '/api/v2/models'), { RL_READ: binding }, { log: noLog });
+    const v2 = await checkRateLimit(
+      request('GET', '/api/v2/models'),
+      { RL_READ: binding },
+      { log: noLog },
+    );
     for (const gate of [opted, v2]) {
-      expect(gate.response!.headers.get('content-type')).toBe('application/problem+json; charset=utf-8');
+      expect(gate.response!.headers.get('content-type')).toBe(
+        'application/problem+json; charset=utf-8',
+      );
     }
     expect(await opted.response!.json()).toMatchObject({
       type: 'https://arena.dualmindlab.tech/problems/rate_limited',
@@ -157,17 +181,29 @@ describe('checkRateLimit', () => {
 
   it('counts per verified user and ignores an unverified token', async () => {
     const { binding, keys } = fakeBinding(true);
-    const verifyUser = vi.fn((_request: Request, _env: object) => Promise.resolve(USER as string | null));
-    await checkRateLimit(request('POST', '/api/arena/chat', { authorization: 'Bearer good' }), { RL_BATTLE: binding }, { log: noLog, verifyUser });
+    const verifyUser = vi.fn((_request: Request, _env: object) =>
+      Promise.resolve(USER as string | null),
+    );
+    await checkRateLimit(
+      request('POST', '/api/arena/chat', { authorization: 'Bearer good' }),
+      { RL_BATTLE: binding },
+      { log: noLog, verifyUser },
+    );
     verifyUser.mockResolvedValueOnce(null);
     await checkRateLimit(
-      request('POST', '/api/arena/chat', { authorization: 'Bearer forged', 'cf-connecting-ip': '198.51.100.1' }),
+      request('POST', '/api/arena/chat', {
+        authorization: 'Bearer forged',
+        'cf-connecting-ip': '198.51.100.1',
+      }),
       { RL_BATTLE: binding },
       { log: noLog, verifyUser },
     );
     verifyUser.mockRejectedValueOnce(new Error('jwks down'));
     await checkRateLimit(
-      request('POST', '/api/arena/chat', { authorization: 'Bearer forged2', 'cf-connecting-ip': '198.51.100.1' }),
+      request('POST', '/api/arena/chat', {
+        authorization: 'Bearer forged2',
+        'cf-connecting-ip': '198.51.100.1',
+      }),
       { RL_BATTLE: binding },
       { log: noLog, verifyUser },
     );
@@ -177,7 +213,11 @@ describe('checkRateLimit', () => {
   it('skips the verifier when there is no bearer token', async () => {
     const { binding } = fakeBinding(true);
     const verifyUser = vi.fn(() => Promise.resolve(USER as string | null));
-    await checkRateLimit(request('GET', '/api/arena/models'), { RL_READ: binding }, { log: noLog, verifyUser });
+    await checkRateLimit(
+      request('GET', '/api/arena/models'),
+      { RL_READ: binding },
+      { log: noLog, verifyUser },
+    );
     expect(verifyUser).not.toHaveBeenCalled();
   });
 
@@ -187,7 +227,10 @@ describe('checkRateLimit', () => {
     const throwing = { limit: () => Promise.reject(new Error('boom')) };
     const slow = { limit: () => new Promise(() => {}) };
     for (const env of [{}, { RL_BATTLE: throwing }, { RL_BATTLE: slow }]) {
-      const gate = await checkRateLimit(request('POST', '/api/arena/dualchat'), env, { log, timeoutMs: 5 });
+      const gate = await checkRateLimit(request('POST', '/api/arena/dualchat'), env, {
+        log,
+        timeoutMs: 5,
+      });
       expect(gate.response).toBeNull();
       const response = gate.decorate(new Response('ok'));
       expect(response.headers.get('x-ratelimit-status')).toBe('skipped');
@@ -201,13 +244,21 @@ describe('checkRateLimit', () => {
     const events: object[] = [];
     const { binding } = fakeBinding(false);
     const env = { RL_BATTLE: binding, PRIVACY_SALT: 'salt' };
-    await checkRateLimit(request('POST', '/api/arena/dualchat', { 'cf-connecting-ip': '203.0.113.9' }), env, {
-      log: event => events.push(event),
-    });
-    await checkRateLimit(request('POST', '/api/arena/chat', { authorization: 'Bearer abc.def.ghi' }), env, {
-      log: event => events.push(event),
-      verifyUser: () => Promise.resolve(USER),
-    });
+    await checkRateLimit(
+      request('POST', '/api/arena/dualchat', { 'cf-connecting-ip': '203.0.113.9' }),
+      env,
+      {
+        log: event => events.push(event),
+      },
+    );
+    await checkRateLimit(
+      request('POST', '/api/arena/chat', { authorization: 'Bearer abc.def.ghi' }),
+      env,
+      {
+        log: event => events.push(event),
+        verifyUser: () => Promise.resolve(USER),
+      },
+    );
     const text = JSON.stringify(events);
     expect(text).toContain('"event":"rate_limited"');
     expect(text).toContain('"group":"battle"');
@@ -216,16 +267,26 @@ describe('checkRateLimit', () => {
     expect(text).not.toContain('abc.def.ghi');
     // Without the salt there is no hash at all, and still no address.
     events.length = 0;
-    await checkRateLimit(request('POST', '/api/arena/dualchat', { 'cf-connecting-ip': '203.0.113.9' }), { RL_BATTLE: binding }, {
-      log: event => events.push(event),
-    });
+    await checkRateLimit(
+      request('POST', '/api/arena/dualchat', { 'cf-connecting-ip': '203.0.113.9' }),
+      { RL_BATTLE: binding },
+      {
+        log: event => events.push(event),
+      },
+    );
     expect(JSON.stringify(events)).not.toContain('203.0.113.9');
-    expect(events.find(e => (e as { event: string }).event === 'rate_limited')).toMatchObject({ keyHash8: null });
+    expect(events.find(e => (e as { event: string }).event === 'rate_limited')).toMatchObject({
+      keyHash8: null,
+    });
   });
 
   it('generates a request id when the caller sent none', async () => {
     const { binding } = fakeBinding(false);
-    const gate = await checkRateLimit(request('POST', '/api/arena/dualchat'), { RL_BATTLE: binding }, { log: noLog, newId: () => 'generated-id-1' });
+    const gate = await checkRateLimit(
+      request('POST', '/api/arena/dualchat'),
+      { RL_BATTLE: binding },
+      { log: noLog, newId: () => 'generated-id-1' },
+    );
     expect(gate.requestId).toBe('generated-id-1');
     expect(gate.response!.headers.get('x-request-id')).toBe('generated-id-1');
   });
@@ -235,8 +296,15 @@ describe('wrangler.jsonc', () => {
   it('declares exactly the limits of RATE_LIMIT_GROUPS', () => {
     const text = readFileSync(resolve(__dirname, '../../../wrangler.jsonc'), 'utf8');
     const declared = [
-      ...text.matchAll(/\{ "name": "(RL_\w+)", "namespace_id": "(\d+)", "simple": \{ "limit": (\d+), "period": (\d+) \} \}/g),
-    ].map(([, name, namespaceId, limit, period]) => ({ name, namespaceId, limit: Number(limit), period: Number(period) }));
+      ...text.matchAll(
+        /\{ "name": "(RL_\w+)", "namespace_id": "(\d+)", "simple": \{ "limit": (\d+), "period": (\d+) \} \}/g,
+      ),
+    ].map(([, name, namespaceId, limit, period]) => ({
+      name,
+      namespaceId,
+      limit: Number(limit),
+      period: Number(period),
+    }));
     const expected = Object.values(RATE_LIMIT_GROUPS).map(group => ({
       name: group.binding,
       namespaceId: group.namespaceId,

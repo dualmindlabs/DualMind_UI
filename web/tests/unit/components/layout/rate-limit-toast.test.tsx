@@ -58,7 +58,9 @@ describe('429 toast', () => {
     const { fetch, calls } = scriptedFetch(limited());
     renderApp(fetch, <Battle />);
     await userEvent.click(screen.getByRole('button', { name: 'Start battle' }));
-    expect(await screen.findByText('Too many requests. Try again in 60 seconds.')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Too many requests. Try again in 60 seconds.'),
+    ).toBeInTheDocument();
     expect(calls).toHaveLength(1);
   });
 
@@ -66,7 +68,8 @@ describe('429 toast', () => {
     const { fetch } = scriptedFetch(limited());
     renderApp(fetch, <Leaders />);
     await waitFor(
-      () => expect(screen.getByText('Too many requests. Try again in 60 seconds.')).toBeInTheDocument(),
+      () =>
+        expect(screen.getByText('Too many requests. Try again in 60 seconds.')).toBeInTheDocument(),
       { timeout: 4000 },
     );
   });
