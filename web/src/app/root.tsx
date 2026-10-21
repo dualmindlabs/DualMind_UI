@@ -56,7 +56,10 @@ export function Layout({ children }: { children: ReactNode }) {
     <html lang="en" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content"
+        />
         <meta name="color-scheme" content="dark light" />
         <meta name="theme-color" content={backgrounds.dark} media="(prefers-color-scheme: dark)" />
         <meta
