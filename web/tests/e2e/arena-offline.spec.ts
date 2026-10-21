@@ -39,6 +39,17 @@ async function expectNoRootError(page: Page, problems: string[], label: string) 
 }
 
 async function openArena(page: Page) {
+  // Log who takes the arena away (the head script's <html data-arena> mark).
+  await page.addInitScript(() => {
+    const remove = Element.prototype.removeAttribute;
+    Element.prototype.removeAttribute = function (name: string) {
+      if (name === 'data-arena') console.log(`[arena-offline] data-arena removed: ${new Error().stack}`);
+      return remove.call(this, name);
+    };
+  });
+  page.on('console', message => {
+    if (message.text().startsWith('[arena-offline]')) console.log(message.text());
+  });
   await page.goto('/');
   await expect(page.getByTestId('arena')).toBeVisible();
 }
@@ -87,6 +98,7 @@ test.describe('arena offline', () => {
     await page.waitForTimeout(500);
     await expectNoRootError(page, problems, 'a: history drawer');
     await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog', { name: 'History' })).toBeHidden();
 
     await page.getByRole('radio', { name: 'Side by side' }).check({ force: true });
     await page.getByRole('button', { name: /Model for answer A/ }).click();
@@ -167,19 +179,17 @@ test.describe('arena offline', () => {
     await mockArena(page);
     await openArena(page);
     await goOffline(context, page);
-    for (const path of ['/leaderboard/', '/settings/']) {
-      await page.evaluate(target => {
-        window.history.pushState({}, '', target);
-        window.dispatchEvent(new PopStateEvent('popstate'));
-      }, path);
-      await page.waitForTimeout(1500);
-      // eslint-disable-next-line no-console
-      console.log(`[arena-offline] f: after ${path}: ${await page.title()} ${page.url()}`);
-    }
-    const crashed = await page.getByRole('heading', { level: 1 }).allTextContents();
+    await page.getByRole('button', { name: /^Account:/ }).click();
+    await page.getByRole('menuitem', { name: /Settings/ }).click();
+    await page.waitForTimeout(3000);
+    const headings = await page.getByRole('heading', { level: 1 }).allTextContents();
     // eslint-disable-next-line no-console
-    console.log(`[arena-offline] f: headings ${JSON.stringify(crashed)}\n${problems.join('\n')}`);
-    expect(crashed.join(' ')).not.toMatch(/Something went wrong/i);
+    console.log(
+      `[arena-offline] f: url=${page.url()} title=${await page.title()} headings=${JSON.stringify(headings)}\n${problems.join('\n')}`,
+    );
+    expect(page.url()).not.toMatch(/^chrome-error:/);
+    expect(headings.join(' ')).not.toMatch(/Something went wrong/i);
+    await expect(page.getByTestId('arena').or(page.getByRole('main'))).toBeVisible();
   });
 
   test('(g) offline, focus and visibility changes, then reconnect', async ({ page, context }) => {
