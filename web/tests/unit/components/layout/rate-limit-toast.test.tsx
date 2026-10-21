@@ -44,7 +44,11 @@ function Leaders() {
 }
 
 function renderApp(fetch: ReturnType<typeof scriptedFetch>['fetch'], child: React.ReactNode) {
-  const client = createApiClient({ baseUrl: 'https://arena.test', fetch });
+  const client = createApiClient({
+    baseUrl: 'https://arena.test',
+    fetch,
+    getAccessToken: () => 'test-token',
+  });
   return render(
     <ApiProvider client={client}>
       {child}
@@ -62,9 +66,8 @@ describe('429 toast', () => {
     const { fetch, calls } = scriptedFetch(limited());
     renderApp(fetch, <Battle />);
     await userEvent.click(screen.getByRole('button', { name: 'Start battle' }));
-    // The first toast loads the Sonner chunk on demand, which can take a while on a cold runner.
     expect(
-      await screen.findByText('Too many requests. Try again in 60 seconds.', {}, { timeout: 5000 }),
+      await screen.findByText('Too many requests. Try again in 60 seconds.'),
     ).toBeInTheDocument();
     expect(calls).toHaveLength(1);
   });
