@@ -80,7 +80,12 @@ export function ThreadView({ threadId }: { threadId: string | null }) {
     ...threadMessagesQuery(api, threadId ?? ''),
     enabled: threadId !== null,
   });
-  const live = battle.state.threadId === threadId ? battle.state.turns : [];
+  const sessionThread = battle.state.threadId;
+  const sessionTurns = battle.state.turns;
+  const live = useMemo(
+    () => (sessionThread === threadId ? sessionTurns : []),
+    [sessionThread, sessionTurns, threadId],
+  );
   const { options } = useModelOptions();
   const now = useNow();
 
