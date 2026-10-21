@@ -1,7 +1,6 @@
 import {
   aboutContent,
   cookiesContent,
-  creditsContent,
   faqContent,
   howItWorksContent,
   type PageContent,
