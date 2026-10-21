@@ -58,7 +58,7 @@ export function DemoAnswerPane({
       ) : null}
       {chosen ? <ChargeBorder /> : null}
 
-      <header className="flex min-h-7 items-center justify-between gap-3">
+      <div className="flex min-h-7 items-center justify-between gap-3">
         <h3 id={headingId} className="flex items-center gap-2.5 text-ui font-semibold">
           <span aria-hidden="true" className="inline-flex">
             <RoleBadge who={side} letterOnly />
@@ -76,7 +76,7 @@ export function DemoAnswerPane({
             {streaming ? <ShinyText>Writing</ShinyText> : `${words.length} words`}
           </span>
         )}
-      </header>
+      </div>
 
       <p className="mt-3 min-h-5 font-mono text-caption">
         {revealed ? (
