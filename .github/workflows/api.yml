@@ -80,24 +80,26 @@ jobs:
         run: node scripts/link-worker-deps.mjs --all
 
       - name: Typecheck
+        id: typecheck
         run: npm run api:typecheck
 
       - name: Workers tests (Vitest in workerd)
+        if: ${{ !cancelled() && steps.typecheck.outcome == 'success' }}
         run: npm run api:test
 
-      # Regenerate in place for the artifact below, so a stale document can be committed as is:
+      # The regenerated documents are always uploaded, so a stale one can be committed as is:
       #   gh run download <run-id> -n api-generated -D /tmp/api-generated
       #   cp /tmp/api-generated/* docs/api/
       - name: OpenAPI and problem types are up to date
-        id: openapi
+        if: ${{ !cancelled() && steps.typecheck.outcome == 'success' }}
         run: npm run api:openapi:check
 
-      - name: Regenerate the documents for download
-        if: ${{ !cancelled() && steps.openapi.outcome == 'failure' }}
+      - name: Regenerate the documents (artifact)
+        if: ${{ !cancelled() && steps.typecheck.outcome == 'success' }}
         run: npm run api:openapi
 
       - name: Upload the regenerated documents
-        if: ${{ !cancelled() && steps.openapi.outcome == 'failure' }}
+        if: ${{ !cancelled() && steps.typecheck.outcome == 'success' }}
         uses: actions/upload-artifact@v4
         with:
           name: api-generated
