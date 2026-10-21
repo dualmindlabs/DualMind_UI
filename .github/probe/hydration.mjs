@@ -10,6 +10,10 @@ await page.goto('http://127.0.0.1:8790/');
 const probe = () =>
   page.evaluate(() => ({
     demo: !!document.querySelector('[data-testid=demo-battle]'),
+    strip: document.querySelector('[data-testid=live-strip]')?.getAttribute('data-state'),
+    mainChildren: document.querySelector('main')?.children.length,
+    menuBtn: !!document.querySelector('[data-slot=drawer-trigger]'),
+    chunks: performance.getEntriesByType('resource').map(r => r.name.split('/').pop()).filter(n => /below|boot|entry|mobile-nav/.test(n)).join(','),
     hydrated: document.documentElement.hasAttribute('data-hydrated'),
     markers: {
       done: (document.body.innerHTML.match(/<!--\$-->/g) || []).length,
@@ -22,7 +26,7 @@ for (const ms of [500, 1000, 2000, 4000]) {
   await page.waitForTimeout(ms);
   console.log(`+${ms}`, JSON.stringify(await probe()));
 }
-await page.mouse.wheel(0, 5);
+await page.evaluate(() => window.scrollTo(0, 300));
 await page.waitForTimeout(1500);
 console.log('after wheel', JSON.stringify(await probe()));
 console.log(logs.join('\n'));
