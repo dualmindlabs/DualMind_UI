@@ -11,6 +11,7 @@
  * - Reduced motion (useShouldReduceMotion) jumps straight to each value.
  * - Writes to React's own text node; screen readers get the settled value (visually hidden).
  * - Token colours (inherits the text colour) and `tabular-nums`; removed `direction`.
+ * - `grouping={false}` drops the thousands separator (Elo ratings are written "1150").
  */
 import { useMotionValue, useSpring } from 'motion/react';
 import { type ComponentProps, useEffect, useRef, useState } from 'react';
@@ -26,12 +27,15 @@ export interface NumberTickerProps extends Omit<ComponentProps<'span'>, 'childre
   /** Seconds before the first count. */
   delay?: number;
   decimalPlaces?: number;
+  /** Thousands separators ("7,152"). Default true. */
+  grouping?: boolean;
 }
 
-function format(value: number, decimals: number): string {
+function format(value: number, decimals: number, grouping = true): string {
   return new Intl.NumberFormat('en-US', {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
+    useGrouping: grouping,
   }).format(Number(value.toFixed(decimals)));
 }
 
@@ -42,6 +46,7 @@ export function NumberTicker({
   delay = 0,
   className,
   decimalPlaces = 0,
+  grouping = true,
   ...props
 }: NumberTickerProps) {
   const ref = useRef<HTMLSpanElement>(null);
@@ -68,16 +73,16 @@ export function NumberTicker({
     () =>
       spring.on('change', latest => {
         const textNode = textRef.current?.firstChild;
-        if (textNode) textNode.nodeValue = format(latest, decimalPlaces);
+        if (textNode) textNode.nodeValue = format(latest, decimalPlaces, grouping);
       }),
-    [spring, decimalPlaces],
+    [spring, decimalPlaces, grouping],
   );
 
   return (
     <span ref={ref} className={cn('inline-block tabular-nums', className)} {...props}>
-      <span className="sr-only">{format(value, decimalPlaces)}</span>
+      <span className="sr-only">{format(value, decimalPlaces, grouping)}</span>
       <span ref={textRef} aria-hidden="true">
-        {format(initial, decimalPlaces)}
+        {format(initial, decimalPlaces, grouping)}
       </span>
     </span>
   );

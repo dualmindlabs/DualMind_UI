@@ -9,4 +9,7 @@ import { route, type RouteConfig } from '@react-router/dev/routes';
 export default [
   // Living style guide (noindex).
   route('design', 'routes/design.tsx'),
+  // Live rankings and the model directory (slice S7), from the public model-stats API.
+  route('leaderboard', 'routes/leaderboard.tsx'),
+  route('models', 'routes/models.tsx'),
 ] satisfies RouteConfig;

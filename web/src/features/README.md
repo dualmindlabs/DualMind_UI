@@ -1,6 +1,6 @@
 # src/features
 
-One folder per product domain: `design-system/` today; `arena/`, `leaderboard/`, `auth/`, `marketing/`, `info/`, `share/` and `settings/` arrive with their slices.
+One folder per product domain: `design-system/`, `info/`, `leaderboard/` (the live board and the shared model details sheet, formatters and data rules) and `models/` (the model directory, built on `leaderboard`'s public API) today; `arena/`, `auth/`, `marketing/`, `share/` and `settings/` arrive with their slices.
 
 **Shape of a feature** (create only the folders it needs):
 

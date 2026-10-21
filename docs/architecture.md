@@ -29,6 +29,14 @@ How the DualMind Arena frontend is built, served and organised while it moves fr
 
 - **One Worker, one `dist/`.** Old and new pages live side by side. Each slice moves some URLs to the React app; the others keep serving the legacy files until their slice lands (strangler migration, [ADR 0002](./adr/0002-strangler-migration-composed-dist.md)).
 - **Static output only.** The React app uses React Router in framework mode with `ssr: false`: listed pages are prerendered to HTML at build time and hydrate in the browser; client-only routes use the SPA fallback page. There is no server rendering at request time ([ADR 0001](./adr/0001-react-vite-react-router-framework-mode.md)).
+- **Pages the web app serves today** (the route table is `web/src/app/routes.ts`; every other URL is still a legacy file):
+
+  | URL | Route module | Feature | Rendering | Replaces |
+  | --- | --- | --- | --- | --- |
+  | `/design/` | `routes/design.tsx` | `design-system` | prerendered, `noindex` | (new) |
+  | `/leaderboard/` | `routes/leaderboard.tsx` | `leaderboard` | prerendered shell; the board loads in the browser from the public `GET /api/arena/model-stats` (no sign-in) and refreshes every minute | `leaderboard/index.html` |
+  | `/models/` | `routes/models.tsx` | `models` (on `leaderboard`) | prerendered shell; same live data as the leaderboard | `models/index.html` |
+
 - **The pre-launch gate stays.** `FORCE_WAITLIST` in `worker.js` sends every visitor to the waitlist; `?preview=dualmind-preview` sets a `dm_preview` cookie that lets you in. Slices can therefore merge to `master` without exposing half-migrated states.
 
 ## 2. Repository layout
@@ -83,7 +91,7 @@ Every top-level folder of `web/src` has a README with its purpose and rules.
 2. **Copy the legacy allowlist** (the static Arena files) into `dist/`.
 3. **Overlay `web/build/client`:** new pages at their paths, hashed files into `dist/assets/` next to the legacy images. While `/` is not prerendered, React Router writes its SPA fallback as `index.html`; build.js renames it to `dist/__spa-fallback.html` so it never replaces the legacy home page.
 4. **Write `dist/__web-manifest.json`** for the Worker: the web app's pages, the sha256 hashes of their inline scripts (for the CSP, section 6) and extra `connect-src` origins (the Supabase project from `VITE_SUPABASE_URL`, once auth lands in S6).
-5. **Check the result** and fail the build when a legacy file or a sitemap URL is missing, when a web file would replace a legacy one (unless its slice lists it in `replacedByWeb`), or when a file in `assets/` has no content hash.
+5. **Check the result** and fail the build when a legacy file or a sitemap URL is missing, when a web file would replace a legacy one (unless its slice lists it in `replacedByWeb`: today `leaderboard/index.html` and `models/index.html`), or when a file in `assets/` has no content hash.
 
 ## 5. Deploy and previews
 
