@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, type Page, test } from '@playwright/test';
 
+import { credits } from '../../src/content/credits';
 import { passGate, PREVIEW_COOKIE, settle, shotPath, storeTheme } from './helpers';
 
 // The info, legal and 404 pages (slice S4) in Chromium, through the real Worker: prerendered
@@ -225,7 +226,7 @@ test.describe('About', () => {
   test('lists every credit with its licence (the licence policy)', async ({ page }) => {
     await page.goto('/about/');
     const section = page.locator('#credits');
-    await expect(section.getByRole('listitem')).toHaveCount(9);
+    await expect(section.getByRole('listitem')).toHaveCount(credits.length);
     for (const name of ['React Bits', 'Magic UI', 'Aceternity UI', 'Motion Primitives', 'Lucide']) {
       await expect(section.getByRole('link', { name: new RegExp(`^${name}`) })).toHaveAttribute(
         'href',
