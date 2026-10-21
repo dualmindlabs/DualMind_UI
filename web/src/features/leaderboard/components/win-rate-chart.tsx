@@ -82,6 +82,7 @@ export function WinRateChart({ entries, selectedId, average }: WinRateChartProps
           <YAxis
             domain={[0, 100]}
             ticks={[0, 50, 100]}
+          interval={0}
             tickFormatter={(value: number) => `${value}%`}
             tickLine={false}
             axisLine={false}

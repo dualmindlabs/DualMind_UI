@@ -31,7 +31,7 @@ export function BoardControls({
   onFiltersChange,
   providers,
   total,
-  searchPlaceholder = 'Search models, for example "llama 70b"',
+  searchPlaceholder = 'Name, model id or provider',
   disabled = false,
   className,
 }: BoardControlsProps) {
