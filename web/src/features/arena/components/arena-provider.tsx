@@ -109,9 +109,12 @@ export function ArenaProvider({ children }: { children: ReactNode }) {
     [setStoredShortcuts],
   );
 
-  const announce = useCallback((message: string) => {
-    setAnnouncement(current => ({ id: current.id + 1, message }));
-  }, [setAnnouncement]);
+  const announce = useCallback(
+    (message: string) => {
+      setAnnouncement(current => ({ id: current.id + 1, message }));
+    },
+    [setAnnouncement],
+  );
 
   // The tab title follows the open thread.
   useEffect(() => {
