@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+
 import { describe, expect, it, vi } from 'vitest';
 
 import {
@@ -23,7 +24,10 @@ function request(method: string, path: string, headers: Record<string, string> =
 
 function fakeBinding(success: boolean) {
   const keys: string[] = [];
-  return { keys, binding: { limit: vi.fn(async ({ key }: { key: string }) => (keys.push(key), { success })) } };
+  return { keys, binding: { limit: vi.fn(({ key }: { key: string }) => {
+      keys.push(key);
+      return Promise.resolve({ success });
+    }) } };
 }
 
 describe('classify', () => {
@@ -153,7 +157,7 @@ describe('checkRateLimit', () => {
 
   it('counts per verified user and ignores an unverified token', async () => {
     const { binding, keys } = fakeBinding(true);
-    const verifyUser = vi.fn(async (_request: Request, _env: object) => USER as string | null);
+    const verifyUser = vi.fn((_request: Request, _env: object) => Promise.resolve(USER as string | null));
     await checkRateLimit(request('POST', '/api/arena/chat', { authorization: 'Bearer good' }), { RL_BATTLE: binding }, { log: noLog, verifyUser });
     verifyUser.mockResolvedValueOnce(null);
     await checkRateLimit(
@@ -172,7 +176,7 @@ describe('checkRateLimit', () => {
 
   it('skips the verifier when there is no bearer token', async () => {
     const { binding } = fakeBinding(true);
-    const verifyUser = vi.fn(async () => USER as string | null);
+    const verifyUser = vi.fn(() => Promise.resolve(USER as string | null));
     await checkRateLimit(request('GET', '/api/arena/models'), { RL_READ: binding }, { log: noLog, verifyUser });
     expect(verifyUser).not.toHaveBeenCalled();
   });
@@ -180,7 +184,7 @@ describe('checkRateLimit', () => {
   it('fails open and says so: missing binding, throwing binding, slow binding', async () => {
     const events: Array<Record<string, unknown>> = [];
     const log = (event: object) => events.push(event as Record<string, unknown>);
-    const throwing = { limit: async () => { throw new Error('boom'); } };
+    const throwing = { limit: () => Promise.reject(new Error('boom')) };
     const slow = { limit: () => new Promise(() => {}) };
     for (const env of [{}, { RL_BATTLE: throwing }, { RL_BATTLE: slow }]) {
       const gate = await checkRateLimit(request('POST', '/api/arena/dualchat'), env, { log, timeoutMs: 5 });
@@ -202,7 +206,7 @@ describe('checkRateLimit', () => {
     });
     await checkRateLimit(request('POST', '/api/arena/chat', { authorization: 'Bearer abc.def.ghi' }), env, {
       log: event => events.push(event),
-      verifyUser: async () => USER,
+      verifyUser: () => Promise.resolve(USER),
     });
     const text = JSON.stringify(events);
     expect(text).toContain('"event":"rate_limited"');

@@ -1,7 +1,7 @@
 import {
   MutationCache,
-  type QueryClient,
   QueryCache,
+  type QueryClient,
   QueryClientProvider,
 } from '@tanstack/react-query';
 import { type ReactNode, useState } from 'react';
