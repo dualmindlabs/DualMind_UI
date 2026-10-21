@@ -37,7 +37,15 @@ function WaitForGate({ gated, children }: { gated: boolean; children: ReactNode 
 }
 
 /** Events that mean someone is using the page: the sections are needed now. */
-const WAKE_EVENTS = ['pointerdown', 'keydown', 'touchstart', 'wheel', 'scroll', 'hashchange'];
+const WAKE_EVENTS = [
+  'pointerdown',
+  'keydown',
+  'focusin',
+  'touchstart',
+  'wheel',
+  'scroll',
+  'hashchange',
+];
 
 const LOADING: LiveStatsState = { status: 'loading' };
 
@@ -73,7 +81,7 @@ export function LandingPage() {
             entries => {
               if (entries.some(entry => entry.isIntersecting)) releaseBelowTheFold();
             },
-            { rootMargin: '0px 0px 600px 0px' },
+            { rootMargin: '0px' },
           )
         : null;
     if (sentinel && observer) observer.observe(sentinel);
