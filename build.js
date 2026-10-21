@@ -19,6 +19,7 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
+const { deferHydration } = require('./scripts/defer-hydration');
 
 const srcDir = __dirname;
 const distDir = path.join(__dirname, 'dist');
@@ -257,6 +258,16 @@ if (fs.existsSync(path.join(distDir, 'share'))) {
 }
 if (!webFiles.includes(NOT_FOUND_SOURCE)) {
     fail(`the web build has no 404 page (${NOT_FOUND_SOURCE}). Check that /404 is in prerender in web/react-router.config.ts.`);
+}
+
+// Prerendered pages start their JavaScript after the first paint (scripts/defer-hydration.js); it
+// runs before the inline-script hashes below are taken, so the CSP allows the new loader.
+for (const target of webHtmlTargets) {
+    const file = path.join(distDir, target);
+    const deferred = deferHydration(fs.readFileSync(file, 'utf8'));
+    if (!deferred) continue;
+    fs.writeFileSync(file, deferred.html);
+    fs.writeFileSync(path.join(distDir, 'assets', deferred.bootFile), deferred.bootCode);
 }
 
 // 4. The web manifest (read by worker.js through server/web-manifest.js).

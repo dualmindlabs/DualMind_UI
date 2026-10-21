@@ -46,21 +46,6 @@ jobs:
           print('\nTOTAL gz',tot)
           PY
           cat probe/chunks.txt
-      - name: Variant (scripts after load)
-        run: |
-          python3 - <<'PY'
-          import re,json
-          h=open('dist/index.html').read()
-          links=re.findall(r'<link rel="modulepreload"[^>]*href="([^"]+)"[^>]*/?>',h)
-          h=re.sub(r'<link rel="modulepreload"[^>]*/?>','',h)
-          m=re.search(r'<script type="module" async="">(.*?)</script>',h,re.S)
-          open('dist/assets/boot-test.js','w').write(m.group(1))
-          loader='addEventListener("load",function(){requestAnimationFrame(function(){setTimeout(function(){%s.forEach(function(u){var l=document.createElement("link");l.rel="modulepreload";l.href=u;document.head.appendChild(l)});var s=document.createElement("script");s.type="module";s.src="/assets/boot-test.js";document.body.appendChild(s)},0)})});'%json.dumps(links)
-          open('dist/assets/loader-test.js','w').write(loader)
-          h=h.replace(m.group(0),'<script src="/assets/loader-test.js" defer></script>')
-          open('dist/index.html','w').write(h)
-          print(len(links),'preloads moved')
-          PY
       - name: Serve
         working-directory: web
         run: |
