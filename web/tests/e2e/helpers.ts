@@ -26,13 +26,3 @@ export async function settle(page: Page, ms = 1800) {
 export function shotPath(name: string) {
   return path.join(here, '..', '..', 'screenshots', `${name}.png`);
 }
-
-/**
- * The landing sections under the hero stay prerendered HTML until the visitor scrolls or
- * interacts (features/marketing/components/landing-page.tsx). A small wheel turn wakes them; this
- * resolves once they are live (the demo has taken its first turn).
- */
-export async function wakeSections(page: Page) {
-  await page.locator('html[data-hydrated]').waitFor({ state: 'attached' });
-  await page.mouse.wheel(0, 1);
-}

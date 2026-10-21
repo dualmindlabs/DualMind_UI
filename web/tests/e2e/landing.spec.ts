@@ -2,7 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import type { Page } from '@playwright/test';
 
 import { expect, test } from './fixtures';
-import { passGate, PREVIEW_COOKIE, settle, shotPath, storeTheme, wakeSections } from './helpers';
+import { passGate, PREVIEW_COOKIE, settle, shotPath, storeTheme } from './helpers';
 import { OG_HEIGHT, OG_TEMPLATE, OG_WIDTH } from './og-template';
 
 // The landing page at / (slice S3) in Chromium, through the real Worker: prerendered content,
@@ -116,7 +116,6 @@ test('no console errors or CSP violations while the whole page runs', async ({ p
 
 test('the live strip shows the leaderboard numbers and the #1', async ({ page }) => {
   await page.goto('/');
-  await wakeSections(page);
   const strip = page.getByTestId('live-strip');
   await expect(strip).toHaveAttribute('data-state', 'ready');
   await expect(strip).toContainText('llama-3.3-70b-instruct-fp8-fast');
@@ -133,7 +132,6 @@ for (const failure of ['server error', 'network error'] as const) {
         : route.abort('failed'),
     );
     await page.goto('/');
-    await wakeSections(page);
     const strip = page.getByTestId('live-strip');
     await expect(strip).toHaveAttribute('data-state', 'error', { timeout: 15_000 });
     await expect(strip).toContainText('Live numbers are unavailable right now.');
@@ -153,7 +151,6 @@ for (const failure of ['server error', 'network error'] as const) {
 test('demo battle: the full keyboard flow with announcements', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1, name: HEADLINE })).toBeVisible();
-  await wakeSections(page);
   const region = demo(page);
   await region.scrollIntoViewIfNeeded();
   await expect(region).toHaveAttribute('data-run', '1');
@@ -360,7 +357,6 @@ for (const shot of [
     await page.setViewportSize({ width: shot.width, height: shot.height });
     await storeTheme(page, shot.theme);
     await page.goto('/');
-    await wakeSections(page);
     const region = demo(page);
     await region.scrollIntoViewIfNeeded();
     await expect(region).toHaveAttribute('data-phase', 'voting', { timeout: 5_000 });
