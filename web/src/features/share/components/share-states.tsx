@@ -81,8 +81,8 @@ export function ShareUnavailable({ ownerHref }: { ownerHref: string | null }) {
       }
     >
       <p>
-        Its owner may have made it private or deleted it, or the link was cut short. Ask the
-        person who sent it to check that it is set to Unlisted or Public.
+        Its owner may have made it private or deleted it, or the link was cut short. Ask the person
+        who sent it to check that it is set to Unlisted or Public.
       </p>
     </StateCard>
   );

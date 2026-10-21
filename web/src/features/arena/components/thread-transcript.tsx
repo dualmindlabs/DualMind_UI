@@ -21,7 +21,10 @@ export interface ThreadTranscriptProps {
  * on; otherwise both sides stay anonymous.
  */
 export function ThreadTranscript({ messages, threadMode, names }: ThreadTranscriptProps) {
-  const turns = useMemo(() => toTurns(messages, modeFromThread(threadMode)), [messages, threadMode]);
+  const turns = useMemo(
+    () => toTurns(messages, modeFromThread(threadMode)),
+    [messages, threadMode],
+  );
   return (
     <div className="grid gap-12">
       {turns.map(turn => (

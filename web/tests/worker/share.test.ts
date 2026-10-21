@@ -166,9 +166,7 @@ describe('the tags', () => {
       'One AI model answered',
     );
     expect(shareMetaFor(facts('battle', true), ORIGIN, ID).robots).toBe('noindex, nofollow');
-    expect(shareMetaFor(facts('battle', true, 'public'), ORIGIN, ID).robots).toBe(
-      'index, follow',
-    );
+    expect(shareMetaFor(facts('battle', true, 'public'), ORIGIN, ID).robots).toBe('index, follow');
   });
 
   it('reads snake_case and bare arrays, and falls back to the title', () => {
@@ -201,7 +199,12 @@ describe('the tags', () => {
       '&quot;&gt;&lt;script&gt;alert(&#39;x&#39;)&lt;/script&gt;&amp;',
     );
     const meta = shareMetaFor(
-      { mode: 'battle', visibility: 'public', prompt: '"><img src=x onerror=alert(1)>', voted: true },
+      {
+        mode: 'battle',
+        visibility: 'public',
+        prompt: '"><img src=x onerror=alert(1)>',
+        voted: true,
+      },
       ORIGIN,
       ID,
     );
@@ -234,12 +237,11 @@ describe('the tags', () => {
 describe('loadShareFacts', () => {
   it('reads the thread like any visitor: no token, no cookie, the backend from the env', async () => {
     const fetchImpl = upstream({ messages: [message(0, 'Explain recursion', 'left')] });
-    const facts = await loadShareFacts(
-      ID,
-      { BACKEND_URL: 'https://backend.test' },
-      ORIGIN,
-      { fetchImpl, cache: null, log: silent },
-    );
+    const facts = await loadShareFacts(ID, { BACKEND_URL: 'https://backend.test' }, ORIGIN, {
+      fetchImpl,
+      cache: null,
+      log: silent,
+    });
     expect(facts?.prompt).toBe('Explain recursion');
     const urls = fetchImpl.mock.calls.map(([input]) => urlOf(input)).sort();
     expect(urls).toEqual([
@@ -274,9 +276,9 @@ describe('loadShareFacts', () => {
     expect(second).toEqual(first);
     expect(first?.prompt).toBe('Cached prompt');
     expect(fetchImpl).toHaveBeenCalledTimes(2);
-    expect(
-      cache.store.get(`${ORIGIN}/__share-meta/${ID}`)?.headers.get('cache-control'),
-    ).toBe(`max-age=${SHARE_META_TTL_SECONDS}`);
+    expect(cache.store.get(`${ORIGIN}/__share-meta/${ID}`)?.headers.get('cache-control')).toBe(
+      `max-age=${SHARE_META_TTL_SECONDS}`,
+    );
   });
 
   it('ignores a private thread even when the API sends it', async () => {
@@ -401,7 +403,10 @@ describe('the share page through the Worker', () => {
   });
 
   it('no longer serves the legacy share page, which used to drop the id with a 307', async () => {
-    const assets = fakeAssets({ ...DIST, '/share/index.html': '<!doctype html><title>Old</title>' });
+    const assets = fakeAssets({
+      ...DIST,
+      '/share/index.html': '<!doctype html><title>Old</title>',
+    });
     const response = await worker.fetch(
       new Request(`${ORIGIN}/share/${ID}`, { headers: PREVIEW }),
       { ASSETS: assets, BACKEND_URL: 'https://backend.test' },

@@ -20,12 +20,7 @@ import { cn } from '@/lib/utils/cn';
 
 import { useSharedThread } from '../hooks/use-shared-thread';
 import { formatShareDate, shareDocumentTitle, shareSummary } from '../lib/summary';
-import {
-  RUN_YOUR_OWN_HREF,
-  ShareError,
-  ShareSkeleton,
-  ShareUnavailable,
-} from './share-states';
+import { RUN_YOUR_OWN_HREF, ShareError, ShareSkeleton, ShareUnavailable } from './share-states';
 
 function useModelNames(): ReadonlyMap<string, string> {
   const api = useApiClient();
@@ -172,10 +167,7 @@ function SharedView({ threadId, shared }: { threadId: string; shared: SharedThre
             >
               Run your own battle
             </a>
-            <a
-              href="/leaderboard/"
-              className={buttonVariants({ variant: 'ghost', size: 'lg' })}
-            >
+            <a href="/leaderboard/" className={buttonVariants({ variant: 'ghost', size: 'lg' })}>
               See the leaderboard
             </a>
           </div>

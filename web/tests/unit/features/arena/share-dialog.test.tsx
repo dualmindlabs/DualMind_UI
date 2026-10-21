@@ -97,7 +97,11 @@ beforeEach(() => {
 afterEach(() => {
   toast.dismiss();
   writeText.mockClear();
-  Object.defineProperty(navigator, 'share', { value: undefined, configurable: true, writable: true });
+  Object.defineProperty(navigator, 'share', {
+    value: undefined,
+    configurable: true,
+    writable: true,
+  });
 });
 
 describe('ShareDialog', () => {
@@ -127,7 +131,9 @@ describe('ShareDialog', () => {
     const { api, fetch } = fakeApi();
     renderDialog(fetch);
     await user.click(await screen.findByRole('radio', { name: /Unlisted/ }));
-    expect(await screen.findByText('Unlisted: anyone with the link can open it now.')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Unlisted: anyone with the link can open it now.'),
+    ).toBeInTheDocument();
     const patch = api.calls.find(call => call.init.method === 'PATCH');
     expect(patch?.url).toBe('https://arena.test/api/threads/t-recursion/visibility');
     expect(patch?.body).toEqual({ visibility: 'unlisted' });

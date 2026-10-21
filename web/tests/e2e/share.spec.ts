@@ -105,7 +105,9 @@ async function overflowing(page: Page) {
         return box.width > 0 && box.right > limit && !clipped(element);
       })
       .slice(0, 5)
-      .map(element => `${element.tagName.toLowerCase()}.${element.className.toString().slice(0, 60)}`);
+      .map(
+        element => `${element.tagName.toLowerCase()}.${element.className.toString().slice(0, 60)}`,
+      );
     if (document.documentElement.scrollWidth > limit) offenders.push('documentElement');
     return offenders;
   });
@@ -225,9 +227,10 @@ test.describe('share page', () => {
     await expect(page.locator('body')).not.toContainText('00000000-0000-4000-8000-0000000000aa');
     expect(requests).not.toContain('sent a token');
 
-    await expect(
-      page.getByRole('link', { name: /Run your own battle/ }).first(),
-    ).toHaveAttribute('href', '/');
+    await expect(page.getByRole('link', { name: /Run your own battle/ }).first()).toHaveAttribute(
+      'href',
+      '/',
+    );
     await page.getByRole('button', { name: 'Copy link' }).click();
     await expect(page.getByText('Link copied')).toBeVisible();
     const origin = new URL(page.url()).origin;
@@ -251,14 +254,14 @@ test.describe('share page', () => {
   test('a Direct chat shows one answer', async ({ page }) => {
     await mockSharedApi(page);
     await openShare(page, `/share/${IDS.direct}`);
-    await expect(page.getByRole('heading', { level: 1, name: 'Decline a meeting politely' })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Decline a meeting politely' }),
+    ).toBeVisible();
     await expect(page.getByText('Shared chat')).toBeVisible();
     await expect(page.locator('[data-side="solo"]')).toHaveCount(1);
   });
 
-  test('old ?id=, ?thread= and ?threadId= links work and move to /share/<id>', async ({
-    page,
-  }) => {
+  test('old ?id=, ?thread= and ?threadId= links work and move to /share/<id>', async ({ page }) => {
     await mockSharedApi(page);
     for (const query of ['id', 'thread', 'threadId']) {
       await openShare(page, `/share/?${query}=${IDS.public}`);
@@ -432,7 +435,9 @@ test.describe('screenshots', () => {
         const dialog = page.getByRole('dialog', { name: 'Share this battle' });
         await expect(dialog.getByRole('radio', { name: /Private/ })).toBeChecked();
         await settle(page, 400);
-        await page.screenshot({ path: shotPath(`share-dialog-private-${viewport.label}-${theme}`) });
+        await page.screenshot({
+          path: shotPath(`share-dialog-private-${viewport.label}-${theme}`),
+        });
         await dialog.getByRole('radio', { name: /Unlisted/ }).click();
         await expect(dialog.getByRole('textbox', { name: 'Link' })).toBeEnabled();
         await settle(page, 400);

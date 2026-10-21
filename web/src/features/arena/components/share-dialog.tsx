@@ -158,8 +158,8 @@ function ShareForm({ thread }: { thread: Thread }) {
         >
           <TriangleAlert aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-warn" />
           <span>
-            Sharing is switched off on the server right now, so shared links only open for you.
-            Your choice is kept for when it is back.
+            Sharing is switched off on the server right now, so shared links only open for you. Your
+            choice is kept for when it is back.
           </span>
         </p>
       ) : null}

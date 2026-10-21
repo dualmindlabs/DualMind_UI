@@ -129,9 +129,7 @@ describe('SharePage', () => {
     const { fetch, calls } = fakeFetch(['voted']);
     renderPage(`/share/${ID}`, fetch);
     expect(screen.getByTestId('share-loading')).toBeInTheDocument();
-    expect(
-      await screen.findByRole('heading', { level: 1, name: THREAD.title }),
-    ).toBeVisible();
+    expect(await screen.findByRole('heading', { level: 1, name: THREAD.title })).toBeVisible();
     expect(screen.getByTestId('share-lead')).toHaveTextContent('a verdict was cast');
     const answerA = screen.getByRole('region', { name: /Answer A/ });
     const answerB = screen.getByRole('region', { name: /Answer B/ });
@@ -169,7 +167,10 @@ describe('SharePage', () => {
     const { fetch } = fakeFetch(['private']);
     renderPage(`/share/${ID}`, fetch);
     expect(
-      await screen.findByRole('heading', { level: 1, name: 'This link is private or doesn’t exist.' }),
+      await screen.findByRole('heading', {
+        level: 1,
+        name: 'This link is private or doesn’t exist.',
+      }),
     ).toBeVisible();
     expect(screen.getByRole('link', { name: 'Run your own battle' })).toHaveAttribute('href', '/');
     expect(screen.queryByRole('link', { name: 'Open it in your arena' })).not.toBeInTheDocument();

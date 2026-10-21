@@ -11,7 +11,18 @@ describe('share links', () => {
   it('accepts API ids and rejects anything that could break out of a path segment', () => {
     expect(isShareId(ID)).toBe(true);
     expect(isShareId('t-recursion')).toBe(true);
-    for (const bad of ['', ' ', 'a/b', 'a.b', '../x', '<x>', '-leading', 'x'.repeat(129), 42, null]) {
+    for (const bad of [
+      '',
+      ' ',
+      'a/b',
+      'a.b',
+      '../x',
+      '<x>',
+      '-leading',
+      'x'.repeat(129),
+      42,
+      null,
+    ]) {
       expect(isShareId(bad)).toBe(false);
     }
   });
