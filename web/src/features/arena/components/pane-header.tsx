@@ -86,7 +86,12 @@ export function PaneHeader({
       </div>
       <div className="flex items-center gap-1.5">
         {meta ? (
-          <p className="font-mono text-caption whitespace-nowrap text-muted tabular-nums">{meta}</p>
+          <p
+            data-testid="pane-meta"
+            className="font-mono text-caption whitespace-nowrap text-muted tabular-nums"
+          >
+            {meta}
+          </p>
         ) : null}
         {copyText === null ? null : <CopyButton text={copyText} label={`Copy ${style.title}`} />}
       </div>

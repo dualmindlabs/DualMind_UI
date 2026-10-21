@@ -171,6 +171,7 @@ test.describe('threads', () => {
     await expect(first.getByTestId('pane-model').first()).toHaveText(/llama-3\.3-70b/);
     await expect(turns.nth(1)).toContainText('both names stay hidden');
     await expect(turns.nth(1).getByTestId('pane-model')).toHaveCount(0);
+    await expect(turns.nth(1).getByTestId('pane-meta')).toHaveCount(0);
     // Safe links: https only, new tab, host shown.
     const link = first.getByRole('link', { name: /Python docs/ });
     await expect(link).toHaveAttribute('rel', 'noopener noreferrer nofollow');
@@ -352,8 +353,11 @@ test.describe('battles', () => {
     await expect(page).toHaveURL(/\?thread=t-new-/);
     await expect(turn.getByRole('region', { name: /Answer A/ })).toContainText('base case');
     await expect(turn.getByRole('region', { name: /Answer B/ })).toContainText('nesting dolls');
-    // Blind: no names before the vote.
+    // Blind: no names, no timing, length or tokens before the vote (they hint at the model).
     await expect(turn.getByTestId('pane-model')).toHaveCount(0);
+    await expect(turn.getByTestId('pane-meta')).toHaveCount(0);
+    await expect(turn).not.toContainText('Tokens');
+    await expect(turn).not.toContainText(/\d words/);
     await expect(page.getByTestId('arena-announcer')).toContainText('Both answers are ready');
 
     await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
@@ -367,6 +371,7 @@ test.describe('battles', () => {
       timeout: 5000,
     });
     await expect(turn.getByRole('region', { name: /Answer B/ })).toContainText('Tokens');
+    await expect(turn.getByTestId('pane-meta')).toHaveCount(2);
     const vote = state.bodies.find(item => item.path === '/api/arena/model-vote');
     expect(vote?.body).toMatchObject({ comparisonId: 'c-live-1', voteChoice: 'right' });
 

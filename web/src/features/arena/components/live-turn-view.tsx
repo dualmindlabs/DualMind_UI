@@ -79,7 +79,8 @@ function LivePane({ turn, side, answer }: PaneProps) {
       text={text}
       modelLabel={shown ? modelLabel(answer) : null}
       hiddenNote="Hidden until you vote"
-      meta={generating ? null : formatDuration(answer?.responseTimeMs)}
+      // Blind integrity: timing and length hint at the model, so they wait for the reveal.
+      meta={generating || !shown ? null : formatDuration(answer?.responseTimeMs)}
       chosen={chosen}
       streaming={generating && answer !== null}
       generating={generating}
