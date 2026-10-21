@@ -144,12 +144,17 @@ jobs:
           grep -q 'noindex' dist/design/index.html
           # The legacy home page must not be replaced by the SPA fallback.
           ! grep -q 'data-spa-fallback' dist/index.html
+          # Slice S7: the web app's leaderboard and models pages replace the legacy files.
+          grep -q 'blind votes' dist/leaderboard/index.html
+          ! grep -q 'leaderboardPage.js' dist/leaderboard/index.html
+          grep -q 'Every model in' dist/models/index.html
+          ! grep -q 'AI Models Comparison' dist/models/index.html
           {
             echo "### Web build output"
             echo
             echo "| File | Size | Gzip |"
             echo "| --- | ---: | ---: |"
-            for f in dist/design/index.html dist/__spa-fallback.html $(ls -S dist/assets/*.js dist/assets/*.css); do
+            for f in dist/design/index.html dist/leaderboard/index.html dist/models/index.html dist/__spa-fallback.html $(ls -S dist/assets/*.js dist/assets/*.css); do
               echo "| \`${f#dist/}\` | $(wc -c < "$f") | $(gzip -9c "$f" | wc -c) |"
             done
           } >> "$GITHUB_STEP_SUMMARY"
@@ -190,6 +195,26 @@ jobs:
               exit 1
             fi
           done
+          # Recharts (the win-rate chart) loads only when a model's details open.
+          chart=$(ls dist/assets/win-rate-chart-*.js 2>/dev/null | head -n 1 || true)
+          if [ -z "$chart" ]; then
+            echo "::error::Expected a separate chunk for win-rate-chart (Recharts) in dist/assets"
+            exit 1
+          fi
+          {
+            echo
+            echo "| Leaderboard bundles | Files | Gzip (bytes) |"
+            echo "| --- | ---: | ---: |"
+          } >> "$GITHUB_STEP_SUMMARY"
+          for page in leaderboard models; do
+            upfront=$(grep -oE 'assets/[A-Za-z0-9._-]+\.js' "dist/${page}/index.html" | sort -u | sed 's#^#dist/#')
+            if echo "$upfront" | grep -qx "$chart"; then
+              echo "::error::${chart} is loaded up front by /${page}/; it must stay lazy"
+              exit 1
+            fi
+            echo "| Loaded up front by /${page}/ | $(echo "$upfront" | wc -l) | $(total $upfront) |" >> "$GITHUB_STEP_SUMMARY"
+          done
+          echo "| Win-rate chart with Recharts (lazy) | 1 | $(gz "$chart") |" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Install Playwright Chromium
         working-directory: web
@@ -212,7 +237,7 @@ jobs:
         if: always()
         run: |
           {
-            echo "### Screenshots of /design/"
+            echo "### Screenshots of /design/, /leaderboard/ and /models/"
             echo
             echo "Download the \`web-screenshots\` artifact from [this run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifacts):"
             echo

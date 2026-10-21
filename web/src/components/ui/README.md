@@ -18,6 +18,7 @@ The UI kit: [shadcn/ui](https://ui.shadcn.com) primitives in the **Base UI** fla
 | `command.tsx`                                                        | cmdk            | The command palette (`components/layout/command-palette.tsx`) and pickers.                                                                                                                                                          |
 | `sonner.tsx`                                                         | Sonner          | `Toaster` (mounted in the root) and `toast()` with our defaults: import `toast` from here, not from `sonner`.                                                                                                                       |
 | `badge.tsx`, `role-badge.tsx`, `card.tsx`, `kbd.tsx`, `skeleton.tsx` | ours / shadcn   | `RoleBadge` is Mind A, Mind B (with their A / B letters) or You.                                                                                                                                                                    |
+| `chart.tsx`                                                          | Recharts        | The chart frame (`ChartContainer`, series colours as token CSS variables) and tooltip. Recharts is large: import it only from a module loaded with `React.lazy`.                                                                    |
 
 ## Adding a primitive without the shadcn CLI
 

@@ -13,7 +13,9 @@ export type CreditId =
   | 'lucide'
   | 'react-router'
   | 'tailwindcss'
-  | 'fontsource';
+  | 'fontsource'
+  | 'recharts'
+  | 'tanstack-query';
 
 export interface Credit {
   id: CreditId;
@@ -124,6 +126,26 @@ export const credits: readonly Credit[] = [
     kind: 'dependency',
     restricted: false,
     uses: ['Styling'],
+  },
+  {
+    id: 'recharts',
+    name: 'Recharts',
+    url: 'https://recharts.org',
+    licence: 'MIT',
+    licenceUrl: 'https://github.com/recharts/recharts/blob/main/LICENSE',
+    kind: 'dependency',
+    restricted: false,
+    uses: ['Leaderboard charts (through the shadcn/ui chart frame)'],
+  },
+  {
+    id: 'tanstack-query',
+    name: 'TanStack Query',
+    url: 'https://tanstack.com/query',
+    licence: 'MIT',
+    licenceUrl: 'https://github.com/TanStack/query/blob/main/LICENSE',
+    kind: 'dependency',
+    restricted: false,
+    uses: ['Server data: caching, background refresh and retries'],
   },
   {
     id: 'fontsource',

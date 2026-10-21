@@ -16,5 +16,5 @@ export default {
   appDirectory: 'src/app',
   buildDirectory: 'build',
   ssr: false,
-  prerender: ['/design'],
+  prerender: ['/design', '/leaderboard', '/models'],
 } satisfies Config;

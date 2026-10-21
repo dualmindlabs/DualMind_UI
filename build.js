@@ -58,9 +58,14 @@ const foldersToCopy = [
     'terms'
 ];
 
-// Legacy files that a migrated route may replace. Empty until a slice moves an existing URL to
-// the web app (for example 'index.html' when / is prerendered in slice S3).
-const replacedByWeb = new Set([]);
+// Legacy files that a migrated route replaces: the web build's page is copied over the legacy
+// one (for example 'index.html' when / is prerendered in slice S3). The legacy files stay in the
+// repository until the cutover (S13).
+const replacedByWeb = new Set([
+    // Slice S7: the live leaderboard and the model directory.
+    'leaderboard/index.html',
+    'models/index.html',
+]);
 
 // React Router writes its SPA fallback as index.html while / is not prerendered, and as
 // __spa-fallback.html once it is. Either way it ends up here (served by server/routing.js).
