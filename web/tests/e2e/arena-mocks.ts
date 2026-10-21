@@ -307,13 +307,26 @@ export async function mockArena(
         return json(route, 500, { success: false, error: 'Boom', code: 'INTERNAL_ERROR' });
       return json(route, 200, { items: state.threads });
     }
-    const match = /^\/api\/threads\/([^/]+)(\/messages)?$/.exec(path);
+    if (path === '/api/settings/feature-flag/public_sharing') {
+      return json(route, 200, { key: 'public_sharing', enabled: true });
+    }
+    const match = /^\/api\/threads\/([^/]+)(\/messages|\/visibility)?$/.exec(path);
     if (match) {
       const id = decodeURIComponent(match[1] ?? '');
       const thread = state.threads.find(item => item.threadId === id);
       if (!thread)
         return json(route, 404, { success: false, error: 'Thread not found', code: 'NOT_FOUND' });
-      if (match[2]) return json(route, 200, { items: messagesFor(id) });
+      if (match[2] === '/visibility' && method === 'PATCH') {
+        const body = request.postDataJSON() as { visibility?: string };
+        state.bodies.push({ path, body });
+        thread.visibility = body.visibility ?? thread.visibility;
+        return json(route, 200, {
+          success: true,
+          message: 'Visibility updated',
+          visibility: thread.visibility,
+        });
+      }
+      if (match[2] === '/messages') return json(route, 200, { items: messagesFor(id) });
       if (method === 'GET') return json(route, 200, thread);
       if (method === 'PATCH') {
         const body = request.postDataJSON() as { title?: string };

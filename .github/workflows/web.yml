@@ -183,6 +183,10 @@ jobs:
             if [ -e "dist/$f" ]; then echo "::error::dist/$f should be gone (slice S6)"; exit 1; fi
           done
           grep -q 'https://e2eproject.supabase.co' dist/__web-manifest.json
+          # Slice S11: /share/<id> is the web app's client-only share page; the legacy share/ page
+          # is gone from dist/ (it answered with a redirect that lost the id, KNOWN_ISSUES #3).
+          if [ -e dist/share ]; then echo "::error::dist/share/ should be gone (slice S11)"; exit 1; fi
+          test -f dist/og/share.png
           {
             echo "### Web build output"
             echo

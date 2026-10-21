@@ -6,6 +6,7 @@ import {
   MessagesSquare,
   PanelLeft,
   Plus,
+  Share2,
   Swords,
   Undo2,
 } from 'lucide-react';
@@ -40,10 +41,12 @@ const PALETTE_THREADS = 12;
 
 /**
  * The arena's commands in the palette (Ctrl+K or Cmd+K, new-features.md F-1): new battle,
- * switch mode, jump to a recent thread, the history, and the way back to the classic arena.
+ * share the open thread, switch mode, jump to a recent thread, the history, and the way back to
+ * the classic arena.
  */
 export function useArenaCommands(threads: readonly Thread[] | undefined): void {
-  const { newBattle, selectMode, mode, openThread, toggleHistory, wide } = useArena();
+  const { newBattle, selectMode, mode, openThread, toggleHistory, wide, threadId, openShare } =
+    useArena();
 
   const arenaGroup = useMemo<CommandGroupDefinition>(
     () => ({
@@ -58,6 +61,17 @@ export function useArenaCommands(threads: readonly Thread[] | undefined): void {
           hint: 'N',
           perform: newBattle,
         },
+        ...(threadId === null
+          ? []
+          : [
+              {
+                id: 'arena-share',
+                label: 'Share this thread',
+                keywords: ['share', 'link', 'public', 'unlisted', 'private', 'visibility', 'copy'],
+                icon: Share2,
+                perform: () => openShare(threadId),
+              },
+            ]),
         ...ARENA_MODES.filter(item => item !== mode).map(item => ({
           id: `arena-mode-${item}`,
           label: `Switch to ${MODE_DETAILS[item].label}`,
@@ -82,7 +96,7 @@ export function useArenaCommands(threads: readonly Thread[] | undefined): void {
         },
       ],
     }),
-    [newBattle, mode, selectMode, wide, toggleHistory],
+    [newBattle, mode, selectMode, wide, toggleHistory, threadId, openShare],
   );
 
   const threadGroup = useMemo<CommandGroupDefinition | null>(

@@ -19,12 +19,12 @@ export const THREAD_LIMIT = 50;
 
 /**
  * The history: New battle, a search over titles, then the threads grouped by day (Today,
- * Yesterday, Last 7 days, Older) with rename and delete. Shared by the wide-screen panel and the
+ * Yesterday, Last 7 days, Older) with rename, share and delete. Shared by the wide-screen panel and the
  * phone drawer.
  */
 export function ThreadPanel() {
   const api = useApiClient();
-  const { threadId, openThread, newBattle } = useArena();
+  const { threadId, openThread, newBattle, openShare } = useArena();
   const threads = useQuery(threadsQuery(api, THREAD_LIMIT));
   const now = useNow();
   const [query, setQuery] = useState('');
@@ -99,6 +99,7 @@ export function ThreadPanel() {
                     time={formatThreadTime(threadTime(thread), now)}
                     onOpen={openThread}
                     onRename={setRenaming}
+                    onShare={openShare}
                     onDelete={setDeleting}
                   />
                 ))}

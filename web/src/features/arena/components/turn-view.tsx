@@ -18,7 +18,27 @@ export interface TurnViewProps {
   turn: TurnData;
   /** Display names by `modelName`, from the model catalogue. */
   names: ReadonlyMap<string, string>;
+  /**
+   * Who reads it: the thread's owner in the arena ("Your verdict"), or anyone on a share page
+   * ("Verdict", "Picked"), where nothing speaks to the reader as the voter.
+   */
+  audience?: 'owner' | 'public';
 }
+
+const COPY = {
+  owner: {
+    verdict: 'Your verdict:',
+    pick: 'Your pick',
+    hidden: 'Hidden, not voted',
+    noVote: 'No vote on this battle yet, so both names stay hidden.',
+  },
+  public: {
+    verdict: 'Verdict:',
+    pick: 'Picked',
+    hidden: 'Hidden: no vote',
+    noVote: 'Nobody voted on this battle, so both models stay anonymous.',
+  },
+} as const;
 
 function paneMeta(pane: PaneData): string {
   const words = countWords(pane.text);
@@ -40,10 +60,11 @@ function label(pane: PaneData, names: ReadonlyMap<string, string>): string | nul
  * one in Direct), with the visitor's verdict when there is one. Read-only here: voting on a
  * battle happens in the live flow.
  */
-export function TurnView({ turn, names }: TurnViewProps) {
+export function TurnView({ turn, names, audience = 'owner' }: TurnViewProps) {
   const promptId = useId();
   const verdict = turn.vote === null ? null : VOTE_LABELS[turn.vote];
-  const hiddenNote = 'Hidden, not voted';
+  const copy = COPY[audience];
+  const hiddenNote = copy.hidden;
 
   return (
     <article aria-labelledby={promptId} className="grid gap-4" data-testid="turn">
@@ -66,6 +87,7 @@ export function TurnView({ turn, names }: TurnViewProps) {
               hiddenNote={hiddenNote}
               meta={turn.revealed ? paneMeta(turn.a) : null}
               chosen={turn.vote === 'left'}
+              pickLabel={copy.pick}
             />
           }
           b={
@@ -76,19 +98,18 @@ export function TurnView({ turn, names }: TurnViewProps) {
               hiddenNote={hiddenNote}
               meta={turn.revealed ? paneMeta(turn.b) : null}
               chosen={turn.vote === 'right'}
+              pickLabel={copy.pick}
             />
           }
         />
       )}
       {verdict ? (
-        <p className="flex items-center gap-2 text-ui-sm text-fg-soft">
+        <p className="flex items-center gap-2 text-ui-sm text-fg-soft" data-testid="turn-verdict">
           <Scale aria-hidden="true" className="size-4 text-human" strokeWidth={1.75} />
-          Your verdict: <span className="font-medium text-human">{verdict}</span>
+          {copy.verdict} <span className="font-medium text-human">{verdict}</span>
         </p>
       ) : turn.b !== null && !turn.revealed ? (
-        <p className="text-ui-sm text-muted">
-          No vote on this battle yet, so both names stay hidden.
-        </p>
+        <p className="text-ui-sm text-muted">{copy.noVote}</p>
       ) : null}
     </article>
   );

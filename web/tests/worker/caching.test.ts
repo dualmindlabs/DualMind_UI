@@ -16,7 +16,7 @@ const cases: Array<[path: string, webPage: boolean, expected: string | null]> = 
   ['/assets/root-AbCd_123.js', false, IMMUTABLE_CACHE],
   ['/assets/root-Zz9-xY12.css', false, IMMUTABLE_CACHE],
   ['/assets/bricolage-grotesque-latin-opsz-normal-Q1w2E3r4.woff2', false, IMMUTABLE_CACHE],
-  // Legacy share page: never cached.
+  // The share page: never cached.
   ['/share/', false, SHARE_NO_STORE],
   ['/share/abc123', false, SHARE_NO_STORE],
   // Web app pages: revalidate with the ETag (the landing page at / since slice S3).

@@ -22,6 +22,8 @@ export interface PaneHeaderProps {
   hiddenNote?: string | undefined;
   meta?: string | null | undefined;
   chosen?: boolean;
+  /** The words on the chosen pane's mark: "Your pick" for the voter, "Picked" on a share page. */
+  pickLabel?: string;
   /** The name decrypts once (the reveal). */
   revealing?: boolean;
   /** The text the copy button copies; null hides the button (nothing final to copy yet). */
@@ -39,6 +41,7 @@ export function PaneHeader({
   hiddenNote = 'Name hidden',
   meta,
   chosen = false,
+  pickLabel = 'Your pick',
   revealing = false,
   copyText,
 }: PaneHeaderProps) {
@@ -80,7 +83,7 @@ export function PaneHeader({
         </h3>
         {chosen ? (
           <span className="shrink-0 rounded-full border border-human/50 bg-human-tint px-2 py-0.5 eyebrow text-human">
-            Your pick
+            {pickLabel}
           </span>
         ) : null}
       </div>

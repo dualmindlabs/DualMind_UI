@@ -1,0 +1,117 @@
+{
+  "_comment": "Shared threads for the e2e tests (slice S11), written for the tests: the Worker's link-preview look-up reads them from the e2e backend (serve-dist.mjs) and the share page reads them through the Worker's API proxy. They say nothing about real models.",
+  "ids": {
+    "public": "5ba7e1a0-5a3e-4c1d-8000-000000000001",
+    "unvoted": "5ba7e1a0-5a3e-4c1d-8000-000000000002",
+    "direct": "5ba7e1a0-5a3e-4c1d-8000-000000000003",
+    "private": "5ba7e1a0-5a3e-4c1d-8000-000000000004"
+  },
+  "threads": {
+    "5ba7e1a0-5a3e-4c1d-8000-000000000001": {
+      "thread": {
+        "threadId": "5ba7e1a0-5a3e-4c1d-8000-000000000001",
+        "userId": "00000000-0000-4000-8000-0000000000aa",
+        "title": "Explain recursion to a ten-year-old",
+        "mode": "battle",
+        "visibility": "public",
+        "messageCount": 2,
+        "createdAt": "2026-10-21T10:15:00Z",
+        "updatedAt": "2026-10-21T10:21:00Z"
+      },
+      "messages": [
+        {
+          "messageId": "0001-m0",
+          "threadId": "5ba7e1a0-5a3e-4c1d-8000-000000000001",
+          "position": 0,
+          "promptText": "Explain recursion to a ten-year-old",
+          "model1Name": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+          "model2Name": "@cf/qwen/qwen3-30b-a3b-fp8",
+          "model1Response": "Recursion is when a function **solves a problem by calling itself** on a smaller piece of the same problem.\n\n## The two rules\n\n1. A **base case** that stops: the smallest input, answered directly.\n2. A **recursive case** that moves towards it.\n\n```python\ndef factorial(n: int) -> int:\n    if n <= 1:          # base case\n        return 1\n    return n * factorial(n - 1)\n```\n\nWithout the base case the calls never end, and the program runs out of stack.",
+          "model2Response": "Think of **Russian nesting dolls**: to find the smallest doll, you open one doll and do the same thing again with the doll inside.\n\n- Each step is the *same task*, just smaller.\n- You stop when a doll does not open (the base case).\n\n| Input | Calls made | Result |\n| --- | ---: | ---: |\n| 1 | 1 | 1 |\n| 3 | 3 | 6 |\n| 5 | 5 | 120 |\n\nThat is all recursion is: a task defined in terms of a smaller copy of itself.",
+          "model1TimeMs": 1840,
+          "model2TimeMs": 2310,
+          "comparisonId": "0001-c0",
+          "voteChoice": "right",
+          "hasVoted": true,
+          "createdAt": "2026-10-21T10:15:00Z"
+        },
+        {
+          "messageId": "0001-m1",
+          "threadId": "5ba7e1a0-5a3e-4c1d-8000-000000000001",
+          "position": 1,
+          "promptText": "Now show it with a short Python example",
+          "model1Name": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+          "model2Name": "@cf/qwen/qwen3-30b-a3b-fp8",
+          "model1Response": "Here is the same idea in Python, counting down:\n\n```python\ndef countdown(n: int) -> None:\n    if n == 0:\n        print(\"Lift off!\")\n        return\n    print(n)\n    countdown(n - 1)\n```\n\nEach call prints one number and hands a smaller job to the next call.",
+          "model2Response": "```python\ndef open_doll(size: int) -> int:\n    if size == 1:      # the smallest doll does not open\n        return 1\n    return 1 + open_doll(size - 1)\n```\n\n`open_doll(5)` returns **5**: one doll per call, until the smallest one.",
+          "model1TimeMs": 1210,
+          "model2TimeMs": 1490,
+          "comparisonId": "0001-c1",
+          "voteChoice": "left",
+          "hasVoted": true,
+          "createdAt": "2026-10-21T10:15:00Z"
+        }
+      ]
+    },
+    "5ba7e1a0-5a3e-4c1d-8000-000000000002": {
+      "thread": {
+        "threadId": "5ba7e1a0-5a3e-4c1d-8000-000000000002",
+        "userId": "00000000-0000-4000-8000-0000000000aa",
+        "title": "Which is bigger, 9.11 or 9.9?",
+        "mode": "battle",
+        "visibility": "unlisted",
+        "messageCount": 1,
+        "createdAt": "2026-10-21T10:15:00Z",
+        "updatedAt": "2026-10-21T10:21:00Z"
+      },
+      "messages": [
+        {
+          "messageId": "0002-m0",
+          "threadId": "5ba7e1a0-5a3e-4c1d-8000-000000000002",
+          "position": 0,
+          "promptText": "Which is bigger, 9.11 or 9.9?",
+          "model1Name": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+          "model2Name": "@cf/qwen/qwen3-30b-a3b-fp8",
+          "model1Response": "**9.9** is bigger: compare the tenths first, 9 > 1.",
+          "model2Response": "9.11 has more digits, but **9.9 is larger**: 9.90 > 9.11.",
+          "model1TimeMs": 920,
+          "model2TimeMs": 1105,
+          "comparisonId": "0002-c0",
+          "voteChoice": null,
+          "hasVoted": false,
+          "createdAt": "2026-10-21T10:15:00Z"
+        }
+      ]
+    },
+    "5ba7e1a0-5a3e-4c1d-8000-000000000003": {
+      "thread": {
+        "threadId": "5ba7e1a0-5a3e-4c1d-8000-000000000003",
+        "userId": "00000000-0000-4000-8000-0000000000aa",
+        "title": "Decline a meeting politely",
+        "mode": "direct",
+        "visibility": "public",
+        "messageCount": 1,
+        "createdAt": "2026-10-21T10:15:00Z",
+        "updatedAt": "2026-10-21T10:21:00Z"
+      },
+      "messages": [
+        {
+          "messageId": "0003-m0",
+          "threadId": "5ba7e1a0-5a3e-4c1d-8000-000000000003",
+          "position": 0,
+          "promptText": "Decline a meeting politely",
+          "model1Name": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+          "model2Name": null,
+          "model1Response": "Thanks for the invite. I can't make it this time, but please send me the notes and I'll follow up on anything that needs me.",
+          "model2Response": "",
+          "model1TimeMs": 1530,
+          "model2TimeMs": null,
+          "comparisonId": "0003-c0",
+          "voteChoice": null,
+          "hasVoted": false,
+          "createdAt": "2026-10-21T10:15:00Z"
+        }
+      ]
+    }
+  }
+}

@@ -17,7 +17,7 @@ export function isHashedAsset(pathname) {
 /**
  * Client-only routes of the web app, answered with React Router's SPA fallback page
  * (dist/__spa-fallback.html, written by build.js) and status 200. Each entry is an exact path,
- * or a prefix ending in `*` (`/share/*`). Later slices add /share/ and /settings/.
+ * or a prefix ending in `*` (`/share/*`). A later slice adds /settings/.
  * @type {readonly string[]}
  */
 export const SPA_FALLBACK_ROUTES = [
@@ -25,6 +25,10 @@ export const SPA_FALLBACK_ROUTES = [
   // (links already in inboxes point here), never redirected.
   '/update-password.html',
   '/auth-callback.html',
+  // Slice S11: share links, /share/<id> and the old /share/?id=<id> forms (server/share.js adds
+  // no-store and the link-preview tags).
+  '/share',
+  '/share/*',
 ];
 
 /** Where the fallback is served from. Workers assets serve dist/__spa-fallback.html here. */

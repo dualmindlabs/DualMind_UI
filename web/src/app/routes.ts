@@ -33,6 +33,11 @@ export default [
   route('update-password.html', 'routes/update-password.tsx'),
   route('auth-callback.html', 'routes/auth-callback.tsx'),
 
+  // Shared battles and chats (slice S11): /share/<id> and the old /share/?id=<id> forms, also under
+  // /share/index.html. Client-only (SPA fallback, status 200, no-store, link-preview tags written by
+  // the Worker; server/share.js).
+  route('share/:threadId?', 'routes/share.tsx'),
+
   // Anything else: the 404 page. Prerendered as /404 (build.js moves it to dist/404.html, which
   // the Worker serves with status 404); this entry also covers client-side navigation.
   route('*', 'routes/not-found.tsx'),

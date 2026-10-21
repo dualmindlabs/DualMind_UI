@@ -311,8 +311,13 @@ describe('routing helpers (server/routing.js)', () => {
     expect(buildScript).toContain(`/${HASHED_ASSET_RE.source}/`);
   });
 
-  it('lists the two Supabase email targets, and matches exact paths and prefixes', () => {
-    expect(SPA_FALLBACK_ROUTES).toEqual(['/update-password.html', '/auth-callback.html']);
+  it('lists the email targets and the share page, and matches paths and prefixes', () => {
+    expect(SPA_FALLBACK_ROUTES).toEqual([
+      '/update-password.html',
+      '/auth-callback.html',
+      '/share',
+      '/share/*',
+    ]);
     expect(isSpaFallbackRoute('/auth-callback.html')).toBe(true);
     expect(isSpaFallbackRoute('/update-password.html')).toBe(true);
     expect(isSpaFallbackRoute('/auth-callback')).toBe(false);
@@ -323,6 +328,10 @@ describe('routing helpers (server/routing.js)', () => {
     expect(isSpaFallbackRoute('/share/abc123', routes)).toBe(true);
     expect(isSpaFallbackRoute('/shared', routes)).toBe(false);
     expect(isSpaFallbackRoute('/settings/')).toBe(false);
+    expect(isSpaFallbackRoute('/share')).toBe(true);
+    expect(isSpaFallbackRoute('/share/')).toBe(true);
+    expect(isSpaFallbackRoute('/share/index.html')).toBe(true);
+    expect(isSpaFallbackRoute('/shared')).toBe(false);
   });
 
   it('serves the SPA fallback page with status 200 and no-cache', async () => {

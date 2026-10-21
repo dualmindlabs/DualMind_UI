@@ -18,6 +18,11 @@ export interface ArenaState {
   openThread: (threadId: string) => void;
   /** Leaves the thread (if any), clears the prompt and focuses it. */
   newBattle: () => void;
+  /** The thread whose share dialog is open, or null (slice S11). */
+  shareThreadId: string | null;
+  /** Opens the share dialog for a thread (the header, the history menu, the palette). */
+  openShare: (threadId: string) => void;
+  closeShare: () => void;
 
   /** Wide screens: the history panel is collapsed to a rail. */
   sidebarCollapsed: boolean;
