@@ -142,7 +142,8 @@ describe('SharePage', () => {
     expect(within(answerB).getByText('Picked')).toBeVisible();
     expect(within(answerA).getByTestId('pane-meta')).toHaveTextContent('1.8 s');
     expect(screen.getByTestId('turn-verdict')).toHaveTextContent('Verdict: B is better');
-    expect(screen.queryByText(/Your verdict|Your pick/)).not.toBeInTheDocument();
+    // The transcript never speaks to the reader as the voter (the closing heading may).
+    expect(within(screen.getByTestId('turn')).queryByText(/Your verdict|Your pick/)).toBeNull();
     expect(within(answerA).getByText('calls itself').tagName).toBe('STRONG');
     // Author-safe, and anonymous: no owner id on the page, no token sent.
     expect(document.body.textContent).not.toContain('owner-user-id-123');
