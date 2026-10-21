@@ -115,7 +115,7 @@ export function ShareError({
             href={RUN_YOUR_OWN_HREF}
             className={buttonVariants({ variant: 'secondary', size: 'sm' })}
           >
-            Go to the Arena
+            Start a battle
           </a>
         </>
       }

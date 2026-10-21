@@ -33,8 +33,8 @@ describe('ApiProvider', () => {
     expect(screen.getByText('pending')).toBeInTheDocument();
     const items = await screen.findAllByRole('listitem');
     expect(items.map(item => item.textContent)).toEqual([
-      'llama-3.3-70b-instruct-fp8-fast',
-      'llama-3.1-70b-instruct',
+      'Llama 3.3 70B Instruct (FP8, fast)',
+      'Llama 3.1 70B Instruct',
     ]);
   });
 

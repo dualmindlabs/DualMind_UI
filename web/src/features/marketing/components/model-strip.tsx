@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 import { type LogoItem, LogoLoop } from '@/components/vendor/reactbits/logo-loop';
-import { providerLabel } from '@/features/leaderboard';
+import { modelMaker, resolveDisplayName } from '@/lib/models/display-name';
 
 import { MODEL_SNAPSHOT, MODEL_SNAPSHOT_DATE } from '../content/model-snapshot';
 import type { LiveStatsState } from '../hooks/use-live-stats';
@@ -21,16 +21,19 @@ export function ModelStrip({ stats }: { stats: LiveStatsState }) {
   const models = live
     ? stats.stats.ranked.slice(0, STRIP_SIZE).map(model => ({
         name: model.name,
-        providerId: model.provider,
+        maker: model.providerLabel,
       }))
-    : MODEL_SNAPSHOT;
+    : MODEL_SNAPSHOT.map(model => ({
+        name: resolveDisplayName(model.name),
+        maker: modelMaker(model.name, model.providerId).label,
+      }));
 
   const logos: LogoItem[] = models.map(model => ({
-    label: `${model.name}, ${providerLabel(model.providerId)}`,
+    label: `${model.name}, ${model.maker}`,
     node: (
       <span className="inline-flex items-baseline gap-2.5 whitespace-nowrap">
         <span className="font-mono text-ui-sm text-fg-soft">{model.name}</span>
-        <span className="eyebrow text-muted">{providerLabel(model.providerId)}</span>
+        <span className="eyebrow text-muted">{model.maker}</span>
       </span>
     ),
   }));

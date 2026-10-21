@@ -1,4 +1,4 @@
-import type { Leaderboard, LeaderboardEntry } from '@/features/leaderboard';
+import type { Leaderboard, LeaderboardEntry, RatedEntry } from '@/features/leaderboard';
 
 /**
  * The landing page's live numbers, derived from the board the leaderboard feature builds from the
@@ -15,10 +15,12 @@ export interface LiveStats {
   battles: number;
   votes: number;
   models: number;
-  /** Provider names, in board order of their best model. */
+  /** Serving platforms ("Cloudflare Workers AI"), in board order of their best model. */
   providers: string[];
-  /** Every model, best rank first (ties share a rank and keep the API's order). */
+  /** Every model: the rated ones best rank first, then the ones not yet rated. */
   ranked: LeaderboardEntry[];
+  /** The rated models only, best rank first: the leader and the top five come from here. */
+  top: RatedEntry[];
 }
 
 export function toLiveStats(board: Leaderboard): LiveStats {
@@ -30,7 +32,8 @@ export function toLiveStats(board: Leaderboard): LiveStats {
     battles: board.summary.battles,
     votes: Math.round(outcomes / 2),
     models: board.summary.models,
-    providers: [...new Set(board.entries.map(entry => entry.providerLabel))],
+    providers: [...new Set(board.entries.map(entry => entry.platformLabel))],
     ranked: board.entries,
+    top: board.rated,
   };
 }

@@ -10,6 +10,8 @@ import { TABLE_QUERY, useMediaQuery } from '../hooks/use-media-query';
 import { useModelCommands } from '../hooks/use-model-commands';
 import { useModelDetails } from '../hooks/use-model-details';
 import { PROVISIONAL_BATTLES, RATINGS_HELP_HREF } from '../lib/constants';
+import { isRated } from '../lib/entries';
+import { hasActiveFilters } from '../lib/filter';
 import { BoardCardList } from './board-card-list';
 import { BoardControls } from './board-controls';
 import { BoardEmpty, BoardError, BoardNoMatch, BoardSkeleton } from './board-state';
@@ -20,6 +22,7 @@ import { Methodology } from './methodology';
 import { ModelDetails } from './model-details';
 import { Podium } from './podium';
 import { SortToggle } from './sort-toggle';
+import { UnratedGroup } from './unrated-group';
 
 /** Elo values count up from the board's lowest round hundred (900 for a board starting at 909). */
 function eloStartFor(bottomElo: number): number {
@@ -41,7 +44,7 @@ export function LeaderboardPage() {
   const wide = useMediaQuery(TABLE_QUERY);
   useModelCommands(board?.entries, details.openModel);
 
-  const leaderId = board?.entries[0]?.id;
+  const leaderId = board?.rated[0]?.id;
   const loading = board === undefined && query.isPending;
   const failed = board === undefined && query.isError;
 
@@ -75,16 +78,36 @@ export function LeaderboardPage() {
     if (view.visible.length === 0) {
       return <BoardNoMatch query={view.filters.query} onClear={view.clearFilters} />;
     }
-    return wide ? (
-      <LeaderboardTable
-        entries={view.visible}
-        sort={view.sort}
-        onSort={view.toggleSort}
-        onOpen={details.openModel}
-        leaderId={leaderId}
-      />
-    ) : (
-      <BoardCardList entries={view.visible} onOpen={details.openModel} leaderId={leaderId} />
+    const rated = view.visible.filter(isRated);
+    const unrated = view.visible.filter(entry => !isRated(entry));
+    return (
+      <div className="grid gap-8">
+        {rated.length === 0 ? (
+          <p className="rounded-md border border-line bg-surface px-4 py-3 text-ui text-fg-soft">
+            No rated model matches. The matches below are not yet rated.
+          </p>
+        ) : wide ? (
+          <LeaderboardTable
+            entries={rated}
+            sort={view.sort}
+            onSort={view.toggleSort}
+            onOpen={details.openModel}
+            leaderId={leaderId}
+          />
+        ) : (
+          <BoardCardList entries={rated} onOpen={details.openModel} leaderId={leaderId} />
+        )}
+        {unrated.length > 0 ? (
+          <UnratedGroup
+            entries={unrated}
+            forceOpen={hasActiveFilters(view.filters)}
+            wide={wide}
+            sort={view.sort}
+            onSort={view.toggleSort}
+            onOpen={details.openModel}
+          />
+        ) : null}
+      </div>
     );
   }
 
@@ -100,14 +123,14 @@ export function LeaderboardPage() {
           stale={query.isRefetchError}
         />
 
-        {failed ? null : (
+        {failed || board?.rated.length === 0 ? null : (
           <section aria-labelledby="podium-title" className="pt-12 md:pt-16">
             <PageContainer className="grid gap-5">
               <p id="podium-title" className="eyebrow text-muted">
                 Top three
               </p>
               <Podium
-                entries={board?.entries}
+                entries={board?.rated}
                 eloStart={board ? eloStartFor(board.summary.bottomElo) : 0}
                 onOpen={details.openModel}
               />
@@ -129,7 +152,7 @@ export function LeaderboardPage() {
               </div>
               <p className="flex items-center gap-2 text-caption text-muted">
                 <span aria-hidden="true" className="size-1.5 rounded-full bg-warn" />
-                Provisional: fewer than {PROVISIONAL_BATTLES} battles
+                Fewer than {PROVISIONAL_BATTLES} battles: listed as not yet rated, without a rank
               </p>
             </div>
 

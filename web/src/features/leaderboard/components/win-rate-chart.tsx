@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/chart';
 import { useShouldReduceMotion } from '@/hooks/use-should-reduce-motion';
 
+import { byRank } from '../lib/entries';
 import { formatCount, formatPercent } from '../lib/format';
 import type { LeaderboardEntry } from '../types';
 
@@ -61,7 +62,7 @@ function tooltipRow(item: ChartTooltipItem) {
 export function WinRateChart({ entries, selectedId, average }: WinRateChartProps) {
   const reduce = useShouldReduceMotion();
   const data: Datum[] = [...entries]
-    .sort((a, b) => b.winRate - a.winRate || a.rank - b.rank)
+    .sort((a, b) => b.winRate - a.winRate || byRank(a, b))
     .map(entry => ({
       id: entry.id,
       name: entry.name,

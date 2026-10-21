@@ -1,6 +1,7 @@
 import type { MetaDescriptor } from 'react-router';
 
 import { config } from '@/config/env';
+import { BRAND_PRIMARY } from '@/content/brand';
 import { type JsonLd, pageMeta, type PageMetaInput } from '@/lib/site/page-meta';
 
 import type { PageContent } from '../content';
@@ -55,7 +56,7 @@ export function infoMeta(page: PageContent): MetaDescriptor[] {
     robots: 'index, follow',
     image: {
       url: '/og-default.png',
-      alt: 'DualMind Arena: two minds, one verdict.',
+      alt: `DualMind Arena: ${BRAND_PRIMARY}`,
       width: 1200,
       height: 630,
     },

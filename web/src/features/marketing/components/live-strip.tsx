@@ -22,7 +22,7 @@ const pendingClass = 'block h-8 w-24 max-w-full animate-pulse rounded-sm bg-surf
 export function LiveStrip({ stats }: { stats: LiveStatsState }) {
   const ready = stats.status === 'ready' ? stats.stats : null;
   const failed = stats.status === 'error';
-  const leader = ready?.ranked[0];
+  const leader = ready?.top[0];
 
   const value = (render: (data: NonNullable<typeof ready>) => ReactNode, width?: string) => {
     if (ready) return render(ready);

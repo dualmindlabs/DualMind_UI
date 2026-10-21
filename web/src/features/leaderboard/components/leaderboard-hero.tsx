@@ -39,7 +39,7 @@ export function LeaderboardHero({ summary, updatedAt, refreshing, stale }: Leade
           <p className="max-w-reading text-body text-fg-soft">
             Two anonymous models answer the same prompt. People vote for the better answer before
             they see any names, and each vote moves an Elo rating. Models with fewer than{' '}
-            {PROVISIONAL_BATTLES} battles are marked provisional.
+            {PROVISIONAL_BATTLES} battles are listed as not yet rated, without a rank.
           </p>
           <div className="flex flex-wrap items-center gap-3">
             <a href={ARENA_HREF} className={cn(buttonVariants({ variant: 'primary' }))}>

@@ -33,12 +33,12 @@ export function NotFoundPage() {
             This page took a wrong turn.
           </p>
           <p className="max-w-[44ch] text-body [text-wrap:pretty] text-fg-soft">
-            The address may have a typo, or the page may have moved. Start a battle, or look at how
-            the models rank.
+            The address may have a typo, or the page may have moved. Head back to the Arena, or look
+            at how the models rank.
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <a href="/" className={buttonVariants({ variant: 'primary', size: 'md' })}>
-              Go to the Arena
+              Start a battle
             </a>
             <a href="/leaderboard/" className={buttonVariants({ variant: 'outline', size: 'md' })}>
               See the leaderboard

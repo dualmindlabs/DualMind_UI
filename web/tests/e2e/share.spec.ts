@@ -213,9 +213,9 @@ test.describe('share page', () => {
     await expect(turns).toHaveCount(2);
     const first = turns.first();
     await expect(first.getByTestId('pane-model').first()).toContainText(
-      'llama-3.3-70b-instruct-fp8-fast',
+      'Llama 3.3 70B Instruct (FP8, fast)',
     );
-    await expect(first.getByTestId('pane-model').nth(1)).toContainText('qwen3-30b-a3b-fp8');
+    await expect(first.getByTestId('pane-model').nth(1)).toContainText('Qwen3 30B A3B (FP8)');
     await expect(first.locator('[data-side="b"][data-chosen]')).toContainText('Picked');
     await expect(first.getByTestId('turn-verdict')).toContainText('Verdict: B is better');
     await expect(first.getByTestId('pane-meta').first()).toContainText('1.8 s');

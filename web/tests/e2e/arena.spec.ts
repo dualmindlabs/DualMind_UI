@@ -168,7 +168,7 @@ test.describe('threads', () => {
     await expect(first.getByRole('region', { name: /Answer A/ })).toBeVisible();
     await expect(first.getByRole('region', { name: /Answer B/ })).toContainText('nesting dolls');
     await expect(first).toContainText('Your verdict: B is better');
-    await expect(first.getByTestId('pane-model').first()).toHaveText(/llama-3\.3-70b/);
+    await expect(first.getByTestId('pane-model').first()).toHaveText(/Llama 3\.3 70B/);
     await expect(turns.nth(1)).toContainText('both names stay hidden');
     await expect(turns.nth(1).getByTestId('pane-model')).toHaveCount(0);
     await expect(turns.nth(1).getByTestId('pane-meta')).toHaveCount(0);
@@ -365,7 +365,7 @@ test.describe('battles', () => {
     await expect(turn).toHaveAttribute('data-phase', 'revealed');
     await expect(turn.getByTestId('verdict')).toContainText('B is better');
     await expect(page.getByTestId('arena-announcer')).toContainText(
-      'You voted B. Model A was llama-3.3-70b-instruct-fp8-fast. Model B was Compound Mini.',
+      'You voted B. Model A was Llama 3.3 70B Instruct (FP8, fast). Model B was Compound Mini.',
     );
     await expect(turn.getByTestId('pane-model').nth(1)).toContainText('Compound Mini', {
       timeout: 5000,
@@ -486,7 +486,7 @@ test.describe('battle screenshots', () => {
     await expect(turn).toHaveAttribute('data-phase', 'awaiting_vote', { timeout: 15_000 });
     await turn.getByRole('button', { name: /A is better/ }).click();
     await expect(turn.getByTestId('pane-model').first()).toContainText(
-      'llama-3.3-70b-instruct-fp8-fast',
+      'Llama 3.3 70B Instruct (FP8, fast)',
     );
     await settle(page, 300);
     await page.screenshot({ path: shotPath('battle-revealed-reduced-motion') });
