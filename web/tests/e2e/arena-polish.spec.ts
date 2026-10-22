@@ -1,7 +1,7 @@
 import { expect, type Locator, type Page, test } from '@playwright/test';
 
 import { mockArena } from './arena-mocks';
-import { passGate, settle, shotPath, storeTheme } from './helpers';
+import { openHistory, passGate, settle, shotPath, storeTheme } from './helpers';
 
 // Arena polish (UI audit fix PR 5): the model picker (P1-11), syntax highlighting in answers,
 // the keyboard shortcuts overlay, the phone starter rows and history rows (P2-9), and touch
@@ -347,6 +347,7 @@ test.describe('phone polish (P2-9)', () => {
 
     await page.setViewportSize({ width: 1440, height: 900 });
     await openArena(page);
+    await openHistory(page);
     const panel = page.getByRole('navigation', { name: 'Your threads' });
     const link = panel.getByRole('link').first();
     const [titleBox, timeBox] = [

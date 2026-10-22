@@ -21,14 +21,15 @@ function bezier(name: string, fallback: Bezier): Bezier {
 export const duration = {
   instant: seconds('--dur-instant', 90),
   fast: seconds('--dur-fast', 160),
-  base: seconds('--dur-base', 240),
-  slow: seconds('--dur-slow', 420),
-  cinematic: seconds('--dur-cinematic', 900),
+  base: seconds('--dur-base', 280),
+  slow: seconds('--dur-slow', 440),
+  cinematic: seconds('--dur-cinematic', 700),
 } as const;
 
 export const ease = {
-  outExpo: bezier('--ease-out-expo', [0.22, 1, 0.36, 1]),
+  outExpo: bezier('--ease-out-expo', [0.16, 1, 0.3, 1]),
   inOut: bezier('--ease-in-out', [0.65, 0, 0.35, 1]),
+  snap: bezier('--ease-snap', [0.2, 0.8, 0.2, 1]),
 } as const;
 
 export const transitions = {

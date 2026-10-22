@@ -17,7 +17,7 @@ export function ColorSection() {
       id="colour"
       title={
         <>
-          Graphite ink, two minds <span className="human-voice text-human">and you.</span>
+          Midnight and Paper, two minds <span className="human-voice text-human">and you.</span>
         </>
       }
       lead={

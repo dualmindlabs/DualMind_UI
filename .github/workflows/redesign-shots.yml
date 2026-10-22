@@ -1,0 +1,89 @@
+name: Redesign screenshots
+
+# Before and after screenshots for the redesign PRs: landing, arena (empty, awaiting a vote,
+# revealed), leaderboard, models, 404 and the design page, at desktop 1440 and phone 390, in dark
+# and light. "before" is the base branch (feat/arena-cutover) with this branch's spec overlaid;
+# "after" is the PR head. Artifacts: shots-before and shots-after (web/shots-out).
+on:
+  workflow_dispatch:
+    inputs:
+      filter:
+        description: Playwright file filter (for example arena-console)
+        required: false
+        default: ''
+  pull_request:
+    paths:
+      - '.github/workflows/redesign-shots.yml'
+      - 'web/tests/shots/**'
+      - 'web/playwright.shots.config.ts'
+      - 'web/src/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: redesign-shots-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  WRANGLER_SEND_METRICS: 'false'
+
+jobs:
+  shots:
+    name: Screenshots (${{ matrix.name }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: before
+            ref: feat/arena-cutover
+          - name: after
+            ref: ''
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          path: pass
+      - uses: actions/checkout@v7
+        if: matrix.ref != ''
+        with:
+          ref: ${{ matrix.ref }}
+          path: site
+      - name: Use this checkout as the site
+        if: matrix.ref == ''
+        run: mv pass site && mkdir pass && cp -r site/web pass/web
+      - name: Overlay the screenshot spec on the target
+        run: |
+          cp pass/web/playwright.shots.config.ts site/web/
+          mkdir -p site/web/tests/shots
+          cp pass/web/tests/shots/* site/web/tests/shots/
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: site/.node-version
+          cache: npm
+          cache-dependency-path: site/web/package-lock.json
+      - name: Build the composed site
+        working-directory: site
+        env:
+          VITE_SUPABASE_URL: https://e2eproject.supabase.co
+          VITE_SUPABASE_ANON_KEY: e2e-anon-key-not-a-real-key
+        run: node build.js
+      - name: Install Playwright Chromium
+        working-directory: site/web
+        run: |
+          for attempt in 1 2 3 4; do
+            if npx playwright install --with-deps chromium; then exit 0; fi
+            sleep 20
+          done
+          exit 1
+      - name: Screenshots
+        working-directory: site/web
+        run: npx playwright test -c playwright.shots.config.ts ${{ inputs.filter }}
+      - name: Upload
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: shots-${{ matrix.name }}
+          path: site/web/shots-out/
+          retention-days: 14

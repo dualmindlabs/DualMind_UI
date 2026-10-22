@@ -20,6 +20,7 @@ import { FORBIDDEN_THREAD_MESSAGE } from '../lib/battle-notes';
 import { MODE_DETAILS } from '../lib/modes';
 import { formatThreadTime, threadTime } from '../lib/thread-groups';
 import { toTurns } from '../lib/turns';
+import { InspectorToggle } from './inspector';
 import { LiveTurnView } from './live-turn-view';
 import { TurnView } from './turn-view';
 
@@ -137,35 +138,33 @@ export function ThreadView({ threadId }: { threadId: string | null }) {
       <ChatContainerContent
         scrollClassName="overscroll-contain"
         className={cn(
-          'mx-auto w-full gap-10 px-4 pt-6 pb-10 sm:px-6',
+          'mx-auto w-full gap-8 px-4 pt-4 pb-10 sm:px-6',
           wide ? 'max-w-6xl' : 'max-w-3xl',
         )}
       >
-        <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-4 gap-y-1.5">
-          <p className="col-start-1 eyebrow text-muted">
-            {MODE_DETAILS[mode].label}
-            {thread ? (
-              <span className="text-muted">
-                {' · '}
-                {thread.messageCount} {thread.messageCount === 1 ? 'turn' : 'turns'}
-                {time === null ? null : ` · ${formatThreadTime(time, now)}`}
-              </span>
-            ) : null}
-          </p>
-          {thread || threadId === null ? (
-            <h1 className="col-start-1 text-h3 font-semibold text-balance text-fg sm:text-h2">
-              {thread?.title ?? live[0]?.prompt ?? 'New battle'}
-            </h1>
-          ) : (
-            <Skeleton className="col-start-1 h-8 w-2/3" />
-          )}
+        <header className="flex items-center gap-3">
+          <div className="grid min-w-0 flex-1 gap-0.5">
+            {thread || threadId === null ? (
+              <h1 className="truncate text-ui font-semibold tracking-tight text-fg">
+                {thread?.title ?? live[0]?.prompt ?? 'New battle'}
+              </h1>
+            ) : (
+              <Skeleton className="h-5 w-2/3" />
+            )}
+            <p className="truncate font-mono text-caption text-muted">
+              {MODE_DETAILS[mode].label}
+              {thread && thread.messageCount > 0 ? (
+                <>
+                  {' · '}
+                  {thread.messageCount} {thread.messageCount === 1 ? 'turn' : 'turns'}
+                  {time === null ? null : ` · ${formatThreadTime(time, now)}`}
+                </>
+              ) : null}
+            </p>
+          </div>
+          <InspectorToggle />
           {threadId === null ? null : (
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => openShare(threadId)}
-              className="col-start-2 row-span-2 row-start-1 self-center"
-            >
+            <Button variant="ghost" size="sm" onClick={() => openShare(threadId)}>
               <Share2 aria-hidden="true" strokeWidth={1.75} />
               Share
             </Button>

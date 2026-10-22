@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import type { BrowserContext, Page } from '@playwright/test';
+import { type BrowserContext, expect, type Page } from '@playwright/test';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 
@@ -42,4 +42,10 @@ export async function fullPageShot(page: Page, options: Parameters<Page['screens
   } finally {
     await handle.evaluate(node => (node as Element).remove());
   }
+}
+
+/** The arena's history is an on-demand slide-over (never docked): open it from the header. */
+export async function openHistory(page: Page) {
+  await page.getByRole('button', { name: 'Open the history' }).click();
+  await expect(page.getByRole('dialog', { name: 'History' })).toBeVisible();
 }

@@ -15,7 +15,7 @@ name: Web app
 
 on:
   pull_request:
-    branches: [main, master]
+    branches: [main, master, feat/arena-cutover]
     paths:
       - 'web/**'
       - 'server/**'

@@ -1,24 +1,39 @@
 /**
  * Card: a surface for grouped content.
  * Source: shadcn/ui `card` (base-vega), MIT, see ./LICENSE.md.
- * Changes: our surface, hairline and depth tokens (inner highlight in dark, soft shadow in light),
- * the 14px card radius, an h3 title by default.
+ * Changes: our surface, hairline and depth tokens, the 14px card radius, an h3 title by default.
+ * Surfaces: `flat` (default, one raise shadow), `duel` (lit gradient and lift shadow), `a` and `b`
+ * (tinted for Mind A or B, with a 2px top rule) and `float` (menus, docks). The depth utilities
+ * live in styles/surfaces.css.
  */
 import type { ComponentProps } from 'react';
 
 import { cn } from '@/lib/utils/cn';
 
+export type CardSurface = 'flat' | 'duel' | 'a' | 'b' | 'float';
+
+const surfaceClass: Record<CardSurface, string> = {
+  flat: 'rounded-lg border border-line bg-surface shadow-raise',
+  duel: 'surface-duel',
+  a: 'surface-a',
+  b: 'surface-b',
+  float: 'surface-float',
+};
+
 export function Card({
   className,
   size = 'md',
+  surface = 'flat',
   ...props
-}: ComponentProps<'div'> & { size?: 'sm' | 'md' }) {
+}: ComponentProps<'div'> & { size?: 'sm' | 'md'; surface?: CardSurface }) {
   return (
     <div
       data-slot="card"
       data-size={size}
+      data-surface={surface}
       className={cn(
-        'group/card flex flex-col gap-(--card-gap) rounded-lg border border-line bg-surface py-(--card-gap) text-ui-sm text-fg-soft shadow-raise',
+        'group/card flex flex-col gap-(--card-gap) py-(--card-gap) text-ui-sm text-fg-soft',
+        surfaceClass[surface],
         '[--card-gap:--spacing(6)] data-[size=sm]:[--card-gap:--spacing(4)]',
         className,
       )}

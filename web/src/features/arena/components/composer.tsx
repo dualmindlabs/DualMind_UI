@@ -1,4 +1,4 @@
-import { ArrowLeftRight, ArrowUp, Square } from 'lucide-react';
+import { ArrowLeftRight, ArrowUp, EyeOff, Square } from 'lucide-react';
 import type { RefObject } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -81,6 +81,8 @@ export function Composer({
     });
   };
 
+  const hero = variant === 'hero';
+
   return (
     <form
       aria-label="Prompt"
@@ -90,117 +92,142 @@ export function Composer({
         send();
       }}
     >
-      <PromptInput
-        value={draft}
-        onValueChange={setDraft}
-        onSubmit={send}
-        isLoading={busy}
-        textareaRef={composerRef}
-        submitOn={sendKey}
-        maxHeight={variant === 'hero' ? '16rem' : '12rem'}
-        className={cn(variant === 'dock' && 'bg-glass backdrop-blur-md')}
+      {/*
+        The duel ring: a 1px gradient edge from Mind A to Mind B around the box (neutral in Direct,
+        where there is no duel). It lights up while the box has focus.
+      */}
+      <div
+        data-slot="composer-ring"
+        data-mode={mode}
+        className={cn(
+          'group/ring rounded-[calc(var(--radius-xl)+1px)] p-px shadow-float transition-[background-color,box-shadow] duration-(--dur-base) ease-out-expo has-[textarea:focus-visible]:outline-(length:--focus-width) has-[textarea:focus-visible]:outline-offset-2 has-[textarea:focus-visible]:outline-focus has-[textarea:focus-visible]:outline-solid',
+          mode === 'direct'
+            ? 'bg-line-strong focus-within:bg-fg-soft'
+            : 'bg-linear-to-r from-mind-a/40 via-line-strong to-mind-b/40 focus-within:from-mind-a focus-within:via-line-strong focus-within:to-mind-b',
+        )}
       >
-        <PromptInputTextarea
-          aria-label="Your prompt"
-          placeholder={
-            followUp ? 'Ask a follow-up, same two models' : MODE_DETAILS[mode].placeholder
-          }
-          enterKeyHint={sendKey === 'mod-enter' ? 'enter' : 'send'}
-          className={cn(variant === 'hero' && 'min-h-16')}
-          onKeyDown={event => {
-            if (event.key !== 'Escape') return;
-            if (busy && onStop) {
-              event.preventDefault();
-              onStop();
-            } else {
-              event.currentTarget.blur();
+        <PromptInput
+          value={draft}
+          onValueChange={setDraft}
+          onSubmit={send}
+          isLoading={busy}
+          textareaRef={composerRef}
+          submitOn={sendKey}
+          maxHeight={hero ? '16rem' : '12rem'}
+          className={cn(
+            'rounded-xl border-0 bg-surface-2 shadow-none hover:border-0 has-[textarea:focus-visible]:outline-0',
+            hero && 'p-3',
+          )}
+        >
+          <PromptInputTextarea
+            aria-label="Your prompt"
+            placeholder={
+              followUp ? 'Ask a follow-up, same two models' : MODE_DETAILS[mode].placeholder
             }
-          }}
-        />
-        <PromptInputActions className="flex-wrap justify-between gap-y-2 px-1 pt-1">
-          <div className="flex min-w-0 flex-wrap items-center gap-2">
-            <ModeSwitch value={mode} onChange={selectMode} disabled={busy} />
-            {mode === 'side' ? (
-              <div className="flex items-center gap-1">
+            enterKeyHint={sendKey === 'mod-enter' ? 'enter' : 'send'}
+            className={cn(hero && 'min-h-16 text-body sm:min-h-20')}
+            onKeyDown={event => {
+              if (event.key !== 'Escape') return;
+              if (busy && onStop) {
+                event.preventDefault();
+                onStop();
+              } else {
+                event.currentTarget.blur();
+              }
+            }}
+          />
+          <PromptInputActions className="flex-wrap justify-between gap-y-2 px-1 pt-1">
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
+              <ModeSwitch value={mode} onChange={selectMode} disabled={busy} />
+              {mode === 'side' ? (
+                <div className="flex items-center gap-1">
+                  <ModelPicker
+                    side="a"
+                    label="Model for answer A"
+                    {...picker}
+                    options={options}
+                    value={choices.left}
+                    onChange={model => choices.choose('left', model)}
+                    disabled={busy}
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    aria-label="Swap the two models"
+                    onClick={choices.swap}
+                    disabled={busy}
+                    className="[&_svg]:transition-transform [&_svg]:duration-(--dur-base) [&_svg]:ease-out-expo motion-safe:hover:[&_svg]:rotate-180"
+                  >
+                    <ArrowLeftRight aria-hidden="true" strokeWidth={1.75} />
+                  </Button>
+                  <ModelPicker
+                    side="b"
+                    label="Model for answer B"
+                    {...picker}
+                    options={options}
+                    value={choices.right}
+                    onChange={model => choices.choose('right', model)}
+                    disabled={busy}
+                  />
+                </div>
+              ) : mode === 'direct' ? (
                 <ModelPicker
-                  side="a"
-                  label="Model for answer A"
+                  side="solo"
+                  label="Model"
                   {...picker}
                   options={options}
-                  value={choices.left}
-                  onChange={model => choices.choose('left', model)}
+                  value={choices.direct}
+                  onChange={model => choices.choose('direct', model)}
                   disabled={busy}
                 />
-                <Button
-                  variant="ghost"
-                  size="icon-xs"
-                  aria-label="Swap the two models"
-                  onClick={choices.swap}
-                  disabled={busy}
-                  className="[&_svg]:transition-transform [&_svg]:duration-(--dur-base) [&_svg]:ease-out-expo motion-safe:hover:[&_svg]:rotate-180"
-                >
-                  <ArrowLeftRight aria-hidden="true" strokeWidth={1.75} />
-                </Button>
-                <ModelPicker
-                  side="b"
-                  label="Model for answer B"
-                  {...picker}
-                  options={options}
-                  value={choices.right}
-                  onChange={model => choices.choose('right', model)}
-                  disabled={busy}
-                />
-              </div>
-            ) : mode === 'direct' ? (
-              <ModelPicker
-                side="solo"
-                label="Model"
-                {...picker}
-                options={options}
-                value={choices.direct}
-                onChange={model => choices.choose('direct', model)}
-                disabled={busy}
-              />
-            ) : (
-              <span className="hidden text-caption text-muted sm:inline">
-                Names hidden until you vote
+              ) : (
+                <span className="hidden items-center gap-1.5 text-caption text-fg-soft sm:inline-flex">
+                  <EyeOff aria-hidden="true" className="size-3.5" strokeWidth={1.75} />
+                  Names hidden until you vote
+                </span>
+              )}
+            </div>
+            <div className="ml-auto flex items-center gap-2">
+              <span
+                aria-hidden="true"
+                className="hidden font-mono text-caption text-fg-soft md:inline pointer-coarse:hidden"
+              >
+                {sendKey === 'mod-enter' ? `${modifier}+Enter to send` : 'Enter to send'}
               </span>
-            )}
-          </div>
-          <div className="ml-auto flex items-center gap-2">
-            <span aria-hidden="true" className="hidden font-mono text-caption text-muted md:inline">
-              {sendKey === 'mod-enter' ? `${modifier}+Enter to send` : 'Enter to send'}
-            </span>
-            {busy ? (
-              <Button
-                type="button"
-                variant="secondary"
-                size="icon-sm"
-                aria-label="Stop"
-                aria-keyshortcuts="Escape"
-                onClick={onStop}
-                data-testid="composer-stop"
-                className="rounded-full border-line-strong"
-              >
-                <Square aria-hidden="true" className="size-3.5 fill-current" strokeWidth={1.75} />
-              </Button>
-            ) : (
-              <Button
-                type="submit"
-                size="icon-sm"
-                aria-label="Send"
-                aria-keyshortcuts="Enter"
-                disabled={empty}
-                data-testid="composer-send"
-                // The arrow lifts on hover, like the prompt leaving; disabled, it stays still.
-                className="rounded-full [&_svg]:transition-transform [&_svg]:duration-(--dur-fast) [&_svg]:ease-out-expo motion-safe:hover:[&_svg]:-translate-y-0.5"
-              >
-                <ArrowUp aria-hidden="true" strokeWidth={2} />
-              </Button>
-            )}
-          </div>
-        </PromptInputActions>
-      </PromptInput>
+              {busy ? (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="icon-sm"
+                  aria-label="Stop"
+                  aria-keyshortcuts="Escape"
+                  onClick={onStop}
+                  data-testid="composer-stop"
+                  className={cn('rounded-full border-line-strong', hero && 'size-10 sm:size-11')}
+                >
+                  <Square aria-hidden="true" className="size-3.5 fill-current" strokeWidth={1.75} />
+                </Button>
+              ) : (
+                <Button
+                  type="submit"
+                  size="icon-sm"
+                  aria-label="Send"
+                  aria-keyshortcuts="Enter"
+                  disabled={empty}
+                  data-testid="composer-send"
+                  // The arrow lifts on hover, like the prompt leaving; disabled, it stays still.
+                  className={cn(
+                    'rounded-full [&_svg]:transition-transform [&_svg]:duration-(--dur-fast) [&_svg]:ease-out-expo motion-safe:hover:[&_svg]:-translate-y-0.5',
+                    hero && 'size-10 sm:size-11',
+                  )}
+                >
+                  <ArrowUp aria-hidden="true" strokeWidth={2} />
+                </Button>
+              )}
+            </div>
+          </PromptInputActions>
+        </PromptInput>
+      </div>
     </form>
   );
 }

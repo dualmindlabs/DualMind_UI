@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils/cn';
 
-import { containers, radii, spacing, surfaces } from '../lib/space';
+import { containers, radii, spacing } from '../lib/space';
 import { Section } from './section';
 
 export function SpaceSection() {
@@ -9,18 +9,18 @@ export function SpaceSection() {
       id="space"
       title={
         <>
-          Exact spacing, <span className="human-voice text-human">quiet depth.</span>
+          Exact spacing, <span className="human-voice text-human">calm radii.</span>
         </>
       }
       lead={
         <p>
-          A 4px grid, five radii and depth from luminance steps plus 1px hairlines, not blur. Dark
-          mode lifts surfaces with an inner highlight; light mode uses soft shadows.
+          A 4px grid, five radii and generous gutters: 24 to 32px around the duel, a 72ch measure
+          for answers. Depth has its own section below.
         </p>
       }
     >
       <div className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-lg border border-line bg-surface p-5 shadow-raise sm:p-6">
+        <div className="surface-duel p-5 sm:p-6">
           <h3 className="text-h3 font-semibold">Radius</h3>
           <ul className="mt-6 grid grid-cols-3 gap-x-4 gap-y-6 sm:grid-cols-5">
             {radii.map(radius => (
@@ -56,7 +56,7 @@ export function SpaceSection() {
           </dl>
         </div>
 
-        <div className="rounded-lg border border-line bg-surface p-5 shadow-raise sm:p-6">
+        <div className="surface-duel p-5 sm:p-6">
           <h3 className="text-h3 font-semibold">Spacing</h3>
           <ul className="mt-6 space-y-2.5">
             {spacing.map(px => (
@@ -72,27 +72,6 @@ export function SpaceSection() {
               </li>
             ))}
           </ul>
-        </div>
-
-        <div className="rounded-lg border border-line bg-surface p-5 shadow-raise sm:p-6 lg:col-span-2">
-          <h3 className="text-h3 font-semibold">Surfaces and depth</h3>
-          <ol className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {surfaces.map((surface, index) => (
-              <li
-                key={surface.token}
-                className={cn(
-                  'flex min-h-28 flex-col justify-between rounded-lg border border-line p-4',
-                  surface.className,
-                )}
-              >
-                <span className="eyebrow text-muted">Level {index}</span>
-                <span>
-                  <code className="block text-ui-sm text-fg">{surface.token}</code>
-                  <span className="block text-caption text-muted">{surface.use}</span>
-                </span>
-              </li>
-            ))}
-          </ol>
         </div>
       </div>
     </Section>

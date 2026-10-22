@@ -5,6 +5,7 @@ import { SkipLink } from '@/components/layout/skip-link';
 import { ColorSection } from './color-section';
 import { ComponentsSection } from './components-section';
 import { ControlsSection } from './controls-section';
+import { DepthSection } from './depth-section';
 import { EffectsSection } from './effects-section';
 import { Hero } from './hero';
 import { MotionSection } from './motion-section';
@@ -26,6 +27,7 @@ export function DesignSystemPage() {
         <TypeSection />
         <ControlsSection />
         <SpaceSection />
+        <DepthSection />
         <MotionSection />
         <ComponentsSection />
         <ShellSection />

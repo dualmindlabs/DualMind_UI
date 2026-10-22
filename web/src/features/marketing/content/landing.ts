@@ -17,7 +17,7 @@ export const SEO = {
     'Ask one prompt, compare two anonymous AI answers side by side and vote for the better one. Names appear after your vote, and every vote feeds a public Elo leaderboard.',
   ogImage: '/og/landing.png',
   ogImageAlt:
-    'DualMind Arena. Two models. One prompt. You decide. Two answer panes, A in cyan and B in violet.',
+    'DualMind Arena. Two models. One prompt. You decide. Two answer panes, A in cyan and B in terracotta.',
 } as const;
 
 export const HERO = {

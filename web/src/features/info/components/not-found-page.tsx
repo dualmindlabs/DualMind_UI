@@ -31,7 +31,7 @@ export function NotFoundPage() {
             </FuzzyText>
             <span className="sr-only">. Page not found</span>
           </h1>
-          <p className="max-w-[24ch] human-voice text-h2 text-balance text-human">
+          <p className="max-w-[24ch] text-h2 human-voice text-balance text-human">
             This page took a wrong turn.
           </p>
           <p className="max-w-[44ch] text-body [text-wrap:pretty] text-fg-soft">
