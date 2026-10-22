@@ -74,7 +74,7 @@ export function StepsSection({ stats }: { stats: LiveStatsState }) {
               <div className={cn('min-w-0', index % 2 === 1 && 'lg:order-2')}>
                 <p
                   aria-hidden="true"
-                  className="font-display text-[length:clamp(3.5rem,2.5rem+4vw,6rem)] leading-none font-semibold tracking-[-0.05em] text-line-strong"
+                  className="font-display text-[length:clamp(3.5rem,2.5rem+4vw,6rem)] leading-none font-semibold tracking-[-0.05em] text-muted"
                 >
                   {String(index + 1).padStart(2, '0')}
                 </p>

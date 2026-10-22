@@ -23,7 +23,7 @@ const lineClass = 'block animate-rise';
  */
 export function HeroSection({ onAsk, stats }: HeroSectionProps) {
   return (
-    <section aria-labelledby="hero-title" className="relative isolate">
+    <section aria-labelledby="hero-title" className="relative isolate overflow-x-clip">
       <HeroBackdrop />
       <div className="mx-auto grid max-w-page grid-cols-1 items-center gap-14 px-4 pt-28 pb-12 sm:px-6 md:pt-36 lg:grid-cols-[minmax(0,1.04fr)_minmax(0,0.96fr)] lg:gap-10 lg:pb-16 xl:gap-16">
         <div className="flex min-w-0 flex-col items-start">

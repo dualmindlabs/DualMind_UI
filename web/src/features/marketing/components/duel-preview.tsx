@@ -55,7 +55,7 @@ export function DuelPreview({ className }: { className?: string }) {
       data-stage={stage}
       className={cn('relative w-full', className)}
     >
-      <div className="pointer-events-none absolute -inset-8 -z-10 bg-[radial-gradient(closest-side_at_22%_40%,color-mix(in_oklab,var(--mind-a)_20%,transparent),transparent_75%),radial-gradient(closest-side_at_80%_62%,color-mix(in_oklab,var(--mind-b)_18%,transparent),transparent_75%)]" />
+      <div className="pointer-events-none absolute -inset-x-3 -inset-y-8 -z-10 bg-[radial-gradient(closest-side_at_22%_40%,color-mix(in_oklab,var(--mind-a)_20%,transparent),transparent_75%),radial-gradient(closest-side_at_80%_62%,color-mix(in_oklab,var(--mind-b)_18%,transparent),transparent_75%)] sm:-inset-8" />
       <div className="grid grid-cols-1 gap-3 surface-float p-3 sm:gap-4 sm:p-4">
         <div className="flex items-center justify-between gap-3 px-1">
           <p className="flex items-center gap-2 eyebrow text-fg-soft">
@@ -65,7 +65,7 @@ export function DuelPreview({ className }: { className?: string }) {
             </span>
             Battle
           </p>
-          <p className="relative h-4 w-28 text-right eyebrow text-muted">
+          <p className="relative h-4 w-32 text-right eyebrow text-muted">
             <span
               className={cn(
                 'absolute inset-0 flex items-center justify-end gap-1.5 transition-opacity duration-(--dur-base)',
