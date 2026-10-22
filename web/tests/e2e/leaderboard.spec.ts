@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, type Page, type Route, test } from '@playwright/test';
 
-import { passGate, PREVIEW_COOKIE, settle, shotPath, storeTheme } from './helpers';
+import { fullPageShot, passGate, PREVIEW_COOKIE, settle, shotPath, storeTheme } from './helpers';
 import {
   OG_HEIGHT,
   OG_LEADERBOARD_TEMPLATE,
@@ -500,7 +500,7 @@ for (const page of ['leaderboard', 'models'] as const) {
           path: shotPath(`${page}-${viewport.name}-${mode.name}-fold`),
           animations: 'disabled',
         });
-        await tab.screenshot({
+        await fullPageShot(tab, {
           path: shotPath(`${page}-${viewport.name}-${mode.name}-full`),
           fullPage: true,
           animations: 'disabled',

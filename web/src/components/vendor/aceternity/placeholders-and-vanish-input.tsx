@@ -70,7 +70,8 @@ export function PlaceholdersAndVanishInput({
 }: PlaceholdersAndVanishInputProps) {
   const large = size === 'lg';
   const inset = large ? 'pl-5 sm:pl-7' : 'pl-4 sm:pl-6';
-  const textSize = large ? 'text-body' : 'text-ui';
+  // Smaller under 26rem so a phone placeholder is not cut off (audit P2-2).
+  const textSize = large ? 'text-ui-sm min-[26rem]:text-body' : 'text-ui';
   const id = useId();
   const inputId = `${id}-input`;
   const hintId = `${id}-hint`;

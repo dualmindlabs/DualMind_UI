@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, type Page, type Request, type Route, test } from '@playwright/test';
 
-import { passGate, PREVIEW_COOKIE, settle, shotPath, storeTheme } from './helpers';
+import { fullPageShot, passGate, PREVIEW_COOKIE, settle, shotPath, storeTheme } from './helpers';
 
 // Slice S6: the sign-in pages through the real Worker, with every Supabase call answered by
 // Playwright routes (the build uses the dummy project https://e2eproject.supabase.co, see
@@ -694,7 +694,7 @@ test.describe('accessibility, layout and screenshots', () => {
           await page.goto(screen.url());
           await screen.ready(page);
           await settle(page, 1200);
-          await page.screenshot({
+          await fullPageShot(page, {
             path: shotPath(`auth-${screen.name}-${viewport.label}-${theme}`),
             fullPage: viewport.label === 'mobile',
           });

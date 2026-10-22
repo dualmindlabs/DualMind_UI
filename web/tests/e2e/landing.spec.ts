@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, type Page, test } from '@playwright/test';
 
-import { passGate, PREVIEW_COOKIE, settle, shotPath, storeTheme } from './helpers';
+import { fullPageShot, passGate, PREVIEW_COOKIE, settle, shotPath, storeTheme } from './helpers';
 import { OG_HEIGHT, OG_TEMPLATE, OG_WIDTH } from './og-template';
 
 // The landing page at / (slice S3) in Chromium, through the real Worker: prerendered content,
@@ -350,7 +350,7 @@ for (const viewport of viewports) {
       });
       await scrollThrough(page);
       await settle(page, 1200);
-      await page.screenshot({
+      await fullPageShot(page, {
         path: shotPath(`landing-${viewport.name}-${mode.name}-full`),
         fullPage: true,
         animations: 'disabled',

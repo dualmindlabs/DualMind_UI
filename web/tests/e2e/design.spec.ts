@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, type Page, test } from '@playwright/test';
 
-import { passGate, settle, shotPath, storeTheme } from './helpers';
+import { fullPageShot, passGate, settle, shotPath, storeTheme } from './helpers';
 
 // The /design/ page in Chromium, through the real Worker: hydration, theme, keyboard, overflow,
 // axe, and the review screenshots (uploaded by CI as the `web-screenshots` artifact).
@@ -200,7 +200,7 @@ for (const viewport of viewports) {
         path: shotPath(`design-${viewport.name}-${mode.name}-fold`),
         animations: 'disabled',
       });
-      await page.screenshot({
+      await fullPageShot(page, {
         path: shotPath(`design-${viewport.name}-${mode.name}-full`),
         fullPage: true,
         animations: 'disabled',
