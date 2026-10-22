@@ -1,8 +1,8 @@
-import { CloudOff, FastForward, Plus, RotateCw, Scale } from 'lucide-react';
+import { CloudOff, FastForward, Scale } from 'lucide-react';
 import { useId } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { TextShimmer } from '@/components/vendor/motion-primitives/text-shimmer';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useShouldReduceMotion } from '@/hooks/use-should-reduce-motion';
 import { resolveDisplayName } from '@/lib/models/display-name';
 
@@ -16,7 +16,8 @@ import { PaneMetrics } from './pane-metrics';
 import { PanePair } from './pane-pair';
 import { PromptCard } from './prompt-card';
 import { RevealPanel } from './reveal-panel';
-import { VoteBar } from './vote-bar';
+import { TurnError, UnratedNotice } from './turn-notice';
+import { VoteBar, VoteBarLocked } from './vote-bar';
 
 function modelLabel(answer: LiveAnswer | null): string | null {
   const model = answer?.model;
@@ -24,15 +25,20 @@ function modelLabel(answer: LiveAnswer | null): string | null {
   return resolveDisplayName(model.name, model.displayName);
 }
 
+const WAITING_LINES = ['w-11/12', 'w-full', 'w-4/5', 'w-10/12', 'w-2/3'] as const;
+
+/** Before the first words: staggered skeleton lines (80 ms apart) under a quiet status. */
 function Waiting({ mode }: { mode: LiveTurn['mode'] }) {
   return (
-    <div className="grid gap-2.5 py-1" aria-hidden="true">
-      <TextShimmer className="text-ui-sm" duration={1.6}>
-        {mode === 'direct' ? 'Writing' : 'Generating'}
-      </TextShimmer>
-      <div className="h-3 w-11/12 rounded-sm bg-surface-3" />
-      <div className="h-3 w-4/5 rounded-sm bg-surface-3" />
-      <div className="h-3 w-2/3 rounded-sm bg-surface-3" />
+    <div className="grid gap-3 py-1" aria-hidden="true">
+      <p className="text-ui-sm text-muted">{mode === 'direct' ? 'Writing' : 'Generating'}</p>
+      {WAITING_LINES.map((width, index) => (
+        <Skeleton
+          key={width + index}
+          className={`h-3.5 ${width} motion-safe:animate-fade-in`}
+          style={{ animationDelay: `${index * 80}ms` }}
+        />
+      ))}
     </div>
   );
 }
@@ -51,6 +57,12 @@ function LivePane({ turn, side, answer }: PaneProps) {
   const choice = side === 'a' ? 'left' : side === 'b' ? 'right' : null;
   const chosen = choice !== null && turn.vote === choice && turn.phase !== 'voting';
   const generating = turn.phase === 'submitting' || turn.phase === 'answering';
+  // A verdict is in: the winner glows (answer-pane), the loser steps back, a tie keeps both.
+  const dimmed =
+    choice !== null &&
+    turn.vote !== null &&
+    turn.phase !== 'voting' &&
+    (turn.vote === 'both-bad' || (turn.vote !== choice && turn.vote !== 'tie'));
   const revealedNow = turn.mode === 'battle' && turn.phase === 'revealed';
 
   return (
@@ -60,6 +72,7 @@ function LivePane({ turn, side, answer }: PaneProps) {
       modelLabel={shown ? modelLabel(answer) : null}
       {...(turn.unrated === null ? { hiddenNote: 'Hidden until you vote' } : {})}
       chosen={chosen}
+      dimmed={dimmed}
       streaming={generating && answer !== null}
       generating={generating}
       revealing={revealedNow}
@@ -121,6 +134,10 @@ export function LiveTurnView({
       ) : (
         <PanePair
           label={`Answers to prompt ${number}`}
+          writing={{
+            a: turn.phase === 'submitting' || turn.phase === 'answering',
+            b: turn.phase === 'submitting' || turn.phase === 'answering',
+          }}
           a={<LivePane turn={turn} side="a" answer={turn.a} />}
           b={<LivePane turn={turn} side="b" answer={turn.b} />}
         />
@@ -137,9 +154,10 @@ export function LiveTurnView({
         </Button>
       ) : null}
       {turn.unrated !== null && turn.mode !== 'direct' ? (
-        <p className="text-ui-sm text-fg-soft" data-testid="unrated-note">
-          {UNRATED_NOTES[turn.unrated]}
-        </p>
+        <UnratedNotice>{UNRATED_NOTES[turn.unrated]}</UnratedNotice>
+      ) : null}
+      {turn.mode === 'battle' && (turn.phase === 'submitting' || turn.phase === 'answering') ? (
+        <VoteBarLocked className="sticky bottom-2 z-10" />
       ) : null}
       {showVote ? (
         <VoteBar
@@ -170,32 +188,12 @@ export function LiveTurnView({
         </p>
       ) : null}
       {turn.phase === 'error' ? (
-        <div
-          role="alert"
-          className="grid justify-items-start gap-2 rounded-lg border border-bad/50 bg-surface px-4 py-3"
-        >
-          {turn.errorKind === 'forbidden' ? (
-            <>
-              <p className="text-ui-sm text-fg">{turn.error}</p>
-              <Button variant="secondary" size="xs" onClick={newBattle}>
-                <Plus aria-hidden="true" strokeWidth={1.75} />
-                New battle
-              </Button>
-            </>
-          ) : (
-            <>
-              <p className="text-ui-sm text-fg">The answers did not arrive. {turn.error}</p>
-              <Button
-                variant="secondary"
-                size="xs"
-                onClick={() => battle.send(turn.prompt, { mode: turn.mode, pair: null })}
-              >
-                <RotateCw aria-hidden="true" strokeWidth={1.75} />
-                Try again
-              </Button>
-            </>
-          )}
-        </div>
+        <TurnError
+          kind={turn.errorKind}
+          message={turn.error}
+          onNewBattle={newBattle}
+          onRetry={() => battle.send(turn.prompt, { mode: turn.mode, pair: null })}
+        />
       ) : null}
       {turn.phase === 'stopped' ? <p className="text-ui-sm text-muted">Stopped.</p> : null}
     </article>
