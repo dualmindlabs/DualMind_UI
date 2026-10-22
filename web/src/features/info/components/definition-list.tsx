@@ -4,7 +4,7 @@ import { RichText } from './rich-text';
 /** Terms and their meanings: modes, vote choices, storage keys. Each is a small lit card. */
 export function DefinitionList({ block }: { block: DefinitionListBlock }) {
   return (
-    <dl className="not-prose grid gap-3 sm:grid-cols-2">
+    <dl className="not-prose grid gap-3 sm:grid-cols-2 sm:[&>div:last-child:nth-child(odd)]:col-span-2">
       {block.items.map(item => (
         <div
           key={item.term}

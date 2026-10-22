@@ -131,7 +131,7 @@ function DocSection({
         {title}
       </h2>
       {lead ? <div className="mt-4 max-w-reading text-body text-fg-soft">{lead}</div> : null}
-      <div className="mt-8 grid gap-6">{children}</div>
+      <div className="mt-8 grid grid-cols-[minmax(0,1fr)] gap-6">{children}</div>
     </section>
   );
 }
@@ -167,7 +167,11 @@ export function DevelopersPage() {
                 hint="in the OpenAPI document"
               />
               <StatTile label="Error types" value={reference.problems.length} />
-              <StatTile label="Rate limit groups" value={rateLimits.length} />
+              <StatTile
+                label="Rate limit groups"
+                value={rateLimits.length}
+                className="col-span-2"
+              />
             </div>
           }
         >
@@ -190,14 +194,14 @@ export function DevelopersPage() {
         <div className="mx-auto max-w-page px-4 pb-20 sm:px-6 lg:grid lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-x-16">
           <DocNav />
 
-          <div className="grid min-w-0 gap-20 pt-6 md:gap-24 lg:pt-14">
+          <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-20 pt-6 md:gap-24 lg:pt-14">
             <DocSection id="overview" number={1} title="Overview">
               <p className={cn(proseCode, 'max-w-reading')}>
                 The base URL is <code>{reference.baseUrl}/api/v2</code>. {reference.title} is
                 described by an OpenAPI 3.1 document you can{' '}
                 <a href="/api/v2/openapi.json">download</a>.
               </p>
-              <ul className="not-prose grid gap-3 sm:grid-cols-2">
+              <ul className="not-prose grid grid-cols-[minmax(0,1fr)] gap-3 sm:grid-cols-2">
                 {conventions.map(item => (
                   <li
                     key={item}
@@ -334,7 +338,7 @@ export function DevelopersPage() {
             </DocSection>
 
             <DocSection id="more" number={7} title="More">
-              <ul className="not-prose grid gap-3 sm:grid-cols-2">
+              <ul className="not-prose grid grid-cols-[minmax(0,1fr)] gap-3 sm:grid-cols-2">
                 {moreLinks.map(link => (
                   <li key={link.href}>
                     <a
