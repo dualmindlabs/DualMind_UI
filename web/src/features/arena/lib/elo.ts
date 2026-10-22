@@ -7,7 +7,7 @@ export interface EloMovement {
   /** Rating points Mind A gains (negative: loses). Mind B moves by the opposite amount. */
   a: number;
   b: number;
-  /** The winner was the lower rated model (an upset), the favourite won, or nobody won. */
+  /** The winner was the lower rated model (an upset), the favorite won, or nobody won. */
   kind: 'upset' | 'expected' | 'even' | 'none';
 }
 
@@ -36,7 +36,7 @@ export function whyItMatters(movement: EloMovement): string {
     case 'upset':
       return 'An upset: beating a higher rated model moves the board the most.';
     case 'expected':
-      return 'The favourite won, so the ratings barely move. Surprises are what shape the board.';
+      return 'The favorite won, so the ratings barely move. Surprises are what shape the board.';
     case 'even':
       return 'A tie pulls the two ratings toward each other.';
     default:
