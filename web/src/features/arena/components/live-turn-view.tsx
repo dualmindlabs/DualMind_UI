@@ -25,6 +25,10 @@ function modelLabel(answer: LiveAnswer | null): string | null {
   return resolveDisplayName(model.name, model.displayName);
 }
 
+/** The vote's dock: pinned to the foot of the stage over a fade, so the verdict is always in reach. */
+const DOCK =
+  'sticky bottom-0 z-10 -mx-4 bg-linear-to-t from-bg-deep via-bg-deep/95 to-transparent px-4 pt-10 pb-4 sm:-mx-6 sm:px-6';
+
 const WAITING_LINES = ['w-11/12', 'w-full', 'w-4/5', 'w-10/12', 'w-2/3'] as const;
 
 /** Before the first words: staggered skeleton lines (80 ms apart) under a quiet status. */
@@ -124,7 +128,7 @@ export function LiveTurnView({
   return (
     <article
       aria-labelledby={promptId}
-      className="grid gap-4"
+      className="grid gap-6 sm:gap-8"
       data-testid="live-turn"
       data-phase={turn.phase}
     >
@@ -157,16 +161,19 @@ export function LiveTurnView({
         <UnratedNotice>{UNRATED_NOTES[turn.unrated]}</UnratedNotice>
       ) : null}
       {turn.mode === 'battle' && (turn.phase === 'submitting' || turn.phase === 'answering') ? (
-        <VoteBarLocked className="sticky bottom-2 z-10" />
+        <div className={DOCK}>
+          <VoteBarLocked />
+        </div>
       ) : null}
       {showVote ? (
-        <VoteBar
-          className="sticky bottom-2 z-10"
-          optional={optional}
-          chosen={turn.phase === 'voting' ? turn.vote : null}
-          error={turn.error}
-          onVote={choice => battle.vote(turn.id, choice)}
-        />
+        <div className={DOCK}>
+          <VoteBar
+            optional={optional}
+            chosen={turn.phase === 'voting' ? turn.vote : null}
+            error={turn.error}
+            onVote={choice => battle.vote(turn.id, choice)}
+          />
+        </div>
       ) : null}
       {turn.phase === 'revealed' && turn.vote && latest ? <RevealPanel turn={turn} /> : null}
       {turn.phase === 'revealed' && turn.vote && !latest ? (

@@ -8,47 +8,36 @@ import { cn } from '@/lib/utils/cn';
 
 import { PRESSABLE } from '../lib/press';
 
-/** The verdicts in reading order, with the keys of design-direction.md section 7. */
-export const VOTE_OPTIONS: ReadonlyArray<{
-  choice: VoteChoice;
-  label: string;
-  key: string;
-  /** Phones: A and B on the first row, under their panes' switch. */
-  phoneOrder: string;
-}> = [
-  { choice: 'left', label: 'A is better', key: '1', phoneOrder: 'max-sm:order-1' },
-  { choice: 'tie', label: 'Tie', key: '3', phoneOrder: 'max-sm:order-3' },
-  { choice: 'both-bad', label: 'Both are bad', key: '4', phoneOrder: 'max-sm:order-4' },
-  { choice: 'right', label: 'B is better', key: '2', phoneOrder: 'max-sm:order-2' },
+/** The verdicts, with the keys of design-direction.md section 7 (1 A, 2 B, 3 Tie, 4 Both bad). */
+export const VOTE_OPTIONS: ReadonlyArray<{ choice: VoteChoice; label: string; key: string }> = [
+  { choice: 'left', label: 'A is better', key: '1' },
+  { choice: 'right', label: 'B is better', key: '2' },
+  { choice: 'tie', label: 'Tie', key: '3' },
+  { choice: 'both-bad', label: 'Both are bad', key: '4' },
 ];
 
-/** The look of each choice: A in cyan, B in terracotta, the two middle verdicts neutral. */
-const TONE: Record<VoteChoice, { idle: string; sent: string; kbd: string }> = {
+const BY_CHOICE = Object.fromEntries(VOTE_OPTIONS.map(option => [option.choice, option])) as Record<
+  VoteChoice,
+  (typeof VOTE_OPTIONS)[number]
+>;
+
+const SIDE = {
   left: {
-    idle: 'border-mind-a-edge bg-mind-a-tint hover:border-mind-a hover:bg-[color-mix(in_oklab,var(--mind-a)_18%,var(--surface))]',
-    sent: 'aria-pressed:border-mind-a aria-pressed:bg-mind-a aria-pressed:text-on-accent aria-pressed:shadow-glow-a',
-    kbd: 'group-aria-pressed/vote:border-on-accent/40 group-aria-pressed/vote:bg-transparent group-aria-pressed/vote:text-on-accent',
+    who: 'a',
+    fill: 'bg-mind-a',
+    shape: 'justify-start rounded-s-full ps-5 sm:ps-8',
+    fillOrigin: 'origin-left',
   },
   right: {
-    idle: 'border-mind-b-edge bg-mind-b-tint hover:border-mind-b hover:bg-[color-mix(in_oklab,var(--mind-b)_18%,var(--surface))]',
-    sent: 'aria-pressed:border-mind-b aria-pressed:bg-mind-b-text aria-pressed:text-on-accent aria-pressed:shadow-glow-b',
-    kbd: 'group-aria-pressed/vote:border-on-accent/40 group-aria-pressed/vote:bg-transparent group-aria-pressed/vote:text-on-accent',
+    who: 'b',
+    fill: 'bg-mind-b-text',
+    shape: 'justify-end rounded-e-full pe-5 sm:pe-8',
+    fillOrigin: 'origin-right',
   },
-  tie: {
-    idle: 'border-line-strong bg-surface hover:border-fg-soft hover:bg-surface-2',
-    sent: 'aria-pressed:border-fg aria-pressed:bg-fg aria-pressed:text-bg',
-    kbd: 'group-aria-pressed/vote:border-bg/40 group-aria-pressed/vote:bg-transparent group-aria-pressed/vote:text-bg',
-  },
-  'both-bad': {
-    idle: 'border-line-strong bg-surface hover:border-fg-soft hover:bg-surface-2',
-    sent: 'aria-pressed:border-fg aria-pressed:bg-fg aria-pressed:text-bg',
-    kbd: 'group-aria-pressed/vote:border-bg/40 group-aria-pressed/vote:bg-transparent group-aria-pressed/vote:text-bg',
-  },
-};
+} as const;
 
-const GRID = 'grid grid-cols-2 gap-2 sm:grid-cols-[1.35fr_1fr_1fr_1.35fr]';
-const BUTTON =
-  'group/vote flex h-14 min-w-0 items-center justify-between gap-2 rounded-lg border px-3 text-ui font-semibold tracking-tight text-fg sm:px-4 pointer-coarse:h-16';
+const SECONDARY =
+  'group/vote inline-flex h-11 items-center gap-2 rounded-full border border-line-strong bg-surface px-4 text-ui-sm font-medium text-fg-soft hover:border-fg-soft hover:text-fg aria-pressed:border-fg aria-pressed:bg-fg aria-pressed:text-bg aria-disabled:cursor-default aria-disabled:not-aria-pressed:opacity-50 pointer-coarse:h-12';
 
 export interface VoteBarProps {
   onVote: (choice: VoteChoice) => void;
@@ -61,12 +50,14 @@ export interface VoteBarProps {
 }
 
 /**
- * The verdict dock: four large targets (keys 1 to 4 outside text fields), A on the left in Mind
- * A's cyan and B on the right in Mind B's terracotta, like the panes; Tie and Both are bad sit in
- * between. The pick fills with its own colour and a glow (a tie or "both bad" fills neutral). The
- * buttons use aria-disabled while a vote is sent, so focus never falls out of the dock; the others
- * dim and stop pressing. Press, hover and focus match the kit's buttons (lib/press.ts); 64px tall
- * on touch screens; phones get a short buzz where the browser allows it.
+ * The verdict, as a tug of war: one wide pill across the middle of the stage, A on the left in
+ * Mind A's cyan, B on the right in Mind B's terracotta, a VS medallion between them that leans
+ * toward the side under the pointer or focus. A side fills with its colour from the outer edge
+ * on hover and floods on the press (transform and opacity only); the other side steps back.
+ * Tie and Both are bad are small and quiet under it. Keys 1 to 4 outside text fields.
+ *
+ * Buttons use aria-disabled while a vote is sent, so focus never falls out of the dock. 80px
+ * tall (96 on touch screens); phones get a short buzz where the browser allows it.
  */
 export function VoteBar({ onVote, chosen, optional = false, error, className }: VoteBarProps) {
   const locked = chosen !== null;
@@ -76,75 +67,133 @@ export function VoteBar({ onVote, chosen, optional = false, error, className }: 
   // focus to the verdict, so the keys 1 to 4 vote instead of typing into the box.
   useEffect(() => {
     const active = document.activeElement;
-    if (
+    const inEmptyPrompt =
       active instanceof HTMLTextAreaElement &&
       active.dataset.slot === 'prompt-input-textarea' &&
-      active.value.trim() === ''
-    ) {
+      active.value.trim() === '';
+    // The prompt box steps aside while the verdict is open, which drops focus on the page.
+    if (inEmptyPrompt || active === null || active === document.body) {
       group.current?.querySelector('button')?.focus({ preventScroll: true });
     }
   }, []);
 
+  const press = (choice: VoteChoice) => {
+    if (locked) return;
+    try {
+      navigator.vibrate?.(12);
+    } catch {
+      // No haptics here; the flood is the feedback.
+    }
+    onVote(choice);
+  };
+
+  const side = (choice: 'left' | 'right') => {
+    const option = BY_CHOICE[choice];
+    const look = SIDE[choice];
+    return (
+      <button
+        type="button"
+        aria-pressed={chosen === choice}
+        aria-disabled={locked || undefined}
+        aria-keyshortcuts={option.key}
+        data-side={look.who}
+        onClick={() => press(choice)}
+        className={cn(
+          'group/vote relative isolate flex h-20 min-w-0 cursor-pointer items-center gap-3 overflow-hidden text-lead font-semibold tracking-tight text-fg pointer-coarse:h-24',
+          PRESSABLE,
+          look.shape,
+          'aria-pressed:text-on-accent aria-disabled:cursor-default aria-disabled:not-aria-pressed:opacity-40',
+        )}
+      >
+        <span
+          aria-hidden="true"
+          className={cn(
+            '-z-10 absolute inset-0 scale-x-0 opacity-25 transition-[transform,opacity] duration-(--dur-slow) ease-out-expo',
+            'group-hover/vote:scale-x-100 group-focus-visible/vote:scale-x-100',
+            'group-aria-pressed/vote:scale-x-100 group-aria-pressed/vote:opacity-100',
+            look.fill,
+            look.fillOrigin,
+          )}
+        />
+        <RoleBadge
+          who={look.who}
+          letterOnly
+          size="md"
+          className="size-9 group-aria-pressed/vote:border-on-accent/50 group-aria-pressed/vote:bg-transparent group-aria-pressed/vote:text-on-accent"
+        />
+        <span className="truncate">{option.label}</span>
+        <Kbd
+          aria-hidden="true"
+          className="hidden transition-colors group-aria-pressed/vote:border-on-accent/40 group-aria-pressed/vote:bg-transparent group-aria-pressed/vote:text-on-accent sm:inline-flex pointer-coarse:hidden"
+        >
+          {option.key}
+        </Kbd>
+      </button>
+    );
+  };
+
+  const small = (choice: 'tie' | 'both-bad') => {
+    const option = BY_CHOICE[choice];
+    return (
+      <button
+        key={choice}
+        type="button"
+        aria-pressed={chosen === choice}
+        aria-disabled={locked || undefined}
+        aria-keyshortcuts={option.key}
+        onClick={() => press(choice)}
+        className={cn(SECONDARY, PRESSABLE, 'cursor-pointer')}
+      >
+        {option.label}
+        <Kbd
+          aria-hidden="true"
+          className="hidden group-aria-pressed/vote:border-bg/40 group-aria-pressed/vote:bg-transparent group-aria-pressed/vote:text-bg sm:inline-flex pointer-coarse:hidden"
+        >
+          {option.key}
+        </Kbd>
+      </button>
+    );
+  };
+
   return (
     <div
-      className={cn('grid gap-2 surface-float p-2.5 motion-safe:animate-rise sm:p-3', className)}
+      className={cn(
+        'mx-auto grid w-full max-w-3xl justify-items-center gap-3 motion-safe:animate-rise',
+        className,
+      )}
       data-testid="vote-bar"
     >
-      <p className="flex items-center gap-2 px-1 text-ui-sm text-fg-soft">
-        <span className="text-ui font-semibold tracking-tight text-fg">
-          Which answer is better?
-        </span>
-        <span className="text-muted">
-          {optional ? 'Voting is optional here.' : ''}
-          <span className="hidden sm:inline">{optional ? ' ' : ''}Keys 1 to 4.</span>
-        </span>
+      <p className="text-ui-sm font-medium text-fg-soft">
+        Which answer is better?
+        {optional ? <span className="text-muted"> Voting is optional here.</span> : null}
       </p>
-      <div ref={group} role="group" aria-label="Your verdict" className={GRID}>
-        {VOTE_OPTIONS.map(option => {
-          const tone = TONE[option.choice];
-          return (
-            <button
-              key={option.choice}
-              type="button"
-              aria-pressed={chosen === option.choice}
-              aria-disabled={locked || undefined}
-              aria-keyshortcuts={option.key}
-              onClick={() => {
-                if (locked) return;
-                try {
-                  navigator.vibrate?.(12);
-                } catch {
-                  // No haptics here; the fill is the feedback.
-                }
-                onVote(option.choice);
-              }}
-              className={cn(
-                BUTTON,
-                PRESSABLE,
-                'cursor-pointer',
-                tone.idle,
-                tone.sent,
-                'aria-disabled:cursor-default aria-disabled:not-aria-pressed:opacity-55 aria-disabled:not-aria-pressed:hover:border-line-strong aria-disabled:not-aria-pressed:active:scale-100',
-                option.phoneOrder,
-              )}
-            >
-              <span className="flex min-w-0 items-center gap-2">
-                {option.choice === 'left' ? <RoleBadge who="a" letterOnly size="sm" /> : null}
-                {option.choice === 'right' ? <RoleBadge who="b" letterOnly size="sm" /> : null}
-                <span className="truncate">{option.label}</span>
-              </span>
-              <Kbd
-                aria-hidden="true"
-                className={cn('hidden transition-colors sm:inline-flex', tone.kbd)}
-              >
-                {option.key}
-              </Kbd>
-            </button>
-          );
-        })}
+      <div
+        ref={group}
+        role="group"
+        aria-label="Your verdict"
+        className="grid w-full justify-items-center gap-3"
+      >
+        <div className="group/tug relative grid w-full grid-cols-2 rounded-full border border-line-strong bg-surface-2 shadow-float">
+          {side('left')}
+          {side('right')}
+          <span
+            aria-hidden="true"
+            className={cn(
+              'pointer-events-none absolute top-1/2 left-1/2 z-10 grid size-12 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-line-strong bg-bg font-mono text-caption font-medium text-fg-soft shadow-raise transition-transform duration-(--dur-base) ease-out-expo',
+              'group-has-[[data-side=a]:hover]/tug:-translate-x-[calc(50%+14px)] group-has-[[data-side=b]:hover]/tug:-translate-x-[calc(50%-14px)]',
+              'group-has-[[data-side=a]:focus-visible]/tug:-translate-x-[calc(50%+14px)] group-has-[[data-side=b]:focus-visible]/tug:-translate-x-[calc(50%-14px)]',
+            )}
+          >
+            VS
+          </span>
+        </div>
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          {small('tie')}
+          {small('both-bad')}
+        </div>
       </div>
       {error ? (
-        <p role="alert" className="px-1 pb-0.5 text-ui-sm text-bad">
+        <p role="alert" className="text-ui-sm text-bad">
           {error}
         </p>
       ) : null}
@@ -153,35 +202,21 @@ export function VoteBar({ onVote, chosen, optional = false, error, className }: 
 }
 
 /**
- * The dock while an answer is still on its way: the same four targets, drawn quiet and out of
- * the tab order, with a line that says what it is waiting for. It swaps for the live VoteBar when
- * both answers are in, so the layout does not jump.
+ * The dock while an answer is still on its way: one quiet line with a hairline of light moving
+ * under it, out of the tab order. It swaps for the live VoteBar when both answers are in.
  */
 export function VoteBarLocked({ className }: { className?: string }) {
   return (
     <div
-      className={cn('grid gap-2 surface-float p-2.5 opacity-90 sm:p-3', className)}
+      className={cn('mx-auto grid w-full max-w-md justify-items-center gap-2.5', className)}
       data-testid="vote-bar-locked"
     >
-      <p className="flex items-center gap-2 px-1 text-ui-sm text-fg-soft">
+      <p className="flex items-center gap-2 text-ui-sm text-fg-soft">
         <Lock aria-hidden="true" className="size-4 text-muted" strokeWidth={1.75} />
-        <span className="text-ui font-semibold tracking-tight text-fg">
-          Voting opens when both answers finish
-        </span>
+        Voting opens when both answers finish
       </p>
-      <div aria-hidden="true" className={GRID}>
-        {VOTE_OPTIONS.map(option => (
-          <div
-            key={option.choice}
-            className={cn(BUTTON, 'border-line bg-surface/60 text-muted', option.phoneOrder)}
-          >
-            <span className="flex min-w-0 items-center gap-2">
-              {option.choice === 'left' ? <RoleBadge who="a" letterOnly size="sm" /> : null}
-              {option.choice === 'right' ? <RoleBadge who="b" letterOnly size="sm" /> : null}
-              <span className="truncate">{option.label}</span>
-            </span>
-          </div>
-        ))}
+      <div aria-hidden="true" className="relative h-px w-full overflow-hidden bg-line">
+        <span className="absolute inset-y-0 left-0 w-full -translate-x-full bg-mind-a motion-safe:animate-skeleton" />
       </div>
     </div>
   );

@@ -56,6 +56,8 @@ export function AnswerPane({
 
   const surface = side === 'a' ? 'surface-a' : side === 'b' ? 'surface-b' : 'surface-duel';
   const glow = side === 'a' ? 'glow-a' : 'glow-b';
+  const letter = side === 'a' ? 'A' : side === 'b' ? 'B' : null;
+  const mind = side === 'b' ? 'var(--mind-b)' : 'var(--mind-a)';
 
   return (
     <section
@@ -64,14 +66,31 @@ export function AnswerPane({
       data-side={side}
       data-chosen={chosen ? '' : undefined}
       className={cn(
-        'relative flex min-w-0 flex-col transition-[opacity,transform,box-shadow] duration-(--dur-slow) ease-out-expo',
+        'relative flex min-w-0 flex-col overflow-hidden rounded-3xl transition-[opacity,transform,box-shadow] duration-(--dur-slow) ease-out-expo',
         surface,
-        // The winner lifts a few pixels and glows in its own colour; the other steps back.
-        chosen && side !== 'solo' && ['motion-safe:-translate-y-1', glow],
+        // The winner lifts and glows in its own colour; the other steps back.
+        chosen && side !== 'solo' && ['motion-safe:-translate-y-1.5', glow],
         dimmed && 'saturate-50',
         className,
       )}
+      // An illuminated card: a pool of the mind's light spills below it (not on the winner,
+      // whose glow ring takes over).
+      style={
+        side !== 'solo' && !chosen
+          ? {
+              boxShadow: `0 1px 0 color-mix(in oklab, var(--fg) 6%, transparent) inset, 0 40px 90px -40px color-mix(in oklab, ${mind} 38%, transparent)`,
+            }
+          : undefined
+      }
     >
+      {letter ? (
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-3 -bottom-10 font-semibold tracking-tighter text-[13rem] leading-none text-fg opacity-[0.035] select-none"
+        >
+          {letter}
+        </span>
+      ) : null}
       <PaneHeader
         side={side}
         revealing={revealing}
@@ -86,7 +105,7 @@ export function AnswerPane({
       />
       <div
         aria-hidden="true"
-        className="relative h-px overflow-hidden"
+        className="relative mx-5 h-px overflow-hidden bg-line/60 sm:mx-8"
         data-testid={generating ? 'pane-progress' : undefined}
       >
         {generating ? (
@@ -98,10 +117,10 @@ export function AnswerPane({
           />
         ) : null}
       </div>
-      <div className="min-w-0 flex-1 px-4 py-4 sm:px-5 sm:py-5">
+      <div className="relative min-w-0 flex-1 px-5 py-6 sm:px-8 sm:py-7">
         {children ?? (
           <>
-            <Markdown streaming={streaming} className="answer-prose max-w-[72ch]">
+            <Markdown streaming={streaming} className="answer-prose max-w-[68ch]">
               {text}
             </Markdown>
             {streaming ? (

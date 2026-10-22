@@ -1,6 +1,7 @@
 import { EyeOff } from 'lucide-react';
 import { motion } from 'motion/react';
 
+import { ModelMark } from '@/components/ui/model-mark';
 import { RoleBadge } from '@/components/ui/role-badge';
 import { useShouldReduceMotion } from '@/hooks/use-should-reduce-motion';
 import { cn } from '@/lib/utils/cn';
@@ -42,7 +43,10 @@ export interface PaneHeaderProps {
   copyText: string | null;
 }
 
-/** The model's name on its plate. While `revealing` the plate turns over like a card (once). */
+/**
+ * The model's name, large, with its mark. While `revealing` the plate turns over like a card
+ * (once, rotateY, B 140 ms after A): a moment, not a loop. Reduced motion: it is simply there.
+ */
 function NamePlate({
   side,
   label,
@@ -53,13 +57,17 @@ function NamePlate({
   revealing: boolean;
 }) {
   const reduce = useShouldReduceMotion();
-  const style = SIDE_STYLES[side];
   const content = (
-    <span className="block truncate text-ui font-semibold tracking-tight text-fg">{label}</span>
+    <span className="flex min-w-0 items-center gap-3">
+      <ModelMark name={label} {...(side === 'solo' ? {} : { who: side })} size="lg" />
+      <span className="block min-w-0 truncate text-h3 font-semibold tracking-tight text-fg">
+        {label}
+      </span>
+    </span>
   );
   return (
     <span
-      className="min-w-0 [perspective:600px]"
+      className="block min-w-0 [perspective:700px]"
       data-testid="pane-model"
       title={label}
       style={{ display: 'block' }}
@@ -67,18 +75,15 @@ function NamePlate({
       <span className="sr-only">, </span>
       {revealing && !reduce ? (
         <motion.span
-          initial={{ rotateX: -92, opacity: 0, y: 4 }}
-          animate={{ rotateX: 0, opacity: 1, y: 0 }}
+          initial={{ rotateY: -90, opacity: 0 }}
+          animate={{ rotateY: 0, opacity: 1 }}
           transition={{
             type: 'spring',
-            stiffness: 220,
-            damping: 24,
-            delay: side === 'b' ? 0.14 : 0,
+            stiffness: 150,
+            damping: 20,
+            delay: 0.15 + (side === 'b' ? 0.14 : 0),
           }}
-          className={cn(
-            'block min-w-0 origin-bottom rounded-sm border px-2 py-0.5 [backface-visibility:hidden]',
-            style.plate,
-          )}
+          className="block min-w-0 origin-center [backface-visibility:hidden]"
         >
           {content}
         </motion.span>
@@ -90,15 +95,11 @@ function NamePlate({
 }
 
 /**
- * The pane's header, always one row so both panes line up: the A or B letter (colour is never the
- * only signal), the heading, the model's name once it may be shown (on a plate that turns over at
- * the reveal), the pick mark and copy. While the model writes, "Writing" and a pulsing dot say so.
- * Timing and length live in the pane's footer (pane-metrics.tsx).
- *
- * Once a battle pane shows its model, the name takes the visible title's place (the letter still
- * says which side; screen readers still hear "Answer A, <name>"). A name too long for the pane
- * ends in an ellipsis, with the full name in its tooltip; the pick mark never shrinks, so the
- * name can never run under it.
+ * The pane's header, one row so both cards line up: the A or B letter (colour is never the only
+ * signal), then either the heading "Answer A" with the blind note under it, or, once the name may
+ * be shown, the model's name large on a plate that turns over at the reveal (screen readers still
+ * hear "Answer A, <name>"). A long name ends in an ellipsis with the full name in its tooltip;
+ * the pick mark and copy never shrink. Timing and length live in the footer (pane-metrics.tsx).
  */
 export function PaneHeader({
   side,
@@ -115,12 +116,16 @@ export function PaneHeader({
   const named = modelLabel !== null && side !== 'solo';
 
   return (
-    <header className="flex min-h-12 items-center gap-3 border-b border-line/70 px-3 py-2 sm:px-4">
-      <div className="flex min-w-0 flex-1 items-center gap-2.5">
-        {side === 'solo' ? null : <RoleBadge who={side} letterOnly />}
-        <h3 id={headingId} className="flex min-w-0 flex-1 items-baseline gap-2 text-ui">
+    <header className="flex min-h-14 items-center gap-3 px-5 pt-5 pb-1 sm:gap-4 sm:px-8 sm:pt-7">
+      <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
+        {side === 'solo' ? null : <RoleBadge who={side} letterOnly size="md" className="size-9" />}
+        <h3 id={headingId} className="grid min-w-0 flex-1 gap-0.5">
           <span
-            className={cn('shrink-0 font-semibold tracking-tight', style.text, named && 'sr-only')}
+            className={cn(
+              'shrink-0 text-h3 font-semibold tracking-tight',
+              style.text,
+              named && 'sr-only',
+            )}
           >
             {style.title}
           </span>
@@ -153,7 +158,7 @@ export function PaneHeader({
         {chosen ? (
           <span
             data-testid="pane-pick"
-            className="shrink-0 rounded-full border border-human/50 bg-human-tint px-2 py-0.5 eyebrow whitespace-nowrap text-human"
+            className="shrink-0 rounded-full border border-human/50 bg-human-tint px-3 py-1 text-caption font-semibold whitespace-nowrap text-human"
           >
             {pickLabel}
           </span>

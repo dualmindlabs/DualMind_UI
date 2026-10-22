@@ -137,12 +137,12 @@ export function ThreadView({ threadId }: { threadId: string | null }) {
       <ChatContainerContent
         scrollClassName="overscroll-contain"
         className={cn(
-          'mx-auto w-full gap-10 px-4 pt-6 pb-10 sm:px-6',
-          wide ? 'max-w-6xl' : 'max-w-3xl',
+          'mx-auto w-full gap-14 px-4 pt-6 pb-6 sm:px-8',
+          wide ? 'max-w-[88rem]' : 'max-w-3xl',
         )}
       >
         <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-4 gap-y-1.5">
-          <p className="col-start-1 eyebrow text-muted">
+          <p className="col-start-1 self-center text-caption text-muted">
             {MODE_DETAILS[mode].label}
             {thread ? (
               <span className="text-muted">
@@ -153,18 +153,18 @@ export function ThreadView({ threadId }: { threadId: string | null }) {
             ) : null}
           </p>
           {thread || threadId === null ? (
-            <h1 className="col-start-1 text-h3 font-semibold text-balance text-fg sm:text-h2">
+            <h1 className="sr-only">
               {thread?.title ?? live[0]?.prompt ?? 'New battle'}
             </h1>
           ) : (
-            <Skeleton className="col-start-1 h-8 w-2/3" />
+            null
           )}
           {threadId === null ? null : (
             <Button
               variant="secondary"
               size="sm"
               onClick={() => openShare(threadId)}
-              className="col-start-2 row-span-2 row-start-1 self-center"
+              className="col-start-2 row-start-1 self-center"
             >
               <Share2 aria-hidden="true" strokeWidth={1.75} />
               Share
