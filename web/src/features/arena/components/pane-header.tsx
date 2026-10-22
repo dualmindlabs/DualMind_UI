@@ -1,5 +1,6 @@
 import { EyeOff } from 'lucide-react';
 import { motion } from 'motion/react';
+import type { ReactNode } from 'react';
 
 import { RoleBadge } from '@/components/ui/role-badge';
 import { useShouldReduceMotion } from '@/hooks/use-should-reduce-motion';
@@ -40,6 +41,8 @@ export interface PaneHeaderProps {
   live?: boolean;
   /** The text the copy button copies; null hides the button (nothing final to copy yet). */
   copyText: string | null;
+  /** Live readouts (speed, length) shown before the copy button. */
+  trailing?: ReactNode;
 }
 
 /** The model's name on its plate. While `revealing` the plate turns over like a card (once). */
@@ -110,12 +113,13 @@ export function PaneHeader({
   revealing = false,
   live = false,
   copyText,
+  trailing,
 }: PaneHeaderProps) {
   const style = SIDE_STYLES[side];
   const named = modelLabel !== null && side !== 'solo';
 
   return (
-    <header className="flex min-h-12 items-center gap-3 border-b border-line/70 px-3 py-2 sm:px-4">
+    <header className="sticky top-0 z-10 flex min-h-12 items-center gap-3 rounded-t-[inherit] bg-surface px-3 py-2 sm:px-4">
       <div className="flex min-w-0 flex-1 items-center gap-2.5">
         {side === 'solo' ? null : <RoleBadge who={side} letterOnly />}
         <h3 id={headingId} className="flex min-w-0 flex-1 items-baseline gap-2 text-ui">
@@ -153,12 +157,13 @@ export function PaneHeader({
         {chosen ? (
           <span
             data-testid="pane-pick"
-            className="shrink-0 rounded-full border border-human/50 bg-human-tint px-2 py-0.5 eyebrow whitespace-nowrap text-human"
+            className="shrink-0 rounded-md border border-human/50 bg-human-tint px-1.5 py-0.5 font-mono text-caption font-medium whitespace-nowrap text-human"
           >
             {pickLabel}
           </span>
         ) : null}
       </div>
+      {trailing}
       {copyText === null ? null : (
         <CopyButton text={copyText} label={`Copy ${style.title}`} className="shrink-0" />
       )}

@@ -104,7 +104,6 @@ export function Composer({
           mode === 'direct'
             ? 'bg-line-strong focus-within:bg-fg-soft'
             : 'bg-linear-to-r from-mind-a/40 via-line-strong to-mind-b/40 focus-within:from-mind-a focus-within:via-line-strong focus-within:to-mind-b',
-          hero && 'sm:rounded-[calc(var(--radius-xl)+5px)] sm:p-[1.5px]',
         )}
       >
         <PromptInput
@@ -117,7 +116,7 @@ export function Composer({
           maxHeight={hero ? '16rem' : '12rem'}
           className={cn(
             'rounded-xl border-0 bg-surface-2 shadow-none hover:border-0 has-[textarea:focus-visible]:outline-0',
-            hero && 'p-3 sm:rounded-[calc(var(--radius-xl)+4px)] sm:p-4',
+            hero && 'p-3',
           )}
         >
           <PromptInputTextarea
@@ -126,7 +125,7 @@ export function Composer({
               followUp ? 'Ask a follow-up, same two models' : MODE_DETAILS[mode].placeholder
             }
             enterKeyHint={sendKey === 'mod-enter' ? 'enter' : 'send'}
-            className={cn(hero && 'min-h-20 text-body sm:min-h-24 sm:text-lead')}
+            className={cn(hero && 'min-h-16 text-body sm:min-h-20')}
             onKeyDown={event => {
               if (event.key !== 'Escape') return;
               if (busy && onStop) {

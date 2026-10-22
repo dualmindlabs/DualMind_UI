@@ -16,7 +16,7 @@ import { EXPO, playOn } from './stage-motion';
  * Prompt starters (new-features.md F-7): categories, four curated prompts each, and "Surprise
  * me". A starter fills the prompt box and focuses it; nothing is sent until the visitor sends it.
  * On phones both rows scroll sideways, with snap points, edge fades and a chevron cue
- * (ScrollRow); from `md` they wrap and centre.
+ * (ScrollRow); from `md` they wrap, left aligned.
  */
 export function PromptStarters({ className }: { className?: string }) {
   const { focusComposer } = useArena();
@@ -36,7 +36,7 @@ export function PromptStarters({ className }: { className?: string }) {
       <h2 id="starters-title" className="sr-only">
         Prompt starters
       </h2>
-      <ScrollRow className="items-center gap-2 md:flex-wrap md:justify-center md:overflow-visible">
+      <ScrollRow className="items-center gap-2 md:flex-wrap md:justify-start md:overflow-visible">
         <div role="group" aria-label="Starter category" className="flex shrink-0 gap-1">
           {STARTER_CATEGORIES.map(item => (
             <button
@@ -93,11 +93,11 @@ export function PromptStarters({ className }: { className?: string }) {
               title={prompt}
               onClick={() => fill(prompt)}
               className={cn(
-                'group/starter surface-duel flex h-full min-h-20 w-full cursor-pointer items-start gap-3 p-3.5 text-left text-ui-sm text-fg-soft hover:border-line-strong hover:text-fg pointer-coarse:min-h-11',
+                'group/starter flex h-full min-h-16 w-full cursor-pointer items-start gap-3 rounded-lg border border-line px-3.5 py-3 text-left text-ui-sm text-fg-soft hover:border-line-strong hover:bg-surface hover:text-fg pointer-coarse:min-h-11',
                 PRESSABLE,
               )}
             >
-              <span className="line-clamp-3 min-w-0 flex-1">{prompt}</span>
+              <span className="line-clamp-2 min-w-0 flex-1">{prompt}</span>
               <ArrowUpRight
                 aria-hidden="true"
                 className="mt-0.5 size-4 shrink-0 text-muted transition-colors duration-(--dur-fast) group-hover/starter:text-human"

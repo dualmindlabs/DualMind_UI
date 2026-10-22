@@ -1,8 +1,10 @@
 import { Lock } from 'lucide-react';
+import { motion } from 'motion/react';
 import { useEffect, useRef } from 'react';
 
 import { Kbd } from '@/components/ui/kbd';
 import { RoleBadge } from '@/components/ui/role-badge';
+import { useShouldReduceMotion } from '@/hooks/use-should-reduce-motion';
 import type { VoteChoice } from '@/lib/api';
 import { cn } from '@/lib/utils/cn';
 
@@ -13,13 +15,13 @@ export const VOTE_OPTIONS: ReadonlyArray<{
   choice: VoteChoice;
   label: string;
   key: string;
-  /** Phones: A and B on the first row, under their panes' switch. */
+  /** Phones: A and B on the first row, the two quiet verdicts under them. */
   phoneOrder: string;
 }> = [
   { choice: 'left', label: 'A is better', key: '1', phoneOrder: 'max-sm:order-1' },
+  { choice: 'right', label: 'B is better', key: '2', phoneOrder: 'max-sm:order-2' },
   { choice: 'tie', label: 'Tie', key: '3', phoneOrder: 'max-sm:order-3' },
   { choice: 'both-bad', label: 'Both are bad', key: '4', phoneOrder: 'max-sm:order-4' },
-  { choice: 'right', label: 'B is better', key: '2', phoneOrder: 'max-sm:order-2' },
 ];
 
 /** The look of each choice: A in cyan, B in terracotta, the two middle verdicts neutral. */
@@ -46,9 +48,9 @@ const TONE: Record<VoteChoice, { idle: string; sent: string; kbd: string }> = {
   },
 };
 
-const GRID = 'grid grid-cols-2 gap-2 sm:grid-cols-[1.35fr_1fr_1fr_1.35fr]';
+const GRID = 'grid grid-cols-2 gap-2 sm:grid-cols-[1.5fr_1.5fr_1fr_1.15fr]';
 const BUTTON =
-  'group/vote flex h-14 min-w-0 items-center justify-between gap-2 rounded-lg border px-3 text-ui font-semibold tracking-tight text-fg sm:px-4 pointer-coarse:h-16';
+  'group/vote relative flex h-12 min-w-0 items-center justify-between gap-2 rounded-lg border px-3 text-ui font-semibold tracking-tight text-fg pointer-coarse:h-14';
 
 export interface VoteBarProps {
   onVote: (choice: VoteChoice) => void;
@@ -61,6 +63,41 @@ export interface VoteBarProps {
 }
 
 /**
+ * The key cap of a vote chip. The four caps breathe in turn, one small lift each, every few
+ * seconds, so the keyboard route is seen without a word about it (transform only). It rests once
+ * a vote is sent, and always under reduced motion.
+ */
+function KeyHint({
+  index,
+  className,
+  still,
+  reduce,
+  children,
+}: {
+  index: number;
+  className?: string;
+  still: boolean;
+  reduce: boolean;
+  children: string;
+}) {
+  const rest = still || reduce;
+  return (
+    <motion.span
+      aria-hidden="true"
+      className="hidden sm:inline-flex"
+      animate={rest ? { y: 0 } : { y: [0, -3, 0] }}
+      transition={
+        rest
+          ? { duration: 0 }
+          : { duration: 0.6, delay: 1 + index * 0.22, repeat: Infinity, repeatDelay: 3.6 }
+      }
+    >
+      <Kbd className={cn('transition-colors', className)}>{children}</Kbd>
+    </motion.span>
+  );
+}
+
+/**
  * The verdict dock: four large targets (keys 1 to 4 outside text fields), A on the left in Mind
  * A's cyan and B on the right in Mind B's terracotta, like the panes; Tie and Both are bad sit in
  * between. The pick fills with its own colour and a glow (a tie or "both bad" fills neutral). The
@@ -70,6 +107,7 @@ export interface VoteBarProps {
  */
 export function VoteBar({ onVote, chosen, optional = false, error, className }: VoteBarProps) {
   const locked = chosen !== null;
+  const reduce = useShouldReduceMotion();
   const group = useRef<HTMLDivElement>(null);
 
   // Answers are ready: when the visitor is still in the empty prompt box (they just sent), move
@@ -90,13 +128,13 @@ export function VoteBar({ onVote, chosen, optional = false, error, className }: 
       className={cn('grid gap-2 surface-float p-2.5 motion-safe:animate-rise sm:p-3', className)}
       data-testid="vote-bar"
     >
-      <p className="flex items-center gap-2 px-1 text-ui-sm text-fg-soft">
+      <p className="flex items-baseline gap-2 px-1 text-ui-sm text-fg-soft">
         <span className="text-ui font-semibold tracking-tight text-fg">
           Which answer is better?
         </span>
         <span className="text-muted">
           {optional ? 'Voting is optional here.' : ''}
-          <span className="hidden sm:inline">{optional ? ' ' : ''}Keys 1 to 4.</span>
+          <span className="hidden sm:inline">{optional ? ' ' : ''}Press 1 to 4.</span>
         </span>
       </p>
       <div ref={group} role="group" aria-label="Your verdict" className={GRID}>
@@ -133,12 +171,31 @@ export function VoteBar({ onVote, chosen, optional = false, error, className }: 
                 {option.choice === 'right' ? <RoleBadge who="b" letterOnly size="sm" /> : null}
                 <span className="truncate">{option.label}</span>
               </span>
-              <Kbd
-                aria-hidden="true"
-                className={cn('hidden transition-colors sm:inline-flex', tone.kbd)}
+              <KeyHint
+                index={VOTE_OPTIONS.indexOf(option)}
+                className={tone.kbd}
+                still={locked}
+                reduce={reduce}
               >
                 {option.key}
-              </Kbd>
+              </KeyHint>
+              {chosen === option.choice && !reduce ? (
+                <motion.span
+                  aria-hidden="true"
+                  data-testid="vote-burst"
+                  initial={{ opacity: 0.6, scale: 1 }}
+                  animate={{ opacity: 0, scaleX: 1.08, scaleY: 1.35 }}
+                  transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+                  className={cn(
+                    'pointer-events-none absolute inset-0 rounded-lg border-2',
+                    option.choice === 'left'
+                      ? 'border-mind-a'
+                      : option.choice === 'right'
+                        ? 'border-mind-b'
+                        : 'border-fg',
+                  )}
+                />
+              ) : null}
             </button>
           );
         })}
@@ -153,36 +210,27 @@ export function VoteBar({ onVote, chosen, optional = false, error, className }: 
 }
 
 /**
- * The dock while an answer is still on its way: the same four targets, drawn quiet and out of
- * the tab order, with a line that says what it is waiting for. It swaps for the live VoteBar when
- * both answers are in, so the layout does not jump.
+ * The dock while an answer is still on its way: one quiet line that says what it is waiting for,
+ * out of the tab order. It swaps for the live VoteBar when both answers are in.
  */
 export function VoteBarLocked({ className }: { className?: string }) {
   return (
     <div
-      className={cn('grid gap-2 surface-float p-2.5 opacity-90 sm:p-3', className)}
+      className={cn(
+        'flex items-center gap-2.5 surface-float px-4 py-3 text-ui-sm text-fg-soft',
+        className,
+      )}
       data-testid="vote-bar-locked"
     >
-      <p className="flex items-center gap-2 px-1 text-ui-sm text-fg-soft">
-        <Lock aria-hidden="true" className="size-4 text-muted" strokeWidth={1.75} />
-        <span className="text-ui font-semibold tracking-tight text-fg">
-          Voting opens when both answers finish
-        </span>
-      </p>
-      <div aria-hidden="true" className={GRID}>
+      <Lock aria-hidden="true" className="size-4 shrink-0 text-muted" strokeWidth={1.75} />
+      <span className="font-medium text-fg">Voting opens when both answers finish</span>
+      <span aria-hidden="true" className="ml-auto hidden items-center gap-1 sm:inline-flex">
         {VOTE_OPTIONS.map(option => (
-          <div
-            key={option.choice}
-            className={cn(BUTTON, 'border-line bg-surface/60 text-muted', option.phoneOrder)}
-          >
-            <span className="flex min-w-0 items-center gap-2">
-              {option.choice === 'left' ? <RoleBadge who="a" letterOnly size="sm" /> : null}
-              {option.choice === 'right' ? <RoleBadge who="b" letterOnly size="sm" /> : null}
-              <span className="truncate">{option.label}</span>
-            </span>
-          </div>
+          <Kbd key={option.key} className="opacity-60">
+            {option.key}
+          </Kbd>
         ))}
-      </div>
+      </span>
     </div>
   );
 }

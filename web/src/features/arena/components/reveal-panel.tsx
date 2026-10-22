@@ -1,4 +1,4 @@
-import { CloudOff, MessageSquareText, Plus, Scale, Share2, Shuffle } from 'lucide-react';
+import { CloudOff, Info, MessageSquareText, Plus, Scale, Share2, Shuffle } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useEffect, useId, useRef } from 'react';
 
@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils/cn';
 import { useArena } from '../hooks/use-arena';
 import type { LiveAnswer, LiveTurn } from '../lib/battle-machine';
 import { VOTE_LABELS } from '../lib/turns';
-import { ModelRating } from './model-rating';
+import { RatingBar, RatingsGate } from './ranking-reveal';
 
 function nameOf(answer: LiveAnswer | null): string {
   const model = answer?.model;
@@ -65,7 +65,7 @@ export function RevealPanel({ turn }: { turn: LiveTurn }) {
       aria-labelledby={titleId}
       tabIndex={-1}
       data-testid="reveal-panel"
-      className="relative grid gap-5 overflow-hidden surface-float p-4 motion-safe:animate-fade-in sm:p-6"
+      className="relative grid gap-4 overflow-hidden surface-float p-4 motion-safe:animate-fade-in sm:p-5"
     >
       <div
         aria-hidden="true"
@@ -81,16 +81,11 @@ export function RevealPanel({ turn }: { turn: LiveTurn }) {
           data-testid="verdict"
           className="flex flex-wrap items-baseline gap-x-3 gap-y-1"
         >
-          <span className="inline-flex items-center gap-1.5 eyebrow text-fg-soft">
+          <span className="inline-flex items-center gap-1.5 font-mono text-caption font-medium text-fg-soft">
             <Scale aria-hidden="true" className="size-4 text-human" strokeWidth={1.75} />
             Your verdict:
           </span>{' '}
-          <span
-            className={cn(
-              'text-h3 font-semibold tracking-tight sm:text-[1.75rem]',
-              VERDICT_TONE[turn.vote],
-            )}
-          >
+          <span className={cn('text-h3 font-semibold tracking-tight', VERDICT_TONE[turn.vote])}>
             {VOTE_LABELS[turn.vote]}
           </span>
         </p>
@@ -105,45 +100,77 @@ export function RevealPanel({ turn }: { turn: LiveTurn }) {
         ) : null}
       </div>
 
-      <ul aria-label="The two models" className="relative grid gap-3 sm:grid-cols-2 sm:gap-4">
-        {sides.map(({ side, answer, picked }, index) => (
-          <motion.li
-            key={side}
-            data-testid="reveal-name"
-            initial={reduce ? false : { opacity: 0, rotateY: 80, y: 8 }}
-            animate={{ opacity: 1, rotateY: 0, y: 0 }}
-            transition={{ type: 'spring', stiffness: 170, damping: 22, delay: 0.1 + index * 0.14 }}
-            style={{ transformPerspective: 800 }}
-            className={cn(
-              'flex min-w-0 items-start gap-3 rounded-xl border p-3.5 sm:p-4',
-              side === 'a' ? 'bg-mind-a-wash' : 'bg-mind-b-wash',
-              picked
-                ? side === 'a'
-                  ? 'border-mind-a glow-a'
-                  : 'border-mind-b glow-b'
-                : 'border-line',
-            )}
-          >
-            <ModelMark name={nameOf(answer)} who={side} size="lg" />
-            <div className="grid min-w-0 flex-1 gap-1">
-              <span className="min-w-0 text-ui font-semibold tracking-tight [overflow-wrap:anywhere] text-fg">
-                {nameOf(answer)}
-              </span>
-              {answer?.model ? (
-                <span className="text-caption text-fg-soft">
-                  {modelMaker(answer.model.name, answer.model.provider ?? '').label}
+      <RatingsGate turn={turn}>
+        {ratings => (
+          <>
+            <ul aria-label="The two models" className="relative grid gap-3">
+              {sides.map(({ side, answer, picked }, index) => {
+                const standing = ratings[side];
+                return (
+                  <motion.li
+                    key={side}
+                    data-testid="reveal-name"
+                    initial={reduce ? false : { opacity: 0, rotateX: -70, y: 10 }}
+                    animate={{ opacity: 1, rotateX: 0, y: 0 }}
+                    transition={{
+                      type: 'spring',
+                      stiffness: 170,
+                      damping: 22,
+                      delay: 0.1 + index * 0.16,
+                    }}
+                    style={{ transformPerspective: 900 }}
+                    className={cn(
+                      'grid min-w-0 items-center gap-x-4 gap-y-3 rounded-xl border p-3.5 sm:grid-cols-[minmax(0,15rem)_minmax(0,1fr)] sm:p-4',
+                      side === 'a' ? 'bg-mind-a-wash' : 'bg-mind-b-wash',
+                      picked
+                        ? side === 'a'
+                          ? 'border-mind-a glow-a'
+                          : 'border-mind-b glow-b'
+                        : 'border-line',
+                    )}
+                  >
+                    <div className="flex min-w-0 items-center gap-3">
+                      <ModelMark name={nameOf(answer)} who={side} size="md" />
+                      <div className="grid min-w-0 flex-1 gap-0.5">
+                        <span className="min-w-0 text-ui font-semibold tracking-tight [overflow-wrap:anywhere] text-fg">
+                          {nameOf(answer)}
+                        </span>
+                        <span className="flex items-center gap-2 text-caption text-fg-soft">
+                          {answer?.model
+                            ? modelMaker(answer.model.name, answer.model.provider ?? '').label
+                            : null}
+                          {picked ? (
+                            <span className="font-mono font-medium whitespace-nowrap text-human">
+                              Your pick
+                            </span>
+                          ) : null}
+                        </span>
+                      </div>
+                    </div>
+                    {standing ? <RatingBar side={side} standing={standing} /> : null}
+                  </motion.li>
+                );
+              })}
+            </ul>
+            {ratings.why ? (
+              <p
+                data-testid="why-it-matters"
+                className="relative flex items-start gap-2 text-ui-sm text-fg-soft"
+              >
+                <Info
+                  aria-hidden="true"
+                  className="mt-0.5 size-4 shrink-0 text-muted"
+                  strokeWidth={1.75}
+                />
+                <span>
+                  <span className="font-medium text-fg">Why it matters. </span>
+                  {ratings.why} <span className="text-muted">Movement is projected.</span>
                 </span>
-              ) : null}
-              <ModelRating answer={answer} />
-            </div>
-            {picked ? (
-              <span className="shrink-0 pt-0.5 eyebrow whitespace-nowrap text-human">
-                Your pick
-              </span>
+              </p>
             ) : null}
-          </motion.li>
-        ))}
-      </ul>
+          </>
+        )}
+      </RatingsGate>
 
       {/* Phones: two columns (New battle across both when it would sit alone). Wider: one row,
           New battle at the end. */}

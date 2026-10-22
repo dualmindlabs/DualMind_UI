@@ -4,7 +4,6 @@ import { RoleBadge } from '@/components/ui/role-badge';
 
 import { useArena } from '../hooks/use-arena';
 import { MODE_DETAILS } from '../lib/modes';
-import { DuelEmblem } from './duel-emblem';
 
 /**
  * The empty arena's heading: the duel mark, the mode's eyebrow (with the A and B marks in a
@@ -21,9 +20,8 @@ export function EmptyState({
   const details = MODE_DETAILS[mode];
 
   return (
-    <div className="grid justify-items-center gap-4 text-center sm:gap-5">
-      <DuelEmblem className="max-sm:hidden" />
-      <p className="flex items-center gap-2.5 eyebrow text-fg-soft">
+    <div className="grid gap-3 text-left">
+      <p className="flex items-center gap-2.5 font-mono text-caption font-medium text-fg-soft">
         {mode === 'direct' ? null : (
           <span className="flex items-center gap-1" aria-hidden="true">
             <RoleBadge who="a" letterOnly size="sm" />
@@ -32,11 +30,10 @@ export function EmptyState({
         )}
         {details.eyebrow}
       </p>
-      <h1 ref={headingRef} className="max-w-5xl text-h1 text-balance text-fg">
-        {details.heading.plain}{' '}
-        <span className="block human-voice text-human">{details.heading.human}</span>
+      <h1 ref={headingRef} className="max-w-2xl text-h2 text-balance text-fg">
+        {details.heading.plain} <span className="text-fg-soft">{details.heading.human}</span>
       </h1>
-      <p className="max-w-xl text-ui text-fg-soft sm:text-lead">{details.lead}</p>
+      <p className="max-w-xl text-ui text-fg-soft">{details.lead}</p>
     </div>
   );
 }

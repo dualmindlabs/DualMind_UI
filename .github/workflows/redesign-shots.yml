@@ -6,6 +6,11 @@ name: Redesign screenshots
 # "after" is the PR head. Artifacts: shots-before and shots-after (web/shots-out).
 on:
   workflow_dispatch:
+    inputs:
+      filter:
+        description: Playwright file filter (for example arena-console)
+        required: false
+        default: ''
   pull_request:
     paths:
       - '.github/workflows/redesign-shots.yml'
@@ -74,7 +79,7 @@ jobs:
           exit 1
       - name: Screenshots
         working-directory: site/web
-        run: npx playwright test -c playwright.shots.config.ts
+        run: npx playwright test -c playwright.shots.config.ts ${{ inputs.filter }}
       - name: Upload
         if: always()
         uses: actions/upload-artifact@v7

@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query';
 import { type ReactNode, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { SkipLink } from '@/components/layout/skip-link';
-import { Kbd } from '@/components/ui/kbd';
 import { useApiClient } from '@/hooks/use-api-client';
 import { useOnlineStatus } from '@/hooks/use-online-status';
 import { useShouldReduceMotion } from '@/hooks/use-should-reduce-motion';
@@ -19,6 +18,7 @@ import { ArenaHeader } from './arena-header';
 import { ArenaProvider } from './arena-provider';
 import { Composer, type ComposerPicks } from './composer';
 import { EmptyState } from './empty-state';
+import { InspectorPanel, InspectorProvider } from './inspector';
 import { MatchmakingOverlay } from './matchmaking-overlay';
 import { OfflineNotice } from './offline-notice';
 import { PromptStarters } from './prompt-starters';
@@ -28,34 +28,6 @@ import { EXPO, playOn } from './stage-motion';
 import { THREAD_LIMIT } from './thread-panel';
 import { ThreadSidebar } from './thread-sidebar';
 import { ThreadView } from './thread-view';
-
-/** What the docked prompt box offers below it: three keys, quiet, for people with a keyboard. */
-function DockHints() {
-  const { shortcutsEnabled } = useArena();
-  if (!shortcutsEnabled) return null;
-  return (
-    <p
-      aria-hidden="true"
-      className="mt-2 hidden items-center justify-center gap-4 text-caption text-muted md:flex pointer-coarse:hidden"
-    >
-      <span className="inline-flex items-center gap-1.5">
-        <Kbd className="h-5 min-w-5">/</Kbd> prompt
-      </span>
-      <span className="inline-flex items-center gap-1.5">
-        <Kbd className="h-5 min-w-5">1</Kbd>
-        <Kbd className="h-5 min-w-5">2</Kbd>
-        <Kbd className="h-5 min-w-5">3</Kbd>
-        <Kbd className="h-5 min-w-5">4</Kbd> vote
-      </span>
-      <span className="inline-flex items-center gap-1.5">
-        <Kbd className="h-5 min-w-5">[</Kbd> history
-      </span>
-      <span className="inline-flex items-center gap-1.5">
-        <Kbd className="h-5 min-w-5">?</Kbd> shortcuts
-      </span>
-    </p>
-  );
-}
 
 /**
  * The battle stage's backdrop: the two minds' pools of light, the grid fading into the dark and,
@@ -159,110 +131,103 @@ function ArenaLayout({ empty }: { empty: boolean }) {
   };
 
   return (
-    <div className="flex h-dvh flex-col bg-bg">
-      <SkipLink />
-      <ArenaHeader staged={!empty} />
-      <OfflineNotice />
-      <div className="flex min-h-0 flex-1">
-        <ThreadSidebar />
-        <main
-          id="main"
-          tabIndex={-1}
-          data-testid="arena"
-          data-stage={empty ? 'empty' : 'battle'}
-          onFocusCapture={event => {
-            composerFocused.current = event.target === composerRef.current;
-          }}
-          className={cn(
-            'relative flex min-w-0 flex-1 flex-col outline-none',
-            // Auto margins on the inner wrapper, not justify-*: they centre (or, on a phone, sink)
-            // the empty state when it fits and fall back to 0 when it does not, so a short
-            // landscape screen scrolls from the heading instead of clipping it.
-            empty && 'overflow-y-auto',
-          )}
-        >
-          <ArenaErrorBoundary resetKey={threadId}>
-            {empty ? (
-              <>
-                <div
-                  aria-hidden="true"
-                  className="pointer-events-none absolute inset-0 mesh-duel opacity-90"
-                />
-                <div
-                  aria-hidden="true"
-                  className="pointer-events-none absolute inset-0 bg-grid opacity-60"
-                />
-                <div className="relative mx-auto grid w-full max-w-5xl gap-8 px-4 py-8 max-md:mt-auto sm:px-6 md:my-auto">
-                  <EmptyState headingRef={heading} />
-                  <div ref={heroBox} className="mx-auto w-full max-w-3xl max-md:order-2">
-                    <Composer
-                      variant="hero"
-                      avoidRef={heading}
-                      onSend={send}
-                      busy={battle.busy}
-                      onStop={battle.stop}
-                    />
-                  </div>
-                  <PromptStarters className="mx-auto w-full max-w-3xl max-md:order-1" />
-                </div>
-              </>
-            ) : (
-              <>
-                <StageBackdrop />
-                <div ref={stage} className="relative flex min-h-0 flex-1 flex-col">
-                  <ThreadView threadId={threadId} />
-                  <MatchmakingOverlay
-                    active={pairing && firstTurn?.phase === 'submitting'}
-                    mode={mode === 'side' ? 'side' : 'battle'}
-                  />
-                </div>
-                <div
-                  ref={dock}
-                  className="relative mx-auto w-full max-w-3xl px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6"
-                >
+    <InspectorProvider>
+      <div className="flex h-dvh flex-col bg-bg">
+        <SkipLink />
+        <ArenaHeader staged={!empty} />
+        <OfflineNotice />
+        <div className="flex min-h-0 flex-1">
+          <ThreadSidebar />
+          <main
+            id="main"
+            tabIndex={-1}
+            data-testid="arena"
+            data-stage={empty ? 'empty' : 'battle'}
+            onFocusCapture={event => {
+              composerFocused.current = event.target === composerRef.current;
+            }}
+            className={cn(
+              'relative flex min-w-0 flex-1 flex-col outline-none',
+              // Auto margins on the inner wrapper, not justify-*: they centre (or, on a phone, sink)
+              // the empty state when it fits and fall back to 0 when it does not, so a short
+              // landscape screen scrolls from the heading instead of clipping it.
+              empty && 'overflow-y-auto',
+            )}
+          >
+            <ArenaErrorBoundary resetKey={threadId}>
+              {empty ? (
+                <>
                   <div
                     aria-hidden="true"
-                    className="pointer-events-none absolute inset-x-0 -top-8 h-8 bg-linear-to-t from-bg-deep to-transparent"
+                    className="pointer-events-none absolute inset-0 mesh-duel opacity-60"
                   />
-                  <Composer onSend={send} busy={battle.busy} onStop={battle.stop} />
-                  <DockHints />
-                </div>
-              </>
-            )}
-          </ArenaErrorBoundary>
-        </main>
+                  <div className="relative mx-auto grid w-full max-w-3xl gap-6 px-4 py-8 max-md:mt-auto sm:px-6 md:my-auto">
+                    <EmptyState headingRef={heading} />
+                    <div ref={heroBox} className="w-full max-md:order-2">
+                      <Composer
+                        variant="hero"
+                        avoidRef={heading}
+                        onSend={send}
+                        busy={battle.busy}
+                        onStop={battle.stop}
+                      />
+                    </div>
+                    <PromptStarters className="w-full max-md:order-1" />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <StageBackdrop />
+                  <div ref={stage} className="relative flex min-h-0 flex-1 flex-col">
+                    <ThreadView threadId={threadId} />
+                    <MatchmakingOverlay
+                      active={pairing && firstTurn?.phase === 'submitting'}
+                      mode={mode === 'side' ? 'side' : 'battle'}
+                    />
+                  </div>
+                  <div
+                    ref={dock}
+                    className="relative mx-auto w-full max-w-3xl px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6"
+                  >
+                    <div
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-x-0 -top-8 h-8 bg-linear-to-t from-bg-deep to-transparent"
+                    />
+                    <Composer onSend={send} busy={battle.busy} onStop={battle.stop} />
+                  </div>
+                </>
+              )}
+            </ArenaErrorBoundary>
+          </main>
+        </div>
+        <ShareDialog threadId={shareThreadId} onClose={closeShare} />
+        <ShortcutsDialog />
+        <InspectorPanel turn={battle.state.turns.at(-1)} />
       </div>
-      <ShareDialog threadId={shareThreadId} onClose={closeShare} />
-      <ShortcutsDialog />
-    </div>
+    </InspectorProvider>
   );
 }
 
 /**
- * The shell decides where the history lives. In the empty arena on a wide screen it is docked
- * beside the prompt. Once a battle is on, the stage takes the whole width and the history is a
- * slide-over (the header button, or `[`): the rest of the arena reads `wide` and `toggleHistory`
- * through this context, so it needs no other change.
+ * The shell decides where the history lives: nowhere until asked. It is never docked beside the
+ * stage (the Console look keeps the whole width for the prompt and the duel); the header button,
+ * `[` and the command palette open it as a slide-over. The rest of the arena reads `wide` and
+ * `toggleHistory` through this context, so it needs no other change.
  */
 function StageShell({ children }: { children: (empty: boolean) => ReactNode }) {
   const arena = useArena();
   const empty = arena.threadId === null && arena.battle.state.turns.length === 0;
-  const docked = arena.wide && empty;
-  const { historyOpen, setHistoryOpen, toggleHistory } = arena;
+  const { historyOpen, setHistoryOpen } = arena;
   const value = useMemo(
-    () => ({
-      ...arena,
-      wide: docked,
-      toggleHistory: docked ? toggleHistory : () => setHistoryOpen(!historyOpen),
-    }),
-    [arena, docked, toggleHistory, setHistoryOpen, historyOpen],
+    () => ({ ...arena, wide: false, toggleHistory: () => setHistoryOpen(!historyOpen) }),
+    [arena, setHistoryOpen, historyOpen],
   );
   return <ArenaContext.Provider value={value}>{children(empty)}</ArenaContext.Provider>;
 }
 
 /**
  * The signed-in arena at `/` (slice S8, redesigned in A1): the app header, the thread history
- * (docked beside the empty arena on wide screens, a slide-over everywhere else), and the stage:
+ * (an on-demand slide-over), and the stage:
  * the empty arena with the prompt box as its hero and the starters, or a full-bleed battle stage
  * (an open thread, `/?thread=<id>`) with the prompt box docked under it.
  */

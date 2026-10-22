@@ -16,6 +16,7 @@ import { PaneMetrics } from './pane-metrics';
 import { PanePair } from './pane-pair';
 import { PromptCard } from './prompt-card';
 import { RevealPanel } from './reveal-panel';
+import type { LiveStats } from './stream-meter';
 import { TurnError, UnratedNotice } from './turn-notice';
 import { VoteBar, VoteBarLocked } from './vote-bar';
 
@@ -64,6 +65,18 @@ function LivePane({ turn, side, answer }: PaneProps) {
     turn.phase !== 'voting' &&
     (turn.vote === 'both-bad' || (turn.vote !== choice && turn.vote !== 'tie'));
   const revealedNow = turn.mode === 'battle' && turn.phase === 'revealed';
+  // The meter fills with the share of the answer on screen: both panes of a pair end together, so
+  // it says nothing about the models. Speed and length would, so they wait for the names.
+  const total = answer?.text.length ?? 0;
+  const elapsed = turn.answeredAt === null ? 0 : (Date.now() - turn.answeredAt) / 1000;
+  const live: LiveStats | undefined = generating
+    ? {
+        progress: total === 0 || answer === null ? null : text.length / total,
+        ...(shown && elapsed > 0.25 && text.length > 0
+          ? { chars: text.length, tokensPerSecond: text.length / 4 / elapsed }
+          : {}),
+      }
+    : undefined;
 
   return (
     <AnswerPane
@@ -76,6 +89,7 @@ function LivePane({ turn, side, answer }: PaneProps) {
       streaming={generating && answer !== null}
       generating={generating}
       revealing={revealedNow}
+      {...(live ? { live } : {})}
       footer={
         // Blind integrity: timing, length and tokens hint at the model, so they wait for the
         // reveal (and for the whole text).
