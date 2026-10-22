@@ -57,7 +57,7 @@ function SampleDuel() {
   return (
     <div
       aria-hidden="true"
-      className="grid w-full max-w-xl gap-3 select-none motion-safe:animate-fade-in"
+      className="grid w-full max-w-xl gap-3 select-none"
     >
       <div className="surface-duel flex items-center gap-3 px-4 py-3">
         <ModelMark name="You" who="human" size="sm" />
