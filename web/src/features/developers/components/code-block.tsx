@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { cn } from '@/lib/utils/cn';
 
-import { type TokenKind, tokenize } from '../lib/highlight';
+import { tokenize, type TokenKind } from '../lib/highlight';
 
 const kindClass: Record<TokenKind, string> = {
   plain: 'text-fg',

@@ -1,9 +1,10 @@
+import { PageHero } from '@/components/ui/page-hero';
+
 import type { PageContent } from '../content';
 import { formatDate } from '../lib/format';
 import { BlockList } from './block-list';
 import { Callout } from './callout';
 import { PageHeading } from './page-heading';
-import { PageHero } from '@/components/ui/page-hero';
 import { PageShell } from './page-shell';
 import { SectionHeading } from './section-heading';
 import { TableOfContents } from './table-of-contents';

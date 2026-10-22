@@ -1,12 +1,12 @@
 import type { ReactNode } from 'react';
 
 import { Reveal } from '@/components/motion/reveal';
+import { PageHero } from '@/components/ui/page-hero';
 
 import type { PageContent, Section } from '../content';
 import { BlockList, type BlockOverrides } from './block-list';
 import { HeroDuel } from './hero-duel';
 import { PageHeading } from './page-heading';
-import { PageHero } from '@/components/ui/page-hero';
 import { PageShell } from './page-shell';
 import { SectionHeading } from './section-heading';
 

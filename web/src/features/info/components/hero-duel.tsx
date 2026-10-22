@@ -12,7 +12,7 @@ export function HeroDuel() {
       <div className="surface-a absolute top-0 left-0 w-[68%] -rotate-3 p-5">
         <div className="flex items-center gap-3">
           <ModelMark name="A" who="a" size="sm" />
-          <span className="eyebrow text-mind-a">Answer A</span>
+          <span className="eyebrow text-mind-a">Mind A</span>
         </div>
         <div className="mt-5 grid gap-2.5">
           {lines.map((width, index) => (
@@ -23,7 +23,7 @@ export function HeroDuel() {
       <div className="surface-b absolute right-0 bottom-0 w-[68%] rotate-2 p-5">
         <div className="flex items-center gap-3">
           <ModelMark name="B" who="b" size="sm" />
-          <span className="eyebrow text-mind-b-text">Answer B</span>
+          <span className="eyebrow text-mind-b-text">Mind B</span>
         </div>
         <div className="mt-5 grid gap-2.5">
           {[...lines].reverse().map((width, index) => (
