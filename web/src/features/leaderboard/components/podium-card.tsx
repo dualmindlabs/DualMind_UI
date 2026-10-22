@@ -73,8 +73,18 @@ export function PodiumCard({ entry, place, eloStart, domain, movement, onOpen }:
             {formatRank(entry.rank)}
           </span>
 
-          <div className={cn('flex h-full flex-col', leader ? 'gap-8' : 'gap-5')}>
-            <div className="flex flex-wrap items-center justify-between gap-3">
+          <div
+            className={cn(
+              'flex h-full flex-col',
+              leader ? 'gap-8 lg:grid lg:grid-cols-[1.1fr_1fr] lg:gap-x-14' : 'gap-5',
+            )}
+          >
+            <div
+              className={cn(
+                'flex flex-wrap items-center justify-between gap-3',
+                leader && 'lg:col-span-2',
+              )}
+            >
               <div className="flex items-center gap-2.5">
                 {leader ? (
                   <Badge variant="solid">

@@ -53,18 +53,19 @@ export interface RangeDomain {
 }
 
 /**
- * The scale every range bar on a page shares, so bars compare: from the lowest low to the highest
- * high among the entries, rounded to tens. Capped, so one model with a handful of battles does
- * not flatten everyone else.
+ * The scale every range bar on a page shares, so bars compare: the span of the ratings themselves,
+ * with a margin, rounded to tens. A range wider than the scale runs off its edge (the bar clips
+ * it), which is the honest picture of a rating that is still anywhere: it does not flatten the
+ * bars of everyone else.
  */
 export function rangeDomain(entries: readonly LeaderboardEntry[]): RangeDomain {
   if (entries.length === 0) return { min: 0, max: 1 };
   let min = Number.POSITIVE_INFINITY;
   let max = Number.NEGATIVE_INFINITY;
   for (const entry of entries) {
-    const { low, high } = ratingRange(entry);
-    min = Math.min(min, low);
-    max = Math.max(max, high);
+    min = Math.min(min, entry.elo);
+    max = Math.max(max, entry.elo);
   }
-  return { min: Math.floor(min / 10) * 10, max: Math.ceil(max / 10) * 10 };
+  const pad = 70;
+  return { min: Math.floor((min - pad) / 10) * 10, max: Math.ceil((max + pad) / 10) * 10 };
 }

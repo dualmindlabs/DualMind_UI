@@ -52,14 +52,13 @@ describe('eloMargin', () => {
 });
 
 describe('rangeDomain', () => {
-  it('covers every range, rounded to tens', () => {
+  it('covers every rating with a margin, rounded to tens', () => {
     const domain = rangeDomain(fullBoard.rated);
     expect(domain.min % 10).toBe(0);
     expect(domain.max % 10).toBe(0);
     for (const item of fullBoard.rated) {
-      const range = ratingRange(item);
-      expect(range.low).toBeGreaterThanOrEqual(domain.min);
-      expect(range.high).toBeLessThanOrEqual(domain.max);
+      expect(item.elo).toBeGreaterThan(domain.min);
+      expect(item.elo).toBeLessThan(domain.max);
     }
   });
 

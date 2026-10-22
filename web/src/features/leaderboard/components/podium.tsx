@@ -20,12 +20,12 @@ export interface PodiumProps {
 }
 
 /** The leader's stage on the left (or on top), second and third beside it (or below). */
-const GRID = 'grid gap-4 md:grid-cols-2 md:gap-5 lg:grid-cols-[1.25fr_1fr]';
+const GRID = 'grid gap-4 md:grid-cols-2 md:gap-5';
 
 function PodiumSkeleton() {
   return (
     <ul aria-hidden="true" className={GRID}>
-      <li className="grid min-h-96 content-between rounded-lg border border-line bg-surface p-8 shadow-raise md:col-span-2 lg:col-span-1 lg:row-span-2">
+      <li className="grid min-h-96 content-between rounded-lg border border-line bg-surface p-8 shadow-raise md:col-span-2">
         <div className="flex justify-between">
           <Skeleton className="h-6 w-24" />
           <Skeleton className="h-8 w-14" />

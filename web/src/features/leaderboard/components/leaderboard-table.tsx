@@ -104,7 +104,7 @@ function Row({
           </div>
         </div>
       </th>
-      <td className="hidden py-3.5 pr-3 pl-3 align-middle text-ui-sm text-fg-soft lg:table-cell">
+      <td className="hidden py-3.5 pr-3 pl-3 align-middle text-ui-sm whitespace-nowrap text-fg-soft lg:table-cell">
         {entry.providerLabel}
         {entry.servedBy ? (
           <span className="block text-caption text-muted">{entry.servedBy}</span>
