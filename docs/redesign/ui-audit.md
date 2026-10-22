@@ -2,6 +2,58 @@
 
 Audited 2026-10-21 against `master` at `328e4f6` (CI run [39570236764](https://github.com/dualmindlabs/DualMind_UI/actions/runs/39570236764), all green), plus the in-flight arena branches. Bar: [startup-grade-checklist.md](./startup-grade-checklist.md) and [design-direction.md](./design-direction.md).
 
+## Status after 22 Oct
+
+Checked against `master` at `4b561d0` (after #70, #71, #75, #76 and #78), the code and the screenshots of master run [39714203217](https://github.com/dualmindlabs/DualMind_UI/actions/runs/39714203217). "Fixed" names the PR; "open" says why. [#82](https://github.com/dualmindlabs/DualMind_UI/pull/82) and [#83](https://github.com/dualmindlabs/DualMind_UI/pull/83) are this check's own fixes.
+
+| ID | Item | Status |
+| --- | --- | --- |
+| P0-1 | Landing performance 73-74 | Open: Harsh dropped performance work on 21 Oct ([#57](https://github.com/dualmindlabs/DualMind_UI/pull/57) closed, branch kept) |
+| P0-2 | Speed shown before the vote | Fixed: [#53](https://github.com/dualmindlabs/DualMind_UI/pull/53), blind-integrity test in [#66](https://github.com/dualmindlabs/DualMind_UI/pull/66); timing moves to the pane footer in [#77](https://github.com/dualmindlabs/DualMind_UI/pull/77) |
+| P0-3 | Raw model names, unrated models ranked | Fixed: [#60](https://github.com/dualmindlabs/DualMind_UI/pull/60), threshold 5 battles in [#68](https://github.com/dualmindlabs/DualMind_UI/pull/68) |
+| P1-1 | Typed landing prompt got the demo answer | Fixed: [#69](https://github.com/dualmindlabs/DualMind_UI/pull/69) |
+| P1-2 | Lighthouse on more routes, performance as an error | Open: performance work dropped (P0-1) |
+| P1-3 | Share images | Fixed: leaderboard and models in [#60](https://github.com/dualmindlabs/DualMind_UI/pull/60); every other page (sign-in pages, email pages, settings, `/design/`) in [#82](https://github.com/dualmindlabs/DualMind_UI/pull/82) |
+| P1-4 | 44 px touch targets | Fixed: [#62](https://github.com/dualmindlabs/DualMind_UI/pull/62); the 404 "Ctrl K" hint on phones in [#83](https://github.com/dualmindlabs/DualMind_UI/pull/83) |
+| P1-5 | Credits wall on About | Fixed: [#61](https://github.com/dualmindlabs/DualMind_UI/pull/61) |
+| P1-6 | Unattributed login quote | Fixed: [#62](https://github.com/dualmindlabs/DualMind_UI/pull/62) |
+| P1-7 | Expired email link dead end | Fixed: [#62](https://github.com/dualmindlabs/DualMind_UI/pull/62) |
+| P1-8 | No state screenshots | Fixed: [#64](https://github.com/dualmindlabs/DualMind_UI/pull/64); settings, share and offline states in [#65](https://github.com/dualmindlabs/DualMind_UI/pull/65), [#58](https://github.com/dualmindlabs/DualMind_UI/pull/58), [#70](https://github.com/dualmindlabs/DualMind_UI/pull/70) |
+| P1-9 | i18n: strings in components, `en-US` formatters, zone-less time | Part: time zone and page-locale formatters in [#78](https://github.com/dualmindlabs/DualMind_UI/pull/78); the message catalog is open (planned after the S13 cutover) |
+| P1-10 | Three taglines | Fixed: [#61](https://github.com/dualmindlabs/DualMind_UI/pull/61), [#62](https://github.com/dualmindlabs/DualMind_UI/pull/62), last lines in [#78](https://github.com/dualmindlabs/DualMind_UI/pull/78) |
+| P1-11 | Arena picker | Fixed: [#66](https://github.com/dualmindlabs/DualMind_UI/pull/66) |
+| P1-12 | Arena PRs red | Fixed: [#52](https://github.com/dualmindlabs/DualMind_UI/pull/52), [#53](https://github.com/dualmindlabs/DualMind_UI/pull/53) merged |
+| P1-13 | Footer: status, GitHub, contact | Fixed for GitHub and Contact in [#61](https://github.com/dualmindlabs/DualMind_UI/pull/61); the Status link is open until the status page exists (B8) |
+| P1-14 | HTML caching when the gate opens | Open: belongs to the S13 cutover |
+| P2-1 | Link inset in hero actions | Fixed on master (checked in [#78](https://github.com/dualmindlabs/DualMind_UI/pull/78)) |
+| P2-2 | Hero placeholder cut on phones | Fixed: [#71](https://github.com/dualmindlabs/DualMind_UI/pull/71) |
+| P2-3 | Grey 404 glitch | Fixed: [#71](https://github.com/dualmindlabs/DualMind_UI/pull/71) |
+| P2-4 | Chart without a name | Fixed on master (checked in [#78](https://github.com/dualmindlabs/DualMind_UI/pull/78)) |
+| P2-5 | Eyebrow `h2`s | Fixed on master (checked in [#78](https://github.com/dualmindlabs/DualMind_UI/pull/78)) |
+| P2-6 | Forced colors | Fixed: [#62](https://github.com/dualmindlabs/DualMind_UI/pull/62); the wordmark vanished with the dark theme stored, and 404, share, arena vote and settings had no forced-colors check: [#83](https://github.com/dualmindlabs/DualMind_UI/pull/83) |
+| P2-7 | en-US spelling, CTA lexicon | Fixed for the info pages in [#61](https://github.com/dualmindlabs/DualMind_UI/pull/61); the rest of the screens (settings, sign-in errors, theme switch, credits, a starter prompt, "Open the leaderboard") and a source-wide spelling test in [#83](https://github.com/dualmindlabs/DualMind_UI/pull/83). `/design/` keeps "colour" (internal style guide, noindex) |
+| P2-8 | Sitemap `lastmod`, auth pages listed | Fixed: [#61](https://github.com/dualmindlabs/DualMind_UI/pull/61) |
+| P2-9 | Arena scroll cue, history rows | Fixed: [#66](https://github.com/dualmindlabs/DualMind_UI/pull/66) |
+| P2-10 | Sticky header in full-page shots | Fixed: [#71](https://github.com/dualmindlabs/DualMind_UI/pull/71) |
+
+Other checks from the definition of done:
+
+| Check | Status |
+| --- | --- |
+| Meta and share card on every route | Fixed in [#82](https://github.com/dualmindlabs/DualMind_UI/pull/82): every page that uses `pageMeta` falls back to `og-default.png` with the large card and `og:locale`; share links keep their Worker-written tags |
+| Favicon and manifest | Fixed in [#82](https://github.com/dualmindlabs/DualMind_UI/pull/82): `favicon.ico`, 192 and 512 px and maskable icons, `site.webmanifest` (fetched with credentials so it passes the waitlist gate). The legacy `manifest.json` (missing icons, linked from nowhere) goes with the S13 cutover |
+| Print styles | Fixed in [#82](https://github.com/dualmindlabs/DualMind_UI/pull/82): no header or footer on any page; a shared battle prints its transcript and address |
+| Focus visible | Checked in [#83](https://github.com/dualmindlabs/DualMind_UI/pull/83): a Tab walk on ten screens fails on any stop without a ring |
+| Reduced motion | No gap: CSS and Motion provider, a still version of every effect, screenshots on landing, leaderboard, models, shell, effects, design and the reveal |
+| Empty states | No gap: arena and history, leaderboard and models (empty and no match), settings export, share (private, no answers), palette and model picker |
+| Console errors in CI | No gap: the only console errors in master run 39714203217 are `ERR_INTERNET_DISCONNECTED` from the offline tests; each page spec fails on console errors |
+| F3 manual screen-reader pass | Open: needs a person with VoiceOver or NVDA |
+| F6 per-battle share images | Open: BE-19 (backend) |
+| F11 arena flow | In review: [#77](https://github.com/dualmindlabs/DualMind_UI/pull/77) |
+| B2 developer portal | In review: [#73](https://github.com/dualmindlabs/DualMind_UI/pull/73) |
+| R1 README screenshots | Open: the arena flow review lane takes them after [#77](https://github.com/dualmindlabs/DualMind_UI/pull/77) |
+| R4 short ROADMAP.md | Open: needs a decision on what to promise in public |
+
 ## How this was done, and its limits
 
 Nothing was built or run on the VM. Evidence:
