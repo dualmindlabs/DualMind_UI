@@ -2,11 +2,12 @@
  * The rating threshold: a model with fewer battles than this is "Not yet rated": it is listed in
  * its own group without a rank, and never reaches the podium or the landing page's top five.
  * Below it, a handful of votes can still move the rating a long way, so a rank would claim more
- * than the data says. The number is the owner's call (Harsh's). 100 is a judgement call for a small arena (on 2026-10-21, 36 of the 53 models had at least
- * 100 battles); revisit it when confidence intervals arrive from the API (backend roadmap BE-9)
+ * than the data says. The number is the owner's call (Harsh's): 5 keeps the rank honest at the very bottom while
+ * still ranking nearly the whole board (on 2026-10-21, 49 of the 53 models had at least 5
+ * battles); revisit it when confidence intervals arrive from the API (backend roadmap BE-9)
  * and the board can show real uncertainty instead.
  */
-export const PROVISIONAL_BATTLES = 100;
+export const PROVISIONAL_BATTLES = 5;
 
 /** The provider filter's "every provider" value. */
 export const ALL_PROVIDERS = 'all';

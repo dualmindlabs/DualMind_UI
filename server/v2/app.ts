@@ -12,6 +12,7 @@ import type { VerifierFactory } from './auth/middleware.ts';
 import { requestContext, type AppEnv } from './context.ts';
 import { onError, problemFor, ProblemError } from './problems.ts';
 import { registerHealth } from './routes/health.ts';
+import { registerLeaderboard } from './routes/leaderboard.ts';
 import { registerMe } from './routes/me.ts';
 
 export const MAX_JSON_BODY_BYTES = 1024 * 1024;
@@ -94,6 +95,7 @@ export function createApp(options: AppOptions = {}): OpenAPIHono<AppEnv> {
 
   registerHealth(app);
   registerMe(app, getVerifier);
+  registerLeaderboard(app);
   options.extend?.(app);
 
   app.doc31(OPENAPI_PATH, openapiConfig);

@@ -33,8 +33,20 @@ export const HERO = {
 } as const;
 
 /**
- * The rotating examples in the hero composer: the three recorded demo prompts first (sending one
- * of them plays its recorded battle), then prompts people bring to the Arena.
+ * The line under the hero composer. Signed out, a typed prompt goes to sign-in and waits in the
+ * arena (UI audit P1-1); only the chips play the recorded demo, and the copy says so.
+ */
+export const HERO_STATUS = {
+  idle: 'Your own prompt runs on real models after a free sign-in.',
+  signIn: 'Taking you to sign in. Your prompt goes with you.',
+  demo: 'Playing a recorded battle below.',
+  demoLink: 'Sign in to battle real models',
+} as const;
+
+/**
+ * The rotating examples in the hero composer (placeholders only, never sent): the three recorded
+ * demo prompts first (their chips play the recorded battles), then prompts people bring to the
+ * Arena.
  */
 export const EXAMPLE_PROMPTS: readonly string[] = [
   ...DEMO_BATTLES.map(battle => battle.prompt),

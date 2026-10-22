@@ -67,6 +67,6 @@ describe('ModelsPage', () => {
       'href',
       '/leaderboard/',
     );
-    expect(within(dialog).getByText(/Not yet rated\./)).toBeInTheDocument();
+    expect(within(dialog).getByText('Rank 07 of 7')).toBeInTheDocument();
   });
 });

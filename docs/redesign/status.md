@@ -2,12 +2,19 @@
 
 The running log of the Arena redesign: what merged, what is in progress, what comes next. One line per change, newest first, written so it can be copied into Notion as is. Plan and slice numbers: [migration-plan.md](./migration-plan.md) section 8. Things that need Harsh: [needs-harsh.md](./needs-harsh.md).
 
-Last updated: 2026-10-21 17:55 UTC. Definition of done: [startup-grade-checklist.md](./startup-grade-checklist.md).
+Last updated: 2026-10-21 23:15 UTC. Definition of done: [startup-grade-checklist.md](./startup-grade-checklist.md).
 
 ## Merged
 
 | Date (UTC) | PR | What |
 | --- | --- | --- |
+| 2026-10-21 | [#72](https://github.com/dualmindlabs/DualMind_UI/pull/72) | **BE-4 fast public leaderboard:** `GET /api/v2/leaderboard` (and `HEAD`) from the Cache API with a content-hash `ETag`, `If-None-Match` 304, stale-while-revalidate, last good copy when the API is down, normalised camelCase fields, `provisional` per model and `meta.provisionalBelow` (5); schemas in `contract/leaderboard.ts`, OpenAPI regenerated, Workers tests. Live (behind the preview gate): 200 with `ETag`, 304 on revalidation, 53 models |
+| 2026-10-21 | [#66](https://github.com/dualmindlabs/DualMind_UI/pull/66) | **Arena polish:** model picker placement and display names, Shiki syntax highlighting (no WebAssembly), `?` shortcuts overlay, phone starter rows and history rows, button feel, blind-integrity test (P0-2, P1-11, P2-9) |
+| 2026-10-21 | [#65](https://github.com/dualmindlabs/DualMind_UI/pull/65) | **S12 settings:** `/settings/` with profile, theme, motion, default arena mode, shortcuts, export (Markdown, JSON, CSV, HTML, PDF via print) |
+| 2026-10-21 | [#64](https://github.com/dualmindlabs/DualMind_UI/pull/64) | Screenshots of loading, error, empty and rate-limited states on every data screen (P1-8) |
+| 2026-10-21 | [#62](https://github.com/dualmindlabs/DualMind_UI/pull/62) | 44 px touch targets, button press states, auth-callback resend, login quote, signup heading, forced colours, P2 fixes |
+| 2026-10-21 | [#61](https://github.com/dualmindlabs/DualMind_UI/pull/61) | `/credits/` page, About as a company page, one tagline, footer links, en-US copy, sitemap `lastmod` |
+| 2026-10-21 | [#67](https://github.com/dualmindlabs/DualMind_UI/pull/67) | Status log update |
 | 2026-10-21 | [#63](https://github.com/dualmindlabs/DualMind_UI/pull/63) | Backend design documents BE-25 to BE-34 (Harsh's poll picks: developer API keys, private arenas, multi-turn, model cards, battle of the day and embeds, seasons, cost-quality, profiles, prompt gallery, collections and dataset) and roadmap wave W6; docs only |
 | 2026-10-21 | [#60](https://github.com/dualmindlabs/DualMind_UI/pull/60) | **Audit P0-3 + P1-3:** human model names everywhere (one display-name module, raw id in tooltips and details), makers instead of "Cloudflare", "Not yet rated" group without ranks under 100 battles, share images for `/leaderboard/` and `/models/` |
 | 2026-10-21 | [#58](https://github.com/dualmindlabs/DualMind_UI/pull/58) | **S11 share:** share dialog (private, unlisted, public), `/share/<id>` page with the reveal applied, per-share link previews injected by the Worker, branded share card; share links work again (KNOWN_ISSUES #3) |
@@ -43,20 +50,28 @@ Last updated: 2026-10-21 17:55 UTC. Definition of done: [startup-grade-checklist
 | 2026-10-20 | [#20](https://github.com/dualmindlabs/DualMind_UI/pull/20) | Removed the ad tags, `ads.txt`, the third-party `sw.js` and the copied careers page (`/careers/` redirects to `/about/`) |
 | 2026-10-20 | [#19](https://github.com/dualmindlabs/DualMind_UI/pull/19) | Redesign plan: design direction, screen inventory, migration plan, new features, component catalog |
 
-## In progress
+## In progress (paused 2026-10-21 23:15 UTC: Harsh said "push everything and stop")
 
-| Slice | PR | What |
-| --- | --- | --- |
-| S12 settings | [#65](https://github.com/dualmindlabs/DualMind_UI/pull/65) | `/settings/`: profile, theme, motion, default arena mode, shortcuts, export (Markdown, JSON, CSV, HTML, PDF via print) |
-| Audit fix: touch and auth | [#62](https://github.com/dualmindlabs/DualMind_UI/pull/62) | 44 px touch targets, button press states, auth-callback resend, login quote, signup heading, forced colours, P2 fixes |
-| Audit fix: info and brand | [#61](https://github.com/dualmindlabs/DualMind_UI/pull/61) | `/credits/` page, About as a company page, one tagline, footer links, en-US copy, sitemap `lastmod` |
-| Audit fix: states | [#64](https://github.com/dualmindlabs/DualMind_UI/pull/64) | Screenshots of loading, error, empty and rate-limited states on every data screen (P1-8) |
-| Arena polish | [#66](https://github.com/dualmindlabs/DualMind_UI/pull/66) | Model picker placement and names, syntax highlighting, shortcuts overlay, phone tabs; then the landing prompt carry-over (P1-1) |
+All work is pushed. Nothing below is merged; each PR body has a "Status / resume plan" section.
+
+| Lane | PR | State when paused | What |
+| --- | --- | --- | --- |
+| Leaderboard threshold, Terms | [#68](https://github.com/dualmindlabs/DualMind_UI/pull/68) | Ready; unit job green, Playwright running | Models ranked from 5 battles (`PROVISIONAL_BATTLES`), Terms governed by India (dm-finisher-2) |
+| Landing prompt handoff (P1-1) | [#69](https://github.com/dualmindlabs/DualMind_UI/pull/69) | Ready; unit job green, Playwright running | A prompt typed on the landing page is carried through sign-in into the arena (dm-finisher-2) |
+| **Arena network drop (Harsh's bug)** | [#70](https://github.com/dualmindlabs/DualMind_UI/pull/70) | Draft; last full run passed all 427 e2e tests but failed one type error, fixed in `5a105f6`; run [39690885851](https://github.com/dualmindlabs/DualMind_UI/actions/runs/39690885851) was running | Root causes found by a new offline e2e spec: (1) the reveal's `ChargeBorder` loads `ElectricBorder` with a plain `React.lazy`; first requested offline it throws "Failed to fetch dynamically imported module" into the root error screen, and React caches the failure; (2) an expired stored session that cannot refresh offline was treated as signed out, so `/` swapped the arena for the landing page; (3) page links are full loads, so offline they showed the browser's offline page. Fix: `lazyWithRetry` for every lazy chunk (decorative effects fall back to nothing), an arena error boundary with Try again, an offline notice in the arena (drafts kept, votes queued and counted), an offline-aware root error screen that reloads itself once on reconnect, an auth store that never signs out on a network failure, palette navigation blocked while offline. Master's one failing e2e test (`states.spec.ts` "arena: offline-vote-queued", "page.evaluate: Test ended", run [39681796796](https://github.com/dualmindlabs/DualMind_UI/actions/runs/39681796796)) passed in this PR's full run; if it comes back, its cleanup near line 461 must await its `page.evaluate` or reset `navigator.onLine` first |
+| Phone polish | [#71](https://github.com/dualmindlabs/DualMind_UI/pull/71) | Draft | Phone review of every screen from CI screenshots: viewport `interactive-widget=resizes-content` so the docked composer follows the on-screen keyboard; 404 glitch only for its first second, text on `--fg-soft` (P2-3); a `fullPageShot()` helper keeps the sticky header out of full-page screenshots (P2-10; landing and leaderboard specs still to switch); smaller hero placeholder under 26rem (P2-2, 360 px not yet confirmed); new `mobile.spec.ts`: no sideways scroll on 14 public routes, the phone menu, the signed-in arena and settings at 360 and 390 px, composer and vote bar inside the viewport, landscape and `mobile-*` screenshots. Run [39690852457](https://github.com/dualmindlabs/DualMind_UI/actions/runs/39690852457) was running; earlier runs were red only on the `states.spec.ts` test that also fails on master |
+| **BE-5 API docs** | [#73](https://github.com/dualmindlabs/DualMind_UI/pull/73) | Draft; API (v2) green ([39689134954](https://github.com/dualmindlabs/DualMind_UI/actions/runs/39689134954)), web unit job green, Playwright was running ([39689863226](https://github.com/dualmindlabs/DualMind_UI/actions/runs/39689863226)) | `/api/v2/openapi.json` (ETag, cache headers), prerendered `/developers/` reference built from the OpenAPI file and the problem registry, `/leaderboard.md`, `/llms.txt`, `/problems/` and one page per slug, footer "API" link, sitemap entry; Workers, unit and e2e tests with axe and `developers-*` screenshots; the flaky "effects are code-split" CI check made exact |
 
 Closed without merging: [#57](https://github.com/dualmindlabs/DualMind_UI/pull/57) (landing performance). Harsh dropped performance work on 2026-10-21; the branch is kept.
 
-## Next
+## Resume plan (in this order)
 
-1. Merge the five PRs above as CI goes green; then the strings the info PR could not change (arena heading "Two minds. Your verdict.", the `/design/` hero line) and README screenshots.
-2. S13 cutover (legacy files removed, CSP everywhere, build variables for Supabase), i18n readiness (P1-9).
-3. No performance work (Harsh, 2026-10-21). Backend implementation waits for Harsh's "good night"; designs for BE-25 to BE-34 are merged.
+1. **#68 and #69** (dm-finisher-2's lane): confirm the Playwright job is green, merge.
+2. **#70 (the network-drop bug):** wait for or re-run its CI; if the check job fails, apply the `web-autofix` artifact and fix what is left; look at the 12 new screenshots (`arena-offline-*`, `arena-error-*`, `root-offline-*`, only 3 were reviewed); mark ready and merge. Then re-run master's web workflow to confirm `states.spec.ts` is green again.
+3. **#71 (phone polish):** rebase on master after #70, CI green, review the `mobile-*` screenshots (confirm the hero placeholder fits at 360 px in `mobile-landing-fold-*`), merge. Then the fixes it left for files other lanes held: the empty arena loses its heading in landscape (844x390) because `main` has `justify-end` with `overflow-y-auto` (`features/arena/components/arena-app.tsx`: use `mt-auto` on the inner wrapper; see `mobile-arena-landscape.png`); `landing.spec.ts` and `leaderboard.spec.ts` switch to `fullPageShot()`; shorten `NARROW_PROMPTS` in `hero-composer.tsx` to about 24 characters if 360 px is still cut.
+4. **#73 (BE-5):** Playwright green, review the `developers-*` screenshots, check the landing JS budget line (the new route grew the shared wordmark chunk from 18 to 47 kB; split it if the budget complains), rebase, merge.
+5. **BE-4 part 2, web client switch** (after #68): the web leaderboard reads `/api/v2/leaderboard` (one release of fallback to the v1 path on 404/501), mock fixtures in the v2 shape, `PROVISIONAL_BATTLES` imported from `contract/leaderboard.ts`.
+6. **Leaderboard and models polish:** audit P2-1 (link inset), P2-4 (chart accessible name), P2-5 (eyebrow `h2`s), the "Updated" time with its zone (P1-9); the last off-brand lines (arena battle heading "Two minds. Your verdict." in `features/arena/lib/modes.ts`, the `/design/` hero line); Shiki on the credits page.
+7. **Arena flow review** on desktop once #70 is in (post-vote actions, focus after the reveal, long answers), then README screenshots.
+8. **S13 cutover** after Harsh's answers in [needs-harsh.md](./needs-harsh.md) (items 1a and 11); i18n readiness (P1-9) after it.
+9. No performance work (Harsh, 2026-10-21). Backend: the edge part of wave 1 is done with BE-5; the next backend wave is the .NET W1 safety PRs in the API repository (feature-roadmap.md section 0).

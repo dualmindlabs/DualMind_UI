@@ -31,6 +31,7 @@ import { FormStatus } from './form-status';
 import { NewPasswordFields } from './new-password-fields';
 import { NoticeCard } from './notice-card';
 import { OAuthButtons, OrDivider } from './oauth-buttons';
+import { PromptDraftNotice } from './prompt-draft-notice';
 
 interface Errors {
   name: string | null;
@@ -198,6 +199,7 @@ export function SignupPage() {
           title="Create your account"
           lead="Two models. One prompt. You decide."
         />
+        <PromptDraftNotice title="Create your account to run your prompt" />
         <AuthGate target={target}>
           {confirmFor ? (
             <ConfirmEmail email={confirmFor} onBack={() => setConfirmFor(null)} />

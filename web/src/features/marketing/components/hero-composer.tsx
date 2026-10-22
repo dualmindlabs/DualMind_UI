@@ -2,10 +2,11 @@ import { useState } from 'react';
 
 import { PlaceholdersAndVanishInput } from '@/components/vendor/aceternity/placeholders-and-vanish-input';
 import { useMediaQuery } from '@/hooks/use-media-query';
+import { sendPromptToSignIn } from '@/lib/session/prompt-draft';
 import { cn } from '@/lib/utils/cn';
 
 import { DEMO_BATTLES } from '../content/demo';
-import { EXAMPLE_PROMPTS, HERO, SIGN_IN_HREF } from '../content/landing';
+import { EXAMPLE_PROMPTS, HERO, HERO_STATUS, SIGN_IN_HREF } from '../content/landing';
 
 /** Short examples for phones: the field is one line, so a long one would be cut off. */
 const NARROW_PROMPTS: readonly string[] = [
@@ -17,23 +18,31 @@ const NARROW_PROMPTS: readonly string[] = [
 ];
 
 interface HeroComposerProps {
-  /** Called with the prompt; the page plays the recorded demo below and scrolls to it. */
+  /** Called with a demo chip's prompt; the page plays that recorded battle below and scrolls to it. */
   onAsk: (prompt: string) => void;
   className?: string;
 }
 
 /**
  * The hero composer: the arena's prompt box with rotating example prompts. Signed out, a prompt
- * cannot reach real models, so sending one plays the recorded demo battle below and offers the
- * sign-in (the status line says so). The chips play one of the recorded battles directly.
+ * cannot reach real models, so a prompt the visitor types is kept for this tab
+ * (lib/session/prompt-draft.ts) and the visitor goes to sign in; the arena then opens with it in
+ * the box, focused and not sent (UI audit P1-1). The chips play the recorded demo battles, as
+ * before. The status line says which of the two is happening.
  */
 export function HeroComposer({ onAsk, className }: HeroComposerProps) {
   const [prompt, setPrompt] = useState('');
-  const [sent, setSent] = useState(false);
+  const [status, setStatus] = useState<'idle' | 'demo' | 'sign-in'>('idle');
   const narrow = useMediaQuery('(max-width: 30rem)');
 
-  const ask = (text: string) => {
-    setSent(true);
+  const signInWith = (text: string) => {
+    if (text.trim() === '') return;
+    setStatus('sign-in');
+    sendPromptToSignIn(text);
+  };
+
+  const playDemo = (text: string) => {
+    setStatus('demo');
     onAsk(text);
   };
 
@@ -46,7 +55,7 @@ export function HeroComposer({ onAsk, className }: HeroComposerProps) {
         placeholders={narrow ? NARROW_PROMPTS : EXAMPLE_PROMPTS}
         value={prompt}
         onValueChange={setPrompt}
-        onSubmit={ask}
+        onSubmit={signInWith}
         name="prompt"
         submitLabel={HERO.composerSubmit}
         className="max-w-2xl"
@@ -57,7 +66,7 @@ export function HeroComposer({ onAsk, className }: HeroComposerProps) {
           <button
             key={battle.id}
             type="button"
-            onClick={() => ask(battle.prompt)}
+            onClick={() => playDemo(battle.prompt)}
             aria-label={`Play the recorded battle: ${battle.prompt}`}
             className={cn(
               'hit-area relative inline-block h-8 max-w-full truncate rounded-full border border-line bg-glass px-3.5 text-caption leading-[1.875rem] text-fg-soft',
@@ -69,18 +78,22 @@ export function HeroComposer({ onAsk, className }: HeroComposerProps) {
           </button>
         ))}
       </div>
-      <p role="status" className="mt-3 min-h-6 text-ui-sm text-fg-soft">
-        {sent ? (
+      <p role="status" className="mt-3 min-h-6 text-ui-sm text-fg-soft" data-testid="hero-status">
+        {status === 'sign-in' ? (
+          HERO_STATUS.signIn
+        ) : status === 'demo' ? (
           <>
-            Playing a recorded demo below.{' '}
+            {HERO_STATUS.demo}{' '}
             <a
               href={SIGN_IN_HREF}
               className="font-medium text-mind-a underline decoration-mind-a/40 underline-offset-4 hover:decoration-current"
             >
-              Sign in to battle real models
+              {HERO_STATUS.demoLink}
             </a>
           </>
-        ) : null}
+        ) : (
+          <span className="text-muted">{HERO_STATUS.idle}</span>
+        )}
       </p>
     </div>
   );

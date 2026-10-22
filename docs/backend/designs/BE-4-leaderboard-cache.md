@@ -200,7 +200,7 @@ docs/api/endpoints.md                 v2 section; CHANGELOG
 
 ## 15. Open questions
 
-1. Provisional threshold: 100 battles, matching the leaderboard page today (research.md suggests 300 battles or a confidence-interval rule once BE-9 lands). One shared constant, published in `meta.provisionalBelow`; the web constant must import it from `contract/` when BE-0 lands.
+1. Provisional threshold: 5 battles, matching the leaderboard page today (research.md suggests 300 battles or a confidence-interval rule once BE-9 lands). One shared constant, published in `meta.provisionalBelow`; the web constant must import it from `contract/` when BE-0 lands.
 2. Cache TTLs (fresh 60 s, stale 10 min): leaderboard changes slowly, so these are conservative; longer lowers API calls further. Harsh may prefer to see new votes sooner.
 3. `winRate` counts ties as non-wins (v1 behaviour, kept to avoid a silent change). BE-9 can introduce a tie-aware figure under a new name.
 4. Expose a `?provisional=false` filter or keep it client-side? Default: client-side; one list is easier to cache.

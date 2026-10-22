@@ -16,6 +16,7 @@ import { CodeSignIn } from './code-sign-in';
 import { FormStatus } from './form-status';
 import { OAuthButtons, OrDivider } from './oauth-buttons';
 import { PasswordSignIn } from './password-sign-in';
+import { PromptDraftNotice } from './prompt-draft-notice';
 
 const TAB = 'h-11 flex-1 px-2 pointer-coarse:h-11';
 
@@ -45,6 +46,7 @@ export function LoginPage() {
           voice="Arena."
           lead="Your battles, votes and threads are where you left them."
         />
+        <PromptDraftNotice title="Sign in to run your prompt" />
         <AuthGate target={target}>
           <div className="grid gap-6">
             <div className="grid gap-3">

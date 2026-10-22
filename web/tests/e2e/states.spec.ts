@@ -68,7 +68,7 @@ interface Ctx {
  */
 interface Shown {
   focus: Locator;
-  cleanup?: () => void;
+  cleanup?: () => void | Promise<void>;
 }
 type Scenario = {
   screen: string;
@@ -457,10 +457,17 @@ const arenaScenarios: Scenario[] = [
       await expect(turn.getByTestId('vote-pending')).toContainText('Saved offline');
       return {
         focus: turn.getByTestId('vote-pending'),
-        cleanup: () =>
-          void page.evaluate(() => {
-            Reflect.deleteProperty(navigator, 'onLine');
-          }),
+        // Awaited by the loop below while the page is still open, so the restore never races
+        // the end of the test ("page.evaluate: Test ended", master run 39681796796). A page that
+        // has already closed has nothing left to restore.
+        cleanup: async () => {
+          if (page.isClosed()) return;
+          await page
+            .evaluate(() => {
+              Reflect.deleteProperty(navigator, 'onLine');
+            })
+            .catch(() => {});
+        },
       };
     },
   },
@@ -504,7 +511,7 @@ for (const scenario of SCENARIOS) {
         });
       }
 
-      if (cleanup) cleanup();
+      if (cleanup) await cleanup();
       expect(problems).toEqual([]);
     });
   }

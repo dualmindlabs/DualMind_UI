@@ -25,9 +25,9 @@ const BOARD = readFileSync(
 );
 const STATS = '**/api/arena/model-stats';
 
-/** The recorded board has 53 models; 36 have the 100 battles that earn a rank (PROVISIONAL_BATTLES). */
+/** The recorded board has 53 models; 49 have the 5 battles that earn a rank (PROVISIONAL_BATTLES). */
 const MODELS = 53;
-const RATED = 36;
+const RATED = 49;
 const UNRATED = MODELS - RATED;
 const withCookie = { headers: { Cookie: PREVIEW_COOKIE }, maxRedirects: 0 };
 
@@ -189,9 +189,8 @@ test.describe('/leaderboard/ (desktop)', () => {
     await expect(bodyRows(page)).toHaveCount(RATED);
     const podium = page.getByRole('list', { name: 'Top three models' });
     await expect(podium.getByRole('listitem')).toHaveCount(3);
-    // The API ranks a 96-battle model first; the podium only has rated models.
-    await expect(podium.getByRole('listitem').first()).toContainText('Llama 3.1 70B Instruct');
-    await expect(podium).not.toContainText('Llama 3.3 70B');
+    // The API's own leader has 96 battles, enough to be rated, so it leads the podium.
+    await expect(podium.getByRole('listitem').first()).toContainText('Llama 3.3 70B Instruct');
     await expect(podium.getByRole('listitem').first()).toContainText('via Cloudflare Workers AI');
     await expect(page.getByRole('status').filter({ hasText: 'models' })).toContainText(
       `${MODELS} models`,
@@ -216,10 +215,13 @@ test.describe('/leaderboard/ (desktop)', () => {
       expect(label).not.toMatch(/[@/]/);
       expect(label).toMatch(/[A-Z]/);
     }
-    await expect(firstRowName(page)).toHaveAttribute('title', '@cf/meta/llama-3.1-70b-instruct');
+    await expect(firstRowName(page)).toHaveAttribute(
+      'title',
+      '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
+    );
   });
 
-  test('models below 100 battles sit in a collapsed "Not yet rated" group without ranks', async ({
+  test('models below 5 battles sit in a collapsed "Not yet rated" group without ranks', async ({
     page,
   }) => {
     await mockStats(page);
@@ -232,9 +234,7 @@ test.describe('/leaderboard/ (desktop)', () => {
     const unrated = table(page).nth(1);
     await expect(unrated.locator('tbody tr')).toHaveCount(UNRATED);
     await expect(unrated.getByRole('columnheader', { name: 'Rank' })).toHaveCount(0);
-    await expect(unrated.locator('tbody th button').first()).toHaveText(
-      'Llama 3.3 70B Instruct (FP8, fast)',
-    );
+    await expect(unrated.locator('tbody th button').first()).toHaveText('Gemma 3n E4B IT');
     await expect(page.getByRole('button', { name: `Hide ${UNRATED} models` })).toHaveAttribute(
       'aria-expanded',
       'true',
@@ -257,14 +257,14 @@ test.describe('/leaderboard/ (desktop)', () => {
 
     await battlesHeader.getByRole('button').click();
     await expect(battlesHeader).toHaveAttribute('aria-sort', 'ascending');
-    await expect(firstRowName(page)).toHaveText('Gemma 7B IT (LoRA)');
+    await expect(firstRowName(page)).toHaveText('Gemma 3n E2B IT');
 
     await page.getByRole('columnheader', { name: 'Model' }).getByRole('button').click();
     await expect(page.getByRole('columnheader', { name: 'Model' })).toHaveAttribute(
       'aria-sort',
       'ascending',
     );
-    await expect(firstRowName(page)).toHaveText('Compound Mini');
+    await expect(firstRowName(page)).toHaveText('Compound');
   });
 
   test('search and the provider filter narrow the board', async ({ page }) => {
@@ -272,7 +272,7 @@ test.describe('/leaderboard/ (desktop)', () => {
     await page.goto('/leaderboard/');
     await expect(bodyRows(page)).toHaveCount(RATED);
 
-    // Four rated and six unrated Gemma builds: a search opens the unrated group by itself.
+    // Ten Gemma builds, eight rated and two not yet: a search opens the unrated group by itself.
     await page.getByRole('searchbox', { name: 'Search models' }).fill('gemma');
     await expect(bodyRows(page)).toHaveCount(10);
     await expect(page.getByText(/^Showing/)).toHaveText(`Showing 10 of ${MODELS} models`);
@@ -309,8 +309,8 @@ test.describe('/leaderboard/ (desktop)', () => {
     await expect(sheet.getByText('@cf/qwen/qwq-32b')).toBeVisible();
     await expect(sheet.getByText('Alibaba Qwen')).toBeVisible();
     await expect(sheet.getByText('via Cloudflare Workers AI')).toBeVisible();
-    await expect(sheet.getByText(`Rank 03 of ${RATED}`)).toBeVisible();
-    await expect(sheet.getByText('-30 on the leader')).toBeVisible();
+    await expect(sheet.getByText(`Rank 04 of ${RATED}`)).toBeVisible();
+    await expect(sheet.getByText('-40 on the leader')).toBeVisible();
     await expect(sheet.locator('.recharts-surface')).toBeVisible();
     await expect(sheet.getByRole('link', { name: 'How ratings work' })).toHaveAttribute(
       'href',
@@ -327,7 +327,7 @@ test.describe('/leaderboard/ (desktop)', () => {
     expect(box).not.toBeNull();
     if (box) await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
     await expect(page.getByRole('dialog').getByRole('heading', { level: 2 })).toHaveText(
-      'DeepSeek R1 Distill Qwen 32B',
+      'Llama 3.1 70B Instruct',
     );
     expect(errors).toEqual([]);
   });
@@ -547,7 +547,7 @@ test.describe('models without a rank on the models page', () => {
     await expect(page.locator('[data-model-id]').first()).toBeVisible();
     await expect(page.locator('[data-model-id]').locator('[data-unrated]')).toHaveCount(UNRATED);
     const top = page.locator('[data-model-id]').filter({ hasText: 'Llama 3.1 70B Instruct' });
-    await expect(top.first()).toContainText('#01');
+    await expect(top.first()).toContainText('#02');
   });
 });
 
