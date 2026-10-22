@@ -80,6 +80,15 @@ for (const vp of VIEWPORTS) {
         const turn = page.getByTestId('live-turn').first();
         await expect(turn).toHaveAttribute('data-phase', 'awaiting_vote', { timeout: 20_000 });
         await page.waitForTimeout(900);
+        await page.evaluate(() => document.querySelector('main')?.scrollTo(0, 0));
+        await page
+          .getByTestId('live-turn')
+          .first()
+          .evaluate(node => node.scrollIntoView({ block: 'start' }));
+        await page.evaluate(() => window.scrollTo(0, 0));
+        await shoot(page, 'stage-0-top', vp.name, theme, false);
+        await page.waitForTimeout(100);
+        await turn.getByTestId('vote-bar').scrollIntoViewIfNeeded();
         await shoot(page, 'stage-2-vote', vp.name, theme, false);
         const a = turn.getByRole('button', { name: /A is better/ });
         const b = turn.getByRole('button', { name: /B is better/ });
