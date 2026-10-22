@@ -1,11 +1,11 @@
 import { ArrowRight, EyeOff, Gauge, Scale, Sigma } from 'lucide-react';
 
-import { BentoGrid, BentoGridItem } from '@/components/vendor/aceternity/bento-grid';
-import { GlowingEffect } from '@/components/vendor/aceternity/glowing-effect';
+import { SectionTitle } from '@/components/ui/section-title';
+import { cn } from '@/lib/utils/cn';
 
 import { type Feature, FEATURES } from '../content/landing';
+import type { LiveStatsState } from '../hooks/use-live-stats';
 import { FeatureArt } from './feature-art';
-import { SectionHeading } from './section-heading';
 
 const icons: Record<Feature['id'], typeof EyeOff> = {
   blind: EyeOff,
@@ -14,63 +14,59 @@ const icons: Record<Feature['id'], typeof EyeOff> = {
   method: Sigma,
 };
 
-const layout: Record<Feature['id'], string> = {
-  blind: 'md:col-span-2',
-  pairings: 'md:row-span-2',
-  ratings: '',
-  method: '',
+/** A 12-column bento: two wide cards and two narrow ones, swapping sides on the second row. */
+const span: Record<Feature['id'], string> = {
+  blind: 'lg:col-span-7',
+  pairings: 'lg:col-span-5',
+  ratings: 'lg:col-span-5',
+  method: 'lg:col-span-7',
 };
 
-/** 02, why blind battles: four honest reasons, as a bento grid with a pointer-following glow. */
-export function FeaturesSection() {
+/** Why blind battles: four honest reasons, each with the product piece that proves it. */
+export function FeaturesSection({ stats }: { stats: LiveStatsState }) {
   return (
     <section aria-labelledby="why-title" className="border-t border-line py-20 md:py-28">
       <div className="mx-auto max-w-page px-4 sm:px-6">
-        <SectionHeading
+        <SectionTitle
           id="why-title"
-          index="02"
-          eyebrow="Why blind battles"
-          title={
-            <>
-              Fair by design. <span className="human-voice text-human">Judged by people.</span>
-            </>
-          }
+          kicker="Why blind battles"
+          title="Fair by design."
+          accent="Judged by people."
           lead="A model’s name can sway a vote before a word is read. The Arena takes the names away, so the only thing left to judge is the answer."
         />
-        <BentoGrid className="mt-12 md:mt-16 md:auto-rows-[16.5rem]">
+        <div className="mt-12 grid gap-4 md:mt-16 lg:grid-cols-12 lg:gap-5">
           {FEATURES.map(feature => {
             const Icon = icons[feature.id];
             return (
-              <BentoGridItem
+              <article
                 key={feature.id}
-                title={feature.title}
-                className={layout[feature.id]}
-                icon={<Icon aria-hidden="true" className="size-5 text-mind-a" strokeWidth={1.75} />}
-                header={
-                  <div className="flex min-h-0 flex-1 flex-col justify-center">
-                    <FeatureArt id={feature.id} />
-                  </div>
-                }
-                description={
-                  <>
-                    {feature.body}
-                    {feature.link ? (
-                      <a
-                        href={feature.link.href}
-                        className="mt-2 flex w-fit items-center gap-1 rounded-sm font-medium text-mind-a underline decoration-mind-a/40 underline-offset-4 hover:decoration-current"
-                      >
-                        {feature.link.label}
-                        <ArrowRight aria-hidden="true" className="size-3.5" strokeWidth={2} />
-                      </a>
-                    ) : null}
-                  </>
-                }
+                data-feature={feature.id}
+                className={cn(
+                  'surface-duel flex hover-rise flex-col gap-6 overflow-hidden p-5 sm:p-7',
+                  span[feature.id],
+                )}
               >
-                <GlowingEffect spread={36} proximity={56} inactiveZone={0.01} borderWidth={1} />
-              </BentoGridItem>
+                <FeatureArt id={feature.id} stats={stats} />
+                <div className="mt-auto">
+                  <span className="grid size-9 place-items-center rounded-md border border-mind-a-edge bg-mind-a-tint">
+                    <Icon aria-hidden="true" className="size-4.5 text-mind-a" strokeWidth={1.75} />
+                  </span>
+                  <h3 className="mt-4 text-h3 font-semibold text-fg">{feature.title}</h3>
+                  <p className="mt-2 max-w-[52ch] text-body text-fg-soft">{feature.body}</p>
+                  {feature.link ? (
+                    <a
+                      href={feature.link.href}
+                      className="mt-3 inline-flex w-fit items-center gap-1 rounded-sm font-medium text-mind-a underline decoration-mind-a/40 underline-offset-4 hover:decoration-current"
+                    >
+                      {feature.link.label}
+                      <ArrowRight aria-hidden="true" className="size-3.5" strokeWidth={2} />
+                    </a>
+                  ) : null}
+                </div>
+              </article>
             );
           })}
-        </BentoGrid>
+        </div>
       </div>
     </section>
   );

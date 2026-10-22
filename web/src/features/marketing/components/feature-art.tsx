@@ -1,127 +1,154 @@
-import { EyeOff } from 'lucide-react';
+import { ArrowLeftRight, Lock } from 'lucide-react';
 
+import { ModelMark } from '@/components/ui/model-mark';
 import { RoleBadge } from '@/components/ui/role-badge';
+import { EloBar, formatElo } from '@/features/leaderboard';
+import { cn } from '@/lib/utils/cn';
 
 import type { Feature } from '../content/landing';
+import type { LiveStatsState } from '../hooks/use-live-stats';
+import { battleAt } from '../lib/demo-machine';
+import { exampleModels } from '../lib/example-models';
 
-const NODES = [0, 1, 2, 3, 4, 5];
-const angle = (index: number) => (index / NODES.length) * Math.PI * 2 - Math.PI / 2;
-const point = (index: number, radius = 44) => ({
-  x: 60 + radius * Math.cos(angle(index)),
-  y: 60 + radius * Math.sin(angle(index)),
-});
+const BATTLE = battleAt(1);
+const SNIPPET = BATTLE.crispSide === 'a' ? BATTLE.crisp : BATTLE.padded;
 
-/**
- * The decorative header of each feature card, drawn from the tokens (no images). The card's title
- * and text carry the meaning; the art is hidden from assistive technology.
- */
-export function FeatureArt({ id }: { id: Feature['id'] }) {
-  if (id === 'blind') {
+const VOTE_CHOICES = ['A is better', 'Tie', 'Both are bad', 'B is better'] as const;
+
+/** Blind by design: two answers whose names are held back, and the label the reveal brings. */
+function BlindArt() {
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      {(['a', 'b'] as const).map(side => (
+        <div
+          key={side}
+          className={cn(
+            'flex min-w-0 flex-col gap-2.5 p-3.5',
+            side === 'a' ? 'surface-a' : 'surface-b',
+          )}
+        >
+          <span className="flex items-center gap-2">
+            <RoleBadge who={side} letterOnly size="sm" />
+            <span className="text-ui-sm font-medium text-fg">Answer {side.toUpperCase()}</span>
+          </span>
+          <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-line bg-bg-deep px-2.5 py-1 text-caption text-fg-soft">
+            <Lock className="size-3" strokeWidth={2} />
+            <span className="h-2 w-16 rounded-full bg-[repeating-linear-gradient(135deg,var(--line-strong)_0_3px,transparent_3px_6px)]" />
+          </span>
+          <span className="line-clamp-4 text-ui-sm text-fg-soft">
+            {side === 'a' ? BATTLE.padded : SNIPPET}
+          </span>
+        </div>
+      ))}
+      <p className="col-span-2 flex items-center justify-center gap-2 text-caption text-muted">
+        <span className="h-px w-8 bg-line-strong" />
+        Names appear after your vote
+        <span className="h-px w-8 bg-line-strong" />
+      </p>
+    </div>
+  );
+}
+
+/** Fair pairings: the same two models, on opposite sides in the next battle. */
+function PairingsArt({ stats }: { stats: LiveStatsState }) {
+  const [first, second] = exampleModels(stats);
+  const rows = [
+    { label: 'Battle 1', a: first, b: second },
+    { label: 'Battle 2', a: second, b: first },
+    { label: 'Battle 3', a: first, b: second },
+  ];
+  return (
+    <div className="grid gap-2.5">
+      {rows.map(row => (
+        <div
+          key={row.label}
+          className="grid grid-cols-[3.5rem_minmax(0,1fr)_1rem_minmax(0,1fr)] items-center gap-2 rounded-lg border border-line bg-surface-2 p-2 shadow-raise"
+        >
+          <span className="eyebrow text-muted">{row.label}</span>
+          <span className="flex min-w-0 items-center gap-2 rounded-md bg-mind-a-tint p-1.5">
+            <ModelMark name={row.a.name} who="a" size="sm" />
+            <span className="truncate text-caption font-medium text-fg">{row.a.name}</span>
+          </span>
+          <ArrowLeftRight aria-hidden="true" className="size-3.5 text-muted" strokeWidth={2} />
+          <span className="flex min-w-0 items-center gap-2 rounded-md bg-mind-b-tint p-1.5">
+            <ModelMark name={row.b.name} who="b" size="sm" />
+            <span className="truncate text-caption font-medium text-fg">{row.b.name}</span>
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** Live ratings: the top of the real board, or quiet placeholders until it answers. */
+function RatingsArt({ stats }: { stats: LiveStatsState }) {
+  const top = stats.status === 'ready' ? stats.stats.top.slice(0, 4) : [];
+  if (top.length === 0) {
     return (
-      <div aria-hidden="true" className="relative grid h-full min-h-28 grid-cols-2 gap-3">
-        {(['a', 'b'] as const).map(side => (
-          <div
-            key={side}
-            className="flex flex-col gap-2.5 rounded-md border border-line bg-surface-2 p-3"
-          >
-            <div className="flex items-center gap-2">
-              <RoleBadge who={side} letterOnly size="sm" />
-              <span className="h-2.5 w-20 rounded-full bg-[repeating-linear-gradient(135deg,var(--line-strong)_0_3px,transparent_3px_6px)] opacity-70" />
-            </div>
-            <span className="h-1.5 w-11/12 rounded-full bg-line" />
-            <span className="h-1.5 w-4/5 rounded-full bg-line" />
-            <span className="h-1.5 w-3/5 rounded-full bg-line" />
-          </div>
+      <div className="grid gap-3" aria-hidden="true">
+        {[0, 1, 2, 3].map(row => (
+          <span key={row} className="h-9 rounded-md bg-surface-2" />
         ))}
-        <span className="absolute top-1/2 left-1/2 inline-flex -translate-1/2 items-center gap-1.5 rounded-full border border-line bg-surface px-2.5 py-1 font-mono text-caption text-fg-soft shadow-raise">
-          <EyeOff className="size-3.5" strokeWidth={1.75} />
-          Names hidden
-        </span>
       </div>
     );
   }
-
-  if (id === 'pairings') {
-    return (
-      <svg
-        aria-hidden="true"
-        viewBox="0 0 120 120"
-        className="mx-auto h-full max-h-72 min-h-28 w-auto"
-        fill="none"
-      >
-        <g className="stroke-line-strong" strokeWidth="0.6" strokeOpacity="0.75">
-          {NODES.flatMap(a =>
-            NODES.filter(b => b > a).map(b => {
-              const from = point(a);
-              const to = point(b);
-              return <line key={`${a}-${b}`} x1={from.x} y1={from.y} x2={to.x} y2={to.y} />;
-            }),
-          )}
-        </g>
-        <circle cx="60" cy="60" r="11" className="fill-human-tint stroke-human" strokeWidth="1" />
-        <circle cx="60" cy="60" r="2.5" className="fill-human" />
-        {NODES.map(index => {
-          const { x, y } = point(index);
-          return (
-            <circle
-              key={index}
-              cx={x}
-              cy={y}
-              r="5"
-              className={index % 2 === 0 ? 'fill-mind-a' : 'fill-mind-b'}
-            />
-          );
-        })}
-      </svg>
-    );
-  }
-
-  if (id === 'ratings') {
-    return (
-      <svg
-        aria-hidden="true"
-        viewBox="0 0 240 80"
-        preserveAspectRatio="none"
-        className="h-full min-h-20 w-full"
-        fill="none"
-      >
-        <path
-          d="M0 62 L24 58 L48 60 L72 48 L96 52 L120 38 L144 42 L168 28 L192 31 L216 18 L240 14 V80 H0 Z"
-          className="fill-mind-a-tint"
-        />
-        <path
-          d="M0 62 L24 58 L48 60 L72 48 L96 52 L120 38 L144 42 L168 28 L192 31 L216 18 L240 14"
-          className="stroke-mind-a"
-          strokeWidth="2"
-          vectorEffect="non-scaling-stroke"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M0 40 L24 44 L48 41 L72 50 L96 47 L120 55 L144 52 L168 60 L192 57 L216 64 L240 66"
-          className="stroke-mind-b"
-          strokeWidth="1.5"
-          strokeDasharray="4 4"
-          vectorEffect="non-scaling-stroke"
-          strokeLinejoin="round"
-        />
-      </svg>
-    );
-  }
-
   return (
-    <div
-      aria-hidden="true"
-      className="flex h-full min-h-20 flex-col justify-center gap-2 rounded-md border border-line bg-surface-2 px-4 py-3"
-    >
-      <span className="eyebrow text-muted">Expected score</span>
-      <span className="font-mono text-ui-sm whitespace-nowrap text-fg">
-        E(A) = 1 / (1 + 10
-        <sup>
-          (R<sub>B</sub> − R<sub>A</sub>) / 400
-        </sup>
-        )
-      </span>
-      <span className="font-mono text-caption text-muted">R′ = R + K × (S − E)</span>
+    <ul className="grid gap-2.5">
+      {top.map(model => (
+        <li
+          key={model.id}
+          className="grid grid-cols-[1.5rem_minmax(0,1fr)_3rem] items-center gap-x-3 gap-y-1.5 rounded-lg border border-line bg-surface-2 px-3 py-2.5 shadow-raise"
+        >
+          <span className="numeric text-caption text-muted">{model.rank}</span>
+          <span className="truncate text-ui-sm font-medium text-fg">{model.name}</span>
+          <span className="text-right numeric text-ui-sm text-fg">{formatElo(model.elo)}</span>
+          <EloBar
+            share={model.eloShare}
+            tone={model.rank === 1 ? 'lead' : 'default'}
+            className="col-span-3 col-start-1"
+          />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/** Open methodology: the formula and the four vote choices, as the how-it-works page writes them. */
+function MethodArt() {
+  return (
+    <div className="grid gap-3">
+      <div className="surface-inset px-4 py-3.5">
+        <p className="eyebrow text-muted">Expected score</p>
+        <p className="mt-2 font-mono text-ui text-fg sm:text-body">
+          E(A) = 1 / (1 + 10<sup className="text-caption">(Rb − Ra) / 400</sup>)
+        </p>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {VOTE_CHOICES.map(choice => (
+          <span
+            key={choice}
+            className="rounded-full border border-line bg-surface-2 px-3 py-1.5 text-caption font-medium text-fg-soft"
+          >
+            {choice}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * The picture at the top of each feature card, made of the product's own pieces: panes with held
+ * back names, the same pair on opposite sides, the live top of the board, the formula. The card's
+ * title and text carry the meaning; the picture is hidden from assistive technology.
+ */
+export function FeatureArt({ id, stats }: { id: Feature['id']; stats: LiveStatsState }) {
+  return (
+    <div aria-hidden="true">
+      {id === 'blind' ? <BlindArt /> : null}
+      {id === 'pairings' ? <PairingsArt stats={stats} /> : null}
+      {id === 'ratings' ? <RatingsArt stats={stats} /> : null}
+      {id === 'method' ? <MethodArt /> : null}
     </div>
   );
 }

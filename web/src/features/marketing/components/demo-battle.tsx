@@ -1,6 +1,7 @@
 import { type RefObject, useEffect, useRef } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { RoleBadge } from '@/components/ui/role-badge';
 
 import { DEMO_BATTLES, DEMO_LABEL } from '../content/demo';
 import type { DemoBattleControls } from '../hooks/use-demo-battle';
@@ -94,35 +95,40 @@ export function DemoBattle({ demo, rootRef }: DemoBattleProps) {
       data-testid="demo-battle"
       data-phase={state.phase}
       data-run={state.run}
-      className="relative scroll-mt-28 rounded-xl border border-line bg-surface shadow-raise-strong outline-none focus-visible:outline-(length:--focus-width) focus-visible:outline-offset-4 focus-visible:outline-focus focus-visible:outline-solid"
+      className="relative scroll-mt-28 surface-float rounded-2xl outline-none focus-visible:outline-(length:--focus-width) focus-visible:outline-offset-4 focus-visible:outline-focus focus-visible:outline-solid"
     >
-      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b border-line px-4 py-3 sm:px-5">
-        <p
-          id="demo-label"
-          className="flex items-center gap-2.5 font-mono text-caption text-fg-soft"
-        >
-          <span aria-hidden="true" className="flex gap-1">
-            <span className="size-2 rounded-full bg-mind-a" />
-            <span className="size-2 rounded-full bg-mind-b" />
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b border-line px-4 py-3 sm:px-6">
+        <p id="demo-label" className="flex items-center gap-3 font-mono text-caption text-fg-soft">
+          <span aria-hidden="true" className="flex gap-1.5">
+            <span className="size-2.5 rounded-full bg-mind-a" />
+            <span className="size-2.5 rounded-full bg-mind-b" />
           </span>
           {DEMO_LABEL}
         </p>
-        <p className="font-mono text-caption text-muted tabular-nums">
+        <p className="numeric text-caption text-muted">
           Prompt {state.index + 1} of {DEMO_BATTLES.length}
         </p>
       </div>
 
-      <div className="grid gap-5 p-3 sm:p-5">
+      <div className="grid gap-5 p-3 sm:gap-6 sm:p-6">
         {state.asked ? <AskedNote prompt={state.asked} /> : null}
 
-        <div className="border-l-2 border-human pl-4">
-          <p className="eyebrow text-muted">Prompt</p>
-          <p className="mt-1.5 text-h3 font-normal text-fg" data-testid="demo-prompt">
-            {battle.prompt}
-          </p>
+        <div className="flex items-start gap-3.5">
+          <span aria-hidden="true" className="mt-0.5 inline-flex">
+            <RoleBadge who="human" letterOnly />
+          </span>
+          <div className="min-w-0">
+            <p className="eyebrow text-muted">Prompt</p>
+            <p
+              className="mt-1.5 text-h3 font-medium [overflow-wrap:anywhere] text-fg"
+              data-testid="demo-prompt"
+            >
+              {battle.prompt}
+            </p>
+          </div>
         </div>
 
-        <div className="grid gap-3 md:grid-cols-2">
+        <div className="relative grid gap-4 md:grid-cols-2 md:gap-5">
           {(['a', 'b'] as const).map(side => (
             <DemoAnswerPane
               key={`${side}-${state.run}`}
@@ -135,6 +141,12 @@ export function DemoBattle({ demo, rootRef }: DemoBattleProps) {
               chosen={revealed && state.vote === side}
             />
           ))}
+          <span
+            aria-hidden="true"
+            className="absolute top-1/2 left-1/2 z-10 hidden size-11 -translate-1/2 place-items-center rounded-full border border-line-strong bg-surface-2 font-mono text-caption font-medium text-fg shadow-float md:grid"
+          >
+            VS
+          </span>
         </div>
 
         <div>
@@ -157,6 +169,7 @@ export function DemoBattle({ demo, rootRef }: DemoBattleProps) {
         {revealed && state.vote ? (
           <div ref={resultRef}>
             <DemoResult
+              vote={state.vote}
               result={resultFor(battle, state.vote)}
               notice={battle.notice}
               onNext={next}

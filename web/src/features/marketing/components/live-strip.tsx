@@ -1,6 +1,7 @@
 import { ArrowRight } from 'lucide-react';
 import type { ReactNode } from 'react';
 
+import { ModelMark } from '@/components/ui/model-mark';
 import { CountUp } from '@/components/vendor/reactbits/count-up';
 import { formatElo } from '@/features/leaderboard';
 import { cn } from '@/lib/utils/cn';
@@ -10,14 +11,14 @@ import type { LiveStatsState } from '../hooks/use-live-stats';
 import { LiveDot } from './live-dot';
 import { LiveStat } from './live-stat';
 
-const numberClass = 'text-h2 leading-none font-light tracking-[-0.02em] text-fg tabular-nums';
-const pendingClass = 'block h-8 w-24 max-w-full animate-pulse rounded-sm bg-surface-2';
+const numberClass = 'numeric text-[1.625rem] leading-none text-fg sm:text-stat';
+const pendingClass = 'block h-8 w-20 max-w-full animate-pulse rounded-sm bg-surface-3 sm:h-11';
 
 /**
- * Live numbers under the hero, from the public leaderboard: battles, votes, models and the current
- * #1. Loading, ready and failed states share one frame, so nothing shifts when the data arrives.
- * If the request fails, the strip says so and links to the leaderboard; it never shows a number
- * that did not come from the API.
+ * Live numbers docked under the hero, from the public leaderboard: battles, votes, models and the
+ * current #1, on one lit panel. Loading, ready and failed states share one frame, so nothing
+ * shifts when the data arrives. If the request fails, the strip says so and links to the
+ * leaderboard; it never shows a number that did not come from the API.
  */
 export function LiveStrip({ stats }: { stats: LiveStatsState }) {
   const ready = stats.status === 'ready' ? stats.stats : null;
@@ -28,7 +29,7 @@ export function LiveStrip({ stats }: { stats: LiveStatsState }) {
     if (ready) return render(ready);
     if (failed) {
       return (
-        <span className="text-h2 leading-none font-light text-muted">
+        <span className="numeric text-[1.625rem] leading-none text-muted sm:text-stat">
           <span aria-hidden="true">—</span>
           <span className="sr-only">Unavailable</span>
         </span>
@@ -41,10 +42,10 @@ export function LiveStrip({ stats }: { stats: LiveStatsState }) {
     <div
       data-testid="live-strip"
       data-state={stats.status}
-      className="border-t border-line bg-bg-deep"
+      className="mx-auto max-w-page px-4 pb-14 sm:px-6 md:pb-20"
     >
-      <div className="mx-auto max-w-page">
-        <h2 className="sr-only">Live numbers from the public leaderboard</h2>
+      <h2 className="sr-only">Live numbers from the public leaderboard</h2>
+      <div className="overflow-hidden surface-float">
         <dl
           aria-busy={stats.status === 'loading' ? true : undefined}
           className="grid grid-cols-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.7fr)]"
@@ -66,17 +67,20 @@ export function LiveStrip({ stats }: { stats: LiveStatsState }) {
           </LiveStat>
           <LiveStat
             label="#1 right now"
-            className="col-span-3 border-t border-line md:col-span-1 md:border-t-0"
+            className="col-span-3 border-t border-line bg-surface/60 md:col-span-1 md:border-t-0"
           >
             {value(
               () =>
                 leader ? (
-                  <span className="flex min-w-0 flex-col gap-1">
-                    <span className="truncate text-body leading-tight font-medium text-fg">
-                      {leader.name}
-                    </span>
-                    <span className="font-mono text-caption text-muted tabular-nums">
-                      {formatElo(leader.elo)} Elo · {leader.providerLabel}
+                  <span className="flex min-w-0 items-center gap-3">
+                    <ModelMark name={leader.name} who="human" size="md" />
+                    <span className="flex min-w-0 flex-col gap-1">
+                      <span className="truncate text-body leading-tight font-semibold text-fg">
+                        {leader.name}
+                      </span>
+                      <span className="numeric text-caption text-muted">
+                        {formatElo(leader.elo)} Elo · {leader.providerLabel}
+                      </span>
                     </span>
                   </span>
                 ) : null,
@@ -84,11 +88,9 @@ export function LiveStrip({ stats }: { stats: LiveStatsState }) {
             )}
           </LiveStat>
         </dl>
-      </div>
-      <div className="border-t border-line">
         <p
           className={cn(
-            'mx-auto flex min-h-11 max-w-page flex-wrap items-center gap-x-2.5 gap-y-1 px-4 py-2.5 font-mono text-caption sm:px-6',
+            'flex min-h-11 flex-wrap items-center gap-x-2.5 gap-y-1 border-t border-line bg-bg-deep/60 px-4 py-2.5 font-mono text-caption sm:px-6',
             failed ? 'text-fg-soft' : 'text-muted',
           )}
         >
