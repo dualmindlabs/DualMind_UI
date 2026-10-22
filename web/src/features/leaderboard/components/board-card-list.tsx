@@ -127,6 +127,10 @@ function BoardCard({
           />
         </div>
         <RecordBar compact wins={entry.wins} ties={entry.ties} losses={entry.losses} />
+        <p className="sr-only">
+          {formatCount(entry.wins)} wins, {formatCount(entry.losses)} losses,{' '}
+          {formatCount(entry.ties)} ties
+        </p>
       </div>
     </li>
   );

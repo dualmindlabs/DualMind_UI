@@ -6,7 +6,7 @@ export interface RecordBarProps {
   wins: number;
   ties: number;
   losses: number;
-  /** A thin bar without the legend, for a table cell; the numbers are named for screen readers. */
+  /** A thin decorative bar without the legend, for a table cell or card: name the numbers beside it. */
   compact?: boolean;
   className?: string;
 }
@@ -27,7 +27,10 @@ export function RecordBar({ wins, ties, losses, compact = false, className }: Re
   const total = wins + ties + losses;
 
   return (
-    <figure className={cn('grid', compact ? 'gap-0' : 'gap-3', className)}>
+    <figure
+      aria-hidden={compact ? 'true' : undefined}
+      className={cn('grid', compact ? 'gap-0' : 'gap-3', className)}
+    >
       <div
         aria-hidden="true"
         className={cn(
@@ -46,19 +49,21 @@ export function RecordBar({ wins, ties, losses, compact = false, className }: Re
             ))
           : null}
       </div>
-      <figcaption className={compact ? 'sr-only' : undefined}>
-        <ul className="flex flex-wrap gap-x-5 gap-y-1.5 text-ui-sm text-fg-soft">
-          {SEGMENTS.map(segment => (
-            <li key={segment.key} className="inline-flex items-center gap-2">
-              <span aria-hidden="true" className={cn('size-2.5 rounded-[2px]', segment.swatch)} />
-              {segment.label}
-              <span className="font-mono font-medium text-fg tabular-nums">
-                {formatCount(values[segment.key])}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </figcaption>
+      {compact ? null : (
+        <figcaption>
+          <ul className="flex flex-wrap gap-x-5 gap-y-1.5 text-ui-sm text-fg-soft">
+            {SEGMENTS.map(segment => (
+              <li key={segment.key} className="inline-flex items-center gap-2">
+                <span aria-hidden="true" className={cn('size-2.5 rounded-[2px]', segment.swatch)} />
+                {segment.label}
+                <span className="font-mono font-medium text-fg tabular-nums">
+                  {formatCount(values[segment.key])}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </figcaption>
+      )}
     </figure>
   );
 }
