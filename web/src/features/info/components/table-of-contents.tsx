@@ -20,7 +20,7 @@ function TocLinks({ items, active }: { items: readonly TocItem[]; active: string
               href={`#${item.id}`}
               aria-current={current ? 'location' : undefined}
               className={cn(
-                'flex min-h-8 items-baseline gap-3 rounded-sm border-l-2 py-1.5 pr-2 pl-3 transition-colors duration-(--dur-fast) ease-out-expo',
+                'flex min-h-9 items-baseline gap-3 rounded-r-md border-l-2 py-2 pr-3 pl-3 transition-colors duration-(--dur-fast) ease-out-expo',
                 current
                   ? 'border-human bg-human-tint font-medium text-fg'
                   : 'border-line text-fg-soft hover:border-line-strong hover:text-fg',
@@ -51,11 +51,14 @@ export function TableOfContents({ items }: { items: readonly TocItem[] }) {
         aria-label="On this page"
         className="hidden lg:sticky lg:top-28 lg:block lg:self-start print:hidden"
       >
-        <p className="mb-4 eyebrow text-muted">On this page</p>
+        <p className="mb-4 flex items-center gap-2 eyebrow text-muted">
+          <span aria-hidden="true" className="size-1.5 rounded-full bg-human" />
+          On this page
+        </p>
         <TocLinks items={items} active={active} />
       </nav>
       <nav aria-label="On this page" className="lg:hidden print:hidden">
-        <details className="group rounded-lg border border-line bg-surface">
+        <details className="group surface-duel">
           <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 rounded-lg px-4 text-ui font-medium text-fg [&::-webkit-details-marker]:hidden">
             On this page
             <ChevronDown

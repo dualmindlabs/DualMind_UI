@@ -1,17 +1,17 @@
 import type { DefinitionListBlock } from '../content';
 import { RichText } from './rich-text';
 
-/** Terms and their meanings: modes, vote choices, storage keys. */
+/** Terms and their meanings: modes, vote choices, storage keys. Each is a small lit card. */
 export function DefinitionList({ block }: { block: DefinitionListBlock }) {
   return (
-    <dl className="not-prose grid divide-y divide-line border-y border-line">
+    <dl className="not-prose grid gap-3 sm:grid-cols-2">
       {block.items.map(item => (
         <div
           key={item.term}
-          className="grid gap-1.5 py-4 sm:grid-cols-[11rem_minmax(0,1fr)] sm:gap-8"
+          className="surface-duel flex flex-col gap-2 p-5 print:break-inside-avoid"
         >
-          <dt className="text-ui font-semibold wrap-break-word text-fg">{item.term}</dt>
-          <dd className="text-body [text-wrap:pretty] text-fg-soft">
+          <dt className="font-mono text-ui font-medium wrap-break-word text-fg">{item.term}</dt>
+          <dd className="text-ui-sm leading-relaxed [text-wrap:pretty] text-fg-soft">
             <RichText text={item.description} />
           </dd>
         </div>
