@@ -128,6 +128,30 @@ export function ArenaProvider({ children }: { children: ReactNode }) {
     focusComposer();
   }, [setSearchParams, focusComposer, resetBattle, setHistoryOpen, setDraft]);
 
+  const rematch = useCallback(
+    (prompt: string) => {
+      setStoredMode('battle');
+      setHistoryOpen(false);
+      resetBattle(null);
+      setDraft(prompt);
+      setSearchParams(params => {
+        params.delete('thread');
+        return params;
+      });
+      focusComposer();
+      announce('A new battle with the same prompt is ready. Send it to meet two other models.');
+    },
+    [
+      setStoredMode,
+      setSearchParams,
+      focusComposer,
+      resetBattle,
+      setHistoryOpen,
+      setDraft,
+      announce,
+    ],
+  );
+
   const selectMode = useCallback(
     (next: ArenaMode) => {
       setStoredMode(next);
@@ -197,6 +221,7 @@ export function ArenaProvider({ children }: { children: ReactNode }) {
       thread: openThreadData,
       openThread,
       newBattle,
+      rematch,
       shareThreadId,
       openShare,
       closeShare,
@@ -224,6 +249,7 @@ export function ArenaProvider({ children }: { children: ReactNode }) {
       openThreadData,
       openThread,
       newBattle,
+      rematch,
       shareThreadId,
       openShare,
       closeShare,

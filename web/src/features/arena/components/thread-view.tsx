@@ -184,7 +184,12 @@ export function ThreadView({ threadId }: { threadId: string | null }) {
           turns.map(turn => <TurnView key={turn.id} turn={turn} names={names} />)
         )}
         {live.map((turn, index) => (
-          <LiveTurnView key={turn.id} turn={turn} number={(turns?.length ?? 0) + index + 1} />
+          <LiveTurnView
+            key={turn.id}
+            turn={turn}
+            number={(turns?.length ?? 0) + index + 1}
+            latest={index === live.length - 1}
+          />
         ))}
       </ChatContainerContent>
       <div className="pointer-events-none absolute inset-x-0 bottom-3 flex justify-center">

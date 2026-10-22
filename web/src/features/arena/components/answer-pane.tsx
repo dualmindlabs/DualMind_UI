@@ -15,8 +15,6 @@ export interface AnswerPaneProps {
   modelLabel: string | null;
   /** Why the name is hidden, for the header ("Hidden until you vote"). */
   hiddenNote?: string;
-  /** Mono metadata on the right: "1.8 s · 312 words". */
-  meta?: string | null;
   /** The visitor picked this answer: a static terra outline and a "Your pick" mark. */
   chosen?: boolean;
   /** The mark's words; "Your pick" unless a share page says otherwise. */
@@ -27,7 +25,7 @@ export interface AnswerPaneProps {
   generating?: boolean;
   /** The name just became visible: it decrypts once, and the chosen pane gets the charge. */
   revealing?: boolean;
-  /** Under the body: the metrics after a reveal. */
+  /** Under the body: the metrics once the names may be shown (pane-metrics.tsx). */
   footer?: ReactNode;
   /** Replaces the body (loading, error). */
   children?: ReactNode;
@@ -44,7 +42,6 @@ export function AnswerPane({
   text,
   modelLabel,
   hiddenNote,
-  meta,
   chosen = false,
   pickLabel,
   streaming = false,
@@ -84,10 +81,10 @@ export function AnswerPane({
         headingId={headingId}
         modelLabel={modelLabel}
         hiddenNote={hiddenNote}
-        meta={meta}
         chosen={chosen}
         {...(pickLabel === undefined ? {} : { pickLabel })}
-        copyText={streaming || generating || children ? null : text}
+        // Nothing final to copy while it arrives, in a loading or error body, or when empty.
+        copyText={streaming || generating || children || text.trim() === '' ? null : text}
       />
       <div className="min-w-0 px-4 py-4 sm:px-5">
         {children ?? (

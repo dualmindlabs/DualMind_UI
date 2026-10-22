@@ -3,14 +3,9 @@ import { useId } from 'react';
 
 import { displayNameFromModelName } from '@/lib/api';
 
-import {
-  countWords,
-  formatDuration,
-  type PaneData,
-  type TurnData,
-  VOTE_LABELS,
-} from '../lib/turns';
+import { type PaneData, paneMetrics, type TurnData, VOTE_LABELS } from '../lib/turns';
 import { AnswerPane } from './answer-pane';
+import { PaneMetrics } from './pane-metrics';
 import { PanePair } from './pane-pair';
 import { PromptCard } from './prompt-card';
 
@@ -40,14 +35,8 @@ const COPY = {
   },
 } as const;
 
-function paneMeta(pane: PaneData): string {
-  const words = countWords(pane.text);
-  return [
-    formatDuration(pane.timeMs),
-    `${words.toLocaleString('en-US')} ${words === 1 ? 'word' : 'words'}`,
-  ]
-    .filter(Boolean)
-    .join(' · ');
+function metrics(pane: PaneData) {
+  return <PaneMetrics items={paneMetrics({ text: pane.text, timeMs: pane.timeMs })} />;
 }
 
 function label(pane: PaneData, names: ReadonlyMap<string, string>): string | null {
@@ -74,7 +63,7 @@ export function TurnView({ turn, names, audience = 'owner' }: TurnViewProps) {
           side="solo"
           text={turn.a.text}
           modelLabel={label(turn.a, names)}
-          meta={paneMeta(turn.a)}
+          footer={metrics(turn.a)}
         />
       ) : (
         <PanePair
@@ -85,7 +74,7 @@ export function TurnView({ turn, names, audience = 'owner' }: TurnViewProps) {
               text={turn.a.text}
               modelLabel={turn.revealed ? label(turn.a, names) : null}
               hiddenNote={hiddenNote}
-              meta={turn.revealed ? paneMeta(turn.a) : null}
+              footer={turn.revealed ? metrics(turn.a) : null}
               chosen={turn.vote === 'left'}
               pickLabel={copy.pick}
             />
@@ -96,7 +85,7 @@ export function TurnView({ turn, names, audience = 'owner' }: TurnViewProps) {
               text={turn.b.text}
               modelLabel={turn.revealed ? label(turn.b, names) : null}
               hiddenNote={hiddenNote}
-              meta={turn.revealed ? paneMeta(turn.b) : null}
+              footer={turn.revealed ? metrics(turn.b) : null}
               chosen={turn.vote === 'right'}
               pickLabel={copy.pick}
             />

@@ -42,6 +42,7 @@ export function FakeArena({
     thread: undefined,
     openThread: vi.fn(),
     newBattle: vi.fn(),
+    rematch: vi.fn(),
     shareThreadId: null,
     openShare: vi.fn(),
     closeShare: vi.fn(),
