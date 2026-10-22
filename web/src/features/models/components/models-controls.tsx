@@ -25,8 +25,9 @@ export interface ModelsControlsProps {
 }
 
 /**
- * Search, the maker chips (a mark and a count each, wrapping at every width) and the cards / list switch. Names stay what they were: a "Search models" field and one
- * single-choice button per maker.
+ * Search, the maker chips (a mark and a count each, wrapping at every width) and the cards / list
+ * switch. Names stay what they were: a "Search models" field and one single-choice button per
+ * maker.
  */
 export function ModelsControls({
   filters,
