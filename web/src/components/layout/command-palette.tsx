@@ -3,6 +3,10 @@ import {
   BookOpen,
   Boxes,
   CircleQuestionMark,
+  Code,
+  ExternalLink,
+  Info,
+  Mail,
   type LucideIcon,
   Monitor,
   Moon,
@@ -28,7 +32,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { type CommandAction, useCommandPalette } from '@/hooks/use-command-palette';
 import { useTheme } from '@/hooks/use-theme';
 import { blockOfflineNavigation } from '@/lib/network/online-status';
-import { primaryNav, settingsLink } from '@/lib/site/links';
+import { GITHUB_URL, primaryNav, SUPPORT_EMAIL, settingsLink } from '@/lib/site/links';
 import type { ThemePreference } from '@/lib/theme/theme';
 
 const navIcons: Record<string, LucideIcon> = {
@@ -45,12 +49,28 @@ const navKeywords: Record<string, readonly string[]> = {
   '/how-it-works/': ['help', 'rules', 'voting', 'elo'],
 };
 
+/** An icon in a small recessed tile: the palette's one repeated motif. */
+function IconTile({ icon: Icon }: { icon: LucideIcon }) {
+  return (
+    <span
+      aria-hidden="true"
+      className="grid size-7 shrink-0 place-items-center rounded-md border border-line bg-bg-deep group-data-[selected=true]/item:border-mind-a-edge"
+    >
+      <Icon className="size-4" strokeWidth={1.75} />
+    </span>
+  );
+}
+
 /** Legacy pages are not React routes yet, so navigation is a full page load. */
 function goTo(href: string) {
   // Offline, where the screen says so (the arena), stay on the page instead of the browser's.
   if (blockOfflineNavigation()) return;
   window.location.assign(href);
 }
+
+const descriptions: Record<string, string> = Object.fromEntries(
+  primaryNav.flatMap(link => (link.description ? [[`go-${link.href}`, link.description]] : [])),
+);
 
 const themeActions: ReadonlyArray<{ value: ThemePreference; label: string; icon: LucideIcon }> = [
   { value: 'system', label: 'Use the system theme', icon: Monitor },
@@ -89,6 +109,22 @@ export function CommandPalette() {
         icon: CircleQuestionMark,
         hint: '/faq/',
         perform: () => goTo('/faq/'),
+      },
+      {
+        id: 'go-/about/',
+        label: 'About',
+        keywords: ['team', 'story', 'company'],
+        icon: Info,
+        hint: '/about/',
+        perform: () => goTo('/about/'),
+      },
+      {
+        id: 'go-/developers/',
+        label: 'API',
+        keywords: ['developers', 'docs', 'integrate', 'keys'],
+        icon: Code,
+        hint: '/developers/',
+        perform: () => goTo('/developers/'),
       },
       ...(signedIn
         ? [
@@ -140,9 +176,18 @@ export function CommandPalette() {
                   value={action.label}
                   keywords={[...(action.keywords ?? [])]}
                   onSelect={() => run(action.perform)}
+                  className="group/item"
                 >
-                  <Icon aria-hidden="true" strokeWidth={1.75} />
+                  <IconTile icon={Icon} />
                   {action.label}
+                  {descriptions[action.id] ? (
+                    <span
+                      aria-hidden="true"
+                      className="truncate text-caption text-muted max-sm:hidden"
+                    >
+                      {descriptions[action.id]}
+                    </span>
+                  ) : null}
                   {action.hint ? (
                     <CommandShortcut className="font-mono">{action.hint}</CommandShortcut>
                   ) : null}
@@ -157,12 +202,35 @@ export function CommandPalette() {
                 value={label}
                 keywords={['theme', 'appearance', 'mode', value]}
                 onSelect={() => run(() => setPreference(value))}
+                className="group/item"
               >
-                <Icon aria-hidden="true" strokeWidth={1.75} />
+                <IconTile icon={Icon} />
                 {label}
                 {preference === value ? <CommandShortcut>Current</CommandShortcut> : null}
               </CommandItem>
             ))}
+          </CommandGroup>
+          <CommandGroup heading="Elsewhere">
+            <CommandItem
+              value="GitHub"
+              keywords={['source', 'code', 'repo', 'open source']}
+              onSelect={() => run(() => window.open(GITHUB_URL, '_blank', 'noopener,noreferrer'))}
+              className="group/item"
+            >
+              <IconTile icon={ExternalLink} />
+              GitHub
+              <CommandShortcut>Opens a new tab</CommandShortcut>
+            </CommandItem>
+            <CommandItem
+              value="Contact support"
+              keywords={['email', 'help', 'mail', 'feedback']}
+              onSelect={() => run(() => goTo(`mailto:${SUPPORT_EMAIL}`))}
+              className="group/item"
+            >
+              <IconTile icon={Mail} />
+              Contact support
+              <CommandShortcut>{SUPPORT_EMAIL}</CommandShortcut>
+            </CommandItem>
           </CommandGroup>
           {groups.map(group => (
             <CommandGroup key={group.id} heading={group.heading}>
@@ -174,8 +242,9 @@ export function CommandPalette() {
                     value={action.label}
                     keywords={[...(action.keywords ?? [])]}
                     onSelect={() => run(action.perform)}
+                    className="group/item"
                   >
-                    <Icon aria-hidden="true" strokeWidth={1.75} />
+                    <IconTile icon={Icon} />
                     {action.label}
                     {action.hint ? <CommandShortcut>{action.hint}</CommandShortcut> : null}
                   </CommandItem>

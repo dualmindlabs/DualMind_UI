@@ -25,15 +25,27 @@ export interface ThemeToggleProps {
 export function ThemeToggle({ className, compact = false }: ThemeToggleProps) {
   const { preference, setPreference } = useTheme();
   const name = useId();
+  const index = Math.max(
+    0,
+    OPTIONS.findIndex(option => option.value === preference),
+  );
 
   return (
     <fieldset
       className={cn(
-        'inline-flex items-center gap-0.5 rounded-full border border-line bg-surface p-0.5',
+        'relative inline-flex items-center gap-0.5 rounded-full border border-line bg-bg-deep p-0.5 shadow-[inset_0_1px_2px_color-mix(in_oklab,black_18%,transparent)]',
         className,
       )}
     >
       <legend className="sr-only">Color theme</legend>
+      {compact ? (
+        // The thumb slides under the chosen icon: transform only, instant under reduced motion.
+        <span
+          aria-hidden="true"
+          style={{ translate: `calc(${index} * (2rem + 2px)) 0` }}
+          className="absolute top-0.5 left-0.5 size-8 rounded-full border border-line-strong bg-surface-3 shadow-raise transition-[translate] duration-(--dur-base) ease-out-expo motion-reduce:transition-none"
+        />
+      ) : null}
       {OPTIONS.map(({ value, label, icon: Icon }) => (
         <label
           key={value}
@@ -41,7 +53,7 @@ export function ThemeToggle({ className, compact = false }: ThemeToggleProps) {
           className={cn(
             'hit-area relative inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-full text-ui-sm text-muted focus-ring-within transition-colors duration-(--dur-fast) ease-out-expo hover:text-fg has-checked:bg-surface-2 has-checked:text-fg has-checked:shadow-raise',
             compact
-              ? 'size-7'
+              ? 'size-8 has-checked:bg-transparent has-checked:shadow-none'
               : 'h-8 min-w-8 px-2 sm:px-3 pointer-coarse:h-11 pointer-coarse:min-w-11',
           )}
         >
