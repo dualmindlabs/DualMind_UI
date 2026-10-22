@@ -24,6 +24,9 @@ export default [
   route('terms', 'routes/terms.tsx'),
   route('cookies', 'routes/cookies.tsx'),
 
+  // The API reference (BE-5), built from docs/api/openapi.v2.json at build time.
+  route('developers', 'routes/developers.tsx'),
+
   // Sign-in (slice S6): clean canonical paths, prerendered; the old .html URLs 301 here
   // (server/redirects.js).
   route('login', 'routes/login.tsx'),

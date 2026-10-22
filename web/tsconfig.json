@@ -12,6 +12,8 @@
     "paths": {
       "@/*": ["./src/*"],
       "@contract/*": ["../contract/*"],
+      "@api-spec": ["../docs/api/openapi.v2.json"],
+      "@api-problems": ["../server/problem-types.js"],
       "hono": ["./node_modules/hono"],
       "hono/body-limit": ["./node_modules/hono/dist/types/middleware/body-limit/index.d.ts"],
       "hono/factory": ["./node_modules/hono/dist/types/helper/factory/index.d.ts"],

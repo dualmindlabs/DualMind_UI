@@ -17,6 +17,10 @@ export default defineConfig({
     // The `@/...` alias (-> src/), from tsconfig.json `paths`.
     tsconfigPaths: true,
   },
+  server: {
+    // The API reference reads ../docs/api/openapi.v2.json and ../server/problem-types.js.
+    fs: { allow: ['..'] },
+  },
   build: {
     // Every file is emitted as /assets/<name>-<hash>.<ext> (fonts included), so the Worker can
     // cache all of them as immutable and a future CSP can keep `font-src 'self'` without data: URIs.

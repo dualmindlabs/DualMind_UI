@@ -143,6 +143,12 @@ const arena = {
       return gate.decorate(response);
     }
 
+    // The text routes of the API docs (BE-5): /leaderboard.md, /llms.txt, /problems/ and
+    // /problems/<slug>. GET and HEAD are served, anything else gets a 405 problem.
+    if (isDocRoute(pathname)) {
+      return handleDocRoute(request, env, ctx);
+    }
+
     // 2. Permanent redirects for legacy URLs, from the table in server/redirects.js.
     const redirect = redirectResponse(url);
     if (redirect) {
@@ -248,6 +254,28 @@ async function handleV2(request, env, ctx) {
     return v2UnavailableResponse(request);
   }
   return app.handle(request, env, ctx);
+}
+
+function isDocRoute(pathname) {
+  return (
+    pathname === '/leaderboard.md' ||
+    pathname === '/llms.txt' ||
+    pathname === '/problems' ||
+    pathname.startsWith('/problems/')
+  );
+}
+
+// Same lazy import as handleV2: the doc routes live in server/v2/docs/ and share the leaderboard
+// service. If they cannot be loaded, they answer 503 and everything else keeps working.
+async function handleDocRoute(request, env, ctx) {
+  let docs;
+  try {
+    docs = await import('./server/v2/docs/routes.ts');
+  } catch (error) {
+    console.error(JSON.stringify({ event: 'api_v2_unavailable', error: String(error) }));
+    return v2UnavailableResponse(request);
+  }
+  return docs.serveDocRoute(request, env, ctx);
 }
 
 function v2UnavailableResponse(request) {
