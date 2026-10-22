@@ -126,22 +126,24 @@ export function PaneHeader({
           </span>
           {modelLabel ? (
             <NamePlate side={side} label={modelLabel} revealing={revealing} />
-          ) : live ? (
+          ) : live && side === 'solo' ? (
             <span className="inline-flex items-center gap-1.5 text-caption text-fg-soft">
-              <span aria-hidden="true" className="relative flex size-2">
-                <span
-                  className={cn(
-                    'absolute inset-0 rounded-full opacity-60 motion-safe:animate-ping',
-                    style.dot,
-                  )}
-                />
-                <span className={cn('relative size-2 rounded-full', style.dot)} />
-              </span>
+              <span
+                aria-hidden="true"
+                className={cn('size-2 rounded-full motion-safe:animate-pulse', style.dot)}
+              />
               <span className="sr-only">, </span>
               Writing
             </span>
           ) : side === 'solo' ? null : (
-            <span className="inline-flex items-center gap-1 text-caption text-muted">
+            <span className="inline-flex items-center gap-1.5 text-caption text-muted">
+              {live ? (
+                <span
+                  aria-hidden="true"
+                  data-testid="pane-writing"
+                  className={cn('size-2 rounded-full motion-safe:animate-pulse', style.dot)}
+                />
+              ) : null}
               <EyeOff aria-hidden="true" className="size-3.5" strokeWidth={1.75} />
               <span className="sr-only">, </span>
               {hiddenNote}

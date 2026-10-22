@@ -65,7 +65,7 @@ export function CodeBlock({ code, language }: CodeBlockProps) {
     <figure
       data-answer-block=""
       // The figure clips its rounded corners, so it draws the ring of the focused code itself.
-      className="overflow-hidden surface-inset has-[>pre:focus-visible]:outline-(length:--focus-width) has-[>pre:focus-visible]:outline-offset-2 has-[>pre:focus-visible]:outline-focus has-[>pre:focus-visible]:outline-solid"
+      className="overflow-hidden rounded-md border border-line bg-surface shadow-raise has-[>pre:focus-visible]:outline-(length:--focus-width) has-[>pre:focus-visible]:outline-offset-2 has-[>pre:focus-visible]:outline-focus has-[>pre:focus-visible]:outline-solid"
       aria-label={language ? `Code, ${name}` : 'Code'}
     >
       <figcaption className="flex h-10 items-center justify-between gap-2 border-b border-line bg-surface/60 pr-1.5 pl-3">
