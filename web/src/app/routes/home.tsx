@@ -26,8 +26,8 @@ export const links: Route.LinksFunction = () => [
   },
 ];
 
-export const meta: Route.MetaFunction = () => [
-  ...pageMeta({
+export const meta: Route.MetaFunction = () =>
+  pageMeta({
     title: landingSeo.title,
     description: landingSeo.description,
     path: '/',
@@ -54,9 +54,7 @@ export const meta: Route.MetaFunction = () => [
         },
       ],
     },
-  }),
-  { property: 'og:locale', content: 'en_US' },
-];
+  });
 
 /**
  * `/`: the landing page for signed-out visitors, the arena for signed-in ones (migration-plan.md

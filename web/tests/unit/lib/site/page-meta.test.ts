@@ -2,7 +2,14 @@ import type { MetaDescriptor } from 'react-router';
 import { describe, expect, it } from 'vitest';
 
 import { config } from '@/config/env';
-import { absoluteUrl, pageMeta, SITE_NAME } from '@/lib/site/page-meta';
+import { BRAND_PRIMARY } from '@/content/brand';
+import {
+  absoluteUrl,
+  DEFAULT_PAGE_IMAGE,
+  OG_LOCALE,
+  pageMeta,
+  SITE_NAME,
+} from '@/lib/site/page-meta';
 
 type Tag = Record<string, unknown>;
 
@@ -47,17 +54,39 @@ describe('pageMeta', () => {
     expect(find(meta, 'property', 'og:title')?.content).toBe(base.title);
     expect(find(meta, 'property', 'og:description')?.content).toBe(base.description);
     expect(find(meta, 'property', 'og:url')?.content).toBe(`${config.siteUrl}/leaderboard/`);
-    expect(find(meta, 'name', 'twitter:card')?.content).toBe('summary');
+    expect(find(meta, 'property', 'og:locale')?.content).toBe('en_US');
+    expect(OG_LOCALE).toBe('en_US');
+    expect(find(meta, 'name', 'twitter:card')?.content).toBe('summary_large_image');
     expect(find(meta, 'name', 'twitter:title')?.content).toBe(base.title);
     expect(find(meta, 'name', 'twitter:description')?.content).toBe(base.description);
   });
 
-  it('sends no image, robots or structured data unless asked', () => {
+  it('falls back to the site share card, so no page unfurls as a bare text card', () => {
     const meta = pageMeta(base);
-    expect(find(meta, 'property', 'og:image')).toBeUndefined();
-    expect(find(meta, 'name', 'twitter:image')).toBeUndefined();
+    const imageUrl = `${config.siteUrl}/og-default.png`;
+    const alt = `DualMind Arena: ${BRAND_PRIMARY}`;
+    expect(DEFAULT_PAGE_IMAGE.url).toBe('/og-default.png');
+    expect(find(meta, 'property', 'og:image')?.content).toBe(imageUrl);
+    expect(find(meta, 'property', 'og:image:alt')?.content).toBe(alt);
+    expect(find(meta, 'property', 'og:image:width')?.content).toBe('1200');
+    expect(find(meta, 'property', 'og:image:height')?.content).toBe('630');
+    expect(find(meta, 'name', 'twitter:image')?.content).toBe(imageUrl);
+    expect(find(meta, 'name', 'twitter:image:alt')?.content).toBe(alt);
+  });
+
+  it('sends no robots directive or structured data unless asked', () => {
+    const meta = pageMeta(base);
     expect(find(meta, 'name', 'robots')).toBeUndefined();
     expect(meta.some(tag => 'script:ld+json' in tag)).toBe(false);
+  });
+
+  it('writes each tag once', () => {
+    const meta = pageMeta(base);
+    const keys = meta.map(tag => {
+      const fields: Tag = { ...tag };
+      return String(fields.property ?? fields.name ?? fields.rel ?? Object.keys(fields)[0]);
+    });
+    expect(new Set(keys).size).toBe(keys.length);
   });
 
   it('takes an article type', () => {

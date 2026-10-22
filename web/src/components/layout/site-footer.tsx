@@ -23,7 +23,7 @@ const YEAR = new Date().getFullYear();
 /** The quiet site footer: brand, three link columns (product, company, legal), copyright. */
 export function SiteFooter({ status, navLabel = 'Footer', className }: SiteFooterProps) {
   return (
-    <footer className={cn('border-t border-line bg-bg-deep', className)}>
+    <footer data-slot="site-footer" className={cn('border-t border-line bg-bg-deep', className)}>
       <div className="mx-auto grid max-w-page gap-12 px-4 pt-14 pb-10 sm:px-6 md:grid-cols-[minmax(0,1.3fr)_minmax(0,2fr)] md:pt-16">
         <div className="grid content-start gap-5">
           <a

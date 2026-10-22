@@ -59,7 +59,7 @@ function ShareActions({ threadId, title }: { threadId: string; title: string }) 
 
   const CopyIcon = copied ? Check : Copy;
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2 print:hidden">
       <a
         href={RUN_YOUR_OWN_HREF}
         className={cn(buttonVariants({ variant: 'human', size: 'md' }), 'group/cta')}
@@ -136,6 +136,13 @@ function SharedView({ threadId, shared }: { threadId: string; shared: SharedThre
             {summary.lead}
           </p>
           <ShareActions threadId={threadId} title={thread.title} />
+          {/* On paper the buttons are gone; the address stays, so the printout leads back. */}
+          <p
+            className="hidden text-ui-sm break-all text-muted print:block"
+            data-testid="share-print-url"
+          >
+            {shareUrl(threadId)}
+          </p>
         </PageContainer>
       </section>
 
@@ -148,7 +155,10 @@ function SharedView({ threadId, shared }: { threadId: string; shared: SharedThre
         )}
       </PageContainer>
 
-      <section aria-labelledby="share-cta" className="border-t border-line bg-surface">
+      <section
+        aria-labelledby="share-cta"
+        className="border-t border-line bg-surface print:hidden"
+      >
         <PageContainer className="grid gap-6 py-14 md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:py-20">
           <div className="grid gap-3">
             <h2 id="share-cta" className="text-h2 font-medium text-balance text-fg">
