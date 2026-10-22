@@ -45,9 +45,9 @@ export function KitBadges() {
             <Badge variant="bad">Offline</Badge>
           </KitState>
           <KitState label="Model marks: A, B, You, and by name">
-            <ModelMark name="Model A" role="a" />
-            <ModelMark name="Model B" role="b" />
-            <ModelMark name="You" role="human" />
+            <ModelMark name="Model A" who="a" />
+            <ModelMark name="Model B" who="b" />
+            <ModelMark name="You" who="human" />
             <ModelMark name="Llama 3.3" />
             <ModelMark name="Mistral Large" />
             <ModelMark name="Gemini Flash" size="lg" />

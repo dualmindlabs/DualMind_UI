@@ -11,8 +11,8 @@ export type ModelMarkRole = 'a' | 'b' | 'human';
 export interface ModelMarkProps {
   /** The model or provider name: the monogram is its first letters. */
   name: string;
-  /** Pins the tone to a battle role instead of the name's hash. */
-  role?: ModelMarkRole;
+  /** Pins the tone to a battle role (a, b or human) instead of the name's hash. */
+  who?: ModelMarkRole;
   size?: 'sm' | 'md' | 'lg';
   className?: string;
 }
@@ -53,7 +53,7 @@ function toneFor(name: string): string {
   return hashTones[hash % hashTones.length] ?? hashTones[0];
 }
 
-export function ModelMark({ name, role, size = 'md', className }: ModelMarkProps) {
+export function ModelMark({ name, who, size = 'md', className }: ModelMarkProps) {
   return (
     <span
       aria-hidden="true"
@@ -61,7 +61,7 @@ export function ModelMark({ name, role, size = 'md', className }: ModelMarkProps
       className={cn(
         'inline-grid shrink-0 place-items-center border font-mono font-medium shadow-raise select-none',
         sizeClass[size],
-        role ? roleTone[role] : toneFor(name),
+        who ? roleTone[who] : toneFor(name),
         className,
       )}
     >
