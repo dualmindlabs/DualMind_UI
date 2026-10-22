@@ -2,7 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, type Page, test } from '@playwright/test';
 
 import { mockArena } from './arena-mocks';
-import { passGate, settle, shotPath, storeTheme } from './helpers';
+import { openHistory, passGate, settle, shotPath, storeTheme } from './helpers';
 
 // Slices S8 and S9: the signed-in arena at / (the only arena since the cutover; a leftover ?arena=legacy changes nothing): the switch from the landing page, the history (groups, search, rename, delete), the
 // composer (modes, model pickers, starters), /?thread= deep links, keyboard, axe, overflow and
@@ -105,6 +105,7 @@ test.describe('history', () => {
   test('groups threads by day, searches, renames and deletes', async ({ page }) => {
     const state = await mockArena(page);
     await openArena(page);
+    await openHistory(page);
     const history = page.getByRole('navigation', { name: 'Your threads' });
     for (const group of ['Today', 'Yesterday', 'Last 7 days', 'Older']) {
       await expect(history.getByRole('heading', { name: group })).toBeVisible();
@@ -140,12 +141,14 @@ test.describe('history', () => {
   test('an empty history and a failed one have their own states', async ({ page }) => {
     await mockArena(page, { threads: [] });
     await openArena(page);
+    await openHistory(page);
     await expect(page.getByText('No threads yet.')).toBeVisible();
   });
 
   test('a failed history offers a retry', async ({ page }) => {
     await mockArena(page, { failThreads: true });
     await openArena(page);
+    await openHistory(page);
     await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible({ timeout: 20_000 });
   });
 });
@@ -190,6 +193,7 @@ test.describe('threads', () => {
   test('opening threads from the history and N for a new battle', async ({ page }) => {
     await mockArena(page);
     await openArena(page);
+    await openHistory(page);
     await page.getByRole('link', { name: /Write a haiku about merge conflicts/ }).click();
     await expect(page).toHaveURL(/\?thread=t-haiku/);
     await expect(page.getByText('Side by side', { exact: false }).first()).toBeVisible();

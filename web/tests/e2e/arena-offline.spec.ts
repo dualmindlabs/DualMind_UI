@@ -1,7 +1,7 @@
 import { type BrowserContext, expect, type Page, test } from '@playwright/test';
 
 import { mockArena, SESSION_KEY, sessionJson, SUPABASE } from './arena-mocks';
-import { passGate, settle, shotPath, storeTheme } from './helpers';
+import { openHistory, passGate, settle, shotPath, storeTheme } from './helpers';
 
 // The signed-in arena when the network drops (Harsh's phone: the whole page became the root
 // "Something went wrong" screen). Every test collects the page's real errors and prints them, so
@@ -183,6 +183,7 @@ test.describe('arena offline', () => {
     const problems = collectProblems(page);
     await mockArena(page);
     await openArena(page);
+    await openHistory(page);
     await goOffline(context, page);
     await page.getByRole('link', { name: /Write a haiku about merge conflicts/ }).click();
     await page.waitForTimeout(2500);
@@ -312,6 +313,7 @@ test.describe('a crash inside the arena', () => {
     });
     await page.goto('/');
     await expect(page.getByTestId('arena')).toBeVisible();
+    await openHistory(page);
     await page.evaluate(() => ((window as unknown as { dmCrash: boolean }).dmCrash = true));
     await page.getByRole('link', { name: /Explain recursion to a ten-year-old/ }).click();
     const panel = page.getByTestId('arena-error');
