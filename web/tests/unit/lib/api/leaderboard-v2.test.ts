@@ -10,6 +10,8 @@ import v2 from '../../../fixtures/api/leaderboard-v2.recorded.json';
 import v1 from '../../../fixtures/api/model-stats.recorded.json';
 import { jsonResponse, scriptedFetch } from './helpers';
 
+const pathOf = (url: string) => new URL(url, 'https://app.test').pathname;
+
 const NO_RETRY = { retry: false } as const;
 
 describe('GET /api/v2/leaderboard', () => {
@@ -43,7 +45,7 @@ describe('GET /api/v2/leaderboard', () => {
     const data = await api.getLeaderboard(NO_RETRY);
     expect(data.source).toBe('v2');
     expect(calls).toHaveLength(1);
-    expect(new URL(calls[0]?.url ?? '').pathname).toBe('/api/v2/leaderboard');
+    expect(pathOf(calls[0]?.url ?? '')).toBe('/api/v2/leaderboard');
     expect(calls[0]?.headers.has('authorization')).toBe(false);
   });
 });
@@ -51,12 +53,12 @@ describe('GET /api/v2/leaderboard', () => {
 describe('v1 fallback (goes in the next release)', () => {
   it.each([404, 501])('reads /api/arena/model-stats when v2 answers %i', async status => {
     const { fetch, calls } = scriptedFetch(call =>
-      new URL(call.url).pathname === '/api/v2/leaderboard'
+      pathOf(call.url) === '/api/v2/leaderboard'
         ? jsonResponse({ title: 'Not found', status }, { status })
         : jsonResponse(v1),
     );
     const data = await createApiClient({ fetch }).getLeaderboard(NO_RETRY);
-    expect(calls.map(call => new URL(call.url).pathname)).toEqual([
+    expect(calls.map(call => pathOf(call.url))).toEqual([
       '/api/v2/leaderboard',
       '/api/arena/model-stats',
     ]);

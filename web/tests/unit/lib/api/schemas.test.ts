@@ -40,6 +40,7 @@ const MODEL_STAT_KEYS = [
   'modelId',
   'modelName',
   'providerName',
+  'provisional',
   'totalLosses',
   'totalResponses',
   'totalTies',
@@ -128,6 +129,7 @@ describe('leaderboard (recorded model-stats with duplicate casing)', () => {
       totalTies: 9,
       totalResponses: 96,
       winRate: 64.58,
+      provisional: false,
     });
     expect(new Set(rows.map(row => row.providerName))).toEqual(
       new Set(['cloudflare', 'groq', 'google']),
