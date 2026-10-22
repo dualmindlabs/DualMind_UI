@@ -1,3 +1,5 @@
+import { fileURLToPath } from 'node:url';
+
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vitest/config';
 
@@ -7,6 +9,13 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   plugins: [react()],
   resolve: {
+    // contract/ lives outside web/ and has no node_modules: its `zod` import resolves to ours.
+    alias: [
+      {
+        find: /^zod$/,
+        replacement: fileURLToPath(new URL('./node_modules/zod', import.meta.url)),
+      },
+    ],
     tsconfigPaths: true,
   },
   test: {
