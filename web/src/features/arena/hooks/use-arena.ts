@@ -18,6 +18,11 @@ export interface ArenaState {
   openThread: (threadId: string) => void;
   /** Leaves the thread (if any), clears the prompt and focuses it. */
   newBattle: () => void;
+  /**
+   * After a vote: a new battle with the same prompt in the box, focused and not sent, so two
+   * other models answer it (Battle mode; nothing is sent until the visitor says so).
+   */
+  rematch: (prompt: string) => void;
   /** The thread whose share dialog is open, or null (slice S11). */
   shareThreadId: string | null;
   /** Opens the share dialog for a thread (the header, the history menu, the palette). */

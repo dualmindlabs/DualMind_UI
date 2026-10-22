@@ -85,8 +85,14 @@ export function ArenaProvider({ children }: { children: ReactNode }) {
   const battle = useBattle({ threadId, onThreadCreated, announce });
   const { reset: resetBattle, state: battleState } = battle;
 
-  // Another thread in the address (history, Back, Forward): its live turns start empty.
+  // Another thread in the address (history, Back, Forward): its live turns start empty. Only a
+  // change of the address counts. A new battle (or a rematch) empties the live turns first and
+  // the address follows a moment later; re-syncing to the old thread in between would send the
+  // next prompt into that thread, where no live turn is shown.
+  const syncedThreadId = useRef<string | null | undefined>(undefined);
   useEffect(() => {
+    if (syncedThreadId.current === threadId) return;
+    syncedThreadId.current = threadId;
     if (threadId !== null && threadId !== battleState.threadId) resetBattle(threadId);
   }, [threadId, battleState.threadId, resetBattle]);
 
@@ -127,6 +133,30 @@ export function ArenaProvider({ children }: { children: ReactNode }) {
     });
     focusComposer();
   }, [setSearchParams, focusComposer, resetBattle, setHistoryOpen, setDraft]);
+
+  const rematch = useCallback(
+    (prompt: string) => {
+      setStoredMode('battle');
+      setHistoryOpen(false);
+      resetBattle(null);
+      setDraft(prompt);
+      setSearchParams(params => {
+        params.delete('thread');
+        return params;
+      });
+      focusComposer();
+      announce('A new battle with the same prompt is ready. Send it to meet two other models.');
+    },
+    [
+      setStoredMode,
+      setSearchParams,
+      focusComposer,
+      resetBattle,
+      setHistoryOpen,
+      setDraft,
+      announce,
+    ],
+  );
 
   const selectMode = useCallback(
     (next: ArenaMode) => {
@@ -197,6 +227,7 @@ export function ArenaProvider({ children }: { children: ReactNode }) {
       thread: openThreadData,
       openThread,
       newBattle,
+      rematch,
       shareThreadId,
       openShare,
       closeShare,
@@ -224,6 +255,7 @@ export function ArenaProvider({ children }: { children: ReactNode }) {
       openThreadData,
       openThread,
       newBattle,
+      rematch,
       shareThreadId,
       openShare,
       closeShare,

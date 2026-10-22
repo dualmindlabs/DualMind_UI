@@ -1,4 +1,4 @@
-import { CloudOff, FastForward, Plus, RotateCw } from 'lucide-react';
+import { CloudOff, FastForward, Plus, RotateCw, Scale } from 'lucide-react';
 import { useId } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -10,36 +10,18 @@ import { useArena } from '../hooks/use-arena';
 import { useRevealText } from '../hooks/use-reveal-text';
 import { type LiveAnswer, type LiveTurn, namesShown } from '../lib/battle-machine';
 import { UNRATED_NOTES } from '../lib/battle-notes';
-import { countWords, formatDuration, VOTE_LABELS } from '../lib/turns';
+import { paneMetrics, VOTE_LABELS } from '../lib/turns';
 import { AnswerPane } from './answer-pane';
+import { PaneMetrics } from './pane-metrics';
 import { PanePair } from './pane-pair';
 import { PromptCard } from './prompt-card';
+import { RevealPanel } from './reveal-panel';
 import { VoteBar } from './vote-bar';
 
 function modelLabel(answer: LiveAnswer | null): string | null {
   const model = answer?.model;
   if (!model) return null;
   return resolveDisplayName(model.name, model.displayName);
-}
-
-/** Response time, length and tokens per side (new-features.md F-3). */
-function Metrics({ answer }: { answer: LiveAnswer }) {
-  const words = countWords(answer.text);
-  const items = [
-    ['Time', formatDuration(answer.responseTimeMs)],
-    ['Length', `${words.toLocaleString('en-US')} ${words === 1 ? 'word' : 'words'}`],
-    ['Tokens', answer.usage ? answer.usage.completionTokens.toLocaleString('en-US') : null],
-  ].filter((item): item is [string, string] => item[1] !== null);
-  return (
-    <dl className="mt-auto flex flex-wrap gap-x-5 gap-y-1 rounded-b-[13px] border-t border-line px-4 py-2.5 font-mono text-caption sm:px-5">
-      {items.map(([term, value]) => (
-        <div key={term} className="flex items-baseline gap-1.5">
-          <dt className="text-muted">{term}</dt>
-          <dd className="text-fg tabular-nums">{value}</dd>
-        </div>
-      ))}
-    </dl>
-  );
 }
 
 function Waiting({ mode }: { mode: LiveTurn['mode'] }) {
@@ -77,13 +59,23 @@ function LivePane({ turn, side, answer }: PaneProps) {
       text={text}
       modelLabel={shown ? modelLabel(answer) : null}
       {...(turn.unrated === null ? { hiddenNote: 'Hidden until you vote' } : {})}
-      // Blind integrity: timing and length hint at the model, so they wait for the reveal.
-      meta={generating || !shown ? null : formatDuration(answer?.responseTimeMs)}
       chosen={chosen}
       streaming={generating && answer !== null}
       generating={generating}
       revealing={revealedNow}
-      footer={revealedNow && answer ? <Metrics answer={answer} /> : null}
+      footer={
+        // Blind integrity: timing, length and tokens hint at the model, so they wait for the
+        // reveal (and for the whole text).
+        answer && shown && !generating ? (
+          <PaneMetrics
+            items={paneMetrics({
+              text: answer.text,
+              timeMs: answer.responseTimeMs,
+              tokens: answer.usage?.completionTokens,
+            })}
+          />
+        ) : null
+      }
     >
       {turn.phase === 'submitting' || (generating && answer === null) ? (
         <Waiting mode={turn.mode} />
@@ -95,14 +87,26 @@ function LivePane({ turn, side, answer }: PaneProps) {
 /**
  * A turn of this session: the prompt, the panes in every state (waiting with a Border Beam, the
  * progressive reveal with Show all, the vote, the reveal with decrypting names, a one-shot charge
- * on the chosen pane and the metrics), the error with a retry, and the offline vote chip.
+ * on the chosen pane and the metrics), the next steps after the newest vote, the error with a
+ * retry, and the offline vote chip.
  */
-export function LiveTurnView({ turn, number }: { turn: LiveTurn; number: number }) {
+export function LiveTurnView({
+  turn,
+  number,
+  latest = false,
+}: {
+  turn: LiveTurn;
+  number: number;
+  /** The newest turn of the session: after its vote it offers the next steps (reveal-panel). */
+  latest?: boolean;
+}) {
   const promptId = useId();
   const { battle, newBattle } = useArena();
   const optional = turn.mode === 'side';
   const showVote =
     turn.mode !== 'direct' && (turn.phase === 'awaiting_vote' || turn.phase === 'voting');
+  // A turn that failed or stopped before any answer has nothing to show in its panes.
+  const noAnswers = turn.a === null && (turn.phase === 'error' || turn.phase === 'stopped');
 
   return (
     <article
@@ -112,7 +116,7 @@ export function LiveTurnView({ turn, number }: { turn: LiveTurn; number: number 
       data-phase={turn.phase}
     >
       <PromptCard id={promptId} number={number} prompt={turn.prompt} />
-      {turn.mode === 'direct' ? (
+      {noAnswers ? null : turn.mode === 'direct' ? (
         <LivePane turn={turn} side="solo" answer={turn.a} />
       ) : (
         <PanePair
@@ -146,11 +150,13 @@ export function LiveTurnView({ turn, number }: { turn: LiveTurn; number: number 
           onVote={choice => battle.vote(turn.id, choice)}
         />
       ) : null}
-      {turn.phase === 'revealed' && turn.vote ? (
+      {turn.phase === 'revealed' && turn.vote && latest ? <RevealPanel turn={turn} /> : null}
+      {turn.phase === 'revealed' && turn.vote && !latest ? (
         <p
           className="flex flex-wrap items-center gap-2 text-ui-sm text-fg-soft"
           data-testid="verdict"
         >
+          <Scale aria-hidden="true" className="size-4 text-human" strokeWidth={1.75} />
           Your verdict: <span className="font-medium text-human">{VOTE_LABELS[turn.vote]}</span>
           {turn.votePending && battle.pendingVotes > 0 ? (
             <span

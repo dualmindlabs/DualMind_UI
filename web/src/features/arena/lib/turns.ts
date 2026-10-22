@@ -79,3 +79,29 @@ export function countWords(text: string): number {
     .filter(word => /[\p{L}\p{N}]/u.test(word));
   return words.length;
 }
+
+/** One line of a pane's footer: a term and its value ("Time", "1.8 s"). */
+export type PaneMetric = readonly [term: string, value: string];
+
+/**
+ * A pane's footer (new-features.md F-3): response time, length and, when the API says, tokens.
+ * Terms without a value are left out, so a stored turn without timing shows only its length.
+ */
+export function paneMetrics(answer: {
+  text: string;
+  timeMs: number | null | undefined;
+  tokens?: number | null | undefined;
+}): PaneMetric[] {
+  const words = countWords(answer.text);
+  const items: Array<readonly [string, string | null]> = [
+    ['Time', formatDuration(answer.timeMs)],
+    ['Length', `${words.toLocaleString('en-US')} ${words === 1 ? 'word' : 'words'}`],
+    [
+      'Tokens',
+      answer.tokens === null || answer.tokens === undefined
+        ? null
+        : answer.tokens.toLocaleString('en-US'),
+    ],
+  ];
+  return items.filter((item): item is PaneMetric => item[1] !== null);
+}

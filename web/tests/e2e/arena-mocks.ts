@@ -210,6 +210,8 @@ export async function mockArena(
     battle?: 'fallback' | 'unavailable';
     /** Thread ids that belong to another account: their reads answer 403. */
     foreignThreads?: string[];
+    /** Other Markdown for the battle's answers (long answers, wide tables, long code lines). */
+    answers?: { a?: string; b?: string };
   } = {},
 ): Promise<ArenaMockState> {
   const state: ArenaMockState = {
@@ -342,8 +344,8 @@ export async function mockArena(
       return json(route, 200, {
         success: true,
         comparisonId: `c-live-${battles}`,
-        agent1: answer(ANSWER_A, left, 1840),
-        agent2: answer(ANSWER_B, right, 2310),
+        agent1: answer(options.answers?.a ?? ANSWER_A, left, 1840),
+        agent2: answer(options.answers?.b ?? ANSWER_B, right, 2310),
       });
     }
     if (path === '/api/arena/model-vote') {
