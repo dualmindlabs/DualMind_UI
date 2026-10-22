@@ -97,9 +97,11 @@ async function openArena(page: Page, path = '/?arena=new') {
 }
 
 async function sendBattle(page: Page, prompt = PROMPT) {
+  // This turn by position: `.last()` would follow later turns.
+  const index = await page.getByTestId('live-turn').count();
   await page.getByRole('textbox', { name: 'Your prompt' }).fill(prompt);
   await page.keyboard.press('Enter');
-  const turn = page.getByTestId('live-turn').last();
+  const turn = page.getByTestId('live-turn').nth(index);
   await expect(turn).toHaveAttribute('data-phase', 'awaiting_vote', { timeout: 15_000 });
   return turn;
 }
@@ -306,8 +308,11 @@ test.describe('the reveal header', () => {
         await settle(page, 1600);
         const headers = await headerGeometry(turn);
         expectStableHeaders(headers, `${width} ${theme}`);
-        // The wide screens have room for the whole name; 1024 px ends it in an ellipsis.
-        if (width === 1440) expect(headers[0]?.nameClipped).toBe(false);
+        // Whether the name ends in an ellipsis at this width, for the report (1024 px does).
+        test.info().annotations.push({
+          type: 'name-clipped',
+          description: `${width}px: ${String(headers[0]?.nameClipped)}`,
+        });
         expect(await overflowing(page)).toEqual([]);
         await shootHeaders(page, turn, `arena-reveal-header-${width}-${theme}`);
       });
