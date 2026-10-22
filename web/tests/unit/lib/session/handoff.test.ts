@@ -109,7 +109,12 @@ const cases: Array<{
     target: null,
     marked: false,
   },
-  { name: 'an OAuth return in the hash stays for the app', hash: OAUTH_HASH, target: null, marked: true },
+  {
+    name: 'an OAuth return in the hash stays for the app',
+    hash: OAUTH_HASH,
+    target: null,
+    marked: true,
+  },
   { name: 'a PKCE code stays for the app', search: '?code=123abc', target: null, marked: true },
   {
     name: 'an email token hash stays for the app',

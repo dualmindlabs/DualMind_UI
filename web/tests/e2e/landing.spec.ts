@@ -210,9 +210,7 @@ test('a demo chip still plays the recorded battle and offers the sign-in', async
 });
 
 test.describe('the head script at / (the classic arena is gone)', () => {
-  test('a password recovery link goes on to the new password page, hash kept', async ({
-    page,
-  }) => {
+  test('a password recovery link goes on to the new password page, hash kept', async ({ page }) => {
     await page.goto('/#access_token=abc&refresh_token=def&type=recovery', { waitUntil: 'commit' });
     await page.waitForURL(/\/update-password/);
     expect(new URL(page.url()).hash).toBe('#access_token=abc&refresh_token=def&type=recovery');

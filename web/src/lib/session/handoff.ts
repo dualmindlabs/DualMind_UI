@@ -80,7 +80,8 @@ export function hasAuthParams(search: string, hash: string): boolean {
 export const HANDOFF_PATH = '/';
 
 /** What `/` shows: the landing page, the arena, or a hand-off to the new password page. */
-export type LandingView = { kind: 'landing' } | { kind: 'arena' } | { kind: 'recovery'; target: string };
+export type LandingView =
+  { kind: 'landing' } | { kind: 'arena' } | { kind: 'recovery'; target: string };
 
 /**
  * Decides what `/` shows. Storage that cannot be read (blocked cookies, private mode) counts as
