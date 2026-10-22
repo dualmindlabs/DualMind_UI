@@ -3,13 +3,12 @@ import type { ReactNode } from 'react';
 import { SkipLink } from '@/components/layout/skip-link';
 import { ThemeToggle } from '@/components/layout/theme-toggle';
 import { Wordmark } from '@/components/layout/wordmark';
-import { SilkPoster } from '@/components/motion/silk-poster';
 
 import { LegalFooter } from './legal-footer';
 
 /**
  * The frame of the two email-link pages (/auth-callback.html and /update-password.html): the
- * wordmark and theme switch on top, one centred card, the still Silk poster behind it.
+ * wordmark and theme switch on top, one centred lit card, the two Minds' pools of light and a grid behind it.
  */
 export function StatusShell({ children }: { children: ReactNode }) {
   return (
@@ -17,10 +16,12 @@ export function StatusShell({ children }: { children: ReactNode }) {
       <SkipLink />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-10 [mask-image:radial-gradient(ellipse_70%_60%_at_50%_40%,black,transparent)] opacity-60"
-      >
-        <SilkPoster />
-      </div>
+        className="pointer-events-none absolute inset-0 -z-10 mesh-duel [mask-image:linear-gradient(to_bottom,black,transparent_85%)]"
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 -z-10 bg-grid opacity-50"
+      />
       <header className="flex items-center justify-between gap-4">
         <a
           href="/"
@@ -36,9 +37,7 @@ export function StatusShell({ children }: { children: ReactNode }) {
         tabIndex={-1}
         className="flex flex-1 items-center justify-center py-10 outline-none"
       >
-        <div className="w-full max-w-md rounded-xl border border-line bg-surface p-6 shadow-raise-strong sm:p-8">
-          {children}
-        </div>
+        <div className="w-full max-w-md surface-float p-7 sm:p-10">{children}</div>
       </main>
       <LegalFooter />
     </div>

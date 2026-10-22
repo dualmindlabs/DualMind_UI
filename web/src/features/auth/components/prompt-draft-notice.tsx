@@ -14,7 +14,7 @@ export function PromptDraftNotice({ title }: { title: string }) {
     <section
       aria-labelledby="prompt-draft-title"
       data-testid="prompt-draft-notice"
-      className="grid gap-2 rounded-lg border border-human/40 bg-human-tint px-4 py-3.5"
+      className="grid gap-2 rounded-lg border border-human/40 bg-human-tint px-4 py-3.5 shadow-raise"
     >
       <h2
         id="prompt-draft-title"
