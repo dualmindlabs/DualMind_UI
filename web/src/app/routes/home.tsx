@@ -9,9 +9,9 @@ import { absoluteUrl, pageMeta, SITE_NAME } from '@/lib/site/page-meta';
 import type { Route } from './+types/home';
 
 /**
- * The head script decides before the first paint (lib/session/handoff.ts): signed-in visitors of
- * the new arena stay here, other signed-in visitors and Supabase auth returns go to the legacy
- * arena.
+ * The head script decides before the first paint (lib/session/handoff.ts): signed-in visitors and
+ * Supabase auth returns stay here for the arena; password recovery links go on to the new
+ * password page.
  */
 export const handle: SessionHandoffHandle = { sessionHandoff: true };
 

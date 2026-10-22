@@ -4,7 +4,7 @@ import { expect, type Page, test } from '@playwright/test';
 import { mockArena } from './arena-mocks';
 import { passGate, settle, shotPath, storeTheme } from './helpers';
 
-// Slices S8 and S9: the signed-in arena at / (the default; ?arena=legacy keeps the legacy one): the switch from the landing page, the history (groups, search, rename, delete), the
+// Slices S8 and S9: the signed-in arena at / (the only arena since the cutover; a leftover ?arena=legacy changes nothing): the switch from the landing page, the history (groups, search, rename, delete), the
 // composer (modes, model pickers, starters), /?thread= deep links, keyboard, axe, overflow and
 // the review screenshots. Supabase and the API are answered by Playwright routes (arena-mocks.ts).
 
@@ -34,7 +34,7 @@ async function cspViolations(page: Page) {
   return violations;
 }
 
-async function openArena(page: Page, path = '/?arena=new') {
+async function openArena(page: Page, path = '/') {
   await page.goto(path);
   await expect(page.getByTestId('arena')).toBeVisible();
 }
@@ -65,41 +65,38 @@ async function overflowing(page: Page) {
   });
 }
 
-test.describe('the switch at /', () => {
-  test('?arena=new opts a signed-in visitor in, remembers it and cleans the address', async ({
-    page,
-  }) => {
+test.describe('the arena at /', () => {
+  test('a signed-in visitor gets the arena at /, and a reload keeps it', async ({ page }) => {
     const problems = collectProblems(page);
     const csp = await cspViolations(page);
     await mockArena(page);
     await openArena(page);
     await expect(page).toHaveURL(/\/$/);
-    expect(await page.evaluate(() => window.localStorage.getItem('dm.arena'))).toBe('new');
     await expect(
       page.getByRole('heading', { level: 1, name: /Two models\. One prompt\.\s*You decide\./ }),
     ).toBeVisible();
     await expect(page.locator('[data-landing]')).toHaveCount(0);
     await expect(page).toHaveTitle('Arena · DualMind Arena');
-    // A reload keeps the arena without the parameter.
     await page.reload();
     await expect(page.getByTestId('arena')).toBeVisible();
     expect(problems).toEqual([]);
     expect(csp).toEqual([]);
   });
 
-  test('the new arena is the default for signed-in visitors (slice S9)', async ({ page }) => {
-    await mockArena(page);
-    await page.goto('/');
-    await expect(page.getByTestId('arena')).toBeVisible();
-    await expect(page).toHaveURL(/\/$/);
-  });
-
-  test('?arena=legacy opts out again', async ({ page }) => {
-    await page.route(/\/(config\.js|js\/.*)$/, route => route.abort());
+  test('the account menu has no way back to a classic arena', async ({ page }) => {
     await mockArena(page);
     await openArena(page);
-    await page.goto('/?arena=legacy', { waitUntil: 'commit' });
-    await page.waitForURL(/\/legacy-app/);
+    await page.getByRole('button', { name: /^Account/ }).click();
+    await expect(page.getByRole('menuitem', { name: 'Sign out' })).toBeVisible();
+    await expect(page.getByRole('menuitem', { name: /classic arena/i })).toHaveCount(0);
+  });
+
+  test('a leftover ?arena=legacy or dm.arena=legacy still opens the arena', async ({ page }) => {
+    await mockArena(page);
+    await page.addInitScript(() => window.localStorage.setItem('dm.arena', 'legacy'));
+    await openArena(page, '/?arena=legacy');
+    await expect(page.getByTestId('arena')).toBeVisible();
+    await expect(page).toHaveURL(/\/\?arena=legacy$/);
   });
 });
 
@@ -158,7 +155,7 @@ test.describe('threads', () => {
   }) => {
     const problems = collectProblems(page);
     await mockArena(page);
-    await openArena(page, '/?arena=new&thread=t-recursion');
+    await openArena(page, '/?thread=t-recursion');
     await expect(
       page.getByRole('heading', { level: 1, name: 'Explain recursion to a ten-year-old' }),
     ).toBeVisible();
@@ -199,7 +196,7 @@ test.describe('threads', () => {
 
   test('a missing thread says so and offers a new battle', async ({ page }) => {
     await mockArena(page);
-    await openArena(page, '/?arena=new&thread=nope');
+    await openArena(page, '/?thread=nope');
     await expect(page.getByRole('heading', { name: 'This thread is not here' })).toBeVisible({
       timeout: 20_000,
     });
@@ -213,7 +210,7 @@ test.describe('thread of another account', () => {
     page,
   }) => {
     await mockArena(page, { foreignThreads: ['t-theirs'] });
-    await openArena(page, '/?arena=new&thread=t-theirs');
+    await openArena(page, '/?thread=t-theirs');
     const heading = page.getByRole('heading', {
       name: 'This conversation belongs to another account',
     });
@@ -264,7 +261,7 @@ test.describe('quality', () => {
     test(`axe: no serious or critical violations, ${theme}`, async ({ page }) => {
       await storeTheme(page, theme);
       await mockArena(page);
-      for (const path of ['/?arena=new', '/?thread=t-recursion']) {
+      for (const path of ['/', '/?thread=t-recursion']) {
         await openArena(page, path);
         await settle(page, 600);
         const results = await new AxeBuilder({ page })

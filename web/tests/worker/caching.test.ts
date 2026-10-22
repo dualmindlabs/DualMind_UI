@@ -54,8 +54,8 @@ describe('caching table', () => {
   });
 
   it('treats legacy HTML at a clean URL as legacy code; web pages stay revalidated', () => {
-    // /legacy-app.html is served at /legacy-app (html_handling), like /login-modern.
-    expect(cacheControlFor({ pathname: '/legacy-app', webPage: false, html: true })).toBe(
+    // /auth-verify.html is served at /auth-verify (html_handling), like /login-modern.
+    expect(cacheControlFor({ pathname: '/auth-verify', webPage: false, html: true })).toBe(
       LEGACY_NO_STORE,
     );
     expect(cacheControlFor({ pathname: '/login-modern', webPage: false, html: true })).toBe(

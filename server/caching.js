@@ -43,7 +43,7 @@ export const CACHE_RULES = [
   {
     name: 'legacy-code',
     applies:
-      'Legacy HTML (incl. directory pages and clean URLs such as /legacy-app), JS, CSS and JSON, until the cutover',
+      'Legacy HTML (incl. directory pages and clean URLs such as /auth-verify), JS, CSS and JSON, until the cutover',
     cacheControl: LEGACY_NO_STORE,
     test: ({ pathname, html = false }) => {
       const lower = pathname.toLowerCase();

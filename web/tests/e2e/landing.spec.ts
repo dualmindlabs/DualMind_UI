@@ -67,8 +67,9 @@ test('/ is prerendered: headline, demo answers, SEO tags and the hand-off script
   expect(head).toContain('"@type":"Organization"');
   expect(head).not.toMatch(/name="robots" content="noindex/);
   // The hand-off runs in <head>, before the theme script and before anything is painted.
-  expect(head.indexOf('legacy-app.html')).toBeGreaterThan(-1);
-  expect(head.indexOf('legacy-app.html')).toBeLessThan(head.indexOf('dm.theme'));
+  expect(head.indexOf('update-password.html')).toBeGreaterThan(-1);
+  expect(head.indexOf('update-password.html')).toBeLessThan(head.indexOf('dm.theme'));
+  expect(head).not.toContain('legacy-app.html');
   // Readable without JavaScript: the headline and both demo answers are in the HTML.
   expect(html).toContain('Two models. One prompt.');
   expect(html).toContain('You decide.');
@@ -208,48 +209,23 @@ test('a demo chip still plays the recorded battle and offers the sign-in', async
   );
 });
 
-test.describe('signed-in hand-off (visitors who keep the legacy arena)', () => {
-  // The legacy app's own scripts would redirect a fake session to the login page; keep them
-  // out so the test sees where the hand-off lands. Since slice S9 the new arena is the default:
-  // these visitors chose the legacy arena (`dm.arena` = `legacy`); arena.spec.ts covers the rest.
-  test.beforeEach(async ({ page }) => {
-    await page.route(/\/(config\.js|js\/.*)$/, route => route.abort());
-    await page.addInitScript(() => window.localStorage.setItem('dm.arena', 'legacy'));
-  });
-
-  test('a stored legacy session goes to the legacy arena, query and hash kept', async ({
+test.describe('the head script at / (the classic arena is gone)', () => {
+  test('a password recovery link goes on to the new password page, hash kept', async ({
     page,
   }) => {
-    await page.addInitScript(() =>
-      window.localStorage.setItem('dualmind.auth.supabase', '{"access_token":"t"}'),
-    );
-    await page.goto('/?ref=e2e#battle', { waitUntil: 'commit' });
-    await page.waitForURL(/\/legacy-app/);
-    const url = new URL(page.url());
-    expect(url.pathname).toMatch(/^\/legacy-app(\.html)?$/);
-    expect(url.search).toBe('?ref=e2e');
-    expect(url.hash).toBe('#battle');
-    await expect(page).toHaveTitle('DualMind - Battle Arena');
-  });
-
-  test('a supabase-js session key hands off too', async ({ page }) => {
-    await page.addInitScript(() =>
-      window.localStorage.setItem('sb-projectref-auth-token', '{"access_token":"t"}'),
-    );
-    await page.goto('/', { waitUntil: 'commit' });
-    await page.waitForURL(/\/legacy-app/);
-  });
-
-  test('an OAuth return keeps its tokens in the hash for the legacy client', async ({ page }) => {
     await page.goto('/#access_token=abc&refresh_token=def&type=recovery', { waitUntil: 'commit' });
-    await page.waitForURL(/\/legacy-app/);
+    await page.waitForURL(/\/update-password/);
     expect(new URL(page.url()).hash).toBe('#access_token=abc&refresh_token=def&type=recovery');
   });
 
-  test('a PKCE return keeps its code', async ({ page }) => {
-    await page.goto('/?code=pkce123', { waitUntil: 'commit' });
-    await page.waitForURL(/\/legacy-app/);
-    expect(new URL(page.url()).search).toBe('?code=pkce123');
+  test('a leftover choice for the classic arena sends nobody there', async ({ page }) => {
+    await page.addInitScript(() => {
+      window.localStorage.setItem('dm.arena', 'legacy');
+      window.localStorage.setItem('dualmind.auth.supabase', '{"access_token":"t"}');
+    });
+    await page.goto('/?arena=legacy');
+    await expect(page).toHaveURL(/\/\?arena=legacy$/);
+    expect(new URL(page.url()).pathname).toBe('/');
   });
 
   test('signed-out visitors stay on the landing page', async ({ page }) => {

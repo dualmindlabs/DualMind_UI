@@ -4,19 +4,12 @@ import { describe, expect, it, vi } from 'vitest';
 
 import {
   ARENA_ATTRIBUTE,
-  ARENA_CHOICE_KEY,
-  arenaChoiceFromSearch,
   handoffDestination,
-  handoffTarget,
   hasAuthParams,
   hasStoredSession,
   landingView,
-  LEGACY_APP_PATH,
   LEGACY_SESSION_KEY,
-  NEW_ARENA_BY_DEFAULT,
-  readArenaChoice,
   SESSION_HANDOFF_SCRIPT,
-  usesNewArena,
   wantsSessionHandoff,
 } from '@/lib/session/handoff';
 
@@ -40,7 +33,7 @@ function memoryStorage(entries: Record<string, string>) {
 interface ScriptRun {
   /** Where the script sent the visitor, or null. */
   target: string | null;
-  /** True when it marked <html> for the new arena. */
+  /** True when it marked <html> for the arena. */
   marked: boolean;
 }
 
@@ -67,106 +60,137 @@ function runScriptFull(
   };
 }
 
-function runScript(
-  location: { search?: string; hash?: string; pathname?: string },
-  storage: ReturnType<typeof memoryStorage> | 'throws',
-): string | null {
-  return runScriptFull(location, storage).target;
-}
-
 const SESSION = '{"access_token":"x","refresh_token":"y"}';
+
+const SIGNED_IN = { 'sb-abcdefghijkl-auth-token': SESSION };
+const OAUTH_HASH = '#access_token=abc&expires_in=3600&refresh_token=def&token_type=bearer';
 
 const cases: Array<{
   name: string;
   search?: string;
   hash?: string;
   storage?: Record<string, string>;
-  expected: string | null;
+  /** Where the visitor is sent, or null to stay on / */
+  target: string | null;
+  /** Whether <html> is marked for the arena. */
+  marked: boolean;
 }> = [
-  { name: 'a signed-out visitor stays', expected: null },
+  { name: 'a signed-out visitor sees the landing page', target: null, marked: false },
   {
-    name: 'unrelated params stay',
+    name: 'unrelated params stay on the landing page',
     search: '?ref=newsletter&utm_source=x',
     hash: '#how',
-    expected: null,
+    target: null,
+    marked: false,
   },
   {
-    name: 'the legacy session key hands off',
+    name: 'the old session key gets the arena',
     storage: { [LEGACY_SESSION_KEY]: SESSION },
-    expected: LEGACY_APP_PATH,
+    target: null,
+    marked: true,
   },
   {
-    name: 'a supabase-js session key hands off, query and hash kept',
+    name: 'a supabase-js session key gets the arena, query and hash untouched',
     search: '?preview=dualmind-preview',
     hash: '#top',
-    storage: { 'dm.theme': 'dark', 'sb-abcdefghijkl-auth-token': SESSION },
-    expected: `${LEGACY_APP_PATH}?preview=dualmind-preview#top`,
+    storage: { 'dm.theme': 'dark', ...SIGNED_IN },
+    target: null,
+    marked: true,
   },
   {
     name: 'a PKCE verifier alone is not a session',
     storage: { 'sb-abcdefghijkl-auth-token-code-verifier': 'v' },
-    expected: null,
+    target: null,
+    marked: false,
   },
   {
     name: 'empty or "null" sessions do not count',
     storage: { [LEGACY_SESSION_KEY]: 'null', 'sb-x-auth-token': '' },
-    expected: null,
+    target: null,
+    marked: false,
   },
+  { name: 'an OAuth return in the hash stays for the app', hash: OAUTH_HASH, target: null, marked: true },
+  { name: 'a PKCE code stays for the app', search: '?code=123abc', target: null, marked: true },
   {
-    name: 'an OAuth return in the hash hands off with its hash',
-    hash: '#access_token=abc&expires_in=3600&refresh_token=def&token_type=bearer',
-    expected: `${LEGACY_APP_PATH}#access_token=abc&expires_in=3600&refresh_token=def&token_type=bearer`,
-  },
-  {
-    name: 'a recovery link hands off',
-    hash: '#access_token=abc&type=recovery',
-    expected: `${LEGACY_APP_PATH}#access_token=abc&type=recovery`,
-  },
-  {
-    name: 'type=recovery alone hands off',
-    search: '?type=recovery',
-    expected: `${LEGACY_APP_PATH}?type=recovery`,
-  },
-  {
-    name: 'a PKCE code hands off',
-    search: '?code=123abc',
-    expected: `${LEGACY_APP_PATH}?code=123abc`,
-  },
-  {
-    name: 'an email token hash hands off',
+    name: 'an email token hash stays for the app',
     search: '?token_hash=t&type=signup',
-    expected: `${LEGACY_APP_PATH}?token_hash=t&type=signup`,
+    target: null,
+    marked: true,
+  },
+  { name: 'a magic link stays for the app', hash: '#type=magiclink', target: null, marked: true },
+  {
+    name: 'a recovery link goes on to the new password page, hash kept',
+    hash: '#access_token=abc&type=recovery',
+    target: '/update-password.html#access_token=abc&type=recovery',
+    marked: false,
+  },
+  {
+    name: 'type=recovery alone goes on to the new password page',
+    search: '?type=recovery',
+    target: '/update-password.html?type=recovery',
+    marked: false,
   },
   {
     name: 'look-alike params stay',
     search: '?promo_code=1&type=recoveryx',
     hash: '#my_access_token',
-    expected: null,
+    target: null,
+    marked: false,
+  },
+  {
+    name: 'a leftover ?arena=legacy changes nothing',
+    search: '?arena=legacy',
+    storage: SIGNED_IN,
+    target: null,
+    marked: true,
+  },
+  {
+    name: 'a leftover dm.arena=legacy changes nothing',
+    storage: { ...SIGNED_IN, 'dm.arena': 'legacy' },
+    target: null,
+    marked: true,
+  },
+  {
+    name: 'a signed-out visitor with a leftover choice sees the landing page',
+    search: '?arena=new',
+    storage: { 'dm.arena': 'legacy' },
+    target: null,
+    marked: false,
+  },
+  {
+    name: '?thread= deep links stay for the arena',
+    search: '?thread=abc',
+    storage: SIGNED_IN,
+    target: null,
+    marked: true,
   },
 ];
 
-// The hand-off to the legacy arena, for visitors who keep it (`dm.arena` = `legacy`).
-const LEGACY_CHOICE = { [ARENA_CHOICE_KEY]: 'legacy' };
+describe('signed-in switch at /', () => {
+  it.each(cases)('$name (TypeScript rules)', ({ search = '', hash = '', storage = {}, target }) => {
+    expect(handoffDestination({ search, hash }, memoryStorage(storage))).toBe(target);
+  });
 
-describe('signed-in hand-off (legacy arena kept)', () => {
   it.each(cases)(
-    '$name (TypeScript rules)',
-    ({ search = '', hash = '', storage = {}, expected }) => {
-      expect(
-        handoffDestination({ search, hash }, memoryStorage({ ...storage, ...LEGACY_CHOICE })),
-      ).toBe(expected);
+    '$name (inline script)',
+    ({ search = '', hash = '', storage = {}, target, marked }) => {
+      expect(runScriptFull({ search, hash }, memoryStorage(storage))).toEqual({ target, marked });
     },
   );
 
-  it.each(cases)('$name (inline script)', ({ search = '', hash = '', storage = {}, expected }) => {
-    expect(runScript({ search, hash }, memoryStorage({ ...storage, ...LEGACY_CHOICE }))).toBe(
-      expected,
-    );
+  it('the script never changes the stored data', () => {
+    const storage = memoryStorage({ ...SIGNED_IN, 'dm.arena': 'legacy' });
+    runScriptFull({ search: '?arena=legacy' }, storage);
+    expect(storage.data).toEqual({ ...SIGNED_IN, 'dm.arena': 'legacy' });
+  });
+
+  it('there is no classic arena to send anyone to', () => {
+    expect(SESSION_HANDOFF_SCRIPT).not.toContain('legacy-app');
+    expect(SESSION_HANDOFF_SCRIPT).not.toContain('dm.arena');
   });
 
   it('treats storage that cannot be read as signed out, but still follows auth params', () => {
-    expect(runScript({}, 'throws')).toBeNull();
-    // Without a readable choice the default (the new arena) finishes the sign-in on /.
+    expect(runScriptFull({}, 'throws')).toEqual({ target: null, marked: false });
     expect(runScriptFull({ search: '?code=1' }, 'throws')).toEqual({ target: null, marked: true });
     const throwing = {
       length: 1,
@@ -179,11 +203,20 @@ describe('signed-in hand-off (legacy arena kept)', () => {
     expect(handoffDestination({ search: '', hash: '' }, null)).toBeNull();
   });
 
+  it('decides the view', () => {
+    expect(landingView({ search: '', hash: '' }, memoryStorage(SIGNED_IN))).toEqual({
+      kind: 'arena',
+    });
+    expect(landingView({ search: '', hash: '' }, memoryStorage({}))).toEqual({ kind: 'landing' });
+    expect(landingView({ search: '?code=1', hash: '' }, memoryStorage({}))).toEqual({
+      kind: 'arena',
+    });
+  });
+
   it('exposes the rules on their own', () => {
     expect(hasStoredSession(memoryStorage({ [LEGACY_SESSION_KEY]: SESSION }))).toBe(true);
     expect(hasAuthParams('', '#refresh_token=x')).toBe(true);
     expect(hasAuthParams('?x=1', '')).toBe(false);
-    expect(handoffTarget('?a=1', '#b')).toBe('/legacy-app.html?a=1#b');
   });
 
   it('is a tiny, self-contained script that replaces the history entry', () => {
@@ -200,119 +233,18 @@ describe('signed-in hand-off (legacy arena kept)', () => {
   });
 });
 
-describe('the hand-off outside the landing page', () => {
+describe('the script outside the landing page', () => {
   // The SPA fallback page is rendered from the / route, so the script is in its HTML too.
   it.each(['/auth-callback.html', '/update-password.html', '/login/'])(
     'does nothing on %s, even with tokens and a session',
     pathname => {
       const hash = '#access_token=a&refresh_token=b&type=recovery';
       const storage = { 'dualmind.auth.supabase': '{"access_token":"x"}' };
-      expect(runScript({ pathname, hash }, memoryStorage(storage))).toBeNull();
+      expect(runScriptFull({ pathname, hash }, memoryStorage(storage))).toEqual({
+        target: null,
+        marked: false,
+      });
       expect(handoffDestination({ pathname, search: '', hash }, memoryStorage(storage))).toBeNull();
     },
   );
-});
-
-describe('the new arena switch (slices S8 and S9)', () => {
-  it('reads the choice from the URL first, then from storage', () => {
-    expect(arenaChoiceFromSearch('?arena=new')).toBe('new');
-    expect(arenaChoiceFromSearch('?x=1&arena=legacy')).toBe('legacy');
-    expect(arenaChoiceFromSearch('?arena=newer')).toBeNull();
-    expect(readArenaChoice('', memoryStorage({ [ARENA_CHOICE_KEY]: 'new' }))).toBe('new');
-    expect(readArenaChoice('?arena=legacy', memoryStorage({ [ARENA_CHOICE_KEY]: 'new' }))).toBe(
-      'legacy',
-    );
-    expect(readArenaChoice('', memoryStorage({ [ARENA_CHOICE_KEY]: 'maybe' }))).toBeNull();
-    const throwing = {
-      getItem: () => {
-        throw new Error('blocked');
-      },
-    };
-    expect(readArenaChoice('', throwing)).toBeNull();
-    expect(readArenaChoice('', null)).toBeNull();
-  });
-
-  it('is the default since the battle flow; legacy is the opt-out', () => {
-    expect(NEW_ARENA_BY_DEFAULT).toBe(true);
-    expect(usesNewArena(null)).toBe(true);
-    expect(usesNewArena('legacy')).toBe(false);
-    expect(usesNewArena('new')).toBe(true);
-  });
-
-  it('keeps every signed-in visitor on / by default', () => {
-    const storage = memoryStorage({ 'sb-abcdefghijkl-auth-token': SESSION });
-    expect(landingView({ search: '', hash: '' }, storage)).toEqual({ kind: 'arena' });
-    expect(runScriptFull({}, storage)).toEqual({ target: null, marked: true });
-    expect(runScriptFull({}, memoryStorage({ [LEGACY_SESSION_KEY]: SESSION }))).toEqual({
-      target: null,
-      marked: true,
-    });
-  });
-
-  it('sends recovery links on to the new password page, hash kept', () => {
-    const hash = '#access_token=a&refresh_token=b&type=recovery';
-    expect(runScriptFull({ hash }, memoryStorage({}))).toEqual({
-      target: `/update-password.html${hash}`,
-      marked: false,
-    });
-    expect(handoffDestination({ search: '', hash }, memoryStorage({}))).toBe(
-      `/update-password.html${hash}`,
-    );
-  });
-
-  const SIGNED_IN = { 'sb-abcdefghijkl-auth-token': SESSION };
-
-  it('keeps a signed-in visitor who opted in on / and marks <html>', () => {
-    const storage = memoryStorage({ ...SIGNED_IN, [ARENA_CHOICE_KEY]: 'new' });
-    expect(landingView({ search: '', hash: '' }, storage)).toEqual({ kind: 'arena' });
-    expect(runScriptFull({}, storage)).toEqual({ target: null, marked: true });
-  });
-
-  it('?arena=new opts in and stores the choice; ?arena=legacy opts out again', () => {
-    const storage = memoryStorage(SIGNED_IN);
-    expect(runScriptFull({ search: '?arena=new' }, storage)).toEqual({
-      target: null,
-      marked: true,
-    });
-    expect(storage.data[ARENA_CHOICE_KEY]).toBe('new');
-    expect(runScriptFull({}, storage)).toEqual({ target: null, marked: true });
-    expect(runScriptFull({ search: '?arena=legacy' }, storage)).toEqual({
-      target: `${LEGACY_APP_PATH}?arena=legacy`,
-      marked: false,
-    });
-    expect(storage.data[ARENA_CHOICE_KEY]).toBe('legacy');
-  });
-
-  it('a signed-out visitor who opted in sees the landing page, unmarked', () => {
-    const storage = memoryStorage({});
-    expect(runScriptFull({ search: '?arena=new' }, storage)).toEqual({
-      target: null,
-      marked: false,
-    });
-    expect(landingView({ search: '?arena=new', hash: '' }, storage)).toEqual({ kind: 'landing' });
-  });
-
-  it('auth returns stay on / for the new app, and go to the legacy arena for legacy visitors', () => {
-    const hash = '#access_token=a&refresh_token=b';
-    expect(runScriptFull({ hash }, memoryStorage({}))).toEqual({ target: null, marked: true });
-    expect(runScriptFull({ hash }, memoryStorage(LEGACY_CHOICE))).toEqual({
-      target: `${LEGACY_APP_PATH}${hash}`,
-      marked: false,
-    });
-  });
-
-  it('keeps ?thread= deep links for the new arena', () => {
-    const storage = memoryStorage({ ...SIGNED_IN, [ARENA_CHOICE_KEY]: 'new' });
-    expect(runScriptFull({ search: '?thread=abc' }, storage)).toEqual({
-      target: null,
-      marked: true,
-    });
-  });
-
-  it('blocked storage counts as signed out, even with ?arena=new', () => {
-    expect(runScriptFull({ search: '?arena=new' }, 'throws')).toEqual({
-      target: null,
-      marked: false,
-    });
-  });
 });

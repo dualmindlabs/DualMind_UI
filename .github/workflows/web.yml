@@ -171,13 +171,16 @@ jobs:
           ! grep -q 'forgot-password' dist/sitemap.xml
           grep -qF 'Two models. One prompt.' dist/design/index.html
           grep -q 'noindex' dist/design/index.html
-          # / is the prerendered landing page (slice S3), never the SPA fallback; the legacy arena
-          # lives on as dist/legacy-app.html for the signed-in hand-off.
+          # / is the prerendered landing page (slice S3), never the SPA fallback. The classic arena
+          # is gone (cutover, S13): no legacy-app.html, no hand-off to it.
           grep -q 'Two models. One prompt.' dist/index.html
-          grep -q 'legacy-app.html' dist/index.html
+          ! grep -q 'legacy-app' dist/index.html
+          if [ -e dist/legacy-app.html ]; then echo "::error::dist/legacy-app.html should be gone (cutover)"; exit 1; fi
+          for d in js css components; do
+            if [ -e "dist/$d" ]; then echo "::error::dist/$d/ should be gone (cutover)"; exit 1; fi
+          done
           ! grep -q 'data-spa-fallback' dist/index.html
           ! grep -q 'noindex' dist/index.html
-          grep -q '<title>DualMind - Battle Arena</title>' dist/legacy-app.html
           grep -q 'data-spa-fallback' dist/__spa-fallback.html
           test -f dist/og/landing.png
           test -f dist/og/leaderboard.png

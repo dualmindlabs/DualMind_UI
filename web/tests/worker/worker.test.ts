@@ -169,7 +169,7 @@ describe('web app pages', () => {
 
 describe('legacy pages and files', () => {
   it('legacy pages: 200, no-store, security headers', async () => {
-    for (const page of ['/legacy-app', '/leaderboard/', '/models/']) {
+    for (const page of ['/auth-verify', '/leaderboard/', '/models/']) {
       const response = await preview(page);
       expect(response.status, page).toBe(200);
       expect(response.headers.get('cache-control'), page).toBe(LEGACY_NO_STORE);
@@ -184,15 +184,15 @@ describe('legacy pages and files', () => {
     }
   });
 
-  it('serves the legacy arena at /legacy-app.html for the signed-in hand-off, query kept', async () => {
-    // Workers static assets serve /legacy-app.html at its clean URL; the browser keeps the hash.
-    const redirect = await preview('/legacy-app.html?code=abc');
+  it('serves a legacy page at its clean URL, query kept', async () => {
+    // Workers static assets serve /auth-verify.html at its clean URL; the browser keeps the hash.
+    const redirect = await preview('/auth-verify.html?code=abc');
     expect(redirect.status).toBe(307);
-    expect(redirect.headers.get('location')).toBe('/legacy-app?code=abc');
+    expect(redirect.headers.get('location')).toBe('/auth-verify?code=abc');
 
-    const response = await preview('/legacy-app?code=abc');
+    const response = await preview('/auth-verify?code=abc');
     expect(response.status).toBe(200);
-    expect(await response.text()).toContain('Legacy arena');
+    expect(await response.text()).toContain('Legacy auth check');
     expect(response.headers.get('cache-control')).toBe(LEGACY_NO_STORE);
     expect(response.headers.get('content-security-policy')).toBeNull();
     expect(response.headers.get('content-security-policy-report-only')).toContain(

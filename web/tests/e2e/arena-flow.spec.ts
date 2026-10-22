@@ -91,7 +91,7 @@ const LONG_B = [
   'Move to a shared cache only when several instances miss on the same keys.',
 ].join('\n\n');
 
-async function openArena(page: Page, path = '/?arena=new') {
+async function openArena(page: Page, path = '/') {
   await page.goto(path);
   await expect(page.getByTestId('arena')).toBeVisible();
 }

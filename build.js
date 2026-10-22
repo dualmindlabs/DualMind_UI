@@ -7,8 +7,8 @@
 //   2. Copy the legacy allowlist (the static Arena pages) into dist/.
 //   3. Overlay web/build/client: new pages at their own paths, hashed files into dist/assets/
 //      next to the legacy images, and React Router's SPA fallback as dist/__spa-fallback.html.
-//      Since slice S3 the landing page is prerendered at /, so the web app's index.html replaces
-//      the legacy one; the legacy arena keeps working as dist/legacy-app.html (see LEGACY_APP_FILE).
+//      The landing page is prerendered at / (the signed-in arena renders there too). The classic
+//      arena was removed at the cutover (S13); dist/legacy-app.html no longer exists.
 //   4. Write dist/__web-manifest.json for the Worker: the web app's pages, the sha256 hashes of
 //      their inline scripts (the enforced Content-Security-Policy allows exactly these) and extra
 //      connect-src origins (the Supabase project from VITE_SUPABASE_URL, once auth lands).
@@ -33,7 +33,6 @@ const webClientDir = path.join(webDir, 'build', 'client');
 // Slice S11 dropped the legacy share/ page: /share/<id> is the web app's client-only share page
 // (server/share.js), and nothing in dist/ may live under /share/.
 const filesToCopy = [
-    'index.html',
     'auth-verify.html',
     'config.js',
     'manifest.json',
@@ -42,17 +41,12 @@ const filesToCopy = [
 ];
 
 const foldersToCopy = [
-    'assets',
-    'components',
-    'css',
-    'js',
-    'leaderboard',
-    'models'
+    'assets'
 ];
 
 // Public pages that are still legacy files (no web page yet): they go into the sitemap next to
 // the web app's indexable pages. A slice that migrates one drops it from this list.
-const LEGACY_PUBLIC_PAGES = ['/'];
+const LEGACY_PUBLIC_PAGES = [];
 
 // The public origin, for sitemap.xml and robots.txt (the same variable the web app's canonical
 // URLs use, with the same default).
@@ -65,20 +59,9 @@ const NOT_FOUND_TARGET = '404.html';
 
 
 // Legacy files that a migrated route replaces: the web build's page is copied over the legacy
-// one. The legacy files stay in the repository until the cutover (S13).
-const replacedByWeb = new Set([
-    // Slice S3: the landing page is prerendered at /.
-    'index.html',
-    // Slice S7: the live leaderboard and the model directory.
-    'leaderboard/index.html',
-    'models/index.html',
-]);
-
-// While the arena is still the legacy app (until slice S8), its page lives on as a copy of the
-// legacy index.html at the ROOT of dist/, so its relative paths (./config.js, js/..., css/...)
-// still resolve. The landing page's inline hand-off script (web/src/lib/session/handoff.ts) sends
-// signed-in visitors and Supabase auth returns there, query string and hash included.
-const LEGACY_APP_FILE = 'legacy-app.html';
+// one. Empty since the cutover (the classic arena, the old landing page, leaderboard and models
+// files are deleted); a web file that collides with a legacy file still fails the build.
+const replacedByWeb = new Set([]);
 
 // React Router writes its SPA fallback as __spa-fallback.html when / is prerendered (it would be
 // index.html otherwise). It ends up here either way (served by server/routing.js).
@@ -191,10 +174,10 @@ for (const folder of foldersToCopy) {
     copyDir(path.join(srcDir, folder), path.join(distDir, folder));
 }
 
+// The classic arena is gone: nothing may serve it again (the signed-in arena is the web app's, at /).
 if (fs.existsSync(path.join(srcDir, LEGACY_APP_FILE))) {
-    fail(`${LEGACY_APP_FILE} is written by build.js from index.html; remove the file from the repository root.`);
+    fail(`${LEGACY_APP_FILE} is the removed classic arena; delete it from the repository root.`);
 }
-fs.copyFileSync(path.join(srcDir, 'index.html'), path.join(distDir, LEGACY_APP_FILE));
 
 const legacyFiles = listFiles(distDir);
 const legacySet = new Set(legacyFiles);
@@ -384,5 +367,5 @@ for (const urlPath of sitemapUrls) {
 }
 
 const webPages = webFiles.filter(file => file.endsWith('.html')).length;
-console.log(`\nFrontend built to /dist successfully: ${legacyFiles.length} legacy files, ${webFiles.length} web files (${webPages} HTML), SPA fallback from web/build/client/${spaFallbackSource} at dist/${SPA_FALLBACK_FILE}, legacy arena at dist/${LEGACY_APP_FILE}, replaced by the web app: ${[...replacedLegacyFiles].join(', ') || 'none'}.`);
+console.log(`\nFrontend built to /dist successfully: ${legacyFiles.length} legacy files, ${webFiles.length} web files (${webPages} HTML), SPA fallback from web/build/client/${spaFallbackSource} at dist/${SPA_FALLBACK_FILE}, replaced by the web app: ${[...replacedLegacyFiles].join(', ') || 'none'}.`);
 console.log(`Web manifest: ${webManifest.pages.join(', ')}; ${webManifest.scriptHashes.length} inline script hashes for the CSP; connect-src extras: ${webManifest.connectSrc.join(' ') || 'none'}.`);

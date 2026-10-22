@@ -209,7 +209,7 @@ const CASES: Case[] = [
   },
   {
     name: 'arena',
-    url: '/?arena=new&thread=t-recursion',
+    url: '/?thread=t-recursion',
     ready: page => expect(page.getByTestId('turn').first()).toBeVisible(),
     signedIn: true,
     minStops: 10,
