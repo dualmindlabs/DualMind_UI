@@ -220,7 +220,7 @@ export function PanePair({
     else if (dx > 0 && view === 'b') show('a', -1);
   };
 
-  const bothRead = told.current.a && told.current.b;
+  const bothRead = progress.a >= READ_AT && progress.b >= READ_AT;
   const slotList = [
     { id: 'a', node: a },
     { id: 'b', node: b },
