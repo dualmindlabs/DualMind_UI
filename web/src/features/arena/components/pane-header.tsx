@@ -69,7 +69,12 @@ function NamePlate({
         <motion.span
           initial={{ rotateX: -92, opacity: 0, y: 4 }}
           animate={{ rotateX: 0, opacity: 1, y: 0 }}
-          transition={{ type: 'spring', stiffness: 220, damping: 24, delay: side === 'b' ? 0.14 : 0 }}
+          transition={{
+            type: 'spring',
+            stiffness: 220,
+            damping: 24,
+            delay: side === 'b' ? 0.14 : 0,
+          }}
           className={cn(
             'block min-w-0 origin-bottom rounded-sm border px-2 py-0.5 [backface-visibility:hidden]',
             style.plate,
@@ -115,11 +120,7 @@ export function PaneHeader({
         {side === 'solo' ? null : <RoleBadge who={side} letterOnly />}
         <h3 id={headingId} className="flex min-w-0 flex-1 items-baseline gap-2 text-ui">
           <span
-            className={cn(
-              'shrink-0 font-semibold tracking-tight',
-              style.text,
-              named && 'sr-only',
-            )}
+            className={cn('shrink-0 font-semibold tracking-tight', style.text, named && 'sr-only')}
           >
             {style.title}
           </span>

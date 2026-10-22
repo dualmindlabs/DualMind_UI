@@ -65,12 +65,12 @@ export function RevealPanel({ turn }: { turn: LiveTurn }) {
       aria-labelledby={titleId}
       tabIndex={-1}
       data-testid="reveal-panel"
-      className="surface-float relative grid gap-5 overflow-hidden p-4 motion-safe:animate-fade-in sm:p-6"
+      className="relative grid gap-5 overflow-hidden surface-float p-4 motion-safe:animate-fade-in sm:p-6"
     >
       <div
         aria-hidden="true"
         className={cn(
-          'pointer-events-none absolute inset-x-0 top-0 h-40',
+          'pointer-events-none absolute inset-x-0 top-0 h-48 [mask-image:linear-gradient(to_bottom,#000,transparent)]',
           turn.vote === 'left' && 'mesh-a',
           turn.vote === 'right' && 'mesh-b',
         )}
@@ -117,7 +117,11 @@ export function RevealPanel({ turn }: { turn: LiveTurn }) {
             className={cn(
               'flex min-w-0 items-start gap-3 rounded-xl border p-3.5 sm:p-4',
               side === 'a' ? 'bg-mind-a-wash' : 'bg-mind-b-wash',
-              picked ? (side === 'a' ? 'glow-a border-mind-a' : 'glow-b border-mind-b') : 'border-line',
+              picked
+                ? side === 'a'
+                  ? 'border-mind-a glow-a'
+                  : 'border-mind-b glow-b'
+                : 'border-line',
               !picked && turn.vote !== 'tie' && 'opacity-85',
             )}
           >

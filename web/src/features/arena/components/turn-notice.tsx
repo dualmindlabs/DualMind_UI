@@ -8,8 +8,14 @@ import { cn } from '@/lib/utils/cn';
 type Tone = 'warn' | 'bad' | 'info';
 
 const TONES: Record<Tone, { box: string; icon: string }> = {
-  warn: { box: 'border-warn/45 bg-[color-mix(in_oklab,var(--warn)_7%,var(--surface))]', icon: 'text-warn' },
-  bad: { box: 'border-bad/45 bg-[color-mix(in_oklab,var(--bad)_7%,var(--surface))]', icon: 'text-bad' },
+  warn: {
+    box: 'border-warn/45 bg-[color-mix(in_oklab,var(--warn)_7%,var(--surface))]',
+    icon: 'text-warn',
+  },
+  bad: {
+    box: 'border-bad/45 bg-[color-mix(in_oklab,var(--bad)_7%,var(--surface))]',
+    icon: 'text-bad',
+  },
   info: { box: 'border-line bg-surface-2', icon: 'text-fg-soft' },
 };
 

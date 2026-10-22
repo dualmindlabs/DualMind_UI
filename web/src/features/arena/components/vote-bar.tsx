@@ -87,7 +87,7 @@ export function VoteBar({ onVote, chosen, optional = false, error, className }: 
 
   return (
     <div
-      className={cn('surface-float grid gap-2 p-2.5 motion-safe:animate-rise sm:p-3', className)}
+      className={cn('grid gap-2 surface-float p-2.5 motion-safe:animate-rise sm:p-3', className)}
       data-testid="vote-bar"
     >
       <p className="flex items-center gap-2 px-1 text-ui-sm text-fg-soft">
@@ -160,7 +160,7 @@ export function VoteBar({ onVote, chosen, optional = false, error, className }: 
 export function VoteBarLocked({ className }: { className?: string }) {
   return (
     <div
-      className={cn('surface-float grid gap-2 p-2.5 opacity-90 sm:p-3', className)}
+      className={cn('grid gap-2 surface-float p-2.5 opacity-90 sm:p-3', className)}
       data-testid="vote-bar-locked"
     >
       <p className="flex items-center gap-2 px-1 text-ui-sm text-fg-soft">
@@ -173,11 +173,7 @@ export function VoteBarLocked({ className }: { className?: string }) {
         {VOTE_OPTIONS.map(option => (
           <div
             key={option.choice}
-            className={cn(
-              BUTTON,
-              'border-line bg-surface/60 text-muted',
-              option.phoneOrder,
-            )}
+            className={cn(BUTTON, 'border-line bg-surface/60 text-muted', option.phoneOrder)}
           >
             <span className="flex min-w-0 items-center gap-2">
               {option.choice === 'left' ? <RoleBadge who="a" letterOnly size="sm" /> : null}

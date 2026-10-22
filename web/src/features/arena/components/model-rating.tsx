@@ -19,9 +19,9 @@ function LiveRating({ answer }: { answer: LiveAnswer }) {
   return (
     <p
       data-testid="model-rating"
-      className="flex items-baseline gap-2 font-mono text-caption text-fg-soft"
+      className="flex flex-wrap items-baseline gap-x-2 font-mono text-caption whitespace-nowrap text-fg-soft"
     >
-      <span>Arena rating</span>
+      <span>Rating</span>
       <span className="text-ui font-semibold text-fg">
         <NumberTicker
           value={entry.elo}
