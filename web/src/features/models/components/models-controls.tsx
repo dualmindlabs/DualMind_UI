@@ -25,8 +25,7 @@ export interface ModelsControlsProps {
 }
 
 /**
- * Search, the maker chips (a mark and a count each; a scrolling row on phones, wrapping on wide
- * screens) and the cards / list switch. Names stay what they were: a "Search models" field and one
+ * Search, the maker chips (a mark and a count each, wrapping at every width) and the cards / list switch. Names stay what they were: a "Search models" field and one
  * single-choice button per maker.
  */
 export function ModelsControls({
@@ -123,14 +122,14 @@ export function ModelsControls({
           onValueChange={value => {
             onFiltersChange({ ...filters, provider: value[0] ?? ALL_PROVIDERS });
           }}
-          className="-mx-4 w-auto [scrollbar-width:none] flex-nowrap gap-2 overflow-x-auto rounded-none border-0 bg-transparent p-0 px-4 pb-1 sm:mx-0 sm:w-fit sm:max-w-full sm:flex-wrap sm:overflow-visible sm:px-0 [&::-webkit-scrollbar]:hidden"
+          className="w-auto max-w-full flex-wrap gap-2 rounded-none border-0 bg-transparent p-0"
         >
           {options.map(option => (
             <ToggleGroupItem
               key={option.value}
               value={option.value}
               className={cn(
-                'h-9 gap-2 rounded-full border-line pr-3 pl-1.5',
+                'h-8 gap-2 rounded-full border-line pr-3 pl-1 sm:h-9 sm:pl-1.5',
                 option.value === ALL_PROVIDERS && 'pl-3',
                 'data-pressed:border-mind-a/55 data-pressed:bg-mind-a-tint data-pressed:text-fg',
               )}
