@@ -1,20 +1,17 @@
-import { ArrowRight, Swords } from 'lucide-react';
+import { SearchX } from 'lucide-react';
+import { useMemo, useState } from 'react';
 
 import { PageContainer } from '@/components/layout/page-container';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteHeader } from '@/components/layout/site-header';
 import { SkipLink } from '@/components/layout/skip-link';
-import { buttonVariants } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  ARENA_HREF,
-  BoardControls,
   BoardEmpty,
   BoardError,
-  BoardNoMatch,
   BoardStatus,
   ModelDetails,
-  PROVISIONAL_BATTLES,
   SortToggle,
   useBoardView,
   useLeaderboard,
@@ -24,37 +21,78 @@ import {
 import { useApiClient } from '@/hooks/use-api-client';
 import { cn } from '@/lib/utils/cn';
 
-import { ModelCard } from './model-card';
+import { togglePinned } from '../lib/compare';
+import { CompareDock } from './compare-dock';
+import { ModelCard, type ModelLayout } from './model-card';
+import { ModelsControls } from './models-controls';
+import { ModelsHero } from './models-hero';
 
-const GRID = 'grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
+const GRID = 'grid gap-4 sm:grid-cols-2 lg:grid-cols-3';
+const LIST = 'grid gap-2';
 
-function GridSkeleton() {
+function ListSkeleton({ layout }: { layout: ModelLayout }) {
   return (
-    <ul aria-hidden="true" className={GRID}>
-      {Array.from({ length: 8 }, (_, index) => (
+    <ul aria-hidden="true" className={layout === 'cards' ? GRID : LIST}>
+      {Array.from({ length: layout === 'cards' ? 6 : 8 }, (_, index) => (
         <li
           key={index}
-          className="grid h-56 content-between rounded-lg border border-line bg-surface p-5 shadow-raise"
+          className={cn(
+            'surface-duel',
+            layout === 'cards' ? 'grid h-72 content-between p-5' : 'flex items-center gap-4 p-4',
+          )}
         >
-          <div className="flex justify-between">
-            <Skeleton className="h-6 w-24" />
-            <Skeleton className="h-5 w-8" />
+          <div className="flex items-center gap-3">
+            <Skeleton className="size-9 rounded-md" />
+            <Skeleton className="h-4 w-24" />
           </div>
-          <div className="grid gap-2">
-            <Skeleton className="h-6 w-4/5" />
-            <Skeleton className="h-4 w-3/5" />
-          </div>
-          <Skeleton className="h-10 w-full" />
+          {layout === 'cards' ? (
+            <>
+              <div className="grid gap-2">
+                <Skeleton className="h-6 w-4/5" />
+                <Skeleton className="h-4 w-3/5" />
+              </div>
+              <Skeleton className="h-16 w-full" />
+            </>
+          ) : (
+            <Skeleton className="ml-auto h-4 w-1/3" />
+          )}
         </li>
       ))}
     </ul>
   );
 }
 
+/** Filters that match nothing: what was searched for, a way back, and what usually works. */
+function NoMatch({ query, onClear }: { query: string; onClear: () => void }) {
+  const trimmed = query.trim();
+  return (
+    <div className="surface-duel mesh-duel grid justify-items-center gap-5 px-6 py-14 text-center">
+      <span
+        aria-hidden="true"
+        className="grid size-14 place-items-center rounded-lg border border-line-strong bg-surface-2 text-fg-soft shadow-raise"
+      >
+        <SearchX strokeWidth={1.5} className="size-6" />
+      </span>
+      <div className="grid max-w-reading gap-2">
+        <h3 className="text-h3 font-semibold text-fg">
+          {trimmed ? `No model matches “${trimmed}”.` : 'No model matches these filters.'}
+        </h3>
+        <p className="text-ui text-fg-soft">
+          Try part of a name, such as “llama” or “gemma”, or another maker.
+        </p>
+      </div>
+      <Button variant="secondary" size="sm" onClick={onClear}>
+        Clear the filters
+      </Button>
+    </div>
+  );
+}
+
 /**
- * /models/: every model in the Arena as a card grid, from the same live model-stats data as the
- * leaderboard (it replaces a static article about older model generations). Search, provider
- * filter, three orders, and the shared details sheet.
+ * /models/: every model in the Arena, from the same live model-stats data as the leaderboard (it
+ * replaces a static article about older model generations). A masthead with live numbers, search,
+ * maker chips, a cards or list view, three orders, a head-to-head comparison of any two pinned
+ * models, and the shared details sheet.
  */
 export function ModelsPage() {
   const query = useLeaderboard();
@@ -63,10 +101,21 @@ export function ModelsPage() {
   const view = useBoardView(board?.entries);
   const details = useModelDetails();
   useModelCommands(board?.entries, details.openModel);
+  const [layout, setLayout] = useState<ModelLayout>('cards');
+  const [pinned, setPinned] = useState<string[]>([]);
 
   const failed = board === undefined && query.isError;
+  const leaderElo = board?.rated[0]?.elo ?? board?.summary.topElo ?? 0;
+  const pinnedModels = useMemo(
+    () =>
+      pinned.flatMap(id => {
+        const entry = board?.entries.find(item => item.id === id);
+        return entry ? [entry] : [];
+      }),
+    [pinned, board],
+  );
 
-  function grid() {
+  function list() {
     if (failed) {
       return (
         <BoardError
@@ -88,19 +137,30 @@ export function ModelsPage() {
               see it.
             </p>
           </noscript>
-          <GridSkeleton />
+          <ListSkeleton layout={layout} />
         </div>
       );
     }
     if (board.entries.length === 0) return <BoardEmpty />;
     if (view.visible.length === 0) {
-      return <BoardNoMatch query={view.filters.query} onClear={view.clearFilters} />;
+      return <NoMatch query={view.filters.query} onClear={view.clearFilters} />;
     }
     return (
-      <ul aria-label="Models" className={GRID}>
-        {view.visible.map(entry => (
-          <ModelCard key={entry.id} entry={entry} onOpen={details.openModel} />
-        ))}
+      <ul aria-label="Models" className={layout === 'cards' ? GRID : LIST}>
+        {view.visible.map(entry => {
+          const slot = pinned.indexOf(entry.id);
+          return (
+            <ModelCard
+              key={entry.id}
+              entry={entry}
+              leaderElo={leaderElo}
+              layout={layout}
+              pinSlot={slot === 0 ? 0 : slot === 1 ? 1 : null}
+              onOpen={details.openModel}
+              onTogglePin={id => setPinned(current => togglePinned(current, id))}
+            />
+          );
+        })}
       </ul>
     );
   }
@@ -110,49 +170,23 @@ export function ModelsPage() {
       <SkipLink />
       <SiteHeader />
       <main id="main" tabIndex={-1} className="outline-none">
-        <header className="relative isolate overflow-hidden border-b border-line bg-bg-deep">
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 -z-10 dot-grid [mask-image:radial-gradient(ellipse_70%_80%_at_70%_0%,black,transparent)] opacity-60"
-          />
-          <PageContainer className="grid max-w-page gap-6 pt-14 pb-12 md:pt-20 md:pb-16">
-            <p className="flex items-center gap-3">
-              <span className="eyebrow text-muted">Models</span>
-              <span aria-hidden="true" className="h-px w-8 bg-line-strong" />
-              <span className="eyebrow text-muted">Live from the Arena</span>
-            </p>
-            <h1 className="max-w-3xl text-h1 font-medium text-fg">
-              Every model in <span className="human-voice text-human">the Arena.</span>
-            </h1>
-            <p className="max-w-reading text-body text-fg-soft">
-              The models that answer blind battles, with their current Elo rating, win rate and
-              number of battles. Models with fewer than {PROVISIONAL_BATTLES} battles have no rank
-              yet and are marked as not yet rated. Select one to see its record against the rest of
-              the board.
-            </p>
-            <div className="flex flex-wrap items-center gap-3">
-              <a href={ARENA_HREF} className={cn(buttonVariants({ variant: 'primary' }))}>
-                <Swords aria-hidden="true" strokeWidth={1.75} />
-                Start a battle
-              </a>
-              <a href="/leaderboard/" className={cn(buttonVariants({ variant: 'link' }))}>
-                See the leaderboard
-                <ArrowRight aria-hidden="true" strokeWidth={1.75} />
-              </a>
-            </div>
-          </PageContainer>
-        </header>
+        <ModelsHero summary={board?.summary} />
 
-        <section aria-labelledby="directory-title" className="py-12 md:py-16">
+        <section
+          aria-labelledby="directory-title"
+          className={cn('py-10 md:py-14', pinned.length > 0 && 'pb-52 sm:pb-44')}
+        >
           <PageContainer className="grid gap-6">
             <h2 id="directory-title" className="sr-only">
               Model directory
             </h2>
-            <BoardControls
+            <ModelsControls
               filters={view.filters}
               onFiltersChange={view.setFilters}
               providers={board?.providers ?? []}
               total={board?.summary.models ?? 0}
+              layout={layout}
+              onLayoutChange={setLayout}
               disabled={board === undefined}
             />
             {board !== undefined && view.visible !== undefined && board.entries.length > 0 ? (
@@ -170,16 +204,21 @@ export function ModelsPage() {
                 <SortToggle
                   sort={view.sort}
                   onSortChange={view.setSort}
-                  options={['rank', 'name', 'battles']}
+                  options={['rank', 'name', 'winRate', 'battles']}
                   labels={{ name: 'A to Z' }}
                 />
               </div>
             ) : null}
-            {grid()}
+            {list()}
           </PageContainer>
         </section>
       </main>
       <SiteFooter />
+      <CompareDock
+        models={pinnedModels}
+        onClear={() => setPinned([])}
+        onUnpin={id => setPinned(current => current.filter(item => item !== id))}
+      />
       <ModelDetails
         board={board}
         selectedId={details.selectedId}
