@@ -8,7 +8,7 @@ import { THEME_STORAGE_KEY } from '@/lib/theme/theme';
 describe('ThemeToggle', () => {
   it('offers system, dark and light as one radio group, system by default', () => {
     render(<ThemeToggle />);
-    expect(screen.getByRole('group', { name: 'Colour theme' })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'Color theme' })).toBeInTheDocument();
     const radios = screen.getAllByRole('radio');
     expect(radios.map(radio => radio.getAttribute('value'))).toEqual(['system', 'dark', 'light']);
     expect(screen.getByRole('radio', { name: 'System' })).toBeChecked();
@@ -42,7 +42,7 @@ describe('ThemeToggle', () => {
         <ThemeToggle />
       </>,
     );
-    const [first, second] = screen.getAllByRole('group', { name: 'Colour theme' });
+    const [first, second] = screen.getAllByRole('group', { name: 'Color theme' });
     if (!first || !second) throw new Error('expected two toggles');
 
     await user.click(first.querySelector('input[value="dark"]') as HTMLInputElement);

@@ -430,7 +430,7 @@ test.describe('/models/', () => {
     await card.click();
     const sheet = page.getByRole('dialog');
     await expect(sheet.getByRole('heading', { level: 2 })).toHaveText('GPT OSS 120B');
-    await expect(sheet.getByRole('link', { name: 'Open the leaderboard' })).toBeVisible();
+    await expect(sheet.getByRole('link', { name: 'See the leaderboard' })).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(card).toBeFocused();
     expect(errors).toEqual([]);

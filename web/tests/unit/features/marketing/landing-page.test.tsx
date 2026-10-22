@@ -91,7 +91,7 @@ describe('LandingPage', () => {
     // The query retries a network error twice, with backoff, before it gives up.
     await waitFor(() => expect(strip).toHaveAttribute('data-state', 'error'), { timeout: 4500 });
     expect(within(strip).getByText('Live numbers are unavailable right now.')).toBeInTheDocument();
-    expect(within(strip).getByRole('link', { name: 'Open the leaderboard' })).toHaveAttribute(
+    expect(within(strip).getByRole('link', { name: 'See the leaderboard' })).toHaveAttribute(
       'href',
       '/leaderboard/',
     );

@@ -135,7 +135,7 @@ for (const failure of ['server error', 'network error'] as const) {
     const strip = page.getByTestId('live-strip');
     await expect(strip).toHaveAttribute('data-state', 'error', { timeout: 15_000 });
     await expect(strip).toContainText('Live numbers are unavailable right now.');
-    await expect(strip.getByRole('link', { name: 'Open the leaderboard' })).toHaveAttribute(
+    await expect(strip.getByRole('link', { name: 'See the leaderboard' })).toHaveAttribute(
       'href',
       '/leaderboard/',
     );

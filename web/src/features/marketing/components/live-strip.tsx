@@ -104,7 +104,7 @@ export function LiveStrip({ stats }: { stats: LiveStatsState }) {
               href={LEADERBOARD_HREF}
               className="inline-flex items-center gap-1 text-mind-a underline decoration-mind-a/40 underline-offset-4 hover:decoration-current"
             >
-              Open the leaderboard
+              See the leaderboard
               <ArrowRight aria-hidden="true" className="size-3.5" strokeWidth={2} />
             </a>
           ) : null}

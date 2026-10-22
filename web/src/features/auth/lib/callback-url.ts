@@ -71,7 +71,7 @@ export function callbackErrorMessage(error: CallbackUrl['error']): string {
     return 'This link has expired or was already used. Links work once and for a limited time.';
   }
   if (error.code === 'access_denied') {
-    return 'Sign-in was cancelled or not allowed. You can try again.';
+    return 'Sign-in was canceled or not allowed. You can try again.';
   }
   return 'This link did not work. Ask for a new one and try again.';
 }

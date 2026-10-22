@@ -47,6 +47,7 @@ export interface WordmarkProps {
 export function Wordmark({ className, title = 'DualMind Arena' }: WordmarkProps) {
   return (
     <svg
+      data-slot="wordmark"
       viewBox="66 0 10400 674"
       className={cn('block h-3.5 w-auto shrink-0 overflow-visible', className)}
       {...(title ? { role: 'img', 'aria-label': title } : { 'aria-hidden': true })}

@@ -10,8 +10,8 @@ import { PageShell } from './page-shell';
 
 /**
  * The 404 page: a fuzzy "404" (plain under reduced motion), one line in the human voice, the
- * two places to go and the command palette hint. Prerendered as dist/404.html; the Worker
- * serves it with status 404 for every unknown address.
+ * two places to go and the command palette (its shortcut only where there is a keyboard).
+ * Prerendered as dist/404.html; the Worker serves it with status 404 for every unknown address.
  */
 export function NotFoundPage() {
   const { setOpen } = useCommandPalette();
@@ -46,10 +46,17 @@ export function NotFoundPage() {
               See the leaderboard
             </a>
           </div>
-          <Button variant="ghost" size="sm" onClick={() => setOpen(true)} aria-haspopup="dialog">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setOpen(true)}
+            aria-haspopup="dialog"
+            aria-keyshortcuts="Control+K Meta+K"
+          >
             <Search aria-hidden="true" strokeWidth={1.75} />
             Or search the site
-            <KbdGroup>
+            {/* A keyboard hint means nothing on a touch screen. */}
+            <KbdGroup className="pointer-coarse:hidden" data-testid="not-found-shortcut">
               <Kbd>{modifier === 'Cmd' ? '⌘' : 'Ctrl'}</Kbd>
               <Kbd>K</Kbd>
             </KbdGroup>

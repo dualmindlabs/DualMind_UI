@@ -41,7 +41,7 @@ function ThemeCard() {
   return (
     <SettingsCard
       title="Theme"
-      description="The colours of every page. The header’s theme switch changes the same setting."
+      description="The colors of every page. The header’s theme switch changes the same setting."
       footer={
         <>
           <span>Applied before the page paints, so it never flashes the other theme.</span>

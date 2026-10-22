@@ -35,7 +35,7 @@ export interface StreamExportOptions {
 }
 
 function abortReason(signal: AbortSignal): unknown {
-  return signal.reason ?? new DOMException('The export was cancelled.', 'AbortError');
+  return signal.reason ?? new DOMException('The export was canceled.', 'AbortError');
 }
 
 /** Reads the threads and their messages; resolves with the listing once every thread is out. */

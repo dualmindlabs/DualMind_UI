@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 import { expect, type Locator, type Page, type Route, test } from '@playwright/test';
 
+import { mockArena } from './arena-mocks';
 import { passGate, settle, shotPath, storeTheme } from './helpers';
 
 // Touch targets (44 by 44 CSS px on a coarse pointer) for the shell, landing, leaderboard and
@@ -14,11 +15,31 @@ const BOARD = readFileSync(
   path.join(here, '..', 'fixtures', 'api', 'leaderboard-v2.board.json'),
   'utf8',
 );
+const SHARED = JSON.parse(
+  readFileSync(path.join(here, '..', 'fixtures', 'api', 'share-threads.json'), 'utf8'),
+) as {
+  ids: { public: string };
+  threads: Record<string, { thread: unknown; messages: unknown[] } | undefined>;
+};
 
 async function mockStats(page: Page) {
   await page.route('**/api/v2/leaderboard', (route: Route) =>
     route.fulfill({ status: 200, contentType: 'application/json', body: BOARD }),
   );
+}
+
+/** The public thread API for a signed-out visitor (tests/fixtures/api/share-threads.json). */
+async function mockSharedApi(page: Page) {
+  await page.route('**/api/threads/**', (route: Route) => {
+    const pathname = new URL(route.request().url()).pathname;
+    const match = /\/api\/threads\/([^/]+)(\/messages)?$/.exec(pathname);
+    const entry = SHARED.threads[decodeURIComponent(match?.[1] ?? '')];
+    return route.fulfill({
+      status: entry ? 200 : 404,
+      contentType: 'application/json',
+      body: JSON.stringify(entry ? (match?.[2] ? { items: entry.messages } : entry.thread) : {}),
+    });
+  });
 }
 
 test.beforeEach(async ({ context, baseURL }) => {
@@ -125,42 +146,154 @@ test.describe('touch targets (phone, coarse pointer)', () => {
       'legal links',
     );
   });
+
+  for (const theme of ['dark', 'light'] as const) {
+    test(`404: search without a keyboard hint on a touch screen (${theme})`, async ({ page }) => {
+      await storeTheme(page, theme);
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await page.goto('/no-such-page/');
+      const search = page.getByRole('button', { name: /Or search the site/ });
+      await expect(search).toBeVisible();
+      await expect(page.getByTestId('not-found-shortcut')).toBeHidden();
+      await expectTouchSized(search, '404 search button');
+      await search.click();
+      await expect(page.getByRole('dialog')).toBeVisible();
+      await page.keyboard.press('Escape');
+      await settle(page, 300);
+      await page.screenshot({ path: shotPath(`touch-404-mobile-${theme}`) });
+    });
+  }
 });
+
+test('404: the shortcut hint shows where there is a keyboard', async ({ page }) => {
+  await page.goto('/no-such-page/');
+  const search = page.getByRole('button', { name: /Or search the site/ });
+  await expect(search).toHaveAttribute('aria-keyshortcuts', 'Control+K Meta+K');
+  await expect(page.getByTestId('not-found-shortcut')).toBeVisible();
+});
+
+/** The colour CanvasText resolves to, and the fill of every wordmark path on the page. */
+async function wordmarkFills(page: Page) {
+  return page.evaluate(() => {
+    const probe = document.createElement('span');
+    probe.style.color = 'CanvasText';
+    document.body.append(probe);
+    const canvasText = getComputedStyle(probe).color;
+    probe.remove();
+    const fills = [...document.querySelectorAll('[data-slot="wordmark"] path')]
+      .filter(path => path.getBoundingClientRect().width > 0)
+      .map(path => getComputedStyle(path).fill);
+    return { canvasText, fills };
+  });
+}
+
+/**
+ * The shared forced-colors checks: the mode is on, the focused control has a solid outline of
+ * at least 2px, buttons keep an edge, and the wordmark is drawn in the system text colour (its
+ * SVG fills come from theme tokens, which forced colours leave alone).
+ */
+async function expectForcedColorsBasics(page: Page) {
+  expect(await page.evaluate(() => matchMedia('(forced-colors: active)').matches)).toBe(true);
+
+  const ring = await page.evaluate(() => {
+    const style = getComputedStyle(document.activeElement ?? document.body);
+    return { style: style.outlineStyle, width: parseFloat(style.outlineWidth) };
+  });
+  expect(ring.style).toBe('solid');
+  expect(ring.width).toBeGreaterThanOrEqual(2);
+
+  // Buttons keep an edge when their fill is replaced by system colours.
+  const edge = await page.evaluate(() => {
+    const button = document.querySelector('[data-slot="button"]');
+    return button ? getComputedStyle(button).borderTopWidth : '1px';
+  });
+  expect(parseFloat(edge)).toBeGreaterThanOrEqual(1);
+
+  const { canvasText, fills } = await wordmarkFills(page);
+  expect(fills.length).toBeGreaterThan(0);
+  expect(new Set(fills)).toEqual(new Set([canvasText]));
+}
+
+const shotSuffix = (theme: 'dark' | 'light') => (theme === 'dark' ? '' : '-light');
 
 test.describe('forced colors', () => {
   test.use({ viewport: { width: 1280, height: 800 } });
 
-  for (const [name, url] of [
-    ['landing', '/'],
-    ['login', '/login/'],
-    ['leaderboard', '/leaderboard/'],
-  ] as const) {
-    test(`${name} keeps a visible focus ring and borders`, async ({ page }) => {
-      await storeTheme(page, 'dark');
+  for (const theme of ['dark', 'light'] as const) {
+    for (const [name, url] of [
+      ['landing', '/'],
+      ['login', '/login/'],
+      ['leaderboard', '/leaderboard/'],
+      ['404', '/no-such-page/'],
+    ] as const) {
+      test(`${name} keeps a visible focus ring, borders and the wordmark (${theme})`, async ({
+        page,
+      }) => {
+        await storeTheme(page, theme);
+        await page.emulateMedia({ forcedColors: 'active', reducedMotion: 'reduce' });
+        await mockStats(page);
+        await page.goto(url);
+        await settle(page, 600);
+
+        // Tab to the first control after the skip link: its outline is a real, wide line.
+        await page.keyboard.press('Tab');
+        await page.keyboard.press('Tab');
+        await expectForcedColorsBasics(page);
+        const shot = `forced-colors-${name}-desktop${shotSuffix(theme)}`;
+        await page.screenshot({ path: shotPath(shot) });
+      });
+    }
+
+    test(`a shared battle keeps its panes, badges and focus ring (${theme})`, async ({ page }) => {
+      await storeTheme(page, theme);
       await page.emulateMedia({ forcedColors: 'active', reducedMotion: 'reduce' });
       await mockStats(page);
-      await page.goto(url);
+      await mockSharedApi(page);
+      await page.goto(`/share/${SHARED.ids.public}`);
+      await expect(page.getByTestId('turn')).toHaveCount(2);
       await settle(page, 600);
-      expect(await page.evaluate(() => matchMedia('(forced-colors: active)').matches)).toBe(true);
-
-      // Tab to the first control after the skip link: its outline is a real, wide line.
       await page.keyboard.press('Tab');
       await page.keyboard.press('Tab');
-      const ring = await page.evaluate(() => {
-        const style = getComputedStyle(document.activeElement ?? document.body);
-        return { style: style.outlineStyle, width: parseFloat(style.outlineWidth) };
-      });
-      expect(ring.style).toBe('solid');
-      expect(ring.width).toBeGreaterThanOrEqual(2);
+      await expectForcedColorsBasics(page);
+      // The A and B badges carry identity by colour on screen; here they keep an edge.
+      const badge = page.locator('[data-slot="role-badge"]').first();
+      await expect(badge).toBeVisible();
+      expect(
+        parseFloat(await badge.evaluate(element => getComputedStyle(element).borderTopWidth)),
+      ).toBeGreaterThanOrEqual(1);
+      await page.screenshot({ path: shotPath(`forced-colors-share-desktop${shotSuffix(theme)}`) });
+    });
 
-      // Buttons keep an edge when their fill is replaced by system colours.
-      const edge = await page.evaluate(() => {
-        const button = document.querySelector('[data-slot="button"]');
-        return button ? getComputedStyle(button).borderTopWidth : '1px';
-      });
-      expect(parseFloat(edge)).toBeGreaterThanOrEqual(1);
+    test(`the arena vote keeps visible choices and focus (${theme})`, async ({ page }) => {
+      await storeTheme(page, theme);
+      await page.emulateMedia({ forcedColors: 'active', reducedMotion: 'reduce' });
+      await mockArena(page);
+      await page.goto('/?arena=new');
+      await expect(page.getByTestId('arena')).toBeVisible();
+      await page.getByRole('textbox', { name: 'Your prompt' }).fill('Explain recursion');
+      await page.keyboard.press('Enter');
+      const turn = page.getByTestId('live-turn').first();
+      await expect(turn).toHaveAttribute('data-phase', 'awaiting_vote', { timeout: 15_000 });
+      await settle(page, 400);
+      await turn.getByRole('button', { name: /A is better/ }).focus();
+      await expectForcedColorsBasics(page);
+      const shot = `forced-colors-arena-vote-desktop${shotSuffix(theme)}`;
+      await page.screenshot({ path: shotPath(shot) });
+    });
 
-      await page.screenshot({ path: shotPath(`forced-colors-${name}-desktop`) });
+    test(`settings keeps its choices and switches visible (${theme})`, async ({ page }) => {
+      await storeTheme(page, theme);
+      await page.emulateMedia({ forcedColors: 'active', reducedMotion: 'reduce' });
+      await mockArena(page);
+      await page.goto('/settings/#appearance');
+      await expect(page.getByRole('heading', { level: 1, name: 'Settings' })).toBeVisible();
+      await settle(page, 600);
+      await page.getByRole('heading', { level: 2, name: 'Appearance' }).scrollIntoViewIfNeeded();
+      await page.keyboard.press('Tab');
+      await page.keyboard.press('Tab');
+      await expectForcedColorsBasics(page);
+      const shot = `forced-colors-settings-desktop${shotSuffix(theme)}`;
+      await page.screenshot({ path: shotPath(shot) });
     });
   }
 });
