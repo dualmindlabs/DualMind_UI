@@ -62,8 +62,10 @@ for (const vp of VIEWPORTS) {
         await page.screenshot({ path: file('3-list') });
         await page.getByRole('button', { name: 'Cards' }).click();
 
-        await items.nth(0).getByRole('checkbox').check({ force: true });
-        await items.nth(2).getByRole('checkbox').check({ force: true });
+        await items.nth(0).locator('label').click();
+        await expect(items.nth(0).getByRole('checkbox')).toBeChecked();
+        await items.nth(2).locator('label').click();
+        await expect(items.nth(2).getByRole('checkbox')).toBeChecked();
         await expect(page.getByRole('region', { name: 'Model comparison' })).toBeVisible();
         await items.nth(0).scrollIntoViewIfNeeded();
         await settle(page);
