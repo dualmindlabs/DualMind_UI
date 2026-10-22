@@ -1,3 +1,4 @@
+import { BRAND_PRIMARY_LEAD, BRAND_PRIMARY_VOICE } from '@/content/brand';
 import type { ThreadMode } from '@/lib/api';
 
 /**
@@ -28,7 +29,7 @@ export const MODE_DETAILS: Record<ArenaMode, ModeDetails> = {
     description: 'Two anonymous models answer; names appear after your vote',
     threadMode: 'battle',
     eyebrow: 'Blind battle',
-    heading: { plain: 'Two minds.', human: 'Your verdict.' },
+    heading: { plain: BRAND_PRIMARY_LEAD, human: BRAND_PRIMARY_VOICE },
     lead: 'Ask anything. Two anonymous models answer side by side, and their names stay hidden until you vote.',
     placeholder: 'Ask both models anything',
   },

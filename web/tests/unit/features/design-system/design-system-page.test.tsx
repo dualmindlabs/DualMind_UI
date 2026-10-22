@@ -19,7 +19,7 @@ describe('DesignSystemPage', () => {
     expect(screen.getByRole('contentinfo')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Skip to content' })).toHaveAttribute('href', '#main');
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Two minds, one verdict.');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Two models. One prompt. You decide.');
   });
 
   it('never skips a heading level', () => {

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { getUserMessage } from '@/lib/api';
 import { cn } from '@/lib/utils/cn';
 
-import { formatClock, formatCount } from '../lib/format';
+import { formatClockWithZone, formatCount } from '../lib/format';
 
 export interface BoardStatusProps {
   shown: number;
@@ -84,7 +84,7 @@ export function BoardStatus({
           <p className="min-w-0 flex-1">
             <span className="font-medium text-fg">These numbers may be out of date.</span> The last
             refresh failed ({getUserMessage(refreshError)}), so this is still the board from{' '}
-            <time dateTime={new Date(updatedAt).toISOString()}>{formatClock(updatedAt)}</time>.
+            <time dateTime={new Date(updatedAt).toISOString()}>{formatClockWithZone(updatedAt)}</time>.
           </p>
           <Button variant="secondary" size="xs" onClick={onRefresh} loading={refreshing}>
             Try again

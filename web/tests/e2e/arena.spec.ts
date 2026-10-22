@@ -76,7 +76,7 @@ test.describe('the switch at /', () => {
     await expect(page).toHaveURL(/\/$/);
     expect(await page.evaluate(() => window.localStorage.getItem('dm.arena'))).toBe('new');
     await expect(
-      page.getByRole('heading', { level: 1, name: /Two minds\.\s*Your verdict\./ }),
+      page.getByRole('heading', { level: 1, name: /Two models\. One prompt\.\s*You decide\./ }),
     ).toBeVisible();
     await expect(page.locator('[data-landing]')).toHaveCount(0);
     await expect(page).toHaveTitle('Arena · DualMind Arena');

@@ -54,13 +54,16 @@ export {
   normalizeSearch,
 } from './lib/filter';
 export {
+  documentLocale,
   formatClock,
+  formatClockWithZone,
   formatCount,
   formatElo,
   formatEloDelta,
   formatOrdinal,
   formatPercent,
   formatRank,
+  formatZone,
   pluralize,
   providerLabel,
 } from './lib/format';
