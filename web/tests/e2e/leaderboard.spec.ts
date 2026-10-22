@@ -48,7 +48,10 @@ async function mockStats(page: Page, reply: () => Reply = () => 'ok') {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: mode === 'empty' ? '{"items":[],"meta":{"generatedAt":"2026-10-21T18:30:00.000Z","count":0,"provisionalBelow":5,"source":"dualmind-api:model-stats"}}' : BOARD,
+      body:
+        mode === 'empty'
+          ? '{"items":[],"meta":{"generatedAt":"2026-10-21T18:30:00.000Z","count":0,"provisionalBelow":5,"source":"dualmind-api:model-stats"}}'
+          : BOARD,
     });
   });
 }

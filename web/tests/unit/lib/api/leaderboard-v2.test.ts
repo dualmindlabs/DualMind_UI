@@ -5,9 +5,9 @@ import { toLeaderboard } from '@/features/leaderboard';
 import { createApiClient } from '@/lib/api';
 import { leaderboardV2Schema } from '@/lib/api/schemas/leaderboard';
 
-import v1 from '../../../fixtures/api/model-stats.recorded.json';
-import v2 from '../../../fixtures/api/leaderboard-v2.recorded.json';
 import v2Board from '../../../fixtures/api/leaderboard-v2.board.json';
+import v2 from '../../../fixtures/api/leaderboard-v2.recorded.json';
+import v1 from '../../../fixtures/api/model-stats.recorded.json';
 import { jsonResponse, scriptedFetch } from './helpers';
 
 const NO_RETRY = { retry: false } as const;
@@ -64,11 +64,15 @@ describe('v1 fallback (goes in the next release)', () => {
     expect(data.generatedAt).toBeNull();
     expect(data.provisionalBelow).toBe(PROVISIONAL_BELOW);
     expect(data.items).toHaveLength(v1.items.length);
-    expect(data.items.every(item => item.provisional === item.totalResponses < PROVISIONAL_BELOW)).toBe(true);
+    expect(
+      data.items.every(item => item.provisional === item.totalResponses < PROVISIONAL_BELOW),
+    ).toBe(true);
   });
 
   it('does not fall back on other errors', async () => {
-    const { fetch, calls } = scriptedFetch(jsonResponse({ title: 'Boom', status: 500 }, { status: 500 }));
+    const { fetch, calls } = scriptedFetch(
+      jsonResponse({ title: 'Boom', status: 500 }, { status: 500 }),
+    );
     await expect(createApiClient({ fetch }).getLeaderboard(NO_RETRY)).rejects.toMatchObject({
       status: 500,
     });

@@ -472,8 +472,7 @@ export function createMockFetch(options: MockOptions = {}): FetchLike {
       method: 'GET',
       pattern: /^\/api\/v2\/leaderboard$/,
       auth: 'none',
-      handle: ({ scenario }) =>
-        ok(toV2Leaderboard(scenario === 'empty' ? [] : MOCK_MODEL_STATS)),
+      handle: ({ scenario }) => ok(toV2Leaderboard(scenario === 'empty' ? [] : MOCK_MODEL_STATS)),
     },
     {
       // The v1 route, kept for the client's one-release fallback.

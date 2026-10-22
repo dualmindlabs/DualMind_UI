@@ -1,6 +1,5 @@
-import { z } from 'zod';
-
 import { leaderboardResponseSchema, PROVISIONAL_BELOW } from '@contract/leaderboard';
+import { z } from 'zod';
 
 import { resolveDisplayName } from '@/lib/models/display-name';
 
@@ -66,24 +65,20 @@ export interface LeaderboardData {
 }
 
 /** `GET /api/v2/leaderboard`: the shared contract schema, mapped to the app's shape. */
-export const leaderboardV2Schema = leaderboardResponseSchema.transform(
-  (body): LeaderboardData => ({
-    items: body.items.map(item => ({
-      ...item,
-      displayName: resolveDisplayName(item.modelName, item.displayName),
-    })),
-    provisionalBelow: body.meta.provisionalBelow,
-    generatedAt: body.meta.generatedAt,
-    source: 'v2',
-  }),
-);
+export const leaderboardV2Schema = leaderboardResponseSchema.transform((body): LeaderboardData => ({
+  items: body.items.map(item => ({
+    ...item,
+    displayName: resolveDisplayName(item.modelName, item.displayName),
+  })),
+  provisionalBelow: body.meta.provisionalBelow,
+  generatedAt: body.meta.generatedAt,
+  source: 'v2',
+}));
 
 /** The v1 rows in the v2 shape (the fallback; goes in the next release with the v1 route). */
-export const leaderboardV1AsDataSchema = leaderboardSchema.transform(
-  (items): LeaderboardData => ({
-    items,
-    provisionalBelow: PROVISIONAL_BELOW,
-    generatedAt: null,
-    source: 'v1',
-  }),
-);
+export const leaderboardV1AsDataSchema = leaderboardSchema.transform((items): LeaderboardData => ({
+  items,
+  provisionalBelow: PROVISIONAL_BELOW,
+  generatedAt: null,
+  source: 'v1',
+}));
