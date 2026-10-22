@@ -100,6 +100,7 @@ for (const vp of VIEWPORTS) {
         await expect(turn).toHaveAttribute('data-phase', 'awaiting_vote', { timeout: 20_000 });
         await expect(turn.getByTestId('vote-hint')).toBeVisible();
         await shoot(page, 'focus-3-read-a', vp.name, theme);
+        await turn.locator('[data-end="a"]').scrollIntoViewIfNeeded();
         await turn.getByRole('button', { name: 'Answer B', exact: true }).click();
         await page.waitForTimeout(500);
         await shoot(page, 'focus-4-read-b', vp.name, theme);
@@ -123,7 +124,9 @@ for (const vp of VIEWPORTS) {
         await send(page);
         const turn = page.getByTestId('live-turn').first();
         await expect(turn).toHaveAttribute('data-phase', 'awaiting_vote', { timeout: 20_000 });
+        await turn.locator('[data-end="a"]').scrollIntoViewIfNeeded();
         await turn.getByRole('button', { name: 'Answer B', exact: true }).click();
+        await turn.locator('[data-end="b"]').scrollIntoViewIfNeeded();
         await expect(turn.getByTestId('vote-bar')).toBeVisible({ timeout: 10_000 });
         await turn.getByRole('button', { name: /B is better/ }).click();
         await expect(turn).toHaveAttribute('data-phase', 'revealed');
