@@ -10,7 +10,7 @@ export const typeScale: ReadonlyArray<{
     name: 'Display',
     spec: 'clamp(3rem, 8vw, 6.5rem) / 0.95, 300, -0.045em',
     use: 'Landing hero only',
-    sample: 'Two minds.',
+    sample: 'Two models.',
     className: 'text-display',
   },
   {

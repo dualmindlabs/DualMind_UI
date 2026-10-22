@@ -1,3 +1,4 @@
+import { BRAND_PRIMARY_LEAD, BRAND_PRIMARY_VOICE } from '@/content/brand';
 import { colorTokens, durations, easings } from '@/styles/tokens';
 
 import { HeroEmblem } from './hero-emblem';
@@ -31,7 +32,8 @@ export function Hero() {
             <span aria-hidden="true">/</span> v0.1
           </p>
           <h1 id="hero-title" className="mt-6 animate-rise text-display [animation-delay:80ms]">
-            Two minds, <span className="human-voice text-human">one verdict.</span>
+            {`${BRAND_PRIMARY_LEAD} `}
+            <span className="human-voice text-human">{BRAND_PRIMARY_VOICE}</span>
           </h1>
           <p className="mt-8 max-w-reading animate-rise text-h3 font-normal text-fg-soft [animation-delay:160ms]">
             The living style guide for the Arena. Every colour, type step, control and motion token

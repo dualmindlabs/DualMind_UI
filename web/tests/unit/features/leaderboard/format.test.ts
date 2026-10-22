@@ -1,13 +1,16 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  documentLocale,
   formatClock,
+  formatClockWithZone,
   formatCount,
   formatElo,
   formatEloDelta,
   formatOrdinal,
   formatPercent,
   formatRank,
+  formatZone,
   pluralize,
   providerLabel,
 } from '@/features/leaderboard';
@@ -66,6 +69,30 @@ describe('leaderboard formatters', () => {
 
   it('formats a time of day', () => {
     expect(formatClock(Date.UTC(2026, 9, 21, 12, 4))).toMatch(/\d{1,2}:04/);
+  });
+
+  it('names the time zone next to the time', () => {
+    const noon = Date.UTC(2026, 9, 21, 12, 4);
+    expect(formatZone(noon)).not.toBe('');
+    expect(formatClockWithZone(noon)).toMatch(/^\d{1,2}:04\b.*\S$/);
+    expect(formatClockWithZone(noon)).toContain(formatZone(noon));
+  });
+
+  it('takes the locale from <html lang>', () => {
+    const before = document.documentElement.lang;
+    try {
+      document.documentElement.lang = 'de';
+      expect(formatCount(7152)).toBe('7.152');
+      expect(formatPercent(64.58)).toMatch(/^64,6\s?%$/);
+      document.documentElement.lang = 'en';
+      expect(formatCount(7152)).toBe('7,152');
+      document.documentElement.lang = 'not a locale';
+      expect(formatCount(7152)).toBe('7,152');
+      document.documentElement.lang = '';
+      expect(documentLocale()).toBe('en');
+    } finally {
+      document.documentElement.lang = before;
+    }
   });
 
   it('names providers for people', () => {

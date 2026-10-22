@@ -18,8 +18,8 @@ test('/design/ is prerendered HTML: title, noindex and content without JavaScrip
   const html = await response.text();
   expect(html).toContain('<title>Design system · DualMind Arena</title>');
   expect(html).toMatch(/<meta name="robots" content="noindex, nofollow"\/?>/);
-  expect(html).toContain('Two minds, <span');
-  expect(html).toContain('one verdict.</span>');
+  expect(html).toContain('Two models. One prompt. <span');
+  expect(html).toContain('You decide.</span>');
   expect(html).toContain('id="colour"');
   // The theme script is inline in <head>, so it runs before anything is painted.
   const scriptAt = html.indexOf('dm.theme');

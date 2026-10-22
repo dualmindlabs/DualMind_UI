@@ -5,7 +5,7 @@ import { NumberTicker } from '@/components/vendor/magicui/number-ticker';
 import { CountUp } from '@/components/vendor/reactbits/count-up';
 import { cn } from '@/lib/utils/cn';
 
-import { formatClock } from '../lib/format';
+import { formatClock, formatZone } from '../lib/format';
 import type { LeaderboardSummary } from '../types';
 
 export interface StatsStripProps {
@@ -82,7 +82,15 @@ export function StatsStrip({
         }
       >
         {summary && updatedAt > 0 ? (
-          <time dateTime={new Date(updatedAt).toISOString()}>{formatClock(updatedAt)}</time>
+          <time dateTime={new Date(updatedAt).toISOString()}>
+            {formatClock(updatedAt)}{' '}
+            <abbr
+              title="Your time zone"
+              className="text-caption font-normal text-muted no-underline"
+            >
+              {formatZone(updatedAt)}
+            </abbr>
+          </time>
         ) : (
           pending
         )}

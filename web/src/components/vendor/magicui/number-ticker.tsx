@@ -36,8 +36,13 @@ export interface NumberTickerProps extends Omit<ComponentProps<'span'>, 'childre
   damping?: number;
 }
 
+/** The page's language (`<html lang>`); "en" while prerendering. */
+function pageLocale(): string {
+  return typeof document === 'undefined' ? 'en' : document.documentElement.lang || 'en';
+}
+
 function format(value: number, decimals: number, grouping = true): string {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat(pageLocale(), {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
     useGrouping: grouping,
