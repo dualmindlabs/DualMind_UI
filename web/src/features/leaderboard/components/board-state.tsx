@@ -122,7 +122,7 @@ function RateLimited({
       role="alert"
       tone="warn"
       icon={<Hourglass strokeWidth={1.75} className="size-5" />}
-      title="The board is catching its breath."
+      title="The leaderboard did not load."
       actions={
         <>
           <Button
@@ -143,11 +143,8 @@ function RateLimited({
         </>
       }
     >
-      <p>
-        Too many requests came in at once, so the rankings are paused for a moment. Nothing is
-        broken and nothing was lost.{' '}
-        {left > 0 ? `You can try again in ${left} seconds.` : 'You can try again now.'}
-      </p>
+      <p className="font-medium text-fg">The board is catching its breath.</p>
+      <p className="mt-1">{getUserMessage(error)} Nothing is broken and nothing was lost.</p>
       {requestId ? (
         <p className="mt-2 font-mono text-caption text-muted">Request id {requestId}</p>
       ) : null}
