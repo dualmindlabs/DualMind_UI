@@ -2,16 +2,14 @@
 
 Things only Harsh can do (dashboard access, purchases, decisions). Work continues around them. Newest first; tick an item off by moving it to "Done".
 
-Last updated: 2026-10-21 17:55 UTC.
+Last updated: 2026-10-21 UTC.
 
 ## Open
 
 | # | What | Why | When it blocks |
 | --- | --- | --- | --- |
-| 10 | **Leaderboard: how many battles before a model is ranked?** Today 100 (`PROVISIONAL_BATTLES` in `web/src/features/leaderboard/lib/constants.ts`). With 100, 36 models are ranked and 17 sit in "Not yet rated", including the API's own #1 (96 battles). The audit suggested 10. Say a number. | It decides which models get a rank | Never blocks; 100 stays until you say |
 | 9 | **Backend features BE-25 to BE-34: open questions** (consent defaults for public battles and the dataset, API key free-tier limits, private-arena limits, pricing source for the cost-quality view, season length, who writes the curated prompts, the Hugging Face account and licence). Full list: [designs/README.md](../backend/designs/README.md#open-questions-be-25-to-be-34) and [#63](https://github.com/dualmindlabs/DualMind_UI/pull/63). | The designs need these before building | When the backend work starts |
 | 7 | **Backend phase: open answers.** (a) Is the Supabase project on asymmetric JWT signing keys (Settings > JWT Keys)? If not, the Worker needs `SUPABASE_JWT_SECRET` (you set it with `wrangler secret put`). (b) A `PRIVACY_SALT` Worker secret for hashed IPs in rate limits (you set it; any long random string). (c) Same-origin only for `/api/v2` (no CORS for other sites)? (d) Should the Mintlify developer docs import the v2 OpenAPI file? (e) Is the account on Workers Paid (decides where rating jobs run)? | Auth verification, rate limits and docs for the backend waves | Backend wave W1 (a, b); later (c-e) |
-| 8 | **Terms of service: governing law.** The new terms keep the old wording ("applicable laws", binding arbitration, no jurisdiction named). Pick the country/state whose law applies, or say "remove arbitration". | A real legal page should name it | Never blocks |
 | 1 | **Sign-in settings for the new pages (slice S6, [PR #43](https://github.com/dualmindlabs/DualMind_UI/pull/43)).** (a) **Before the cutover (S13), not needed to merge S6:** in Cloudflare, Workers & Pages > `dualmind-arena` > Settings > Build > **Build variables**, add `VITE_SUPABASE_URL` (the project URL, the value `supabase.url` has in `config.js`) and `VITE_SUPABASE_ANON_KEY` (the public anon key from `config.js`; never the service-role key), for production and preview builds. Until then `build.js` reads the same public values from `config.js`, which S13 deletes. (b) **Supabase: nothing needed for production.** Every redirect target stays the same (`/auth-callback.html`, `/update-password.html`, the bare origin for OAuth). (c) **Optional, only to test sign-in on PR previews:** in Supabase, Authentication > URL Configuration > Redirect URLs, add `https://*-dualmind-arena.creharsh.workers.dev/**` and keep every existing entry. | Without (a) sign-in stops working when `config.js` goes at the cutover; (c) lets email links and OAuth return to preview URLs | (a) before S13; (c) never blocks |
 | 2 | **Old Vercel project** `v0-dual-mind-ui`: disconnect it from the GitHub repo (Vercel dashboard > project > Settings > Git, or delete the project). | It fails on every commit and makes every PR look "unstable" (KNOWN_ISSUES.md #11) | Never blocks; cosmetic |
 | 3 | **Paid component kits:** read [buy-list.md](./buy-list.md). Nothing paid is copied until you decide; purchased code needs a private repo or must stay out of this public one. | Better blocks for the landing and app screens | Never blocks |
@@ -24,6 +22,7 @@ Last updated: 2026-10-21 17:55 UTC.
 
 | Date | What |
 | --- | --- |
+| 2026-10-21 | Leaderboard threshold set to 5 battles before a model is ranked (`PROVISIONAL_BATTLES`; 49 of the 53 models are ranked, 4 sit in "Not yet rated"). Terms: governing law is India, disputes go to the courts of India (binding arbitration dropped). Account deletion stays out for now |
 | 2026-10-21 | Approved creating D1/KV/Queue/R2 resources (done, [#46](https://github.com/dualmindlabs/DualMind_UI/pull/46)) and additive D1 migrations applied by GitHub Actions (preview first, production after merge, never drops or rewrites, rollback note in each PR) |
 | 2026-10-21 | Approved the backend direction (Supabase and the Azure API stay; add-ons on Cloudflare) and asked for more features |
 | 2026-10-20 | Approved the design direction, clean auth URLs, removal of ads and the careers page; deploys stay on Workers Builds; repo stays public; use the best components and buy licences later if worth it |

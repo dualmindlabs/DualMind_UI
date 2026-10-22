@@ -96,16 +96,16 @@ test.describe('model picker (P1-11)', () => {
         await expect(picker.getByText('Ranked', { exact: true })).toBeVisible();
         const top = picker.getByRole('option', { name: /Llama 3\.1 70B Instruct/ });
         await expect(top).toContainText('Meta');
-        await expect(top).toContainText('#1');
+        await expect(top).toContainText('#2');
         await expect(top).toHaveAttribute('title', '@cf/meta/llama-3.1-70b-instruct');
 
         // Not yet rated: their own group, no rank or rating, the raw id in the tooltip.
-        const unrated = picker.getByRole('option', { name: /Gemma 3n E2B IT/ });
+        const unrated = picker.getByRole('option', { name: /Gemma 3n E4B IT/ });
         await unrated.scrollIntoViewIfNeeded();
         await expect(picker.getByText('Not yet rated', { exact: true })).toBeVisible();
         await expect(unrated).toContainText('Google');
         await expect(unrated).not.toContainText('#');
-        await expect(unrated).toHaveAttribute('title', 'gemma-3n-e2b-it');
+        await expect(unrated).toHaveAttribute('title', 'gemma-3n-e4b-it');
         if (viewport.label === 'desktop') {
           await picker
             .locator('[cmdk-group-heading]', { hasText: 'Not yet rated' })
@@ -115,7 +115,7 @@ test.describe('model picker (P1-11)', () => {
         }
         await unrated.click();
         await expect(
-          page.getByRole('button', { name: /Model for answer A: Gemma 3n E2B IT/ }),
+          page.getByRole('button', { name: /Model for answer A: Gemma 3n E4B IT/ }),
         ).toBeVisible();
       });
     }

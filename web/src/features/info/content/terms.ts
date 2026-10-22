@@ -156,7 +156,7 @@ export const termsContent: PageContent = {
       blocks: [
         {
           type: 'paragraph',
-          text: 'These Terms shall be governed by and construed in accordance with applicable laws. Any disputes arising from these Terms or your use of the Service shall be resolved through binding arbitration.',
+          text: 'These Terms are governed by the laws of India. Any dispute arising from these Terms or your use of the Service is subject to the exclusive jurisdiction of the courts in India.',
         },
         {
           type: 'paragraph',
