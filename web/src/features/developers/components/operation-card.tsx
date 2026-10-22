@@ -1,3 +1,5 @@
+import { Fragment } from 'react';
+
 import { Badge } from '@/components/ui/badge';
 
 import type { ReferenceOperation } from '../lib/reference';
@@ -94,7 +96,20 @@ export function OperationCard({ operation }: { operation: ReferenceOperation }) 
                   </>
                 ) : null}
               </td>
-              <td>{response.contentType ? <code>{response.contentType}</code> : 'no body'}</td>
+              <td>
+                {response.contentType ? (
+                  <code>
+                    {response.contentType.split(/(?<=[/+])/).map((part, index) => (
+                      <Fragment key={index}>
+                        {index > 0 ? <wbr /> : null}
+                        {part}
+                      </Fragment>
+                    ))}
+                  </code>
+                ) : (
+                  'no body'
+                )}
+              </td>
             </tr>
           ))}
         </tbody>

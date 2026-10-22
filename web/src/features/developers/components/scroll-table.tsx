@@ -10,8 +10,7 @@ export function ScrollTable({ label, children }: { label: string; children: Reac
       tabIndex={0}
       className="overflow-x-auto"
     >
-      {/* On a phone the cells wrap (long `code` values break anywhere) so the table fits the width. */}
-      <table className="w-full [&_td_code]:[overflow-wrap:anywhere]">{children}</table>
+      <table className="w-full [&_td:first-child_code]:whitespace-nowrap">{children}</table>
     </div>
   );
 }
