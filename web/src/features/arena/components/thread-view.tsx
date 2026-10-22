@@ -153,7 +153,7 @@ export function ThreadView({ threadId }: { threadId: string | null }) {
             )}
             <p className="truncate font-mono text-caption text-muted">
               {MODE_DETAILS[mode].label}
-              {thread ? (
+              {thread && thread.messageCount > 0 ? (
                 <>
                   {' · '}
                   {thread.messageCount} {thread.messageCount === 1 ? 'turn' : 'turns'}

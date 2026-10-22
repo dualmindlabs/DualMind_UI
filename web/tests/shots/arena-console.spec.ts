@@ -25,9 +25,16 @@ test.beforeEach(async ({ context, baseURL }) => {
   ]);
 });
 
-async function shoot(page: Page, name: string, vp: string, theme: string, full = true) {
+async function shoot(
+  page: Page,
+  name: string,
+  vp: string,
+  theme: string,
+  full = true,
+  settle = 700,
+) {
   await page.evaluate(() => document.fonts.ready);
-  await page.waitForTimeout(700);
+  if (settle > 0) await page.waitForTimeout(settle);
   await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
   await page.mouse.move(0, 0);
   const handle = await page.addStyleTag({
@@ -74,8 +81,8 @@ for (const vp of VIEWPORTS) {
         await send(page);
         const turn = page.getByTestId('live-turn').first();
         await expect(turn).toHaveAttribute('data-phase', 'answering', { timeout: 15_000 });
-        await page.waitForTimeout(900);
-        await shoot(page, 'console-2-writing-blind', vp.name, theme, false);
+        await page.waitForTimeout(350);
+        await shoot(page, 'console-2-writing-blind', vp.name, theme, false, 0);
       });
 
       test('writing, side by side (live stats)', async ({ page }) => {
@@ -84,8 +91,8 @@ for (const vp of VIEWPORTS) {
         await send(page);
         const turn = page.getByTestId('live-turn').first();
         await expect(turn).toHaveAttribute('data-phase', 'answering', { timeout: 15_000 });
-        await page.waitForTimeout(1200);
-        await shoot(page, 'console-3-writing-side', vp.name, theme, false);
+        await page.waitForTimeout(600);
+        await shoot(page, 'console-3-writing-side', vp.name, theme, false, 0);
       });
 
       test('vote, burst, reveal, inspector, history', async ({ page }) => {
@@ -95,8 +102,7 @@ for (const vp of VIEWPORTS) {
         await expect(turn).toHaveAttribute('data-phase', 'awaiting_vote', { timeout: 20_000 });
         await shoot(page, 'console-4-vote', vp.name, theme, false);
         await turn.getByRole('button', { name: /B is better/ }).click();
-        await page.waitForTimeout(260);
-        await shoot(page, 'console-5-burst', vp.name, theme, false);
+        await shoot(page, 'console-5-burst', vp.name, theme, false, 0);
         await expect(turn).toHaveAttribute('data-phase', 'revealed');
         await page.waitForTimeout(2600);
         await shoot(page, 'console-6-reveal', vp.name, theme);

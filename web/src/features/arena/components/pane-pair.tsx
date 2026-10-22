@@ -67,7 +67,7 @@ export function PanePair({ a, b, label, writing, className }: PanePairProps) {
       <div
         role="group"
         aria-label={label}
-        className="sticky top-14 z-10 grid grid-cols-3 gap-1 rounded-full border border-line bg-surface p-1 shadow-raise md:hidden"
+        className="sticky top-2 z-10 grid grid-cols-3 gap-1 rounded-full border border-line bg-surface p-1 shadow-raise md:hidden"
       >
         {SIDES.map(side => (
           <button

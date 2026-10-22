@@ -31,7 +31,7 @@ export function EmptyState({
         {details.eyebrow}
       </p>
       <h1 ref={headingRef} className="max-w-2xl text-h2 text-balance text-fg">
-        {details.heading.plain} <span className="text-fg-soft">{details.heading.human}</span>
+        {details.heading.plain} <span className="block text-fg-soft">{details.heading.human}</span>
       </h1>
       <p className="max-w-xl text-ui text-fg-soft">{details.lead}</p>
     </div>
