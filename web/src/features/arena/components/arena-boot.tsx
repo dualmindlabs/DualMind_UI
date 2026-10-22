@@ -1,6 +1,8 @@
 import { Wordmark } from '@/components/layout/wordmark';
 import { Skeleton } from '@/components/ui/skeleton';
 
+import { DuelEmblem } from './duel-emblem';
+
 /**
  * The arena's loading frame: the header bar, the history column and a composer outline. It is in
  * the prerendered landing page too, hidden unless the head script marked <html data-arena> (a
@@ -25,9 +27,10 @@ export function ArenaBoot({ always = false }: { always?: boolean }) {
           <Skeleton className="h-7 w-3/5" />
           <Skeleton className="h-7 w-2/3" />
         </div>
-        <div className="flex min-w-0 flex-1 flex-col items-center justify-end gap-6 px-4 py-8 md:justify-center">
-          <p className="eyebrow text-muted">Loading the arena</p>
-          <Skeleton className="h-32 w-full max-w-3xl rounded-xl" />
+        <div className="flex min-w-0 flex-1 flex-col items-center justify-end gap-6 mesh-duel px-4 py-8 md:justify-center">
+          <DuelEmblem className="max-sm:hidden" />
+          <p className="eyebrow text-fg-soft">Loading the arena</p>
+          <Skeleton className="h-32 w-full max-w-3xl rounded-2xl" />
         </div>
       </div>
     </div>

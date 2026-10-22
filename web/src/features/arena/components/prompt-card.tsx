@@ -9,12 +9,17 @@ export interface PromptCardProps {
 }
 
 /**
- * The visitor's prompt, in the human's terra: a rule, the "You" label and the text as written
- * (line breaks kept).
+ * The visitor's prompt, in the human's mint: a tinted card, the "You" label and the text as
+ * written (line breaks kept).
  */
 export function PromptCard({ id, number, prompt, className }: PromptCardProps) {
   return (
-    <div className={cn('grid gap-1.5 border-l-2 border-human pl-4', className)}>
+    <div
+      className={cn(
+        'grid gap-1.5 rounded-xl border border-human/35 bg-human-tint px-4 py-3.5 shadow-raise',
+        className,
+      )}
+    >
       <h2 id={id} className="eyebrow text-human">
         You<span className="sr-only">, prompt {number}</span>
       </h2>

@@ -1,4 +1,4 @@
-import { Ellipsis, Pencil, Share2, Trash } from 'lucide-react';
+import { Ellipsis, MessageSquareText, Pencil, Scale, Share2, Swords, Trash } from 'lucide-react';
 
 import { buttonVariants } from '@/components/ui/button';
 import {
@@ -9,6 +9,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import type { Thread } from '@/lib/api';
 import { cn } from '@/lib/utils/cn';
+
+const MODE_ICON = { battle: Swords, arena: Scale, direct: MessageSquareText } as const;
 
 export interface ThreadItemProps {
   thread: Thread;
@@ -35,6 +37,7 @@ export function ThreadItem({
   onShare,
   onDelete,
 }: ThreadItemProps) {
+  const Icon = MODE_ICON[thread.mode];
   return (
     <li className="group/item relative min-w-0">
       <a
@@ -46,13 +49,20 @@ export function ThreadItem({
           onOpen(thread.threadId);
         }}
         className={cn(
-          'flex min-h-10 items-center gap-2 rounded-md py-2 pr-10 pl-3 text-ui-sm text-fg-soft transition-colors duration-(--dur-fast) ease-out-expo hover:bg-hover hover:text-fg active:bg-pressed pointer-coarse:min-h-11',
+          'relative flex min-h-10 items-center gap-2.5 rounded-md py-2 pr-10 pl-9 text-ui-sm text-fg-soft transition-colors duration-(--dur-fast) ease-out-expo hover:bg-hover hover:text-fg active:bg-pressed pointer-coarse:min-h-11',
           'focus-visible:-outline-offset-2 aria-[current=page]:bg-surface-3 aria-[current=page]:text-fg',
+          // The open thread carries the duel's two colours down its left edge.
+          'aria-[current=page]:before:absolute aria-[current=page]:before:inset-y-2 aria-[current=page]:before:left-0 aria-[current=page]:before:w-0.5 aria-[current=page]:before:rounded-full aria-[current=page]:before:bg-linear-to-b aria-[current=page]:before:from-mind-a aria-[current=page]:before:to-mind-b',
           // The drawer (below lg) is narrow: the title gets the whole row (two lines at most) and
           // the time moves under it, instead of clipping the title at a few words.
           'max-lg:flex-col max-lg:items-start max-lg:gap-0.5',
         )}
       >
+        <Icon
+          aria-hidden="true"
+          className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted"
+          strokeWidth={1.5}
+        />
         <span className="min-w-0 flex-1 truncate max-lg:line-clamp-2 max-lg:w-full max-lg:flex-none max-lg:whitespace-normal">
           {thread.title}
         </span>

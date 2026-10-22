@@ -4,11 +4,12 @@ import { RoleBadge } from '@/components/ui/role-badge';
 
 import { useArena } from '../hooks/use-arena';
 import { MODE_DETAILS } from '../lib/modes';
+import { DuelEmblem } from './duel-emblem';
 
 /**
- * The empty arena's heading: the mode's eyebrow (with the A and B marks in a battle), one line
- * with a single human-voice phrase, and what happens next. Quiet on purpose: the signature
- * moment of this screen is the reveal, not the welcome.
+ * The empty arena's heading: the duel mark, the mode's eyebrow (with the A and B marks in a
+ * battle), the headline at display weight with its one human-voice phrase on its own line, and
+ * what happens next. The prompt box right under it is the hero of the screen.
  */
 export function EmptyState({
   headingRef,
@@ -20,8 +21,9 @@ export function EmptyState({
   const details = MODE_DETAILS[mode];
 
   return (
-    <div className="grid justify-items-center gap-4 text-center">
-      <p className="flex items-center gap-2.5 eyebrow text-muted">
+    <div className="grid justify-items-center gap-4 text-center sm:gap-5">
+      <DuelEmblem className="max-sm:hidden" />
+      <p className="flex items-center gap-2.5 eyebrow text-fg-soft">
         {mode === 'direct' ? null : (
           <span className="flex items-center gap-1" aria-hidden="true">
             <RoleBadge who="a" letterOnly size="sm" />
@@ -30,11 +32,11 @@ export function EmptyState({
         )}
         {details.eyebrow}
       </p>
-      <h1 ref={headingRef} className="text-h1 font-light tracking-tight text-fg">
+      <h1 ref={headingRef} className="max-w-4xl text-h1 text-balance text-fg">
         {details.heading.plain}{' '}
-        <span className="human-voice text-human">{details.heading.human}</span>
+        <span className="block human-voice text-human">{details.heading.human}</span>
       </h1>
-      <p className="max-w-xl text-ui text-fg-soft sm:text-body">{details.lead}</p>
+      <p className="max-w-xl text-ui text-fg-soft sm:text-lead">{details.lead}</p>
     </div>
   );
 }

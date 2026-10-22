@@ -186,6 +186,7 @@ test.describe('share dialog in the arena', () => {
     await expect(page.getByRole('dialog', { name: 'Share this battle' })).toBeVisible();
     await page.keyboard.press('Escape');
 
+    await page.getByRole('button', { name: 'Open the history' }).click();
     const history = page.getByRole('navigation', { name: 'Your threads' });
     await history.getByRole('button', { name: 'Actions for Decline a meeting politely' }).click();
     await page.getByRole('menuitem', { name: 'Share' }).click();
