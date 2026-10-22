@@ -90,6 +90,7 @@ for (const vp of VIEWPORTS) {
         await expect(turn).toHaveAttribute('data-phase', 'awaiting_vote', { timeout: 20_000 });
         await capture(page, 'arena-2-vote', vp.name, theme);
 
+        await turn.getByRole('button', { name: 'Vote now' }).click();
         await turn.getByRole('button', { name: /A is better/ }).click();
         await expect(turn).toHaveAttribute('data-phase', 'revealed');
         await capture(page, 'arena-3-reveal', vp.name, theme);
