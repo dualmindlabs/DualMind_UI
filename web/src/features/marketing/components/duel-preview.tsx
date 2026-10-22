@@ -32,15 +32,13 @@ const VOTES = ['A is better', 'Tie', 'Both are bad', 'B is better'] as const;
  */
 export function DuelPreview({ className }: { className?: string }) {
   const reduce = useShouldReduceMotion();
-  const [stage, setStage] = useState<Stage>('vote');
+  const [timed, setTimed] = useState<Stage>('vote');
+  const stage: Stage = reduce ? 'reveal' : timed;
 
   useEffect(() => {
-    if (reduce) {
-      setStage('reveal');
-      return undefined;
-    }
-    const picked = window.setTimeout(() => setStage('picked'), 1900);
-    const reveal = window.setTimeout(() => setStage('reveal'), 2800);
+    if (reduce) return undefined;
+    const picked = window.setTimeout(() => setTimed('picked'), 1900);
+    const reveal = window.setTimeout(() => setTimed('reveal'), 2800);
     return () => {
       window.clearTimeout(picked);
       window.clearTimeout(reveal);
