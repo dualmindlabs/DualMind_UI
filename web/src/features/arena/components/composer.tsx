@@ -2,7 +2,6 @@ import { ArrowLeftRight, ArrowUp, EyeOff, Square } from 'lucide-react';
 import type { RefObject } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { Kbd } from '@/components/ui/kbd';
 import {
   PromptInput,
   PromptInputActions,
@@ -101,7 +100,7 @@ export function Composer({
         data-slot="composer-ring"
         data-mode={mode}
         className={cn(
-          'group/ring rounded-[calc(var(--radius-xl)+1px)] p-px shadow-float transition-[background-color,box-shadow] duration-(--dur-base) ease-out-expo',
+          'group/ring rounded-[calc(var(--radius-xl)+1px)] p-px shadow-float transition-[background-color,box-shadow] duration-(--dur-base) ease-out-expo has-[textarea:focus-visible]:outline-(length:--focus-width) has-[textarea:focus-visible]:outline-offset-2 has-[textarea:focus-visible]:outline-focus has-[textarea:focus-visible]:outline-solid',
           mode === 'direct'
             ? 'bg-line-strong focus-within:bg-fg-soft'
             : 'bg-linear-to-r from-mind-a/40 via-line-strong to-mind-b/40 focus-within:from-mind-a focus-within:via-line-strong focus-within:to-mind-b',
@@ -192,17 +191,9 @@ export function Composer({
             <div className="ml-auto flex items-center gap-2">
               <span
                 aria-hidden="true"
-                className="hidden items-center gap-1.5 text-caption text-muted md:inline-flex pointer-coarse:hidden"
+                className="hidden font-mono text-caption text-fg-soft md:inline pointer-coarse:hidden"
               >
-                {sendKey === 'mod-enter' ? (
-                  <>
-                    <Kbd>{modifier}</Kbd>
-                    <Kbd>Enter</Kbd>
-                  </>
-                ) : (
-                  <Kbd>Enter</Kbd>
-                )}
-                to send
+                {sendKey === 'mod-enter' ? `${modifier}+Enter to send` : 'Enter to send'}
               </span>
               {busy ? (
                 <Button

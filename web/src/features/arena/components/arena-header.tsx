@@ -37,14 +37,14 @@ export function ArenaHeader({ staged = false }: { staged?: boolean }) {
             <Button
               variant="outline"
               size="sm"
-              aria-label="New battle"
               aria-keyshortcuts="N"
-              className="rounded-full max-sm:size-9 max-sm:px-0"
+              // On a phone the history's own New battle button does this: the bar has no room.
+              className="rounded-full max-xl:size-9 max-xl:px-0 max-sm:hidden"
               onClick={newBattle}
             >
               <Plus aria-hidden="true" strokeWidth={1.75} />
-              <span className="max-sm:hidden">New battle</span>
-              <Kbd aria-hidden="true" className="h-5 min-w-5 max-lg:hidden">
+              <span className="max-xl:sr-only">New battle</span>
+              <Kbd aria-hidden="true" className="h-5 min-w-5 max-xl:hidden">
                 N
               </Kbd>
             </Button>

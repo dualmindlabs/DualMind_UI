@@ -74,7 +74,7 @@ function StageBackdrop() {
 
 function ArenaLayout({ empty }: { empty: boolean }) {
   const api = useApiClient();
-  const { threadId, mode, battle, shareThreadId, closeShare, announce } = useArena();
+  const { threadId, mode, battle, shareThreadId, closeShare, announce, composerRef } = useArena();
   const online = useOnlineStatus();
   const reduce = useShouldReduceMotion();
   const { setDraft } = useDraft();
@@ -90,12 +90,19 @@ function ArenaLayout({ empty }: { empty: boolean }) {
   const dock = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const from = useRef<DOMRect | null>(null);
+  // The prompt box is a different element in the empty arena and on the stage. Focus in it
+  // crosses over with it (a rematch, or a prompt sent with Enter).
+  const composerFocused = useRef(false);
   // The first prompt of a battle was just sent from the empty arena: the matchmaking beat shows
   // until the turn leaves `submitting`.
   const [pairing, setPairing] = useState(false);
   const firstTurn = battle.state.turns[0];
 
   if (pairing && firstTurn && firstTurn.phase !== 'submitting') setPairing(false);
+
+  useLayoutEffect(() => {
+    if (composerFocused.current) composerRef.current?.focus({ preventScroll: true });
+  }, [empty, composerRef]);
 
   useLayoutEffect(() => {
     if (empty) return;
@@ -163,6 +170,9 @@ function ArenaLayout({ empty }: { empty: boolean }) {
           tabIndex={-1}
           data-testid="arena"
           data-stage={empty ? 'empty' : 'battle'}
+          onFocusCapture={event => {
+            composerFocused.current = event.target === composerRef.current;
+          }}
           className={cn(
             'relative flex min-w-0 flex-1 flex-col outline-none',
             // Auto margins on the inner wrapper, not justify-*: they centre (or, on a phone, sink)
