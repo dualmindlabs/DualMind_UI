@@ -1,7 +1,10 @@
 /*
- * DualMind Arena design tokens: the one place colour, type, radius, surface and motion values
- * live (docs/redesign/design-direction.md, sections 3 to 6). Components use the Tailwind
- * utilities mapped in `@theme inline` below (bg-surface, text-mind-a, border-line...), never hex.
+ * DualMind Arena design tokens: the one place colour, type, radius, surface, depth and motion
+ * values live. Direction B, "Duel Editorial" (docs/redesign/design-direction.md, superseded where
+ * this file differs): Instrument Serif for display, Geist for UI and body, Geist Mono for data;
+ * Midnight (dark, default) and Paper (light); Mind A is cyan, Mind B is terracotta. Components use
+ * the Tailwind utilities mapped in `@theme inline` below (bg-surface, text-mind-a,
+ * border-line...), never hex.
  *
  * Themes: dark is the default. `data-theme="light"` or `"dark"` on <html> is an explicit choice
  * (set before the first paint by the inline script in app/lib/theme); without it the system
@@ -15,83 +18,114 @@
   /* Dark (default) */
   :root {
     color-scheme: dark;
-    --bg: #0f1115;
-    --bg-deep: #0a0b0e;
-    --surface: #13161c;
-    --surface-2: #1a1e25;
-    --line-subtle: #2a3038;
-    --line-strong: #636b78;
-    --fg: #e6e8eb;
-    --fg-soft: #b8bcc4;
-    --muted: #8c919a;
-    --mind-a: #00d9ff;
-    --mind-b: #8b5cf6;
-    --mind-b-text: #a78bfa;
-    --human: #cb9275;
-    --ok: #34d399;
-    --warn: #fbbf24;
-    --bad: #f87171;
-    --focus: #00d9ff;
+    --bg: #0b0d10;
+    --bg-deep: #07090b;
+    --surface: #12151a;
+    --surface-2: #181c22;
+    --line-subtle: #232830;
+    --line-strong: #6d7683;
+    --fg: #f1ede3;
+    --fg-soft: #c9c6be;
+    --muted: #9199a5;
+    --mind-a: #4aabc2;
+    --mind-b: #d99a78;
+    --mind-b-text: #e3a98b;
+    --human: #e6cf9a;
+    --ok: #8fe0b0;
+    --warn: #f0c060;
+    --bad: #ee9393;
+    --focus: #6cc4db;
     --on-accent: #0a0b0e;
-    /* Depth: a 1px inner highlight in dark mode, soft shadows in light mode. */
-    --raise: inset 0 1px 0 rgb(255 255 255 / 0.04);
-    --raise-strong: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 24px 48px -24px rgb(0 0 0 / 0.6);
+    /* Depth, from the lightest to the highest: raise (cards), lift (hover, panes), float (menus, docks, dialogs). A 1px top highlight plus real, layered shadows. */
+    --raise: inset 0 1px 0 rgb(255 255 255 / 0.05), 0 1px 2px rgb(0 0 0 / 0.4);
+    --lift:
+      inset 0 1px 0 rgb(255 255 255 / 0.06), 0 1px 2px rgb(0 0 0 / 0.35),
+      0 10px 28px -10px rgb(0 0 0 / 0.6);
+    --float:
+      inset 0 1px 0 rgb(255 255 255 / 0.07), 0 2px 4px rgb(0 0 0 / 0.3),
+      0 18px 40px -12px rgb(0 0 0 / 0.7), 0 44px 90px -34px rgb(0 0 0 / 0.65);
+    --raise-strong: var(--float);
+    /* Strength of the corner-colour glows, the paper grain and the gradient mesh. */
+    --glow-strength: 38%;
+    --mesh-strength: 15%;
+    --grain-opacity: 0.05;
+    --gloss-strength: 22%;
     /* Behind dialogs, sheets and drawers. */
-    --scrim: rgb(5 6 8 / 0.72);
+    --scrim: rgb(4 5 7 / 0.74);
   }
 
   /* Light, when the system asks for it and nothing was chosen */
   @media (prefers-color-scheme: light) {
     :root:not([data-theme='dark']) {
       color-scheme: light;
-      --bg: #ffffff;
-      --bg-deep: #f7f7f5;
-      --surface: #fafaf8;
+      --bg: #f6f1e7;
+      --bg-deep: #ede6d6;
+      --surface: #fbf8f1;
       --surface-2: #ffffff;
-      --line-subtle: #e4e4e0;
-      --line-strong: #7d838e;
-      --fg: #14161b;
-      --fg-soft: #3d424b;
-      --muted: #5f6571;
-      --mind-a: #09738f;
-      --mind-b: #6d28d9;
-      --mind-b-text: #6d28d9;
-      --human: #9a5434;
-      --ok: #047857;
-      --warn: #a16207;
-      --bad: #b91c1c;
-      --focus: #09738f;
+      --line-subtle: #e2d9c6;
+      --line-strong: #847d6b;
+      --fg: #17191c;
+      --fg-soft: #3e4046;
+      --muted: #625e50;
+      --mind-a: #1d6d84;
+      --mind-b: #a85a30;
+      --mind-b-text: #974822;
+      --human: #7a5a12;
+      --ok: #17704a;
+      --warn: #855400;
+      --bad: #b3261e;
+      --focus: #1d6d84;
       --on-accent: #ffffff;
-      --raise: 0 1px 2px rgb(20 22 27 / 0.06), 0 8px 24px -12px rgb(20 22 27 / 0.12);
-      --raise-strong: 0 1px 2px rgb(20 22 27 / 0.06), 0 24px 48px -20px rgb(20 22 27 / 0.22);
-      --scrim: rgb(20 22 27 / 0.32);
+      --raise: inset 0 1px 0 rgb(255 255 255 / 0.9), 0 1px 2px rgb(60 40 10 / 0.08);
+      --lift:
+        inset 0 1px 0 rgb(255 255 255 / 0.9), 0 1px 2px rgb(60 40 10 / 0.08),
+        0 12px 30px -12px rgb(60 40 10 / 0.2);
+      --float:
+        inset 0 1px 0 rgb(255 255 255 / 0.9), 0 2px 4px rgb(60 40 10 / 0.08),
+        0 20px 44px -14px rgb(60 40 10 / 0.26), 0 46px 90px -36px rgb(60 40 10 / 0.24);
+      --raise-strong: var(--float);
+      --glow-strength: 24%;
+      --mesh-strength: 13%;
+      --grain-opacity: 0.045;
+      --gloss-strength: 8%;
+      --scrim: rgb(23 25 28 / 0.4);
     }
   }
 
   /* Light, chosen explicitly (same values as the block above) */
   :root[data-theme='light'] {
     color-scheme: light;
-    --bg: #ffffff;
-    --bg-deep: #f7f7f5;
-    --surface: #fafaf8;
+    --bg: #f6f1e7;
+    --bg-deep: #ede6d6;
+    --surface: #fbf8f1;
     --surface-2: #ffffff;
-    --line-subtle: #e4e4e0;
-    --line-strong: #7d838e;
-    --fg: #14161b;
-    --fg-soft: #3d424b;
-    --muted: #5f6571;
-    --mind-a: #09738f;
-    --mind-b: #6d28d9;
-    --mind-b-text: #6d28d9;
-    --human: #9a5434;
-    --ok: #047857;
-    --warn: #a16207;
-    --bad: #b91c1c;
-    --focus: #09738f;
+    --line-subtle: #e2d9c6;
+    --line-strong: #847d6b;
+    --fg: #17191c;
+    --fg-soft: #3e4046;
+    --muted: #625e50;
+    --mind-a: #1d6d84;
+    --mind-b: #a85a30;
+    --mind-b-text: #974822;
+    --human: #7a5a12;
+    --ok: #17704a;
+    --warn: #855400;
+    --bad: #b3261e;
+    --focus: #1d6d84;
     --on-accent: #ffffff;
-    --raise: 0 1px 2px rgb(20 22 27 / 0.06), 0 8px 24px -12px rgb(20 22 27 / 0.12);
-    --raise-strong: 0 1px 2px rgb(20 22 27 / 0.06), 0 24px 48px -20px rgb(20 22 27 / 0.22);
-    --scrim: rgb(20 22 27 / 0.32);
+    --raise: inset 0 1px 0 rgb(255 255 255 / 0.9), 0 1px 2px rgb(60 40 10 / 0.08);
+    --lift:
+      inset 0 1px 0 rgb(255 255 255 / 0.9), 0 1px 2px rgb(60 40 10 / 0.08),
+      0 12px 30px -12px rgb(60 40 10 / 0.2);
+    --float:
+      inset 0 1px 0 rgb(255 255 255 / 0.9), 0 2px 4px rgb(60 40 10 / 0.08),
+      0 20px 44px -14px rgb(60 40 10 / 0.26), 0 46px 90px -36px rgb(60 40 10 / 0.24);
+    --raise-strong: var(--float);
+    --glow-strength: 24%;
+    --mesh-strength: 13%;
+    --grain-opacity: 0.045;
+    --gloss-strength: 8%;
+    --scrim: rgb(23 25 28 / 0.4);
   }
 
   /* Derived tokens: the same formula in every theme, so they are declared once. */
@@ -102,6 +136,22 @@
     --mind-a-tint: color-mix(in oklab, var(--mind-a) 10%, var(--surface));
     --mind-b-tint: color-mix(in oklab, var(--mind-b) 10%, var(--surface));
     --human-tint: color-mix(in oklab, var(--human) 10%, var(--surface));
+    /* Fainter washes (large areas, gradient meshes) and role edges (borders that carry the role). */
+    --mind-a-wash: color-mix(in oklab, var(--mind-a) 5%, var(--surface));
+    --mind-b-wash: color-mix(in oklab, var(--mind-b) 5%, var(--surface));
+    --mind-a-edge: color-mix(in oklab, var(--mind-a) 45%, var(--line-subtle));
+    --mind-b-edge: color-mix(in oklab, var(--mind-b) 45%, var(--line-subtle));
+    /* Corner-colour glows: a 1px ring and a soft halo, for the winning pane and the vote dock. */
+    --glow-a:
+      0 0 0 1px color-mix(in oklab, var(--mind-a) 60%, transparent),
+      0 0 44px -6px color-mix(in oklab, var(--mind-a) var(--glow-strength), transparent);
+    --glow-b:
+      0 0 0 1px color-mix(in oklab, var(--mind-b) 60%, transparent),
+      0 0 44px -6px color-mix(in oklab, var(--mind-b) var(--glow-strength), transparent);
+    /* The top edge of a lit surface: a hairline that fades out toward the sides. */
+    --edge-hi: color-mix(in oklab, var(--fg) 14%, transparent);
+    /* The sheen on a filled button: a white fade from the top edge. */
+    --gloss: color-mix(in oklab, white var(--gloss-strength), transparent);
     /* Translucent surface: only the sticky header and the floating composer use it. */
     --glass: color-mix(in oklab, var(--bg) 80%, transparent);
     /* Interaction washes: hover and pressed states on any surface, in both themes. */
@@ -132,12 +182,12 @@
     --code-token-inserted: var(--ok);
     --code-token-deleted: var(--bad);
 
-    /* Motion (section 6) */
+    /* Motion: transform and opacity only. 160 micro, 280 panel, 700 for the reveal. */
     --dur-instant: 90ms;
     --dur-fast: 160ms;
-    --dur-base: 240ms;
-    --dur-slow: 420ms;
-    --dur-cinematic: 900ms;
+    --dur-base: 280ms;
+    --dur-slow: 440ms;
+    --dur-cinematic: 700ms;
   }
 
   @media (prefers-contrast: more) {
@@ -153,26 +203,38 @@
 @theme {
   --color-*: initial;
 
+  /* Three families, self-hosted (Fontsource): Instrument Serif for display, Geist for UI and body, Geist Mono for data and code. */
   --font-sans:
-    'Bricolage Grotesque Variable', 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
-  --font-serif: 'Playfair Display', ui-serif, Georgia, serif;
-  --font-mono: 'DM Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
-  --font-code: 'JetBrains Mono Variable', ui-monospace, SFMono-Regular, Menlo, monospace;
+    'Geist Variable', 'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display:
+    'Instrument Serif', 'Iowan Old Style', 'Palatino Linotype', ui-serif, Georgia, serif;
+  --font-serif: var(--font-display);
+  --font-mono:
+    'Geist Mono Variable', 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-code: var(--font-mono);
 
-  /* Type scale (section 4). Display and H1 are fluid. */
-  --text-display: clamp(3rem, 8vw, 6.5rem);
-  --text-display--line-height: 0.95;
-  --text-display--letter-spacing: -0.045em;
-  --text-display--font-weight: 300;
-  --text-h1: clamp(2.25rem, 4vw, 3.5rem);
-  --text-h1--line-height: 1.05;
-  --text-h1--letter-spacing: -0.03em;
-  --text-h2: clamp(1.75rem, 2.6vw, 2.25rem);
-  --text-h2--line-height: 1.15;
-  --text-h2--letter-spacing: -0.02em;
-  --text-h3: 1.25rem;
-  --text-h3--line-height: 1.3;
-  --text-h3--letter-spacing: -0.01em;
+  /*
+   * Type scale. Display, H1, H2, H3 and lead are fluid (no breakpoints). Display, H1 and H2 are set
+   * in Instrument Serif (base.css), which has one weight: never ask it for bold.
+   */
+  --text-display: clamp(3.5rem, 1.7rem + 8.2vw, 8rem);
+  --text-display--line-height: 0.92;
+  --text-display--letter-spacing: -0.03em;
+  --text-display--font-weight: 400;
+  --text-h1: clamp(2.5rem, 1.7rem + 3.4vw, 4.75rem);
+  --text-h1--line-height: 1;
+  --text-h1--letter-spacing: -0.022em;
+  --text-h1--font-weight: 400;
+  --text-h2: clamp(2rem, 1.5rem + 1.9vw, 3.25rem);
+  --text-h2--line-height: 1.05;
+  --text-h2--letter-spacing: -0.018em;
+  --text-h2--font-weight: 400;
+  --text-h3: clamp(1.25rem, 1.12rem + 0.5vw, 1.5rem);
+  --text-h3--line-height: 1.25;
+  --text-h3--letter-spacing: -0.016em;
+  --text-lead: clamp(1.125rem, 1.04rem + 0.4vw, 1.375rem);
+  --text-lead--line-height: 1.5;
+  --text-lead--letter-spacing: -0.008em;
   --text-body: 1rem;
   --text-body--line-height: 1.65;
   --text-ui: 0.9375rem;
@@ -183,7 +245,11 @@
   --text-caption--line-height: 1.4;
   --text-label: 0.75rem;
   --text-label--line-height: 1.2;
-  --text-label--letter-spacing: 0.22em;
+  --text-label--letter-spacing: 0.12em;
+  /* Big numbers (Elo, vote counts, rank): set in Geist Mono with the numeric utility. */
+  --text-stat: clamp(2.5rem, 1.9rem + 2.4vw, 4.25rem);
+  --text-stat--line-height: 1;
+  --text-stat--letter-spacing: -0.04em;
 
   /* Radius (section 5): chips and inputs, buttons, cards and panes, composer and dialogs. */
   --radius-sm: 6px;
@@ -196,8 +262,9 @@
   --container-reading: 68ch;
 
   /* Easing (section 6). Durations are the --dur-* variables above. */
-  --ease-out-expo: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-snap: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 @theme inline {
@@ -212,9 +279,14 @@
   --color-muted: var(--muted);
   --color-mind-a: var(--mind-a);
   --color-mind-a-tint: var(--mind-a-tint);
+  --color-mind-a-wash: var(--mind-a-wash);
+  --color-mind-a-edge: var(--mind-a-edge);
+  --color-edge-hi: var(--edge-hi);
   --color-mind-b: var(--mind-b);
   --color-mind-b-text: var(--mind-b-text);
   --color-mind-b-tint: var(--mind-b-tint);
+  --color-mind-b-wash: var(--mind-b-wash);
+  --color-mind-b-edge: var(--mind-b-edge);
   --color-human: var(--human);
   --color-human-tint: var(--human-tint);
   --color-ok: var(--ok);
@@ -229,6 +301,10 @@
   --color-scrim: var(--scrim);
   --shadow-raise: var(--raise);
   --shadow-raise-strong: var(--raise-strong);
+  --shadow-lift: var(--lift);
+  --shadow-float: var(--float);
+  --shadow-glow-a: var(--glow-a);
+  --shadow-glow-b: var(--glow-b);
 
   /*
    * shadcn/ui names, mapped onto the tokens above, so registry code and vendored components that

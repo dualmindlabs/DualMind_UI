@@ -18,13 +18,35 @@ export const containers: ReadonlyArray<{ name: string; value: string; use: strin
 /** The 4px grid. Tailwind's spacing unit is 4px, so `p-4` is 16px. */
 export const spacing: readonly number[] = [4, 8, 12, 16, 20, 24, 32, 40, 48, 64, 96, 128];
 
-export const surfaces: ReadonlyArray<{ token: string; use: string; className: string }> = [
-  { token: '--bg-deep', use: 'Hero and footer', className: 'bg-bg-deep' },
-  { token: '--bg', use: 'Page', className: 'bg-bg' },
-  { token: '--surface', use: 'Cards and panes', className: 'bg-surface shadow-raise' },
+/** Layered surfaces, lowest to highest, with the utility that draws each (styles/surfaces.css). */
+export const surfaceLevels: ReadonlyArray<{
+  utility: string;
+  use: string;
+  className: string;
+  note: string;
+}> = [
   {
-    token: '--surface-2',
-    use: 'Menus and composer',
-    className: 'bg-surface-2 shadow-raise-strong',
+    utility: 'surface-inset',
+    use: 'Wells, code, empty lists',
+    className: 'surface-inset',
+    note: 'Recessed: deep background and an inner shadow',
+  },
+  {
+    utility: 'shadow-raise',
+    use: 'Cards at rest',
+    className: 'rounded-lg border border-line bg-surface shadow-raise',
+    note: 'One hairline highlight and a 1px shadow',
+  },
+  {
+    utility: 'surface-duel',
+    use: 'Panes and featured cards',
+    className: 'surface-duel',
+    note: 'Lit from the top, with the lift shadow',
+  },
+  {
+    utility: 'surface-float',
+    use: 'Menus, vote dock, dialogs',
+    className: 'surface-float',
+    note: 'The highest: layered float shadow',
   },
 ];

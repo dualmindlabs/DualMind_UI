@@ -1,4 +1,4 @@
-import playfairItalicLatin from '@fontsource/playfair-display/files/playfair-display-latin-400-italic.woff2?url';
+import instrumentSerifItalicLatin from '@fontsource/instrument-serif/files/instrument-serif-latin-400-italic.woff2?url';
 import { Suspense } from 'react';
 
 import { ArenaBoot, LazyArenaApp, useHomeView } from '@/features/arena';
@@ -19,7 +19,7 @@ export const links: Route.LinksFunction = () => [
   // The hero's human-voice phrase ("You decide.") is above the fold: no late swap, no shift.
   {
     rel: 'preload',
-    href: playfairItalicLatin,
+    href: instrumentSerifItalicLatin,
     as: 'font',
     type: 'font/woff2',
     crossOrigin: 'anonymous',

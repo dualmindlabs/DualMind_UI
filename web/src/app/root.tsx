@@ -1,12 +1,11 @@
-import '@fontsource-variable/bricolage-grotesque/opsz.css';
-import '@fontsource/playfair-display/400-italic.css';
-import '@fontsource/dm-mono/400.css';
-import '@fontsource/dm-mono/500.css';
-import '@fontsource-variable/jetbrains-mono/wght.css';
+import '@fontsource-variable/geist/wght.css';
+import '@fontsource-variable/geist-mono/wght.css';
+import '@fontsource/instrument-serif/400.css';
+import '@fontsource/instrument-serif/400-italic.css';
 import '@/styles/app.css';
 
-import dmMonoLatin from '@fontsource/dm-mono/files/dm-mono-latin-500-normal.woff2?url';
-import bricolageLatin from '@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-opsz-normal.woff2?url';
+import geistLatin from '@fontsource-variable/geist/files/geist-latin-wght-normal.woff2?url';
+import instrumentSerifLatin from '@fontsource/instrument-serif/files/instrument-serif-latin-400-normal.woff2?url';
 import { type ReactNode, useEffect } from 'react';
 import {
   isRouteErrorResponse,
@@ -33,15 +32,22 @@ import { backgrounds } from '@/styles/tokens';
 import type { Route } from './+types/root';
 
 export const links: Route.LinksFunction = () => [
-  // The two files every page needs above the fold: body text and labels.
+  // The two files every page needs above the fold: Geist (UI and body, one variable file for every
+  // weight) and Instrument Serif (the display headlines). Geist Mono loads when data first shows.
   {
     rel: 'preload',
-    href: bricolageLatin,
+    href: geistLatin,
     as: 'font',
     type: 'font/woff2',
     crossOrigin: 'anonymous',
   },
-  { rel: 'preload', href: dmMonoLatin, as: 'font', type: 'font/woff2', crossOrigin: 'anonymous' },
+  {
+    rel: 'preload',
+    href: instrumentSerifLatin,
+    as: 'font',
+    type: 'font/woff2',
+    crossOrigin: 'anonymous',
+  },
   // Icons (web/public): the 32 px .ico for browsers and tools without SVG favicons, the SVG for
   // the rest, the 180 px PNG for iOS home screens, and the web app manifest with the 192 and 512
   // px icons (plus a maskable one) for Android and installed apps. The manifest is fetched with

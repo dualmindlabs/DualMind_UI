@@ -1,6 +1,8 @@
 /*
- * Base styles: page defaults, focus ring, selection, text wrapping and the shared label and
- * human-voice utilities. Values come from tokens.css.
+ * Base styles: page defaults (a faint gradient mesh and paper grain behind everything), focus ring,
+ * selection, text wrapping, the display voice and the type utilities (eyebrow, kicker, numeric,
+ * display, human-voice). Depth utilities (surfaces, glows, rules) are in surfaces.css. Values come
+ * from tokens.css.
  */
 
 @layer base {
@@ -30,6 +32,62 @@
     background: var(--bg);
     font-size: var(--text-body);
     line-height: 1.65;
+    /* The mesh: two soft pools of Mind A and Mind B light at the top corners. No blur filter, one background. */
+    background-image:
+      radial-gradient(
+        60rem 36rem at 8% -12rem,
+        color-mix(in oklab, var(--mind-a) var(--mesh-strength), transparent),
+        transparent 70%
+      ),
+      radial-gradient(
+        56rem 34rem at 96% -10rem,
+        color-mix(in oklab, var(--mind-b) var(--mesh-strength), transparent),
+        transparent 70%
+      );
+    background-repeat: no-repeat;
+    background-size: 100% 44rem;
+  }
+
+  /* Paper grain: noise through a mask, tinted with the text colour, behind the page content. Static. */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: var(--fg);
+    opacity: var(--grain-opacity);
+    -webkit-mask-image: var(--grain-image);
+    mask-image: var(--grain-image);
+    mask-size: 160px 160px;
+  }
+
+  :root {
+    --grain-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1.4 -.2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* The display voice: Instrument Serif has one weight and an italic, so it is never made bold. */
+  .text-display,
+  .text-h1,
+  .text-h2,
+  .font-display {
+    font-family: var(--font-display);
+    font-synthesis-weight: none;
+  }
+
+  /* Theme change: the new theme grows from the toggle as a circle (lib/theme/theme.ts). */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+  }
+
+  ::view-transition-new(root) {
+    z-index: 2;
+  }
+
+  ::view-transition-old(root) {
+    z-index: 1;
   }
 
   *,
@@ -120,6 +178,14 @@
  * and real borders: the focus ring, controls, cards, badges, the pressed and current states.
  */
 @media (forced-colors: active) {
+  body {
+    background-image: none;
+  }
+
+  body::before {
+    display: none;
+  }
+
   :focus-visible {
     outline: 3px solid Highlight;
     outline-offset: 3px;
@@ -180,29 +246,70 @@
   }
 }
 
-/* Eyebrows, badges and keyboard hints: the DM Mono label voice, 12px caps (never smaller). */
+/*
+ * Eyebrow: a data label in Geist Mono, 12px caps. Use it for data (model ids, counts, shortcuts)
+ * and sparingly above a heading; for a plain section lead-in prefer `kicker`.
+ */
 @utility eyebrow {
   font-family: var(--font-mono);
   font-size: var(--text-label);
   font-weight: 500;
   line-height: 1.2;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
-/* The human voice: Playfair Display italic, one phrase per heading at most. */
-@utility human-voice {
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-weight: 400;
-  letter-spacing: -0.01em;
+/* Kicker: the quiet lead-in above a heading. Geist 500, sentence case, with a short rule before it. */
+@utility kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: var(--text-ui-sm);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  color: var(--fg-soft);
+
+  &::before {
+    content: '';
+    width: 1.5rem;
+    height: 1px;
+    background: currentcolor;
+    opacity: 0.55;
+  }
 }
 
-/* The text wordmark: DUALMIND in Bricolage 800 caps; the ARENA suffix is coloured by its parent. */
+/* Display: Instrument Serif for a heading that is not Display, H1 or H2 sized. 36px and up only. */
+@utility display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-synthesis-weight: none;
+  letter-spacing: -0.02em;
+}
+
+/* The human voice: Instrument Serif italic, one phrase per heading at most. */
+@utility human-voice {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  font-synthesis: none;
+  letter-spacing: -0.012em;
+}
+
+/* Numbers that must not jiggle: Geist Mono, tabular and slashed zero (Elo, votes, tokens, rank). */
+@utility numeric {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums slashed-zero;
+  font-feature-settings: 'tnum', 'zero';
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+/* The text wordmark: DUALMIND in Geist 700 caps; the ARENA suffix is coloured by its parent. */
 @utility wordmark {
   font-family: var(--font-sans);
-  font-weight: 800;
-  letter-spacing: 0.12em;
+  font-weight: 700;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   line-height: 1;
 }

@@ -15,19 +15,28 @@ export function TypeSection() {
       }
       lead={
         <p>
-          Bricolage Grotesque carries the machine voice, Playfair Display italic the human one, DM
-          Mono the labels and JetBrains Mono the code. All self-hosted through Fontsource, with the
-          two critical files preloaded.
+          Instrument Serif sets the headlines and, in italic, the human voice. Geist carries the
+          interface and every answer. Geist Mono holds the data. Three families, self-hosted through
+          Fontsource and subset to Latin: about 96 KB for everything above the fold, with Geist and
+          Instrument Serif preloaded.
         </p>
       }
     >
-      <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="surface-duel overflow-hidden mesh-a p-6 sm:p-10">
+        <p className="kicker">The verdict, in display</p>
+        <p className="mt-6 max-w-[16ch] text-display text-fg">
+          Which answer is <em className="human-voice text-human">better?</em>
+        </p>
+        <p className="mt-8 max-w-[56ch] text-lead text-fg-soft">
+          Serif for the moment that matters, a precise grotesque for everything you read twice, and
+          mono wherever a number has to line up.
+        </p>
+      </div>
+
+      <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {typeVoices.map(voice => (
-          <li
-            key={voice.voice}
-            className="flex flex-col rounded-lg border border-line bg-surface p-5 shadow-raise"
-          >
-            <p aria-hidden="true" className={cn('text-h1 leading-none', voice.className)}>
+          <li key={voice.voice} className="surface-duel flex flex-col p-5">
+            <p aria-hidden="true" className={cn('text-h1 leading-none text-fg', voice.className)}>
               {voice.sample}
             </p>
             <h3 className="mt-6 text-ui font-semibold text-fg">{voice.voice}</h3>
@@ -45,7 +54,7 @@ export function TypeSection() {
       </div>
 
       <h3 className="mt-14 text-h3 font-semibold">Numbers</h3>
-      <div className="mt-5 rounded-lg border border-line bg-surface">
+      <div className="surface-duel mt-5 overflow-hidden">
         <table className="w-full text-left text-ui">
           <caption className="px-3 pt-4 text-left text-caption text-muted sm:px-4">
             Tabular figures for Elo, counts and timings, so columns line up.
@@ -78,16 +87,16 @@ export function TypeSection() {
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-line tabular-nums">
+          <tbody className="divide-y divide-line">
             {leaderboardSample.map(row => (
               <tr key={row.rank}>
-                <td className="px-2 py-3 font-mono text-muted sm:px-4">{row.rank}</td>
+                <td className="px-2 py-3 numeric text-muted sm:px-4">{row.rank}</td>
                 <td className="px-2 py-3 font-medium text-fg sm:px-4">{row.model}</td>
-                <td className="px-2 py-3 text-right text-fg sm:px-4">{row.elo}</td>
-                <td className="px-2 py-3 text-right text-fg-soft max-sm:hidden sm:px-4">
+                <td className="px-2 py-3 text-right numeric text-fg sm:px-4">{row.elo}</td>
+                <td className="px-2 py-3 text-right numeric text-fg-soft max-sm:hidden sm:px-4">
                   {row.battles}
                 </td>
-                <td className="px-2 py-3 text-right text-fg-soft sm:px-4">{row.winRate}</td>
+                <td className="px-2 py-3 text-right numeric text-fg-soft sm:px-4">{row.winRate}</td>
               </tr>
             ))}
           </tbody>

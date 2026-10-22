@@ -372,9 +372,9 @@ for (const theme of ['dark', 'light'] as const) {
       document.body.append(layer);
     }, OG_TEMPLATE);
     await page.evaluate(async () => {
-      await document.fonts.load('italic 400 84px "Playfair Display"');
-      await document.fonts.load('800 22px "Bricolage Grotesque Variable"');
-      await document.fonts.load('500 15px "DM Mono"');
+      await document.fonts.load('italic 400 84px "Instrument Serif"');
+      await document.fonts.load('700 22px "Geist Variable"');
+      await document.fonts.load('500 15px "Geist Mono Variable"');
       await document.fonts.ready;
     });
     await page.waitForTimeout(300);

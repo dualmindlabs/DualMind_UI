@@ -1,7 +1,7 @@
 /**
  * Keyboard key.
  * Source: shadcn/ui `kbd` (base-vega), MIT, see ./LICENSE.md.
- * Changes: DM Mono label voice, a raised key with a thicker bottom edge, our tokens.
+ * Changes: Geist Mono label voice, a raised key with a thicker bottom edge, our tokens.
  */
 import type { ComponentProps } from 'react';
 
