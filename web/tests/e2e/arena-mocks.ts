@@ -20,7 +20,7 @@ const BOARD = readFileSync(
     '..',
     'fixtures',
     'api',
-    'model-stats.board.recorded.json',
+    'leaderboard-v2.board.json',
   ),
   'utf8',
 );
@@ -254,7 +254,7 @@ export async function mockArena(
       return json(route, 200, { success: true, user: { user_id: USER.id, name: 'Ada Lovelace' } });
     }
     if (path === '/api/models') return json(route, 200, { items: MODELS });
-    if (path === '/api/arena/model-stats') {
+    if (path === '/api/v2/leaderboard') {
       return json(route, 200, JSON.parse(BOARD));
     }
     // Direct chat streams from the e2e backend (serve-dist.mjs), in real chunks.

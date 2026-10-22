@@ -12,7 +12,7 @@ function Leaders() {
   if (status !== 'success') return <p>{status}</p>;
   return (
     <ul aria-label="Leaders">
-      {data.slice(0, 2).map(stat => (
+      {data.items.slice(0, 2).map(stat => (
         <li key={stat.modelId}>{stat.displayName}</li>
       ))}
     </ul>

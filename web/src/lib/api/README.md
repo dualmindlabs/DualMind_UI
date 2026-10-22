@@ -8,7 +8,7 @@ Import everything from `@/lib/api` (the `index.ts` public API), never from the f
 import { createApiClientFromEnv, getUserMessage, leaderboardQuery } from '@/lib/api';
 
 const api = createApiClientFromEnv({ getAccessToken: () => session?.access_token ?? null });
-const rows = await api.getLeaderboard(); // ModelStat[]
+const { items } = await api.getLeaderboard(); // LeaderboardData: ModelStat[] + meta; v2, v1 fallback for one release
 const query = useQuery(leaderboardQuery(api)); // or through TanStack Query
 ```
 

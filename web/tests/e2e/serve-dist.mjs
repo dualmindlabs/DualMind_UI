@@ -8,8 +8,8 @@
 //
 // A fake backend on the next port answers /api/* for the proxy tests: it echoes the method, path
 // and headers it received, and adds the headers the Worker must strip (BACKEND_URL points at it).
-// The public leaderboard (GET /api/arena/model-stats) answers with a recorded response instead
-// (tests/fixtures/api/model-stats.board.recorded.json), so the landing page shows real data in the
+// The public leaderboard (GET /api/v2/leaderboard) answers with a recorded response instead
+// (tests/fixtures/api/leaderboard-v2.board.json), so the landing page shows real data in the
 // tests, the screenshots and Lighthouse. Shared threads (GET /api/threads/<id> and /messages)
 // come from tests/fixtures/api/share-threads.json. Tests that need a failure mock it with
 // page.route().
@@ -72,6 +72,10 @@ if (!existsSync(path.join(config.assets.directory, 'design', 'index.html'))) {
 }
 
 const leaderboard = readFileSync(
+  path.join(webDir, 'tests', 'fixtures', 'api', 'leaderboard-v2.board.json'),
+);
+// The v1 route, kept for the web client's one-release fallback.
+const leaderboardV1 = readFileSync(
   path.join(webDir, 'tests', 'fixtures', 'api', 'model-stats.board.recorded.json'),
 );
 // Shared threads (slice S11), answered like the API answers a visitor without a token: public and
@@ -143,9 +147,14 @@ const backend = http.createServer((request, response) => {
     return;
   }
   if (sharedThread(request, response)) return;
-  if (request.method === 'GET' && request.url?.startsWith('/api/arena/model-stats')) {
+  if (request.method === 'GET' && request.url?.startsWith('/api/v2/leaderboard')) {
     response.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
     response.end(leaderboard);
+    return;
+  }
+  if (request.method === 'GET' && request.url?.startsWith('/api/arena/model-stats')) {
+    response.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+    response.end(leaderboardV1);
     return;
   }
   response.writeHead(200, {

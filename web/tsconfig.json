@@ -1,5 +1,5 @@
 {
-  "include": ["src/**/*", "tests/**/*", ".react-router/types/**/*", "*.ts"],
+  "include": ["src/**/*", "tests/**/*", "../contract/**/*.ts", ".react-router/types/**/*", "*.ts"],
   "compilerOptions": {
     "lib": ["DOM", "DOM.Iterable", "ES2023"],
     "types": ["node", "vite/client"],
@@ -11,6 +11,7 @@
     "allowImportingTsExtensions": true,
     "paths": {
       "@/*": ["./src/*"],
+      "@contract/*": ["../contract/*"],
       "hono": ["./node_modules/hono"],
       "hono/body-limit": ["./node_modules/hono/dist/types/middleware/body-limit/index.d.ts"],
       "hono/factory": ["./node_modules/hono/dist/types/helper/factory/index.d.ts"],

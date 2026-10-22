@@ -1,0 +1,108 @@
+{
+  "items": [
+    {
+      "modelId": "fdbfca6d-a3d2-4a70-b0ab-426024eb5cd5",
+      "modelName": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+      "displayName": "llama-3.3-70b-instruct-fp8-fast",
+      "providerName": "cloudflare",
+      "eloScore": 1150,
+      "eloRank": 1,
+      "totalWins": 62,
+      "totalLosses": 27,
+      "totalTies": 9,
+      "totalResponses": 96,
+      "winRate": 64.58,
+      "provisional": false
+    },
+    {
+      "modelId": "2f2219b0-d1ce-402d-b6d0-29d1e67ef04b",
+      "modelName": "@cf/meta/llama-3.1-70b-instruct",
+      "displayName": "llama-3.1-70b-instruct",
+      "providerName": "cloudflare",
+      "eloScore": 1140,
+      "eloRank": 2,
+      "totalWins": 154,
+      "totalLosses": 55,
+      "totalTies": 36,
+      "totalResponses": 250,
+      "winRate": 61.6,
+      "provisional": false
+    },
+    {
+      "modelId": "69a22e49-21bf-4388-88e3-46794e7cbac2",
+      "modelName": "groq/compound-mini",
+      "displayName": "Compound Mini",
+      "providerName": "groq",
+      "eloScore": 1051,
+      "eloRank": 9,
+      "totalWins": 38,
+      "totalLosses": 43,
+      "totalTies": 19,
+      "totalResponses": 101,
+      "winRate": 37.62,
+      "provisional": false
+    },
+    {
+      "modelId": "1fe310c7-24d1-49a5-a042-2e409e009524",
+      "modelName": "gemma-3n-e2b-it",
+      "displayName": "Gemma 3n E2B IT",
+      "providerName": "google",
+      "eloScore": 1033,
+      "eloRank": 16,
+      "totalWins": 1,
+      "totalLosses": 2,
+      "totalTies": 2,
+      "totalResponses": 6,
+      "winRate": 16.67,
+      "provisional": false
+    },
+    {
+      "modelId": "3f4c1552-4a43-4540-a18f-5fe825fdcbc2",
+      "modelName": "@cf/meta/llama-3.2-11b-vision-instruct",
+      "displayName": "llama-3.2-11b-vision-instruct",
+      "providerName": "cloudflare",
+      "eloScore": 1030,
+      "eloRank": 18,
+      "totalWins": 73,
+      "totalLosses": 80,
+      "totalTies": 23,
+      "totalResponses": 167,
+      "winRate": 43.71,
+      "provisional": false
+    },
+    {
+      "modelId": "c864b5f3-df07-408b-87b1-bbd6256c6d2f",
+      "modelName": "@hf/nousresearch/hermes-2-pro-mistral-7b",
+      "displayName": "hermes-2-pro-mistral-7b",
+      "providerName": "cloudflare",
+      "eloScore": 1030,
+      "eloRank": 18,
+      "totalWins": 98,
+      "totalLosses": 104,
+      "totalTies": 18,
+      "totalResponses": 217,
+      "winRate": 45.16,
+      "provisional": false
+    },
+    {
+      "modelId": "ca1b0aa7-529f-48a9-8f10-7927f75404b3",
+      "modelName": "gemma-3-1b-it",
+      "displayName": "Gemma 3 1B IT",
+      "providerName": "google",
+      "eloScore": 1000,
+      "eloRank": 36,
+      "totalWins": 0,
+      "totalLosses": 7,
+      "totalTies": 0,
+      "totalResponses": 8,
+      "winRate": 0,
+      "provisional": false
+    }
+  ],
+  "meta": {
+    "generatedAt": "2026-10-21T18:30:00.000Z",
+    "count": 7,
+    "provisionalBelow": 5,
+    "source": "dualmind-api:model-stats"
+  }
+}

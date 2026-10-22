@@ -5,6 +5,8 @@
  * canned and say so, because mock content must never pass for a real model answer.
  */
 
+import { LEADERBOARD_SOURCE, PROVISIONAL_BELOW } from '@contract/leaderboard';
+
 export interface MockModelStat {
   modelId: string;
   modelName: string;
@@ -174,4 +176,20 @@ export function demoAnswers(prompt: string): [string, string] {
 
 export function demoChatAnswer(prompt: string): string {
   return `${DEMO_NOTICE}\n\nYou asked: "${quote(prompt)}". In Direct Chat one model answers, streamed as it writes.`;
+}
+
+/** The v2 leaderboard body (`GET /api/v2/leaderboard`, contract/leaderboard.ts) for the same rows. */
+export function toV2Leaderboard(stats: readonly MockModelStat[]) {
+  return {
+    items: stats.map(stat => ({
+      ...stat,
+      provisional: stat.totalResponses < PROVISIONAL_BELOW,
+    })),
+    meta: {
+      generatedAt: '2026-10-20T18:00:00.000Z',
+      count: stats.length,
+      provisionalBelow: PROVISIONAL_BELOW,
+      source: LEADERBOARD_SOURCE,
+    },
+  };
 }

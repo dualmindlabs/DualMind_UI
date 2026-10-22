@@ -24,10 +24,10 @@ import { passGate, settle, shotPath, storeTheme } from './helpers';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const BOARD = readFileSync(
-  path.join(here, '..', 'fixtures', 'api', 'model-stats.board.recorded.json'),
+  path.join(here, '..', 'fixtures', 'api', 'leaderboard-v2.board.json'),
   'utf8',
 );
-const STATS = '**/api/arena/model-stats';
+const STATS = '**/api/v2/leaderboard';
 const PROBLEM = 'https://arena.dualmindlab.tech/problems/';
 const STRONG = 'Tabs&Spaces-2026';
 
@@ -80,7 +80,7 @@ type Scenario = {
 
 type BoardMode = 'hold' | 'error' | 'empty' | 'limited';
 
-/** Answers model-stats the way `mode` says; returns the request id the client sent last. */
+/** Answers the v2 leaderboard the way `mode` says; returns the request id the client sent last. */
 async function mockBoard(page: Page, mode: BoardMode) {
   const seen = { requestId: '' };
   let release: () => void = () => {};
@@ -120,7 +120,7 @@ async function mockBoard(page: Page, mode: BoardMode) {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: '{"success":true,"items":[]}',
+        body: '{"items":[],"meta":{"generatedAt":"2026-10-21T18:30:00.000Z","count":0,"provisionalBelow":5,"source":"dualmind-api:model-stats"}}',
       });
     }
   });

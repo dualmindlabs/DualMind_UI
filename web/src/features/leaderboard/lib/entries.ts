@@ -53,7 +53,7 @@ export function byRank(a: LeaderboardEntry, b: LeaderboardEntry): number {
  */
 export function toLeaderboardEntries(stats: readonly ModelStat[]): LeaderboardEntry[] {
   if (stats.length === 0) return [];
-  const ratedStats = stats.filter(stat => !isProvisional(stat.totalResponses));
+  const ratedStats = stats.filter(stat => !stat.provisional);
   const scale = (ratedStats.length > 0 ? ratedStats : stats).map(stat => stat.eloScore);
   const lowest = Math.min(...scale);
   const highest = Math.max(...scale);
@@ -61,7 +61,7 @@ export function toLeaderboardEntries(stats: readonly ModelStat[]): LeaderboardEn
 
   return stats
     .map((stat): LeaderboardEntry => {
-      const provisional = isProvisional(stat.totalResponses);
+      const provisional = stat.provisional;
       const made = modelMaker(stat.modelName, stat.providerName);
       const platform = platformLabel(stat.providerName);
       return {
