@@ -171,7 +171,7 @@ export const credits: readonly Credit[] = [
   },
   {
     id: 'fontsource',
-    name: 'Fontsource (Instrument Serif, Geist, Geist Mono; Bricolage Grotesque for the wordmark)',
+    name: 'Fontsource (Geist, Geist Mono; Bricolage Grotesque for the wordmark)',
     url: 'https://fontsource.org',
     licence: 'SIL Open Font License 1.1',
     licenceUrl: 'https://openfontlicense.org',

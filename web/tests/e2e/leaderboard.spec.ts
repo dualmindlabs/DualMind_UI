@@ -575,7 +575,7 @@ for (const card of [
       document.body.append(layer);
     }, card.template);
     await page.evaluate(async () => {
-      await document.fonts.load('italic 400 70px "Instrument Serif"');
+      await document.fonts.load('600 70px \"Geist Variable\"');
       await document.fonts.load('700 21px "Geist Variable"');
       await document.fonts.load('300 66px "Geist Variable"');
       await document.fonts.load('500 15px "Geist Mono Variable"');

@@ -1,7 +1,7 @@
 /*
  * Base styles: page defaults (a faint gradient mesh and paper grain behind everything), focus ring,
- * selection, text wrapping, the display voice and the type utilities (eyebrow, kicker, numeric,
- * display, human-voice). Depth utilities (surfaces, glows, rules) are in surfaces.css. Values come
+ * selection, text wrapping and the type utilities (eyebrow, kicker, numeric, display, human-voice,
+ * bg-grid). Depth utilities (surfaces, glows, rules) are in surfaces.css. Values come
  * from tokens.css.
  */
 
@@ -66,13 +66,12 @@
     --grain-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1.4 -.2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
-  /* The display voice: Instrument Serif has one weight and an italic, so it is never made bold. */
+  /* Display, H1 and H2 are Geist at 600 with tight tracking; the weight and tracking come from the type tokens. */
   .text-display,
   .text-h1,
-  .text-h2,
-  .font-display {
+  .text-h2 {
     font-family: var(--font-display);
-    font-synthesis-weight: none;
+    font-feature-settings: 'ss01', 'cv11';
   }
 
   /* Theme change: the new theme grows from the toggle as a circle (lib/theme/theme.ts). */
@@ -279,21 +278,33 @@
   }
 }
 
-/* Display: Instrument Serif for a heading that is not Display, H1 or H2 sized. 36px and up only. */
+/* Display: Geist 600, tight, for a heading that is not Display, H1 or H2 sized. */
 @utility display {
   font-family: var(--font-display);
-  font-weight: 400;
-  font-synthesis-weight: none;
-  letter-spacing: -0.02em;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 1;
 }
 
-/* The human voice: Instrument Serif italic, one phrase per heading at most. */
+/* The human voice: one phrase per heading in the human colour (add text-human), set apart by a soft gradient underline. */
 @utility human-voice {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-weight: 400;
-  font-synthesis: none;
-  letter-spacing: -0.012em;
+  font-style: normal;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 0.06em;
+  text-decoration-color: color-mix(in oklab, currentcolor 45%, transparent);
+  text-underline-offset: 0.14em;
+  text-decoration-skip-ink: none;
+}
+
+/* A crisp 1px grid for hero backgrounds, fading out toward the edges (a mask; static). */
+@utility bg-grid {
+  background-image:
+    linear-gradient(to right, color-mix(in oklab, var(--fg) 7%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in oklab, var(--fg) 7%, transparent) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 0%, black 30%, transparent 100%);
 }
 
 /* Numbers that must not jiggle: Geist Mono, tabular and slashed zero (Elo, votes, tokens, rank). */

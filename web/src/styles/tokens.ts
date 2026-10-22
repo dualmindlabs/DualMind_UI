@@ -26,17 +26,17 @@ export interface ColorToken {
   against?: `--${string}`[];
 }
 
-export const backgrounds: Record<ThemeName, string> = { dark: '#0B0D10', light: '#F6F1E7' };
+export const backgrounds: Record<ThemeName, string> = { dark: '#08090B', light: '#F7F8FA' };
 
 export const colorTokens: ColorToken[] = [
   {
     name: '--bg',
     label: 'Background',
-    use: 'Page background: Midnight ink, or Paper',
+    use: 'Page background: Midnight, or Paper',
     kind: 'surface',
     group: 'Surfaces',
-    dark: '#0B0D10',
-    light: '#F6F1E7',
+    dark: '#08090B',
+    light: '#F7F8FA',
   },
   {
     name: '--bg-deep',
@@ -44,8 +44,8 @@ export const colorTokens: ColorToken[] = [
     use: 'Hero, footer and recessed sections',
     kind: 'surface',
     group: 'Surfaces',
-    dark: '#07090B',
-    light: '#EDE6D6',
+    dark: '#050608',
+    light: '#EEF0F3',
   },
   {
     name: '--surface',
@@ -53,8 +53,8 @@ export const colorTokens: ColorToken[] = [
     use: 'Cards, panes, sidebar',
     kind: 'surface',
     group: 'Surfaces',
-    dark: '#12151A',
-    light: '#FBF8F1',
+    dark: '#0E1014',
+    light: '#FFFFFF',
   },
   {
     name: '--surface-2',
@@ -62,7 +62,7 @@ export const colorTokens: ColorToken[] = [
     use: 'Menus, popovers, composer, docks',
     kind: 'surface',
     group: 'Surfaces',
-    dark: '#181C22',
+    dark: '#14171C',
     light: '#FFFFFF',
   },
   {
@@ -71,8 +71,8 @@ export const colorTokens: ColorToken[] = [
     use: 'Dividers, used as --line',
     kind: 'decorative',
     group: 'Lines',
-    dark: '#232830',
-    light: '#E2D9C6',
+    dark: '#1F232B',
+    light: '#E3E6EB',
   },
   {
     name: '--line-strong',
@@ -80,17 +80,17 @@ export const colorTokens: ColorToken[] = [
     use: 'Inputs and control borders',
     kind: 'control',
     group: 'Lines',
-    dark: '#6D7683',
-    light: '#847D6B',
+    dark: '#5E6674',
+    light: '#858C99',
   },
   {
     name: '--fg',
     label: 'Foreground',
-    use: 'Body text: warm cream on Midnight, ink on Paper',
+    use: 'Body text: near-white on Midnight, ink on Paper',
     kind: 'text',
     group: 'Text',
-    dark: '#F1EDE3',
-    light: '#17191C',
+    dark: '#ECEEF2',
+    light: '#0E1014',
   },
   {
     name: '--fg-soft',
@@ -98,8 +98,8 @@ export const colorTokens: ColorToken[] = [
     use: 'Secondary text',
     kind: 'text',
     group: 'Text',
-    dark: '#C9C6BE',
-    light: '#3E4046',
+    dark: '#B6BBC6',
+    light: '#3A404B',
   },
   {
     name: '--muted',
@@ -107,8 +107,8 @@ export const colorTokens: ColorToken[] = [
     use: 'Captions and metadata',
     kind: 'text',
     group: 'Text',
-    dark: '#9199A5',
-    light: '#625E50',
+    dark: '#8A91A0',
+    light: '#5B6270',
   },
   {
     name: '--mind-a',
@@ -117,7 +117,7 @@ export const colorTokens: ColorToken[] = [
     kind: 'text',
     group: 'Roles',
     dark: '#4AABC2',
-    light: '#1D6D84',
+    light: '#17728A',
   },
   {
     name: '--mind-b',
@@ -125,8 +125,8 @@ export const colorTokens: ColorToken[] = [
     use: 'The second model: terracotta fills and borders',
     kind: 'fill',
     group: 'Roles',
-    dark: '#D99A78',
-    light: '#A85A30',
+    dark: '#E0A07C',
+    light: '#B25F37',
   },
   {
     name: '--mind-b-text',
@@ -134,8 +134,8 @@ export const colorTokens: ColorToken[] = [
     use: 'The second model: text',
     kind: 'text',
     group: 'Roles',
-    dark: '#E3A98B',
-    light: '#974822',
+    dark: '#E8AF8E',
+    light: '#9E4D25',
   },
   {
     name: '--human',
@@ -143,8 +143,8 @@ export const colorTokens: ColorToken[] = [
     use: 'Your prompt, your vote, your winner: champagne gold',
     kind: 'text',
     group: 'Roles',
-    dark: '#E6CF9A',
-    light: '#7A5A12',
+    dark: '#7BE0B0',
+    light: '#16794F',
   },
   {
     name: '--ok',
@@ -152,8 +152,8 @@ export const colorTokens: ColorToken[] = [
     use: 'Success and online states',
     kind: 'text',
     group: 'Status',
-    dark: '#8FE0B0',
-    light: '#17704A',
+    dark: '#6FD9A0',
+    light: '#1B7A4E',
   },
   {
     name: '--warn',
@@ -170,7 +170,7 @@ export const colorTokens: ColorToken[] = [
     use: 'Errors and destructive actions',
     kind: 'text',
     group: 'Status',
-    dark: '#EE9393',
+    dark: '#EE8E8E',
     light: '#B3261E',
   },
   {
@@ -180,7 +180,7 @@ export const colorTokens: ColorToken[] = [
     kind: 'control',
     group: 'Focus and accents',
     dark: '#6CC4DB',
-    light: '#1D6D84',
+    light: '#17728A',
   },
   {
     name: '--on-accent',
@@ -188,7 +188,7 @@ export const colorTokens: ColorToken[] = [
     use: 'Text on Mind A, Mind B, Human and error fills',
     kind: 'text',
     group: 'Focus and accents',
-    dark: '#0A0B0E',
+    dark: '#08090B',
     light: '#FFFFFF',
     against: ['--mind-a', '--mind-b', '--human', '--bad'],
   },

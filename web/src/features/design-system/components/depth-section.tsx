@@ -4,7 +4,7 @@ import { depths } from '@/styles/tokens';
 import { surfaceLevels } from '../lib/space';
 import { Section } from './section';
 
-/** Depth in the Duel Editorial direction: layered surfaces, real shadows, glows, mesh and grain. */
+/** Depth in the Instrument direction: layered surfaces, real shadows, glows, mesh and grain. */
 export function DepthSection() {
   return (
     <Section

@@ -15,21 +15,22 @@ export function TypeSection() {
       }
       lead={
         <p>
-          Instrument Serif sets the headlines and, in italic, the human voice. Geist carries the
-          interface and every answer. Geist Mono holds the data. Three families, self-hosted through
-          Fontsource and subset to Latin: about 96 KB for everything above the fold, with Geist and
-          Instrument Serif preloaded.
+          Geist sets everything you read, from a 136px display down to the answer text, with tight
+          negative tracking as it grows. Geist Mono holds the data and keeps numbers in columns. Two
+          families, self-hosted through Fontsource and subset to Latin: about 52 KB for everything
+          above the fold, both preloaded.
         </p>
       }
     >
-      <div className="surface-duel overflow-hidden mesh-a p-6 sm:p-10">
+      <div className="surface-duel relative isolate overflow-hidden p-6 sm:p-10">
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 bg-grid" />
         <p className="kicker">The verdict, in display</p>
         <p className="mt-6 max-w-[16ch] text-display text-fg">
-          Which answer is <em className="human-voice text-human">better?</em>
+          Which answer is <span className="human-voice text-human">better?</span>
         </p>
         <p className="mt-8 max-w-[56ch] text-lead text-fg-soft">
-          Serif for the moment that matters, a precise grotesque for everything you read twice, and
-          mono wherever a number has to line up.
+          One precise grotesque for everything you read twice, and mono wherever a number has to
+          line up.
         </p>
       </div>
 

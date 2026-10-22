@@ -3,7 +3,7 @@
  * Source: shadcn/ui `button` (base-vega), MIT, see ./LICENSE.md.
  * Changes: our tokens and variants (primary, mind-b, human, secondary, ghost, outline,
  * destructive, link), the S1 sizes (md is the 44px default), filled variants with a lit top edge
- * and a lift shadow (the Duel Editorial depth), a loading state that keeps focus and width, the
+ * and a lift shadow (the Instrument depth), a loading state that keeps focus and width, the
  * global focus ring instead of shadcn's ring utilities, and 24px / 44px (touch) pointer targets.
  */
 import { Button as ButtonPrimitive } from '@base-ui/react/button';

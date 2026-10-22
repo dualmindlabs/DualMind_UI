@@ -1,6 +1,6 @@
 /**
- * Section title: the kicker, then a display heading in Instrument Serif with an optional italic
- * accent phrase (the human voice, one per heading at most). The one heading block for the
+ * Section title: the kicker, then a display heading in Geist 600 with an optional accent
+ * phrase (the human voice, underlined in the human colour, one per heading at most). The one heading block for the
  * redesigned pages. Our own component.
  */
 import type { ReactNode } from 'react';
@@ -12,7 +12,7 @@ export interface SectionTitleProps {
   kicker?: ReactNode;
   /** The heading text. */
   title: ReactNode;
-  /** An italic phrase after the title, in the human colour. */
+  /** An accented phrase after the title, in the human colour. */
   accent?: ReactNode;
   /** One short paragraph under the heading, in the lead size. */
   lead?: ReactNode;
@@ -53,7 +53,7 @@ export function SectionTitle({
         {accent ? (
           <>
             {' '}
-            <em className="human-voice text-human">{accent}</em>
+            <span className="human-voice text-human">{accent}</span>
           </>
         ) : null}
       </Heading>

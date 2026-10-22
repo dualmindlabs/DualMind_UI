@@ -21,10 +21,7 @@ export function Hero() {
       aria-labelledby="hero-title"
       className="grain relative isolate overflow-hidden border-b border-line mesh-duel"
     >
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-10 dot-grid [mask-image:radial-gradient(ellipse_70%_60%_at_70%_35%,black,transparent)]"
-      />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 bg-grid" />
       <div className="mx-auto grid max-w-page items-center gap-12 px-4 pt-28 pb-14 sm:px-6 md:pt-32 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:pt-36 lg:pb-20">
         <div className="min-w-0">
           <p className="animate-rise eyebrow text-fg-soft">
@@ -36,9 +33,9 @@ export function Hero() {
             <span className="human-voice text-human">{BRAND_PRIMARY_VOICE}</span>
           </h1>
           <p className="mt-8 max-w-reading animate-rise text-lead text-fg-soft [animation-delay:160ms]">
-            The living style guide for the Arena, in its Duel Editorial direction: Midnight and
-            Paper, a serif that speaks and a grotesque that works, cyan against terracotta.
-            Everything below is rendered from the same tokens the product uses.
+            The living style guide for the Arena, in its Instrument direction: Midnight and Paper,
+            one precise grotesque set large and tight, cyan against terracotta. Everything below is
+            rendered from the same tokens the product uses.
           </p>
           <SectionNav className="mt-10 animate-rise [animation-delay:240ms]" />
         </div>

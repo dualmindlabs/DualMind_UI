@@ -372,7 +372,7 @@ for (const theme of ['dark', 'light'] as const) {
       document.body.append(layer);
     }, OG_TEMPLATE);
     await page.evaluate(async () => {
-      await document.fonts.load('italic 400 84px "Instrument Serif"');
+      await document.fonts.load('600 84px \"Geist Variable\"');
       await document.fonts.load('700 22px "Geist Variable"');
       await document.fonts.load('500 15px "Geist Mono Variable"');
       await document.fonts.ready;

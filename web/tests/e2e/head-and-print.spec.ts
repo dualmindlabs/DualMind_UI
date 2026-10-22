@@ -149,8 +149,8 @@ test.describe('icons and the web app manifest', () => {
     expect(manifest.description).toBe('Blind battles between AI models, ranked by votes.');
     expect(manifest.start_url).toBe('/');
     expect(manifest.display).toBe('standalone');
-    expect(manifest.background_color).toBe('#0B0D10');
-    expect(manifest.theme_color).toBe('#0B0D10');
+    expect(manifest.background_color).toBe('#08090B');
+    expect(manifest.theme_color).toBe('#08090B');
 
     const purposes = manifest.icons.map(icon => `${icon.sizes} ${icon.purpose}`);
     expect(purposes).toEqual(
@@ -258,7 +258,7 @@ test.describe('print', () => {
           style.getPropertyValue(name).trim().toLowerCase(),
         );
       });
-      expect(inks).toEqual(['#974822', '#17704a', '#855400', '#b3261e']);
+      expect(inks).toEqual(['#9e4d25', '#1b7a4e', '#855400', '#b3261e']);
       await page.screenshot({ path: shotPath(`print-share-from-${theme}`), fullPage: true });
     });
   }

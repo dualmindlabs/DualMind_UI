@@ -5,7 +5,7 @@ import { StatTile } from '@/components/ui/stat-tile';
 
 import { KitCard, KitState } from './kit-card';
 
-/** The Duel Editorial building blocks: eyebrow, section title, stat tile, skeleton. */
+/** The Instrument building blocks: eyebrow, section title, stat tile, skeleton. */
 export function KitFoundation() {
   return (
     <KitCard
@@ -15,7 +15,7 @@ export function KitFoundation() {
       className="lg:col-span-2"
     >
       <div className="grid gap-8 lg:grid-cols-2">
-        <KitState label="Section title with kicker, serif heading and italic accent">
+        <KitState label="Section title with kicker, display heading and accent">
           <SectionTitle
             level="h3"
             kicker="How a battle works"

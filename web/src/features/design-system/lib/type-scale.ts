@@ -1,4 +1,4 @@
-/** The type scale of the Duel Editorial direction, as shown on the style guide. */
+/** The type scale of the Instrument direction, as shown on the style guide. */
 export const typeScale: ReadonlyArray<{
   name: string;
   spec: string;
@@ -8,28 +8,28 @@ export const typeScale: ReadonlyArray<{
 }> = [
   {
     name: 'Display',
-    spec: 'Instrument Serif 400, clamp(3.5rem, 1.7rem + 8.2vw, 8rem) / 0.92, -0.03em',
+    spec: 'Geist 600, clamp(3.5rem, 1.6rem + 8.6vw, 8.5rem) / 0.92, -0.055em',
     use: 'Hero headlines and the verdict. One per page.',
     sample: 'Two models.',
     className: 'text-display',
   },
   {
     name: 'H1',
-    spec: 'Instrument Serif 400, clamp(2.5rem, 1.7rem + 3.4vw, 4.75rem) / 1, -0.022em',
+    spec: 'Geist 600, clamp(2.5rem, 1.7rem + 3.6vw, 5rem) / 1, -0.045em',
     use: 'Page titles',
     sample: 'A leaderboard you can trust',
     className: 'text-h1',
   },
   {
     name: 'H2',
-    spec: 'Instrument Serif 400, clamp(2rem, 1.5rem + 1.9vw, 3.25rem) / 1.05, -0.018em',
+    spec: 'Geist 600, clamp(2rem, 1.5rem + 1.9vw, 3.25rem) / 1.05, -0.04em',
     use: 'Sections',
     sample: 'How a battle works',
     className: 'text-h2',
   },
   {
     name: 'H3',
-    spec: 'Geist 600, clamp(1.25rem, 1.12rem + 0.5vw, 1.5rem) / 1.25, -0.016em',
+    spec: 'Geist 600, clamp(1.25rem, 1.12rem + 0.5vw, 1.5rem) / 1.25, -0.022em',
     use: 'Cards and panes',
     sample: 'Answer A, in 1.2 seconds',
     className: 'text-h3 font-semibold',
@@ -80,29 +80,29 @@ export const typeVoices: ReadonlyArray<{
   className: string;
 }> = [
   {
-    voice: 'Display voice',
-    family: 'Instrument Serif, regular and italic',
-    use: 'Headlines at 36px and up. One weight: never bold.',
+    voice: 'Display',
+    family: 'Geist Variable 600, -0.055em',
+    use: 'Headlines: large, dense, tightly tracked',
     sample: 'Aa',
-    className: 'font-display',
+    className: 'font-sans font-semibold tracking-[-0.055em]',
   },
   {
     voice: 'Machine voice',
     family: 'Geist Variable, 100 to 900',
     use: 'UI and body, model answers included',
     sample: 'Aa',
-    className: 'font-sans font-semibold',
+    className: 'font-sans font-medium',
   },
   {
     voice: 'Human voice',
-    family: 'Instrument Serif italic',
+    family: 'Geist 600 in the human colour, underlined',
     use: 'One phrase per heading, at most',
     sample: 'You decide.',
-    className: 'human-voice text-human',
+    className: 'human-voice font-semibold text-human',
   },
   {
     voice: 'Data voice',
-    family: 'Geist Mono Variable, 100 to 900',
+    family: 'Geist Mono Variable, tabular',
     use: 'Elo, counts, labels, shortcuts and code',
     sample: '1,284',
     className: 'numeric',

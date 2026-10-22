@@ -17,14 +17,14 @@
     --fg-soft: #1c1f24;
     --muted: #4b515c;
     --line-strong: #7d838e;
-    --mind-a: #1d6d84;
+    --mind-a: #17728a;
     /* The light theme's text colours: code and badges printed from the dark theme stay legible. */
-    --mind-b: #a85a30;
-    --mind-b-text: #974822;
-    --ok: #17704a;
+    --mind-b: #b25f37;
+    --mind-b-text: #9e4d25;
+    --ok: #1b7a4e;
     --warn: #855400;
     --bad: #b3261e;
-    --human: #7a5a12;
+    --human: #16794f;
     --human-tint: #ffffff;
     --mind-a-tint: #ffffff;
     --mind-b-tint: #ffffff;
