@@ -293,9 +293,24 @@ jobs:
           # Checked after the tests (last step), so an overrun still gets screenshots and Lighthouse.
           echo "LANDING_JS_GZIP=${landing_total}" >> "$GITHUB_ENV"
 
+      # The browser download is cached per lockfile and retried: four shards download it at
+      # once, and the Playwright CDN sometimes answers with the wrong certificate
+      # (ERR_TLS_CERT_ALTNAME_INVALID on cdn.playwright.dev).
+      - name: Cache the Playwright browser
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('web/package-lock.json') }}
+
       - name: Install Playwright Chromium
         working-directory: web
-        run: npx playwright install --with-deps chromium
+        run: |
+          for attempt in 1 2 3 4; do
+            if npx playwright install --with-deps chromium; then exit 0; fi
+            echo "::warning::Playwright install failed (attempt ${attempt}); retrying in 20 s"
+            sleep 20
+          done
+          exit 1
 
       # Shards split by spec file (fullyParallel is off), so a file's tests keep their order.
       - name: Run Playwright (wrangler dev + Chromium), shard ${{ matrix.shard }} of 4
