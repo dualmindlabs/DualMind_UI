@@ -84,7 +84,10 @@ export function BoardStatus({
           <p className="min-w-0 flex-1">
             <span className="font-medium text-fg">These numbers may be out of date.</span> The last
             refresh failed ({getUserMessage(refreshError)}), so this is still the board from{' '}
-            <time dateTime={new Date(updatedAt).toISOString()}>{formatClockWithZone(updatedAt)}</time>.
+            <time dateTime={new Date(updatedAt).toISOString()}>
+              {formatClockWithZone(updatedAt)}
+            </time>
+            .
           </p>
           <Button variant="secondary" size="xs" onClick={onRefresh} loading={refreshing}>
             Try again

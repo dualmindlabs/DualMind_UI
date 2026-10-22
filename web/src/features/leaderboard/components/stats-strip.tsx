@@ -84,7 +84,10 @@ export function StatsStrip({
         {summary && updatedAt > 0 ? (
           <time dateTime={new Date(updatedAt).toISOString()}>
             {formatClock(updatedAt)}{' '}
-            <abbr title="Your time zone" className="text-caption font-normal text-muted no-underline">
+            <abbr
+              title="Your time zone"
+              className="text-caption font-normal text-muted no-underline"
+            >
               {formatZone(updatedAt)}
             </abbr>
           </time>

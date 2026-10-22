@@ -22,7 +22,9 @@ function collectErrors(page: Page) {
 test('loads without console errors and hydrates (the theme toggle works)', async ({ page }) => {
   const errors = collectErrors(page);
   await page.goto('/design/');
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Two models. One prompt. You decide.');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'Two models. One prompt. You decide.',
+  );
 
   // The theme switch in the page header (the style guide shows more copies in its previews).
   const themeSwitch = page.getByRole('banner').getByRole('group', { name: 'Colour theme' });
