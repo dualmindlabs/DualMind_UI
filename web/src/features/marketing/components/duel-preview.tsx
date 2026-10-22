@@ -56,7 +56,7 @@ export function DuelPreview({ className }: { className?: string }) {
       className={cn('relative w-full', className)}
     >
       <div className="pointer-events-none absolute -inset-8 -z-10 bg-[radial-gradient(closest-side_at_22%_40%,color-mix(in_oklab,var(--mind-a)_20%,transparent),transparent_75%),radial-gradient(closest-side_at_80%_62%,color-mix(in_oklab,var(--mind-b)_18%,transparent),transparent_75%)]" />
-      <div className="grid gap-3 surface-float p-3 sm:gap-4 sm:p-4">
+      <div className="grid grid-cols-1 gap-3 surface-float p-3 sm:gap-4 sm:p-4">
         <div className="flex items-center justify-between gap-3 px-1">
           <p className="flex items-center gap-2 eyebrow text-fg-soft">
             <span className="flex gap-1">

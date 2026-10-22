@@ -85,7 +85,7 @@ function AskStage() {
   return (
     <div className="flex h-full flex-col justify-center gap-4">
       <p className="text-center text-h3 font-semibold text-fg">What do you want to ask?</p>
-      <div className="grid gap-3 surface-inset p-3.5">
+      <div className="grid grid-cols-1 gap-3 surface-inset p-3.5">
         <p className="text-body text-fg">
           {PROMPT}
           <span className="ml-0.5 inline-block h-5 w-0.5 translate-y-1 animate-caret bg-mind-a" />
@@ -156,7 +156,7 @@ function RevealStage({ models }: { models: [ExampleModel, ExampleModel] }) {
       <p className="text-h3 font-semibold text-fg">
         B is better<span className="text-human">.</span>
       </p>
-      <div className="grid gap-2.5">
+      <div className="grid grid-cols-1 gap-2.5">
         {rows.map(({ side, model, won }) => (
           <div
             key={side}

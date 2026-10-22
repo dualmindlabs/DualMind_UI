@@ -58,7 +58,7 @@ function PairingsArt({ stats }: { stats: LiveStatsState }) {
     { label: 'Battle 3', a: first, b: second },
   ];
   return (
-    <div className="grid gap-2.5">
+    <div className="grid grid-cols-1 gap-2.5">
       {rows.map(row => (
         <div
           key={row.label}
@@ -85,7 +85,7 @@ function RatingsArt({ stats }: { stats: LiveStatsState }) {
   const top = stats.status === 'ready' ? stats.stats.top.slice(0, 4) : [];
   if (top.length === 0) {
     return (
-      <div className="grid gap-3" aria-hidden="true">
+      <div className="grid grid-cols-1 gap-3" aria-hidden="true">
         {[0, 1, 2, 3].map(row => (
           <span key={row} className="h-9 rounded-md bg-surface-2" />
         ))}
@@ -93,7 +93,7 @@ function RatingsArt({ stats }: { stats: LiveStatsState }) {
     );
   }
   return (
-    <ul className="grid gap-2.5">
+    <ul className="grid grid-cols-1 gap-2.5">
       {top.map(model => (
         <li
           key={model.id}
@@ -116,7 +116,7 @@ function RatingsArt({ stats }: { stats: LiveStatsState }) {
 /** Open methodology: the formula and the four vote choices, as the how-it-works page writes them. */
 function MethodArt() {
   return (
-    <div className="grid gap-3">
+    <div className="grid grid-cols-1 gap-3">
       <div className="surface-inset px-4 py-3.5">
         <p className="eyebrow text-muted">Expected score</p>
         <p className="mt-2 font-mono text-ui text-fg sm:text-body">
