@@ -34,8 +34,7 @@ function StageBackdrop() {
     <div
       aria-hidden="true"
       className="pointer-events-none absolute inset-0 overflow-hidden mesh-duel"
-    >
-    </div>
+    ></div>
   );
 }
 

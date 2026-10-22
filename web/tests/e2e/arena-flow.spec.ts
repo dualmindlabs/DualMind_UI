@@ -426,7 +426,10 @@ test.describe('after the vote', () => {
     await openArena(page);
     const turn = await sendBattle(page);
     // The vote pill opens once both answers are read, or on "Vote now".
-    await turn.getByRole('button', { name: 'Vote now' }).click({ timeout: 1500 }).catch(() => undefined);
+    await turn
+      .getByRole('button', { name: 'Vote now' })
+      .click({ timeout: 1500 })
+      .catch(() => undefined);
     await turn.getByRole('button', { name: /B is better/ }).click();
     await expect(turn).toHaveAttribute('data-phase', 'revealed');
     await expect(turn.getByTestId('reveal-panel')).toBeFocused();
@@ -522,7 +525,10 @@ test.describe('README', () => {
     await openArena(page);
     const turn = await sendBattle(page, 'Explain recursion to a ten-year-old');
     // The vote pill opens once both answers are read, or on "Vote now".
-    await turn.getByRole('button', { name: 'Vote now' }).click({ timeout: 1500 }).catch(() => undefined);
+    await turn
+      .getByRole('button', { name: 'Vote now' })
+      .click({ timeout: 1500 })
+      .catch(() => undefined);
     await turn.getByRole('button', { name: /A is better/ }).click();
     await expect(turn).toHaveAttribute('data-phase', 'revealed');
     await settle(page, 2600);

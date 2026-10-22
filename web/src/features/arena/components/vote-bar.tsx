@@ -173,7 +173,8 @@ export interface VoteHintProps {
  * or the visitor chooses to vote now.
  */
 export function VoteHint({ read, onSkip, className }: VoteHintProps) {
-  const left = !read.a && !read.b ? 'Read both answers to vote' : read.a ? 'Now read B' : 'Now read A';
+  const left =
+    !read.a && !read.b ? 'Read both answers to vote' : read.a ? 'Now read B' : 'Now read A';
   return (
     <div className={cn('grid', className)} data-testid="vote-hint">
       <div

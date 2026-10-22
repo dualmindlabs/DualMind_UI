@@ -84,11 +84,7 @@ export function RevealPanel({ turn }: { turn: LiveTurn }) {
         )}
       />
       <div className="grid justify-items-center gap-3 text-center">
-        <p
-          id={titleId}
-          data-testid="verdict"
-          className="grid justify-items-center gap-2 sm:gap-3"
-        >
+        <p id={titleId} data-testid="verdict" className="grid justify-items-center gap-2 sm:gap-3">
           <span className="text-ui text-fg-soft">Your verdict:</span>{' '}
           <motion.span
             initial={reduce ? false : { opacity: 0, y: 14, scale: 0.97 }}
@@ -134,8 +130,8 @@ export function RevealPanel({ turn }: { turn: LiveTurn }) {
                   aria-hidden="true"
                   data-letter={side.toUpperCase()}
                   className={cn(
-                    'flex min-h-48 items-center justify-center rounded-2xl border [backface-visibility:hidden] [transform:rotateY(180deg)] dot-grid',
-                    "text-[5rem] font-semibold tracking-[-0.05em] before:content-[attr(data-letter)]",
+                    'flex min-h-48 [transform:rotateY(180deg)] items-center justify-center rounded-2xl border dot-grid [backface-visibility:hidden]',
+                    'text-[5rem] font-semibold tracking-[-0.05em] before:content-[attr(data-letter)]',
                     side === 'a'
                       ? 'border-mind-a-edge bg-mind-a-tint text-mind-a'
                       : 'border-mind-b-edge bg-mind-b-tint text-mind-b-text',
@@ -157,7 +153,7 @@ export function RevealPanel({ turn }: { turn: LiveTurn }) {
                   <div className="flex items-start justify-between gap-3">
                     <ModelMark name={nameOf(answer)} who={side} size="lg" />
                     {picked ? (
-                      <span className="eyebrow pt-1 whitespace-nowrap text-human">Your pick</span>
+                      <span className="pt-1 eyebrow whitespace-nowrap text-human">Your pick</span>
                     ) : null}
                   </div>
                   <div className="grid min-w-0 gap-1">

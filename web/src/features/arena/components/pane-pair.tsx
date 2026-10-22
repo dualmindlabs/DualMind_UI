@@ -1,12 +1,5 @@
 import { Check, ChevronDown, Columns2 } from 'lucide-react';
-import {
-  type ReactNode,
-  type TouchEvent,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import { type ReactNode, type TouchEvent, useCallback, useEffect, useRef, useState } from 'react';
 
 import { RoleBadge } from '@/components/ui/role-badge';
 import { useShouldReduceMotion } from '@/hooks/use-should-reduce-motion';
@@ -96,7 +89,10 @@ export function PanePair({
 
   const bump = useCallback((side: Side, value: number) => {
     if (value <= progressRef.current[side] + 0.01 && value < 1) return;
-    progressRef.current = { ...progressRef.current, [side]: Math.max(progressRef.current[side], value) };
+    progressRef.current = {
+      ...progressRef.current,
+      [side]: Math.max(progressRef.current[side], value),
+    };
     setProgress(progressRef.current);
     if (value >= READ_AT && !told.current[side]) {
       told.current[side] = true;
@@ -271,7 +267,7 @@ export function PanePair({
                 ) : null}
                 <span
                   aria-hidden="true"
-                  className="absolute inset-x-4 bottom-1 h-0.5 overflow-hidden rounded-full bg-line-subtle"
+                  className="bg-line-subtle absolute inset-x-4 bottom-1 h-0.5 overflow-hidden rounded-full"
                 >
                   <span
                     data-testid={`read-${side.id}`}
@@ -362,9 +358,7 @@ export function PanePair({
                 <button
                   type="button"
                   aria-expanded={open[slot.id]}
-                  onClick={() =>
-                    setOpen(current => ({ ...current, [slot.id]: !current[slot.id] }))
-                  }
+                  onClick={() => setOpen(current => ({ ...current, [slot.id]: !current[slot.id] }))}
                   className="mx-auto mt-2 inline-flex h-10 items-center justify-center gap-1.5 rounded-full border border-line px-4 text-ui-sm font-medium text-fg-soft hover:text-fg md:hidden"
                 >
                   <ChevronDown

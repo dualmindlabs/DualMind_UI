@@ -417,7 +417,10 @@ test.describe('battles', () => {
     await expect(turn).toHaveAttribute('data-phase', 'awaiting_vote', { timeout: 15_000 });
     await context.setOffline(true);
     // The vote pill opens once both answers are read, or on "Vote now".
-    await turn.getByRole('button', { name: 'Vote now' }).click({ timeout: 1500 }).catch(() => undefined);
+    await turn
+      .getByRole('button', { name: 'Vote now' })
+      .click({ timeout: 1500 })
+      .catch(() => undefined);
     await turn.getByRole('button', { name: /A is better/ }).click();
     await expect(turn.getByTestId('vote-pending')).toBeVisible();
     expect(await page.evaluate(() => window.localStorage.getItem('dm.voteQueue.v1'))).toContain(
@@ -544,7 +547,10 @@ test.describe('battle screenshots', () => {
         await settle(page, 400);
         await page.screenshot({ path: shotPath(`battle-vote-${viewport.label}-${theme}`) });
         // The vote pill opens once both answers are read, or on "Vote now".
-        await turn.getByRole('button', { name: 'Vote now' }).click({ timeout: 1500 }).catch(() => undefined);
+        await turn
+          .getByRole('button', { name: 'Vote now' })
+          .click({ timeout: 1500 })
+          .catch(() => undefined);
         await turn.getByRole('button', { name: /B is better/ }).click();
         await expect(turn).toHaveAttribute('data-phase', 'revealed');
         await page.waitForTimeout(500);
@@ -564,7 +570,10 @@ test.describe('battle screenshots', () => {
     const turn = page.getByTestId('live-turn').first();
     await expect(turn).toHaveAttribute('data-phase', 'awaiting_vote', { timeout: 15_000 });
     // The vote pill opens once both answers are read, or on "Vote now".
-    await turn.getByRole('button', { name: 'Vote now' }).click({ timeout: 1500 }).catch(() => undefined);
+    await turn
+      .getByRole('button', { name: 'Vote now' })
+      .click({ timeout: 1500 })
+      .catch(() => undefined);
     await turn.getByRole('button', { name: /A is better/ }).click();
     await expect(turn.getByTestId('pane-model').first()).toContainText(
       'Llama 3.3 70B Instruct (FP8, fast)',

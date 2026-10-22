@@ -52,7 +52,7 @@ function LiveRating({ answer, side }: { answer: LiveAnswer; side?: 'a' | 'b' }) 
       {side ? (
         <span
           aria-hidden="true"
-          className="mt-1 block h-1.5 w-full basis-full overflow-hidden rounded-full bg-line-subtle"
+          className="bg-line-subtle mt-1 block h-1.5 w-full basis-full overflow-hidden rounded-full"
         >
           <motion.span
             data-testid="rating-bar"

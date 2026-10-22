@@ -167,7 +167,10 @@ test.describe('arena offline', () => {
     state.offline = true;
     await goOffline(context, page);
     // The vote pill opens once both answers are read, or on "Vote now".
-    await turn.getByRole('button', { name: 'Vote now' }).click({ timeout: 1500 }).catch(() => undefined);
+    await turn
+      .getByRole('button', { name: 'Vote now' })
+      .click({ timeout: 1500 })
+      .catch(() => undefined);
     await turn.getByRole('button', { name: /A is better/ }).click();
     await expect(turn.getByTestId('vote-pending')).toBeVisible();
     await expect(notice(page)).toContainText('(1 waiting)');
@@ -353,7 +356,10 @@ test.describe('offline screenshots', () => {
         state.offline = true;
         await goOffline(context, page);
         // The vote pill opens once both answers are read, or on "Vote now".
-        await turn.getByRole('button', { name: 'Vote now' }).click({ timeout: 1500 }).catch(() => undefined);
+        await turn
+          .getByRole('button', { name: 'Vote now' })
+          .click({ timeout: 1500 })
+          .catch(() => undefined);
         await turn.getByRole('button', { name: /A is better/ }).click();
         await expect(notice(page)).toContainText('(1 waiting)');
         await settle(page, 600);

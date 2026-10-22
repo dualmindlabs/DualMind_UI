@@ -118,7 +118,10 @@ export function LiveTurnView({
   // Which answers were read to the end, and whether the visitor chose to vote without that.
   const [read, setRead] = useState({ a: false, b: false });
   const [skipped, setSkipped] = useState(false);
-  const markRead = useCallback((side: 'a' | 'b') => setRead(current => ({ ...current, [side]: true })), []);
+  const markRead = useCallback(
+    (side: 'a' | 'b') => setRead(current => ({ ...current, [side]: true })),
+    [],
+  );
   const optional = turn.mode === 'side';
   const showVote =
     turn.mode !== 'direct' && (turn.phase === 'awaiting_vote' || turn.phase === 'voting');
@@ -164,11 +167,7 @@ export function LiveTurnView({
         <UnratedNotice>{UNRATED_NOTES[turn.unrated]}</UnratedNotice>
       ) : null}
       {showVote && turn.phase === 'awaiting_vote' && !skipped && !(read.a && read.b) ? (
-        <VoteHint
-          className="sticky bottom-3 z-10"
-          read={read}
-          onSkip={() => setSkipped(true)}
-        />
+        <VoteHint className="sticky bottom-3 z-10" read={read} onSkip={() => setSkipped(true)} />
       ) : null}
       {showVote && (turn.phase === 'voting' || skipped || (read.a && read.b)) ? (
         <VoteBar

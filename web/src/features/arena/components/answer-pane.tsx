@@ -82,7 +82,7 @@ export function AnswerPane({
       />
       <div
         aria-hidden="true"
-        className="relative h-0.5 overflow-hidden rounded-full bg-line-subtle"
+        className="bg-line-subtle relative h-0.5 overflow-hidden rounded-full"
         data-testid={generating ? 'pane-progress' : undefined}
       >
         <span
@@ -97,7 +97,10 @@ export function AnswerPane({
       <div className="min-w-0 flex-1 py-8 sm:py-10">
         {children ?? (
           <>
-            <Markdown streaming={streaming} className="answer-prose max-w-[66ch] text-[1.0625rem]! leading-[1.8]! sm:text-[1.125rem]!">
+            <Markdown
+              streaming={streaming}
+              className="answer-prose max-w-[66ch] text-[1.0625rem]! leading-[1.8]! sm:text-[1.125rem]!"
+            >
               {text}
             </Markdown>
             {streaming ? (
