@@ -54,7 +54,7 @@ function statusLine(state: ExportState): string {
         ? `Export finished. ${state.fileName} was downloaded.`
         : 'Export finished. The print dialog is open.';
     case 'cancelled':
-      return 'Export cancelled.';
+      return 'Export canceled.';
     default:
       return '';
   }
@@ -171,7 +171,7 @@ function Outcome({
     );
   }
   if (state.status === 'cancelled') {
-    return <p className="text-ui-sm text-fg-soft">Export cancelled. Nothing was downloaded.</p>;
+    return <p className="text-ui-sm text-fg-soft">Export canceled. Nothing was downloaded.</p>;
   }
   return null;
 }

@@ -83,7 +83,7 @@ export const credits: readonly Credit[] = [
     id: 'aceternity',
     name: 'Aceternity UI',
     url: 'https://ui.aceternity.com',
-    licence: 'Aceternity licence (free tier)',
+    licence: 'Aceternity license (free tier)',
     licenceUrl: 'https://ui.aceternity.com/licence',
     kind: 'vendored',
     restricted: true,

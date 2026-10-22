@@ -163,6 +163,15 @@
     border: 1px solid CanvasText;
   }
 
+  /*
+   * The wordmark is drawn with SVG fills from the theme tokens, which forced colours leave alone:
+   * DUALMIND in the dark theme's near-white vanished on a light system background. Both words
+   * take the system text colour instead.
+   */
+  [data-slot='wordmark'] path {
+    fill: CanvasText;
+  }
+
   /* Bars and swatches that carry data keep their colour, with a border so they stay visible. */
   .recharts-rectangle {
     forced-color-adjust: none;

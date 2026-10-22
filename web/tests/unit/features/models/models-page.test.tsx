@@ -63,7 +63,7 @@ describe('ModelsPage', () => {
     await user.click(screen.getByRole('button', { name: 'Gemma 3 1B IT' }));
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByRole('heading', { level: 2 })).toHaveTextContent('Gemma 3 1B IT');
-    expect(within(dialog).getByRole('link', { name: 'Open the leaderboard' })).toHaveAttribute(
+    expect(within(dialog).getByRole('link', { name: 'See the leaderboard' })).toHaveAttribute(
       'href',
       '/leaderboard/',
     );

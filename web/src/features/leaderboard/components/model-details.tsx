@@ -44,7 +44,7 @@ function Links({ from }: { from: ModelDetailsProps['from'] }) {
   const other =
     from === 'leaderboard'
       ? { href: '/models/', label: 'Browse all models' }
-      : { href: '/leaderboard/', label: 'Open the leaderboard' };
+      : { href: '/leaderboard/', label: 'See the leaderboard' };
   return (
     <>
       <a href={ARENA_HREF} className={cn(buttonVariants({ variant: 'primary', size: 'sm' }))}>

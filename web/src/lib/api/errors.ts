@@ -369,7 +369,7 @@ export function getUserMessage(error: unknown): string {
     case 'timeout':
       return 'This is taking longer than it should. Please try again.';
     case 'aborted':
-      return 'The request was cancelled.';
+      return 'The request was canceled.';
     case 'auth':
       return 'Please sign in to continue.';
     case 'forbidden':

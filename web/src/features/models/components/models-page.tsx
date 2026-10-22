@@ -136,7 +136,7 @@ export function ModelsPage() {
                 Start a battle
               </a>
               <a href="/leaderboard/" className={cn(buttonVariants({ variant: 'link' }))}>
-                Open the leaderboard
+                See the leaderboard
                 <ArrowRight aria-hidden="true" strokeWidth={1.75} />
               </a>
             </div>

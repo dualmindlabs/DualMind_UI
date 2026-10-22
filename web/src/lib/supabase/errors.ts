@@ -45,7 +45,7 @@ const BY_CODE: Readonly<Record<string, string>> = {
   session_expired: MESSAGES.sessionEnded,
   user_not_found: 'We could not find that account.',
   provider_disabled: 'This sign-in option is turned off right now.',
-  access_denied: 'Sign-in was cancelled or not allowed.',
+  access_denied: 'Sign-in was canceled or not allowed.',
   reauthentication_needed: 'For your security, sign in again before changing your password.',
 };
 

@@ -59,7 +59,7 @@ export const STARTER_CATEGORIES: readonly StarterCategory[] = [
       'Write a haiku about merge conflicts.',
       'Explain recursion to a ten-year-old using only words about cooking.',
       'Invent a board game that can be played with a deck of cards and three coins. Give the rules.',
-      'Describe the colour blue to someone who has never seen it.',
+      'Describe the color blue to someone who has never seen it.',
     ],
   },
 ];

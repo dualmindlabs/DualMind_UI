@@ -27,7 +27,7 @@ test('loads without console errors and hydrates (the theme toggle works)', async
   );
 
   // The theme switch in the page header (the style guide shows more copies in its previews).
-  const themeSwitch = page.getByRole('banner').getByRole('group', { name: 'Colour theme' });
+  const themeSwitch = page.getByRole('banner').getByRole('group', { name: 'Color theme' });
   await themeSwitch.locator('label').filter({ hasText: 'Light' }).click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
   expect(await page.evaluate(() => window.localStorage.getItem('dm.theme'))).toBe('light');

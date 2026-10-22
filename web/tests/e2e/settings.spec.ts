@@ -409,7 +409,7 @@ test.describe('export', () => {
     await page.getByRole('button', { name: /Export as Markdown/ }).click();
     await expect(page.getByRole('progressbar', { name: 'Export progress' })).toBeVisible();
     await page.getByRole('button', { name: 'Cancel', exact: true }).click();
-    await expect(page.getByText('Export cancelled. Nothing was downloaded.')).toBeVisible();
+    await expect(page.getByText('Export canceled. Nothing was downloaded.')).toBeVisible();
   });
 });
 

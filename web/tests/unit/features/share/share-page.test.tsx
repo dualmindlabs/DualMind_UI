@@ -180,7 +180,7 @@ describe('SharePage', () => {
     expect(
       await screen.findByRole('heading', {
         level: 1,
-        name: 'This link is private or doesn’t exist.',
+        name: 'This link is private or does not exist.',
       }),
     ).toBeVisible();
     expect(screen.getByRole('link', { name: 'Run your own battle' })).toHaveAttribute('href', '/');

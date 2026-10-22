@@ -63,7 +63,7 @@ export function ShareUnavailable({ ownerHref }: { ownerHref: string | null }) {
     <StateCard
       testId="share-unavailable"
       icon={<Lock strokeWidth={1.75} className="size-5" />}
-      title="This link is private or doesn’t exist."
+      title="This link is private or does not exist."
       actions={
         <>
           <a

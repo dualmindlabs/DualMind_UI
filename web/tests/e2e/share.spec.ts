@@ -277,7 +277,7 @@ test.describe('share page', () => {
     await mockSharedApi(page);
     await openShare(page, `/share/${IDS.private}`);
     await expect(
-      page.getByRole('heading', { level: 1, name: 'This link is private or doesn’t exist.' }),
+      page.getByRole('heading', { level: 1, name: 'This link is private or does not exist.' }),
     ).toBeVisible();
     await expect(page.getByRole('link', { name: 'Run your own battle' })).toHaveAttribute(
       'href',

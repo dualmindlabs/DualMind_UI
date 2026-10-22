@@ -33,7 +33,7 @@ export function ThemeToggle({ className, compact = false }: ThemeToggleProps) {
         className,
       )}
     >
-      <legend className="sr-only">Colour theme</legend>
+      <legend className="sr-only">Color theme</legend>
       {OPTIONS.map(({ value, label, icon: Icon }) => (
         <label
           key={value}
