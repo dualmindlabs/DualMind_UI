@@ -11,7 +11,7 @@ import { AppProviders } from '@/components/layout/app-providers';
 import { SessionHandoffScript } from '@/components/layout/session-handoff-script';
 import { ThemeScript } from '@/components/layout/theme-script';
 import { Wordmark } from '@/components/layout/wordmark';
-import { CrashScreen } from '@/features/info/components/crash-screen';
+import { CrashScreen } from '@/features/errors';
 import { wantsSessionHandoff } from '@/lib/session/handoff';
 import { backgrounds } from '@/styles/tokens';
 

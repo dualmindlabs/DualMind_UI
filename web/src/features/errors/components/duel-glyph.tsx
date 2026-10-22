@@ -3,10 +3,10 @@
  * screens where something did not arrive. Decorative (aria-hidden); the words next to it carry the
  * meaning. Only transform and opacity move. Our own component.
  */
+import './duel-glyph.css';
+
 import { ModelMark } from '@/components/ui/model-mark';
 import { cn } from '@/lib/utils/cn';
-
-import './error-stage.css';
 
 export type DuelGlyphState = 'miss' | 'offline' | 'crash' | 'update';
 

@@ -1,3 +1,5 @@
+import './not-found.css';
+
 import { Search } from 'lucide-react';
 import { type ReactNode, useState, useSyncExternalStore } from 'react';
 
@@ -11,8 +13,6 @@ import { ModelMark } from '@/components/ui/model-mark';
 import { useCommandPalette } from '@/hooks/use-command-palette';
 import { useModifierKey } from '@/hooks/use-modifier-key';
 import { cn } from '@/lib/utils/cn';
-
-import './error-stage.css';
 
 type Vote = 'a' | 'b' | 'tie' | 'both-bad';
 
