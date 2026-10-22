@@ -63,6 +63,7 @@ const PRERENDERED = [
   '/login/',
   '/signup/',
   '/forgot-password/',
+  '/developers/',
   '/design/',
 ] as const;
 
