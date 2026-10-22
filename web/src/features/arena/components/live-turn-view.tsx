@@ -7,6 +7,7 @@ import { useShouldReduceMotion } from '@/hooks/use-should-reduce-motion';
 import { resolveDisplayName } from '@/lib/models/display-name';
 
 import { useArena } from '../hooks/use-arena';
+import { REVEAL_MS } from '../hooks/use-battle';
 import { useRevealText } from '../hooks/use-reveal-text';
 import { type LiveAnswer, type LiveTurn, namesShown } from '../lib/battle-machine';
 import { UNRATED_NOTES } from '../lib/battle-notes';
@@ -68,10 +69,12 @@ function LivePane({ turn, side, answer }: PaneProps) {
   // The meter fills with the share of the answer on screen: both panes of a pair end together, so
   // it says nothing about the models. Speed and length would, so they wait for the names.
   const total = answer?.text.length ?? 0;
-  const elapsed = turn.answeredAt === null ? 0 : (Date.now() - turn.answeredAt) / 1000;
+  // Time on screen follows from the share shown (the reveal runs at a fixed pace over REVEAL_MS).
+  const share = total === 0 ? 0 : text.length / total;
+  const elapsed = (share * REVEAL_MS) / 1000;
   const live: LiveStats | undefined = generating
     ? {
-        progress: total === 0 || answer === null ? null : text.length / total,
+        progress: total === 0 || answer === null ? null : share,
         ...(shown && elapsed > 0.25 && text.length > 0
           ? { chars: text.length, tokensPerSecond: text.length / 4 / elapsed }
           : {}),
