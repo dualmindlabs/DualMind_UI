@@ -24,10 +24,10 @@ export function ModelListHead() {
       className="hidden grid-cols-[2.25rem_minmax(0,1fr)_4.5rem_6rem_5rem_7rem_7.5rem] gap-x-4 px-4 pb-1 md:grid"
     >
       <span className="col-span-2 eyebrow text-muted">Model</span>
-      <span className="eyebrow text-right text-muted">Rank</span>
-      <span className="eyebrow text-right text-muted">Elo</span>
-      <span className="eyebrow text-right text-muted">Win rate</span>
-      <span className="eyebrow text-right text-muted">Battles</span>
+      <span className="text-right eyebrow text-muted">Rank</span>
+      <span className="text-right eyebrow text-muted">Elo</span>
+      <span className="text-right eyebrow text-muted">Win rate</span>
+      <span className="text-right eyebrow text-muted">Battles</span>
       <span />
     </div>
   );

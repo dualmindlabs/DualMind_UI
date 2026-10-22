@@ -148,22 +148,22 @@ export function ModelsPage() {
     return (
       <div className="grid gap-2">
         {layout === 'list' ? <ModelListHead /> : null}
-      <ul aria-label="Models" className={layout === 'cards' ? GRID : LIST}>
-        {view.visible.map(entry => {
-          const slot = pinned.indexOf(entry.id);
-          return (
-            <ModelCard
-              key={entry.id}
-              entry={entry}
-              leaderElo={leaderElo}
-              layout={layout}
-              pinSlot={slot === 0 ? 0 : slot === 1 ? 1 : null}
-              onOpen={details.openModel}
-              onTogglePin={id => setPinned(current => togglePinned(current, id))}
-            />
-          );
-        })}
-      </ul>
+        <ul aria-label="Models" className={layout === 'cards' ? GRID : LIST}>
+          {view.visible.map(entry => {
+            const slot = pinned.indexOf(entry.id);
+            return (
+              <ModelCard
+                key={entry.id}
+                entry={entry}
+                leaderElo={leaderElo}
+                layout={layout}
+                pinSlot={slot === 0 ? 0 : slot === 1 ? 1 : null}
+                onOpen={details.openModel}
+                onTogglePin={id => setPinned(current => togglePinned(current, id))}
+              />
+            );
+          })}
+        </ul>
       </div>
     );
   }
