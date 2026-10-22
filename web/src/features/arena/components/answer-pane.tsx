@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils/cn';
 
 import { Markdown } from './markdown';
 import { PaneHeader, type PaneSide } from './pane-header';
-import { type LiveStats, LiveReadout, StreamMeter } from './stream-meter';
+import { LiveReadout, type LiveStats, StreamMeter } from './stream-meter';
 
 export interface AnswerPaneProps {
   side: PaneSide;
@@ -36,9 +36,9 @@ export interface AnswerPaneProps {
 }
 
 const EDGE = {
-  a: { chosen: 'bg-mind-a', busy: 'bg-mind-a/35' },
-  b: { chosen: 'bg-mind-b', busy: 'bg-mind-b/35' },
-  solo: { chosen: 'bg-fg-soft', busy: 'bg-fg-soft/35' },
+  a: { busy: 'bg-mind-a/35' },
+  b: { busy: 'bg-mind-b/35' },
+  solo: { busy: 'bg-fg-soft/35' },
 } as const;
 
 /**
@@ -87,7 +87,7 @@ export function AnswerPane({
         data-testid={generating ? 'pane-edge' : undefined}
         className={cn(
           'pointer-events-none absolute inset-0 -z-10 overflow-hidden rounded-xl',
-          chosen && side !== 'solo' ? edge.chosen : generating ? edge.busy : 'bg-line',
+          generating ? edge.busy : 'bg-line',
         )}
       >
         {generating ? (
