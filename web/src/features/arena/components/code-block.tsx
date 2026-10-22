@@ -78,7 +78,8 @@ export function CodeBlock({ code, language }: CodeBlockProps) {
         data-highlighted={
           highlighted === null ? undefined : highlighted.code === code ? 'true' : 'partial'
         }
-        className="m-0 overflow-x-auto px-3.5 py-3 font-code text-caption leading-[1.6] text-fg"
+        // The figure clips its rounded corners, so the focus ring is drawn inside the block.
+        className="m-0 overflow-x-auto px-3.5 py-3 font-code text-caption leading-[1.6] text-fg focus-visible:-outline-offset-2"
       >
         <code>
           {highlighted === null ? (

@@ -29,6 +29,8 @@ interface Stop {
   /** The element, for the failure message. */
   name: string;
   ringed: boolean;
+  /** Sides of the element's own ring that a scrolling or clipping ancestor cuts off. */
+  clipped: string[];
 }
 
 /** One Tab: the newly focused element and whether it shows a ring; null once focus is back. */
@@ -48,10 +50,31 @@ async function nextStop(page: Page): Promise<Stop | null> {
       parseFloat(style.outlineWidth) >= 2 &&
       style.outlineColor !== 'rgba(0, 0, 0, 0)' &&
       style.outlineColor !== 'transparent';
+    const own = getComputedStyle(element);
     let ringed =
-      solid(getComputedStyle(element)) ||
+      solid(own) ||
       solid(getComputedStyle(element, '::after')) ||
       solid(getComputedStyle(element, '::before'));
+
+    // Where the element draws its own ring: is any side cut off by an ancestor that clips?
+    const clipped = new Set<string>();
+    if (solid(own)) {
+      const grow = parseFloat(own.outlineOffset) + parseFloat(own.outlineWidth);
+      const box = element.getBoundingClientRect();
+      for (let node = element.parentElement; node && node !== document.body; ) {
+        const style = getComputedStyle(node);
+        const edge = node.getBoundingClientRect();
+        if (style.overflowX !== 'visible') {
+          if (box.left - grow < edge.left - 0.5) clipped.add('left');
+          if (box.right + grow > edge.right + 0.5) clipped.add('right');
+        }
+        if (style.overflowY !== 'visible') {
+          if (box.top - grow < edge.top - 0.5) clipped.add('top');
+          if (box.bottom + grow > edge.bottom + 0.5) clipped.add('bottom');
+        }
+        node = node.parentElement;
+      }
+    }
     let parent = element.parentElement;
     for (let depth = 0; !ringed && parent && depth < 4; depth += 1) {
       ringed = solid(getComputedStyle(parent));
@@ -67,21 +90,28 @@ async function nextStop(page: Page): Promise<Stop | null> {
     return {
       name: `<${element.tagName.toLowerCase()}${role ? ` role=${role}` : ''}> "${label}"`,
       ringed,
+      clipped: [...clipped],
     };
   });
 }
 
-/** Tabs through the whole page; returns how many stops it found and the ones with no ring. */
+/**
+ * Tabs through the whole page: how many stops it found, the ones with no ring, and the ones
+ * whose ring is partly cut off (reported for review, not failed: a ring cut on one side of a
+ * scrolling list is still visible).
+ */
 async function walk(page: Page, limit = 160) {
   const missing: string[] = [];
+  const clipped: string[] = [];
   let stops = 0;
   for (let i = 0; i < limit; i += 1) {
     const stop = await nextStop(page);
     if (!stop) break;
     stops += 1;
     if (!stop.ringed) missing.push(stop.name);
+    if (stop.clipped.length > 0) clipped.push(`${stop.name} (${stop.clipped.join(', ')})`);
   }
-  return { stops, missing };
+  return { stops, missing, clipped };
 }
 
 async function mockStats(page: Page) {
@@ -194,12 +224,35 @@ test.describe('every keyboard stop shows a focus ring', () => {
       await item.ready(page);
       await settle(page, 400);
 
-      const { stops, missing } = await walk(page);
+      const { stops, missing, clipped } = await walk(page);
       console.log(`${item.name}: ${stops} keyboard stops`);
+      for (const line of clipped) console.log(`${item.name}: ring cut off: ${line}`);
       expect(stops, `${item.name}: the walk found too few stops`).toBeGreaterThanOrEqual(
         item.minStops,
       );
       expect(missing, `${item.name}: focused with no visible ring`).toEqual([]);
+      // Code blocks sit in a figure that clips its corners: their ring is drawn inside.
+      expect(clipped.filter(line => line.startsWith('<pre'))).toEqual([]);
+    });
+  }
+
+  for (const theme of ['dark', 'light'] as const) {
+    test(`the ring on a code block in a shared battle (${theme})`, async ({ page }) => {
+      await storeTheme(page, theme);
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await mockStats(page);
+      await mockSharedApi(page);
+      await page.goto(`/share/${SHARED.ids.public}`);
+      await expect(page.getByTestId('turn')).toHaveCount(2);
+      const code = page.locator('pre[tabindex="0"]').first();
+      await page.keyboard.press('Tab');
+      await code.focus();
+      await expect(code).toBeFocused();
+      const offset = await code.evaluate(element => getComputedStyle(element).outlineOffset);
+      expect(parseFloat(offset)).toBeLessThan(0);
+      await code.scrollIntoViewIfNeeded();
+      await settle(page, 300);
+      await page.screenshot({ path: shotPath(`focus-ring-code-block-desktop-${theme}`) });
     });
   }
 
