@@ -1,6 +1,6 @@
 /*
- * Printing (the legal pages in particular): light tokens whatever the theme, no site chrome,
- * links followed by their address. Everything else comes from the normal styles.
+ * Printing (the legal pages and shared battles in particular): light tokens whatever the theme,
+ * no site chrome, links followed by their address. Everything else comes from the normal styles.
  */
 @media print {
   :root,
@@ -16,7 +16,14 @@
     --fg: #000000;
     --fg-soft: #1c1f24;
     --muted: #4b515c;
+    --line-strong: #7d838e;
     --mind-a: #09738f;
+    /* The light theme's text colours: code and badges printed from the dark theme stay legible. */
+    --mind-b: #6d28d9;
+    --mind-b-text: #6d28d9;
+    --ok: #047857;
+    --warn: #a16207;
+    --bad: #b91c1c;
     --human: #7a3f22;
     --human-tint: #ffffff;
     --mind-a-tint: #ffffff;
@@ -27,7 +34,13 @@
     color: #000000;
   }
 
-  /* Command palette and toasts are never part of a printout. */
+  /*
+   * Site chrome, the command palette and toasts are never part of a printout: the site header
+   * (also the arena's), the footer and the skip link on every page.
+   */
+  [data-slot='site-header'],
+  [data-slot='site-footer'],
+  a[href='#main'],
   [data-sonner-toaster],
   [role='dialog'] {
     display: none !important;

@@ -42,8 +42,15 @@ export const links: Route.LinksFunction = () => [
     crossOrigin: 'anonymous',
   },
   { rel: 'preload', href: dmMonoLatin, as: 'font', type: 'font/woff2', crossOrigin: 'anonymous' },
+  // Icons (web/public): the 32 px .ico for browsers and tools without SVG favicons, the SVG for
+  // the rest, the 180 px PNG for iOS home screens, and the web app manifest with the 192 and 512
+  // px icons (plus a maskable one) for Android and installed apps. The manifest is fetched with
+  // credentials: browsers fetch it without cookies by default, and while the waitlist gate is on
+  // (worker.js) a request without the preview cookie is redirected away.
+  { rel: 'icon', href: '/favicon.ico', sizes: '32x32' },
   { rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml' },
   { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
+  { rel: 'manifest', href: '/site.webmanifest', crossOrigin: 'use-credentials' },
 ];
 
 export function Layout({ children }: { children: ReactNode }) {
@@ -61,6 +68,8 @@ export function Layout({ children }: { children: ReactNode }) {
           content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content"
         />
         <meta name="color-scheme" content="dark light" />
+        <meta name="application-name" content="DualMind Arena" />
+        <meta name="apple-mobile-web-app-title" content="DualMind" />
         <meta name="theme-color" content={backgrounds.dark} media="(prefers-color-scheme: dark)" />
         <meta
           name="theme-color"
