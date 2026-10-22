@@ -4,6 +4,11 @@ name: Hard UI pass
 # of the cutover branch, and on the live preview. Artifacts: hardtest-<target> (shots + results).
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/hardtest.yml'
+      - 'web/tests/hardtest/**'
+      - 'web/playwright.hardtest.config.ts'
 
 permissions:
   contents: read
