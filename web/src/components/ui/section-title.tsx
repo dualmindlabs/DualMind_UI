@@ -36,7 +36,7 @@ export function SectionTitle({
   const Heading = level;
 
   return (
-    <header
+    <div
       data-slot="section-title"
       className={cn(
         'flex flex-col gap-4',
@@ -58,6 +58,6 @@ export function SectionTitle({
         ) : null}
       </Heading>
       {lead ? <p className="max-w-[56ch] text-lead text-fg-soft">{lead}</p> : null}
-    </header>
+    </div>
   );
 }
