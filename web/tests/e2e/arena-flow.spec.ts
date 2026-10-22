@@ -406,6 +406,14 @@ test.describe('after the vote', () => {
     await expect(page.getByTestId('live-turn')).toHaveCount(0);
     await expect(prompt).toBeFocused();
     await expect(prompt).toHaveValue('');
+    // The next prompt starts a thread of its own, and its turn is on screen.
+    const fresh = await sendBattle(page, 'One more battle');
+    await expect(page).toHaveURL(/\?thread=t-new-/);
+    const threads = state.bodies
+      .filter(item => item.path === '/api/arena/dualchat')
+      .map(item => item.body.threadId);
+    expect(new Set(threads).size).toBe(3);
+    await expect(fresh.getByRole('region', { name: /Answer A/ })).toBeVisible();
   });
 
   test('a mouse vote moves focus off the vanished vote bar too', async ({ page }) => {

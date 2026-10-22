@@ -85,8 +85,14 @@ export function ArenaProvider({ children }: { children: ReactNode }) {
   const battle = useBattle({ threadId, onThreadCreated, announce });
   const { reset: resetBattle, state: battleState } = battle;
 
-  // Another thread in the address (history, Back, Forward): its live turns start empty.
+  // Another thread in the address (history, Back, Forward): its live turns start empty. Only a
+  // change of the address counts. A new battle (or a rematch) empties the live turns first and
+  // the address follows a moment later; re-syncing to the old thread in between would send the
+  // next prompt into that thread, where no live turn is shown.
+  const syncedThreadId = useRef<string | null | undefined>(undefined);
   useEffect(() => {
+    if (syncedThreadId.current === threadId) return;
+    syncedThreadId.current = threadId;
     if (threadId !== null && threadId !== battleState.threadId) resetBattle(threadId);
   }, [threadId, battleState.threadId, resetBattle]);
 
