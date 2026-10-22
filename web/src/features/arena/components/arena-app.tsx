@@ -75,7 +75,7 @@ function ArenaLayout() {
           data-testid="arena"
           className={cn(
             'relative flex min-w-0 flex-1 flex-col outline-none',
-            empty && 'justify-end overflow-y-auto md:justify-center',
+            empty && 'overflow-y-auto md:justify-center',
           )}
         >
           <ArenaErrorBoundary resetKey={threadId}>
@@ -85,7 +85,7 @@ function ArenaLayout() {
                   aria-hidden="true"
                   className="pointer-events-none absolute inset-0 dot-grid [mask-image:radial-gradient(ellipse_60%_50%_at_50%_45%,black,transparent)] opacity-70"
                 />
-                <div className="relative mx-auto grid w-full max-w-3xl gap-8 px-4 py-8 sm:px-6">
+                <div className="relative mx-auto grid w-full max-w-3xl gap-8 px-4 py-8 max-md:mt-auto sm:px-6">
                   <EmptyState headingRef={heading} />
                   <Composer
                     variant="hero"
