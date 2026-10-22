@@ -54,9 +54,6 @@ export function AnswerPane({
 }: AnswerPaneProps) {
   const headingId = useId();
 
-  const surface = side === 'a' ? 'surface-a' : side === 'b' ? 'surface-b' : 'surface-duel';
-  const glow = side === 'a' ? 'glow-a' : 'glow-b';
-
   return (
     <section
       aria-labelledby={headingId}
@@ -64,11 +61,10 @@ export function AnswerPane({
       data-side={side}
       data-chosen={chosen ? '' : undefined}
       className={cn(
-        'relative flex min-w-0 flex-col transition-[opacity,transform,box-shadow] duration-(--dur-slow) ease-out-expo',
-        surface,
-        // The winner lifts a few pixels and glows in its own colour; the other steps back.
-        chosen && side !== 'solo' && ['motion-safe:-translate-y-1', glow],
-        dimmed && 'saturate-50',
+        'relative flex min-w-0 flex-col transition-[opacity] duration-(--dur-slow) ease-out-expo',
+        // No box: the answer sits on the page. A short rule in the mind's colour marks the side;
+        // a verdict that went the other way lets the answer step back.
+        dimmed && 'opacity-60 saturate-50',
         className,
       )}
     >
@@ -86,22 +82,22 @@ export function AnswerPane({
       />
       <div
         aria-hidden="true"
-        className="relative h-px overflow-hidden"
+        className="relative h-0.5 overflow-hidden rounded-full bg-line-subtle"
         data-testid={generating ? 'pane-progress' : undefined}
       >
-        {generating ? (
-          <span
-            className={cn(
-              'absolute inset-y-0 -left-0 w-full -translate-x-full motion-safe:animate-skeleton',
-              side === 'b' ? 'bg-mind-b' : 'bg-mind-a',
-            )}
-          />
-        ) : null}
+        <span
+          className={cn(
+            'absolute inset-y-0 left-0 w-16 rounded-full transition-[width] duration-(--dur-slow) ease-out-expo',
+            side === 'b' ? 'bg-mind-b' : side === 'a' ? 'bg-mind-a' : 'bg-fg-soft',
+            generating && 'w-full -translate-x-full motion-safe:animate-skeleton',
+            !generating && chosen && 'w-full',
+          )}
+        />
       </div>
-      <div className="min-w-0 flex-1 px-4 py-4 sm:px-5 sm:py-5">
+      <div className="min-w-0 flex-1 py-8 sm:py-10">
         {children ?? (
           <>
-            <Markdown streaming={streaming} className="answer-prose max-w-[72ch]">
+            <Markdown streaming={streaming} className="answer-prose max-w-[66ch] text-[1.0625rem]! leading-[1.8]! sm:text-[1.125rem]!">
               {text}
             </Markdown>
             {streaming ? (

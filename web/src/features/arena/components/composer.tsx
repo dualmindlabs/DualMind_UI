@@ -182,7 +182,12 @@ export function Composer({
                   disabled={busy}
                 />
               ) : (
-                <span className="hidden items-center gap-1.5 text-caption text-fg-soft sm:inline-flex">
+                <span
+                  className={cn(
+                    'hidden items-center gap-1.5 text-caption text-fg-soft',
+                    hero && 'sm:inline-flex',
+                  )}
+                >
                   <EyeOff aria-hidden="true" className="size-3.5" strokeWidth={1.75} />
                   Names hidden until you vote
                 </span>
@@ -191,7 +196,10 @@ export function Composer({
             <div className="ml-auto flex items-center gap-2">
               <span
                 aria-hidden="true"
-                className="hidden font-mono text-caption text-fg-soft md:inline pointer-coarse:hidden"
+                className={cn(
+                  'hidden font-mono text-caption text-fg-soft pointer-coarse:hidden',
+                  hero && 'md:inline',
+                )}
               >
                 {sendKey === 'mod-enter' ? `${modifier}+Enter to send` : 'Enter to send'}
               </span>

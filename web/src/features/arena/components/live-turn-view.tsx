@@ -1,5 +1,5 @@
 import { CloudOff, FastForward, Scale } from 'lucide-react';
-import { useId } from 'react';
+import { useCallback, useId, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -17,7 +17,7 @@ import { PanePair } from './pane-pair';
 import { PromptCard } from './prompt-card';
 import { RevealPanel } from './reveal-panel';
 import { TurnError, UnratedNotice } from './turn-notice';
-import { VoteBar, VoteBarLocked } from './vote-bar';
+import { VoteBar, VoteHint } from './vote-bar';
 
 function modelLabel(answer: LiveAnswer | null): string | null {
   const model = answer?.model;
@@ -115,6 +115,10 @@ export function LiveTurnView({
 }) {
   const promptId = useId();
   const { battle, newBattle } = useArena();
+  // Which answers were read to the end, and whether the visitor chose to vote without that.
+  const [read, setRead] = useState({ a: false, b: false });
+  const [skipped, setSkipped] = useState(false);
+  const markRead = useCallback((side: 'a' | 'b') => setRead(current => ({ ...current, [side]: true })), []);
   const optional = turn.mode === 'side';
   const showVote =
     turn.mode !== 'direct' && (turn.phase === 'awaiting_vote' || turn.phase === 'voting');
@@ -124,7 +128,7 @@ export function LiveTurnView({
   return (
     <article
       aria-labelledby={promptId}
-      className="grid gap-4"
+      className="grid gap-8"
       data-testid="live-turn"
       data-phase={turn.phase}
     >
@@ -138,6 +142,9 @@ export function LiveTurnView({
             a: turn.phase === 'submitting' || turn.phase === 'answering',
             b: turn.phase === 'submitting' || turn.phase === 'answering',
           }}
+          ready={turn.phase !== 'submitting' && turn.phase !== 'answering'}
+          onRead={markRead}
+          keyboard={latest}
           a={<LivePane turn={turn} side="a" answer={turn.a} />}
           b={<LivePane turn={turn} side="b" answer={turn.b} />}
         />
@@ -156,12 +163,16 @@ export function LiveTurnView({
       {turn.unrated !== null && turn.mode !== 'direct' ? (
         <UnratedNotice>{UNRATED_NOTES[turn.unrated]}</UnratedNotice>
       ) : null}
-      {turn.mode === 'battle' && (turn.phase === 'submitting' || turn.phase === 'answering') ? (
-        <VoteBarLocked className="sticky bottom-2 z-10" />
+      {showVote && turn.phase === 'awaiting_vote' && !skipped && !(read.a && read.b) ? (
+        <VoteHint
+          className="sticky bottom-3 z-10"
+          read={read}
+          onSkip={() => setSkipped(true)}
+        />
       ) : null}
-      {showVote ? (
+      {showVote && (turn.phase === 'voting' || skipped || (read.a && read.b)) ? (
         <VoteBar
-          className="sticky bottom-2 z-10"
+          className="sticky bottom-3 z-10"
           optional={optional}
           chosen={turn.phase === 'voting' ? turn.vote : null}
           error={turn.error}
@@ -171,7 +182,7 @@ export function LiveTurnView({
       {turn.phase === 'revealed' && turn.vote && latest ? <RevealPanel turn={turn} /> : null}
       {turn.phase === 'revealed' && turn.vote && !latest ? (
         <p
-          className="flex flex-wrap items-center gap-2 text-ui-sm text-fg-soft"
+          className="mx-auto flex w-full max-w-[42rem] flex-wrap items-center gap-2 text-ui-sm text-fg-soft"
           data-testid="verdict"
         >
           <Scale aria-hidden="true" className="size-4 text-human" strokeWidth={1.75} />

@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query';
 import { type ReactNode, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { SkipLink } from '@/components/layout/skip-link';
-import { Kbd } from '@/components/ui/kbd';
 import { useApiClient } from '@/hooks/use-api-client';
 import { useOnlineStatus } from '@/hooks/use-online-status';
 import { useShouldReduceMotion } from '@/hooks/use-should-reduce-motion';
@@ -29,45 +28,13 @@ import { THREAD_LIMIT } from './thread-panel';
 import { ThreadSidebar } from './thread-sidebar';
 import { ThreadView } from './thread-view';
 
-/** What the docked prompt box offers below it: three keys, quiet, for people with a keyboard. */
-function DockHints() {
-  const { shortcutsEnabled } = useArena();
-  if (!shortcutsEnabled) return null;
-  return (
-    <p
-      aria-hidden="true"
-      className="mt-2 hidden items-center justify-center gap-4 text-caption text-muted md:flex pointer-coarse:hidden"
-    >
-      <span className="inline-flex items-center gap-1.5">
-        <Kbd className="h-5 min-w-5">/</Kbd> prompt
-      </span>
-      <span className="inline-flex items-center gap-1.5">
-        <Kbd className="h-5 min-w-5">1</Kbd>
-        <Kbd className="h-5 min-w-5">2</Kbd>
-        <Kbd className="h-5 min-w-5">3</Kbd>
-        <Kbd className="h-5 min-w-5">4</Kbd> vote
-      </span>
-      <span className="inline-flex items-center gap-1.5">
-        <Kbd className="h-5 min-w-5">[</Kbd> history
-      </span>
-      <span className="inline-flex items-center gap-1.5">
-        <Kbd className="h-5 min-w-5">?</Kbd> shortcuts
-      </span>
-    </p>
-  );
-}
-
-/**
- * The battle stage's backdrop: the two minds' pools of light, the grid fading into the dark and,
- * from `md`, a hairline spine where the two answers meet.
- */
+/** The battle stage's backdrop: the two minds' pools of light, nothing else. */
 function StageBackdrop() {
   return (
     <div
       aria-hidden="true"
       className="pointer-events-none absolute inset-0 overflow-hidden mesh-duel"
     >
-      <div className="absolute inset-y-0 left-1/2 hidden w-px bg-linear-to-b from-transparent via-line-strong to-transparent md:block" />
     </div>
   );
 }
@@ -225,7 +192,6 @@ function ArenaLayout({ empty }: { empty: boolean }) {
                     className="pointer-events-none absolute inset-x-0 -top-8 h-8 bg-linear-to-t from-bg-deep to-transparent"
                   />
                   <Composer onSend={send} busy={battle.busy} onStop={battle.stop} />
-                  <DockHints />
                 </div>
               </>
             )}
@@ -239,23 +205,21 @@ function ArenaLayout({ empty }: { empty: boolean }) {
 }
 
 /**
- * The shell decides where the history lives. In the empty arena on a wide screen it is docked
- * beside the prompt. Once a battle is on, the stage takes the whole width and the history is a
- * slide-over (the header button, or `[`): the rest of the arena reads `wide` and `toggleHistory`
- * through this context, so it needs no other change.
+ * The history is never docked: it is a slide-over (the header button, or `[`) on every screen, so
+ * the stage owns the whole width. The rest of the arena reads `wide` and `toggleHistory` through
+ * this context, so it needs no other change.
  */
 function StageShell({ children }: { children: (empty: boolean) => ReactNode }) {
   const arena = useArena();
   const empty = arena.threadId === null && arena.battle.state.turns.length === 0;
-  const docked = arena.wide && empty;
-  const { historyOpen, setHistoryOpen, toggleHistory } = arena;
+  const { historyOpen, setHistoryOpen } = arena;
   const value = useMemo(
     () => ({
       ...arena,
-      wide: docked,
-      toggleHistory: docked ? toggleHistory : () => setHistoryOpen(!historyOpen),
+      wide: false,
+      toggleHistory: () => setHistoryOpen(!historyOpen),
     }),
-    [arena, docked, toggleHistory, setHistoryOpen, historyOpen],
+    [arena, setHistoryOpen, historyOpen],
   );
   return <ArenaContext.Provider value={value}>{children(empty)}</ArenaContext.Provider>;
 }

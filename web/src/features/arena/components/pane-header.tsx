@@ -55,7 +55,7 @@ function NamePlate({
   const reduce = useShouldReduceMotion();
   const style = SIDE_STYLES[side];
   const content = (
-    <span className="block truncate text-ui font-semibold tracking-tight text-fg">{label}</span>
+    <span className="block truncate text-lead font-semibold tracking-tight text-fg">{label}</span>
   );
   return (
     <span
@@ -115,12 +115,16 @@ export function PaneHeader({
   const named = modelLabel !== null && side !== 'solo';
 
   return (
-    <header className="flex min-h-12 items-center gap-3 border-b border-line/70 px-3 py-2 sm:px-4">
+    <header className="flex min-h-14 items-center gap-3 py-2">
       <div className="flex min-w-0 flex-1 items-center gap-2.5">
         {side === 'solo' ? null : <RoleBadge who={side} letterOnly />}
         <h3 id={headingId} className="flex min-w-0 flex-1 items-baseline gap-2 text-ui">
           <span
-            className={cn('shrink-0 font-semibold tracking-tight', style.text, named && 'sr-only')}
+            className={cn(
+              'shrink-0 text-lead font-semibold tracking-tight',
+              style.text,
+              named && 'sr-only',
+            )}
           >
             {style.title}
           </span>

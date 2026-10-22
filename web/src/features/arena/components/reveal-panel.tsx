@@ -1,4 +1,4 @@
-import { CloudOff, MessageSquareText, Plus, Scale, Share2, Shuffle } from 'lucide-react';
+import { CloudOff, MessageSquareText, Plus, Share2, Shuffle } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useEffect, useId, useRef } from 'react';
 
@@ -47,8 +47,14 @@ export function RevealPanel({ turn }: { turn: LiveTurn }) {
 
   useEffect(() => {
     const active = document.activeElement;
-    if (active === null || active === document.body) panel.current?.focus();
-  }, []);
+    if (active === null || active === document.body) {
+      panel.current?.focus({ preventScroll: true });
+      // The payoff may be a long answer away: bring the card to the middle of the screen.
+      if (typeof panel.current?.scrollIntoView === 'function') {
+        panel.current.scrollIntoView({ block: 'center', behavior: reduce ? 'auto' : 'smooth' });
+      }
+    }
+  }, [reduce]);
 
   if (turn.vote === null) return null;
   const shareId = battle.state.threadId ?? threadId;
@@ -57,6 +63,7 @@ export function RevealPanel({ turn }: { turn: LiveTurn }) {
     { side: 'a', answer: turn.a, picked: turn.vote === 'left' },
     { side: 'b', answer: turn.b, picked: turn.vote === 'right' },
   ] as const;
+  const decided = turn.vote === 'left' || turn.vote === 'right';
 
   return (
     <div
@@ -65,34 +72,35 @@ export function RevealPanel({ turn }: { turn: LiveTurn }) {
       aria-labelledby={titleId}
       tabIndex={-1}
       data-testid="reveal-panel"
-      className="relative grid gap-5 overflow-hidden surface-float p-4 motion-safe:animate-fade-in sm:p-6"
+      className="relative mx-auto grid w-full max-w-2xl justify-items-center gap-9 py-10 outline-none motion-safe:animate-fade-in sm:py-14"
     >
       <div
         aria-hidden="true"
         className={cn(
-          'pointer-events-none absolute inset-x-0 top-0 h-48 [mask-image:linear-gradient(to_bottom,#000,transparent)]',
+          'pointer-events-none absolute -inset-x-[20vw] -top-10 -z-10 h-80 [mask-image:linear-gradient(to_bottom,#000,transparent)]',
           turn.vote === 'left' && 'mesh-a',
           turn.vote === 'right' && 'mesh-b',
+          !decided && 'mesh-duel opacity-60',
         )}
       />
-      <div className="relative grid gap-1.5">
+      <div className="grid justify-items-center gap-3 text-center">
         <p
           id={titleId}
           data-testid="verdict"
-          className="flex flex-wrap items-baseline gap-x-3 gap-y-1"
+          className="grid justify-items-center gap-2 sm:gap-3"
         >
-          <span className="inline-flex items-center gap-1.5 eyebrow text-fg-soft">
-            <Scale aria-hidden="true" className="size-4 text-human" strokeWidth={1.75} />
-            Your verdict:
-          </span>{' '}
-          <span
+          <span className="text-ui text-fg-soft">Your verdict:</span>{' '}
+          <motion.span
+            initial={reduce ? false : { opacity: 0, y: 14, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
             className={cn(
-              'text-h3 font-semibold tracking-tight sm:text-[1.75rem]',
+              'block text-h2 font-semibold tracking-[-0.04em] text-balance',
               VERDICT_TONE[turn.vote],
             )}
           >
             {VOTE_LABELS[turn.vote]}
-          </span>
+          </motion.span>
         </p>
         {pending ? (
           <span
@@ -105,83 +113,78 @@ export function RevealPanel({ turn }: { turn: LiveTurn }) {
         ) : null}
       </div>
 
-      <ul aria-label="The two models" className="relative grid gap-3 sm:grid-cols-2 sm:gap-4">
-        {sides.map(({ side, answer, picked }, index) => (
-          <motion.li
-            key={side}
-            data-testid="reveal-name"
-            initial={reduce ? false : { opacity: 0, rotateY: 80, y: 8 }}
-            animate={{ opacity: 1, rotateY: 0, y: 0 }}
-            transition={{ type: 'spring', stiffness: 170, damping: 22, delay: 0.1 + index * 0.14 }}
-            style={{ transformPerspective: 800 }}
-            className={cn(
-              'flex min-w-0 items-start gap-3 rounded-xl border p-3.5 sm:p-4',
-              side === 'a' ? 'bg-mind-a-wash' : 'bg-mind-b-wash',
-              picked
-                ? side === 'a'
-                  ? 'border-mind-a glow-a'
-                  : 'border-mind-b glow-b'
-                : 'border-line',
-            )}
-          >
-            <ModelMark name={nameOf(answer)} who={side} size="lg" />
-            <div className="grid min-w-0 flex-1 gap-1">
-              <span className="min-w-0 text-ui font-semibold tracking-tight [overflow-wrap:anywhere] text-fg">
-                {nameOf(answer)}
-              </span>
-              {answer?.model ? (
-                <span className="text-caption text-fg-soft">
-                  {modelMaker(answer.model.name, answer.model.provider ?? '').label}
-                </span>
-              ) : null}
-              <ModelRating answer={answer} />
-            </div>
-            {picked ? (
-              <span className="shrink-0 pt-0.5 eyebrow whitespace-nowrap text-human">
-                Your pick
-              </span>
-            ) : null}
-          </motion.li>
-        ))}
+      <ul
+        aria-label="The two models"
+        className="grid w-full gap-4 [perspective:1100px] sm:grid-cols-2 sm:gap-5"
+      >
+        {sides.map(({ side, answer, picked }, index) => {
+          const delay = 0.35 + index * 0.18;
+          const stepBack = decided && !picked;
+          return (
+            <li key={side} data-testid="reveal-name" className="grid min-w-0">
+              <motion.div
+                initial={reduce ? false : { rotateY: 180 }}
+                animate={{ rotateY: 0 }}
+                transition={{ duration: 0.95, ease: [0.16, 1, 0.3, 1], delay }}
+                style={{ transformStyle: 'preserve-3d' }}
+                className="grid min-w-0 [&>*]:col-start-1 [&>*]:row-start-1"
+              >
+                {/* The face that was up: the card's back, with the letter of the answer. */}
+                <div
+                  aria-hidden="true"
+                  data-letter={side.toUpperCase()}
+                  className={cn(
+                    'flex min-h-48 items-center justify-center rounded-2xl border [backface-visibility:hidden] [transform:rotateY(180deg)] dot-grid',
+                    "text-[5rem] font-semibold tracking-[-0.05em] before:content-[attr(data-letter)]",
+                    side === 'a'
+                      ? 'border-mind-a-edge bg-mind-a-tint text-mind-a'
+                      : 'border-mind-b-edge bg-mind-b-tint text-mind-b-text',
+                  )}
+                />
+                {/* The face that turns up: who it was. */}
+                <div
+                  className={cn(
+                    'grid min-w-0 content-start gap-4 rounded-2xl border p-6 text-left transition-[opacity] duration-(--dur-slow) ease-out-expo [backface-visibility:hidden] sm:p-7',
+                    side === 'a' ? 'bg-mind-a-wash' : 'bg-mind-b-wash',
+                    picked
+                      ? side === 'a'
+                        ? 'border-mind-a glow-a'
+                        : 'border-mind-b glow-b'
+                      : 'border-line',
+                    stepBack && 'opacity-70',
+                  )}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <ModelMark name={nameOf(answer)} who={side} size="lg" />
+                    {picked ? (
+                      <span className="eyebrow pt-1 whitespace-nowrap text-human">Your pick</span>
+                    ) : null}
+                  </div>
+                  <div className="grid min-w-0 gap-1">
+                    <span className="min-w-0 text-h3 font-semibold tracking-tight [overflow-wrap:anywhere] text-fg">
+                      {nameOf(answer)}
+                    </span>
+                    {answer?.model ? (
+                      <span className="text-ui text-fg-soft">
+                        {modelMaker(answer.model.name, answer.model.provider ?? '').label}
+                      </span>
+                    ) : null}
+                  </div>
+                  <ModelRating answer={answer} side={side} />
+                </div>
+              </motion.div>
+            </li>
+          );
+        })}
       </ul>
 
-      {/* Phones: two columns (New battle across both when it would sit alone). Wider: one row,
-          New battle at the end. */}
-      <div className="relative grid grid-cols-2 gap-2 border-t border-line pt-4 sm:flex sm:flex-wrap sm:items-center">
-        <Button
-          variant="secondary"
-          aria-keyshortcuts={shortcutsEnabled ? '/' : undefined}
-          onClick={focusComposer}
-        >
-          <MessageSquareText aria-hidden="true" strokeWidth={1.75} />
-          Ask a follow-up
-          {shortcutsEnabled ? (
-            <Kbd aria-hidden="true" className="hidden sm:inline-flex">
-              /
-            </Kbd>
-          ) : null}
-        </Button>
-        {turn.mode === 'battle' ? (
-          <Button
-            variant="secondary"
-            title="The same prompt, two other models"
-            onClick={() => rematch(turn.prompt)}
-          >
-            <Shuffle aria-hidden="true" strokeWidth={1.75} />
-            Rematch
-          </Button>
-        ) : null}
-        {shareId ? (
-          <Button variant="ghost" onClick={() => openShare(shareId)}>
-            <Share2 aria-hidden="true" strokeWidth={1.75} />
-            Share this battle
-          </Button>
-        ) : null}
+      <div className="grid w-full justify-items-center gap-3">
         <Button
           variant="primary"
+          size="lg"
           aria-keyshortcuts={shortcutsEnabled ? 'N' : undefined}
           onClick={newBattle}
-          className="odd:col-span-2 sm:ms-auto"
+          className="min-w-52"
         >
           <Plus aria-hidden="true" strokeWidth={1.75} />
           New battle
@@ -194,6 +197,37 @@ export function RevealPanel({ turn }: { turn: LiveTurn }) {
             </Kbd>
           ) : null}
         </Button>
+        <div className="flex flex-wrap items-center justify-center gap-x-1 gap-y-1">
+          <Button
+            variant="ghost"
+            aria-keyshortcuts={shortcutsEnabled ? '/' : undefined}
+            onClick={focusComposer}
+          >
+            <MessageSquareText aria-hidden="true" strokeWidth={1.75} />
+            Ask a follow-up
+            {shortcutsEnabled ? (
+              <Kbd aria-hidden="true" className="hidden sm:inline-flex">
+                /
+              </Kbd>
+            ) : null}
+          </Button>
+          {turn.mode === 'battle' ? (
+            <Button
+              variant="ghost"
+              title="The same prompt, two other models"
+              onClick={() => rematch(turn.prompt)}
+            >
+              <Shuffle aria-hidden="true" strokeWidth={1.75} />
+              Rematch
+            </Button>
+          ) : null}
+          {shareId ? (
+            <Button variant="ghost" onClick={() => openShare(shareId)}>
+              <Share2 aria-hidden="true" strokeWidth={1.75} />
+              Share this battle
+            </Button>
+          ) : null}
+        </div>
       </div>
     </div>
   );
