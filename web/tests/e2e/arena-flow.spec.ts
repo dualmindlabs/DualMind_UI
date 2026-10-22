@@ -247,17 +247,19 @@ test.describe('long answers', () => {
       await mockArena(page, { answers: { a: LONG_A, b: LONG_B } });
       await openArena(page);
       const turn = await sendBattle(page);
+      // Compare puts both long answers on screen, side by side, for the geometry checks below.
+      await turn.getByRole('button', { name: 'Compare', exact: true }).click();
       const answerA = turn.getByRole('region', { name: /Answer A/ });
       const answerB = turn.getByRole('region', { name: /Answer B/ });
 
-      // In the middle of the long answer the vote bar is still on screen (sticky).
+      // In the middle of the long answer the vote hint is still on screen (sticky).
       const table = answerA.getByRole('region', { name: 'Table' });
       await table.scrollIntoViewIfNeeded();
       // Code highlighting loads as blocks come on screen; let it settle, then look again.
       await page.waitForTimeout(400);
       await table.scrollIntoViewIfNeeded();
       await expect(table).toBeInViewport();
-      await expect(turn.getByTestId('vote-bar')).toBeInViewport({ ratio: 1 });
+      await expect(turn.getByTestId('vote-hint')).toBeInViewport({ ratio: 1 });
 
       // Wide content scrolls inside its pane; the page itself never scrolls sideways.
       const scrolls = async (locator: Locator) =>
@@ -273,6 +275,8 @@ test.describe('long answers', () => {
       expect(await overflowing(page)).toEqual([]);
       await settle(page, 400);
       await page.screenshot({ path: shotPath(`arena-long-vote-1280-${theme}`) });
+      await turn.getByRole('button', { name: 'Vote now' }).click();
+      await expect(turn.getByTestId('vote-bar')).toBeInViewport({ ratio: 1 });
 
       await voteWithKey(page, turn, '1');
       const panel = turn.getByTestId('reveal-panel');
@@ -304,6 +308,7 @@ test.describe('the reveal header', () => {
         await mockArena(page);
         await openArena(page);
         const turn = await sendBattle(page, 'Explain recursion to a ten-year-old');
+        await turn.getByRole('button', { name: 'Compare', exact: true }).click();
         await voteWithKey(page, turn, '1');
         await settle(page, 1600);
         const headers = await headerGeometry(turn);
@@ -420,6 +425,8 @@ test.describe('after the vote', () => {
     await mockArena(page);
     await openArena(page);
     const turn = await sendBattle(page);
+    // The vote pill opens once both answers are read, or on "Vote now".
+    await turn.getByRole('button', { name: 'Vote now' }).click({ timeout: 1500 }).catch(() => undefined);
     await turn.getByRole('button', { name: /B is better/ }).click();
     await expect(turn).toHaveAttribute('data-phase', 'revealed');
     await expect(turn.getByTestId('reveal-panel')).toBeFocused();
@@ -514,6 +521,8 @@ test.describe('README', () => {
     await mockArena(page);
     await openArena(page);
     const turn = await sendBattle(page, 'Explain recursion to a ten-year-old');
+    // The vote pill opens once both answers are read, or on "Vote now".
+    await turn.getByRole('button', { name: 'Vote now' }).click({ timeout: 1500 }).catch(() => undefined);
     await turn.getByRole('button', { name: /A is better/ }).click();
     await expect(turn).toHaveAttribute('data-phase', 'revealed');
     await settle(page, 2600);

@@ -412,6 +412,8 @@ test.describe('button feel on touch screens', () => {
       turn.getByRole('group', { name: 'Your verdict' }).getByRole('button'),
       'vote',
     );
+    // The vote pill opens once both answers are read, or on "Vote now".
+    await turn.getByRole('button', { name: 'Vote now' }).click({ timeout: 1500 }).catch(() => undefined);
     await turn.getByRole('button', { name: /B is better/ }).click();
     await expect(turn).toHaveAttribute('data-phase', 'revealed');
     await expectTouchSized(turn.getByRole('button', { name: /^Copy/ }), 'copy');

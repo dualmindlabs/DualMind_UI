@@ -110,7 +110,7 @@ for (const phone of PHONES) {
       await expect(turn).toHaveAttribute('data-phase', 'awaiting_vote', { timeout: 15_000 });
       await settle(page, 600);
       expect(await overflowX(page), 'battle').toBeLessThanOrEqual(0);
-      await expectInsideViewport(page, page.getByTestId('vote-bar'), 'the vote bar');
+      await expectInsideViewport(page, page.getByTestId('vote-hint'), 'the vote hint');
       await expectInsideViewport(
         page,
         page.getByRole('textbox', { name: 'Your prompt' }),
