@@ -68,7 +68,7 @@ export function AnswerPane({
         surface,
         // The winner lifts a few pixels and glows in its own colour; the other steps back.
         chosen && side !== 'solo' && ['motion-safe:-translate-y-1', glow],
-        dimmed && 'opacity-70',
+        dimmed && 'saturate-50',
         className,
       )}
     >

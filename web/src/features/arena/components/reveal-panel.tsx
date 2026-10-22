@@ -122,7 +122,6 @@ export function RevealPanel({ turn }: { turn: LiveTurn }) {
                   ? 'border-mind-a glow-a'
                   : 'border-mind-b glow-b'
                 : 'border-line',
-              !picked && turn.vote !== 'tie' && 'opacity-85',
             )}
           >
             <ModelMark name={nameOf(answer)} who={side} size="lg" />
