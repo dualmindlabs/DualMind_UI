@@ -43,7 +43,7 @@ Other checks from the definition of done:
 | Meta and share card on every route | Fixed in [#82](https://github.com/dualmindlabs/DualMind_UI/pull/82): every page that uses `pageMeta` falls back to `og-default.png` with the large card and `og:locale`; share links keep their Worker-written tags |
 | Favicon and manifest | Fixed in [#82](https://github.com/dualmindlabs/DualMind_UI/pull/82): `favicon.ico`, 192 and 512 px and maskable icons, `site.webmanifest` (fetched with credentials so it passes the waitlist gate). The legacy `manifest.json` (missing icons, linked from nowhere) goes with the S13 cutover |
 | Print styles | Fixed in [#82](https://github.com/dualmindlabs/DualMind_UI/pull/82): no header or footer on any page; a shared battle prints its transcript and address |
-| Focus visible | Checked in [#83](https://github.com/dualmindlabs/DualMind_UI/pull/83): a Tab walk on ten screens fails on any stop without a ring |
+| Focus visible | Checked in [#83](https://github.com/dualmindlabs/DualMind_UI/pull/83): a Tab walk on ten screens fails on any stop without a ring; the code block's ring was cut off by its clipping figure and is now drawn inside |
 | Reduced motion | No gap: CSS and Motion provider, a still version of every effect, screenshots on landing, leaderboard, models, shell, effects, design and the reveal |
 | Empty states | No gap: arena and history, leaderboard and models (empty and no match), settings export, share (private, no answers), palette and model picker |
 | Console errors in CI | No gap: the only console errors in master run 39714203217 are `ERR_INTERNET_DISCONNECTED` from the offline tests; each page spec fails on console errors |

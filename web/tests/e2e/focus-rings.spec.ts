@@ -56,21 +56,27 @@ async function nextStop(page: Page): Promise<Stop | null> {
       solid(getComputedStyle(element, '::after')) ||
       solid(getComputedStyle(element, '::before'));
 
-    // Where the element draws its own ring: is any side cut off by an ancestor that clips?
+    // Where the element draws its own ring: is any side cut off by an ancestor that clips? Each
+    // entry says the side, by how much, the ring's reach and the ancestor, for the review.
     const clipped = new Set<string>();
     if (solid(own)) {
       const grow = parseFloat(own.outlineOffset) + parseFloat(own.outlineWidth);
       const box = element.getBoundingClientRect();
-      for (let node = element.parentElement; node && node !== document.body; ) {
+      let node = element.parentElement;
+      while (node && node !== document.body) {
         const style = getComputedStyle(node);
         const edge = node.getBoundingClientRect();
+        const by = `${node.tagName.toLowerCase()}.${node.className.toString().slice(0, 50)}`;
+        const cut = (side: string, amount: number) => {
+          if (amount > 0.5) clipped.add(`${side} ${amount.toFixed(1)}px, reach ${grow}px, ${by}`);
+        };
         if (style.overflowX !== 'visible') {
-          if (box.left - grow < edge.left - 0.5) clipped.add('left');
-          if (box.right + grow > edge.right + 0.5) clipped.add('right');
+          cut('left', edge.left - (box.left - grow));
+          cut('right', box.right + grow - edge.right);
         }
         if (style.overflowY !== 'visible') {
-          if (box.top - grow < edge.top - 0.5) clipped.add('top');
-          if (box.bottom + grow > edge.bottom + 0.5) clipped.add('bottom');
+          cut('top', edge.top - (box.top - grow));
+          cut('bottom', box.bottom + grow - edge.bottom);
         }
         node = node.parentElement;
       }
@@ -109,7 +115,7 @@ async function walk(page: Page, limit = 160) {
     if (!stop) break;
     stops += 1;
     if (!stop.ringed) missing.push(stop.name);
-    if (stop.clipped.length > 0) clipped.push(`${stop.name} (${stop.clipped.join(', ')})`);
+    if (stop.clipped.length > 0) clipped.push(`${stop.name} (${stop.clipped.join('; ')})`);
   }
   return { stops, missing, clipped };
 }

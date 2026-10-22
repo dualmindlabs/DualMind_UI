@@ -256,7 +256,7 @@ test.describe('forced colors', () => {
       await page.keyboard.press('Tab');
       await expectForcedColorsBasics(page);
       // The A and B badges carry identity by colour on screen; here they keep an edge.
-      const badge = page.locator('[data-slot="role-badge"]').first();
+      const badge = page.locator('[data-slot="role-badge"]').filter({ visible: true }).first();
       await expect(badge).toBeVisible();
       expect(
         parseFloat(await badge.evaluate(element => getComputedStyle(element).borderTopWidth)),
