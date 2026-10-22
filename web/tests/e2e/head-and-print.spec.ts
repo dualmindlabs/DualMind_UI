@@ -249,8 +249,15 @@ test.describe('print', () => {
       const address = page.getByTestId('share-print-url');
       await expect(address).toBeVisible();
       await expect(address).toHaveText(new RegExp(`/share/${id}$`));
-      // Dark or light on screen, paper is light.
+      // Dark or light on screen, paper is light, code colours included.
       await expect(page.locator('html')).toHaveCSS('color-scheme', 'light');
+      const inks = await page.evaluate(() => {
+        const style = getComputedStyle(document.documentElement);
+        return ['--mind-b-text', '--ok', '--warn', '--bad'].map(name =>
+          style.getPropertyValue(name).trim().toLowerCase(),
+        );
+      });
+      expect(inks).toEqual(['#6d28d9', '#047857', '#a16207', '#b91c1c']);
       await page.screenshot({ path: shotPath(`print-share-from-${theme}`), fullPage: true });
     });
   }
