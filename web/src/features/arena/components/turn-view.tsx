@@ -60,6 +60,7 @@ export function TurnView({ turn, names, audience = 'owner' }: TurnViewProps) {
       aria-labelledby={promptId}
       className="grid grid-cols-[minmax(0,1fr)] gap-8"
       data-testid="turn"
+      data-turn=""
     >
       <PromptCard id={promptId} number={turn.number} prompt={turn.prompt} />
       {turn.b === null ? (

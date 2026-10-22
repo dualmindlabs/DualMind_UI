@@ -69,7 +69,6 @@ export function PanePair({
   const [last, setLast] = useState<Side>('a');
   const [open, setOpen] = useState<{ a: boolean; b: boolean }>({ a: false, b: false });
   const [progress, setProgress] = useState<{ a: number; b: number }>({ a: 0, b: 0 });
-  const [switched, setSwitched] = useState(false);
   const comparing = view === 'compare';
   const slots = useRef<{ a: HTMLDivElement | null; b: HTMLDivElement | null }>({
     a: null,
@@ -153,7 +152,6 @@ export function PanePair({
 
   const show = useCallback(
     (next: View, direction: 1 | -1 = next === 'b' ? 1 : -1) => {
-      setSwitched(true);
       setView(next);
       if (next !== 'compare') {
         setLast(next);
@@ -239,9 +237,10 @@ export function PanePair({
                 type="button"
                 aria-pressed={view === side.id}
                 aria-keyshortcuts={side.id === 'a' ? 'ArrowLeft' : 'ArrowRight'}
+                title={`${side.label} (${side.id === 'a' ? 'left' : 'right'} arrow key)`}
                 onClick={() => show(side.id)}
                 className={cn(
-                  'group/tab relative flex h-11 min-w-0 items-center justify-center gap-2 overflow-hidden rounded-full px-4 text-ui font-medium text-fg-soft transition-[background-color,color] duration-(--dur-fast) ease-out-expo sm:min-w-36 pointer-coarse:h-12',
+                  'group/tab relative flex h-11 min-w-0 items-center justify-center gap-1.5 overflow-hidden rounded-full px-3 text-ui font-medium text-fg-soft transition-[background-color,color] duration-(--dur-fast) ease-out-expo sm:min-w-36 sm:gap-2 sm:px-4 pointer-coarse:h-12',
                   'hover:text-fg aria-pressed:bg-surface-2 aria-pressed:text-fg',
                 )}
               >
@@ -295,14 +294,6 @@ export function PanePair({
             <span className="max-sm:sr-only">Compare</span>
           </button>
         </div>
-        {!switched && !comparing ? (
-          <p
-            aria-hidden="true"
-            className="hidden text-caption text-muted md:block pointer-coarse:hidden"
-          >
-            Use the left and right arrow keys to switch answers
-          </p>
-        ) : null}
         <p className="sr-only" aria-live="polite">
           {ready
             ? bothRead

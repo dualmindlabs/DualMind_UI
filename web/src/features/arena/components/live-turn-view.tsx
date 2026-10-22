@@ -133,6 +133,7 @@ export function LiveTurnView({
       aria-labelledby={promptId}
       className="grid grid-cols-[minmax(0,1fr)] gap-8"
       data-testid="live-turn"
+      data-turn=""
       data-phase={turn.phase}
     >
       <PromptCard id={promptId} number={number} prompt={turn.prompt} />

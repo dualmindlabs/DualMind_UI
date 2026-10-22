@@ -23,6 +23,26 @@ import { toTurns } from '../lib/turns';
 import { LiveTurnView } from './live-turn-view';
 import { TurnView } from './turn-view';
 
+/**
+ * Where the thread settles: the top of the newest turn, not the bottom of it. Reading starts at
+ * the prompt and the first line of the answer, whatever the answers' length, and nothing scrolls
+ * away while a model is still writing.
+ */
+function newestTurnTop(
+  bottom: number,
+  { scrollElement, contentElement }: { scrollElement: HTMLElement; contentElement: HTMLElement },
+): number {
+  const turns = contentElement.querySelectorAll('[data-turn]');
+  const last = turns[turns.length - 1];
+  if (!last) return bottom;
+  const top =
+    last.getBoundingClientRect().top -
+    scrollElement.getBoundingClientRect().top +
+    scrollElement.scrollTop -
+    16;
+  return Math.max(0, Math.min(bottom, top));
+}
+
 function TurnSkeleton() {
   return (
     <div className="mx-auto grid w-full max-w-[42rem] gap-8" aria-hidden="true">
@@ -126,7 +146,7 @@ export function ThreadView({ threadId }: { threadId: string | null }) {
   const wide = mode !== 'direct';
 
   return (
-    <ChatContainerRoot className="min-h-0 flex-1">
+    <ChatContainerRoot className="min-h-0 flex-1" targetScrollTop={newestTurnTop}>
       <ChatContainerContent
         scrollClassName="overscroll-contain"
         className={cn(
