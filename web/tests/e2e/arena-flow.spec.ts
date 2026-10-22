@@ -21,32 +21,39 @@ const PROBLEM = 'https://arena.dualmindlab.tech/problems/';
 const PARAGRAPH =
   'A cache only pays off when reads repeat. Measure the hit rate first: below about 60% the extra memory and the invalidation work cost more than they save, and a faster query is the better fix.';
 
-/** Long enough for several screens, with a long code line, a wide table and an unbroken token. */
+/**
+ * Long enough for several screens, with a long code line, a wide table and an unbroken token.
+ * Blocks are joined by blank lines; the lines of a code block or a table by single newlines.
+ */
 const LONG_A = [
   '## A plan for a read-heavy API',
   PARAGRAPH,
   '1. **Measure** the hit rate and the p99 latency before and after.',
   '2. **Pick** a strategy per endpoint, not one for the whole service.',
   '3. **Invalidate** on writes, and give every entry a time to live as a safety net.',
-  '```ts',
-  'export function memoize<Args extends unknown[], Result>(fn: (...args: Args) => Result, key: (...args: Args) => string = (...args) => JSON.stringify(args), ttlMs = 60_000): (...args: Args) => Result {',
-  '  const cache = new Map<string, { value: Result; expires: number }>();',
-  '  return (...args) => {',
-  '    const id = key(...args);',
-  '    const hit = cache.get(id);',
-  '    if (hit && hit.expires > Date.now()) return hit.value;',
-  '    const value = fn(...args);',
-  '    cache.set(id, { value, expires: Date.now() + ttlMs });',
-  '    return value;',
-  '  };',
-  '}',
-  '```',
-  '| Strategy | Hit rate | p50 latency | p99 latency | Memory | Eviction | Thread safe | Best for |',
-  '| --- | ---: | ---: | ---: | ---: | --- | --- | --- |',
-  '| LRU | 91% | 0.4 ms | 3.1 ms | 120 MB | least recently used | yes | most read-heavy services |',
-  '| LFU | 93% | 0.5 ms | 3.4 ms | 140 MB | least frequently used | yes | stable hot keys |',
-  '| TTL only | 78% | 0.3 ms | 2.2 ms | 90 MB | expiry time | yes | data that goes stale fast |',
-  '| Write-through | 88% | 0.6 ms | 4.0 ms | 160 MB | on write | with a lock | strict consistency |',
+  [
+    '```ts',
+    'export function memoize<Args extends unknown[], Result>(fn: (...args: Args) => Result, key: (...args: Args) => string = (...args) => JSON.stringify(args), ttlMs = 60_000): (...args: Args) => Result {',
+    '  const cache = new Map<string, { value: Result; expires: number }>();',
+    '  return (...args) => {',
+    '    const id = key(...args);',
+    '    const hit = cache.get(id);',
+    '    if (hit && hit.expires > Date.now()) return hit.value;',
+    '    const value = fn(...args);',
+    '    cache.set(id, { value, expires: Date.now() + ttlMs });',
+    '    return value;',
+    '  };',
+    '}',
+    '```',
+  ].join('\n'),
+  [
+    '| Strategy | Hit rate | p50 latency | p99 latency | Memory | Eviction | Thread safe | Best for |',
+    '| --- | ---: | ---: | ---: | ---: | --- | --- | --- |',
+    '| LRU | 91% | 0.4 ms | 3.1 ms | 120 MB | least recently used | yes | most read-heavy services |',
+    '| LFU | 93% | 0.5 ms | 3.4 ms | 140 MB | least frequently used | yes | stable hot keys |',
+    '| TTL only | 78% | 0.3 ms | 2.2 ms | 90 MB | expiry time | yes | data that goes stale fast |',
+    '| Write-through | 88% | 0.6 ms | 4.0 ms | 160 MB | on write | with a lock | strict consistency |',
+  ].join('\n'),
   PARAGRAPH,
   'Keys look like `user:42:profile:v3:region-eu-west-1:locale-en-US:feature-flags-7f3a9c2e1b5d4f60`, and a key that long must still wrap inside the pane: userprofilecachekeywithoutanyspacesorbreakopportunitiesatallforthelayouttest.',
   '## Invalidation',
@@ -70,13 +77,15 @@ const LONG_B = [
   '- Version the keys, so a deploy never reads an old shape.',
   '- Log every miss for a week before tuning anything.',
   PARAGRAPH,
-  '```python',
-  'from functools import lru_cache',
-  '',
-  '@lru_cache(maxsize=10_000)',
-  'def profile(user_id: int) -> dict:',
-  '    return db.fetch_one("SELECT id, name, email, locale, region, created_at, updated_at FROM users WHERE id = %s", user_id)',
-  '```',
+  [
+    '```python',
+    'from functools import lru_cache',
+    '',
+    '@lru_cache(maxsize=10_000)',
+    'def profile(user_id: int) -> dict:',
+    '    return db.fetch_one("SELECT id, name, email, locale, region, created_at, updated_at FROM users WHERE id = %s", user_id)',
+    '```',
+  ].join('\n'),
   PARAGRAPH,
   PARAGRAPH,
   'Move to a shared cache only when several instances miss on the same keys.',
@@ -164,7 +173,8 @@ async function headerGeometry(turn: Locator): Promise<HeaderGeometry[]> {
         height: header.getBoundingClientRect().height,
         spread: Math.max(...centres) - Math.min(...centres),
         nameRight: name ? name.getBoundingClientRect().right : null,
-        nameClipped: name ? name.scrollWidth > name.clientWidth + 0.5 : null,
+        // scrollWidth is rounded up; more than a pixel past the box is a real ellipsis.
+        nameClipped: name ? name.scrollWidth - name.getBoundingClientRect().width > 1 : null,
         title: name ? name.getAttribute('title') : null,
         pickLeft: pick ? pick.getBoundingClientRect().left : null,
         pickRight: pick ? pick.getBoundingClientRect().right : null,
@@ -320,13 +330,15 @@ test.describe('after the vote', () => {
     await expect(first.getByTestId('verdict')).toContainText('A is better');
     expect(state.bodies.filter(item => item.path === '/api/arena/model-vote')).toHaveLength(1);
 
-    // ? opens the shortcuts, Esc brings focus back to the next steps.
+    // ? opens the shortcuts; Esc brings focus back into the next steps (the panel itself is not
+    // tabbable, so the dialog returns to its first action).
     await page.keyboard.press('?');
     await expect(page.getByRole('dialog', { name: 'Keyboard shortcuts' })).toBeVisible();
     await page.keyboard.press('Escape');
-    await expect(panel).toBeFocused();
+    await expect(panel.getByRole('button', { name: /Ask a follow-up/ })).toBeFocused();
 
-    // Tab: follow-up, rematch, share, new battle, in reading order.
+    // Tab from the panel: follow-up, rematch, share, new battle, in reading order.
+    await panel.focus();
     const order: string[] = [];
     for (let index = 0; index < 4; index += 1) {
       await page.keyboard.press('Tab');
