@@ -52,13 +52,13 @@ export function SiteFooter({ status, navLabel = 'Footer', className }: SiteFoote
             href="/"
             className={cn(buttonVariants({ variant: 'primary', size: 'lg' }), 'rounded-full')}
           >
-            Start a battle
+            Start judging
           </a>
           <a
             href="/leaderboard/"
             className={cn(buttonVariants({ variant: 'outline', size: 'lg' }), 'rounded-full')}
           >
-            See the leaderboard
+            Check the rankings
           </a>
         </div>
       </div>

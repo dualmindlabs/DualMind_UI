@@ -6,8 +6,8 @@ import {
   Code,
   ExternalLink,
   Info,
-  Mail,
   type LucideIcon,
+  Mail,
   Monitor,
   Moon,
   Settings,
@@ -32,7 +32,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { type CommandAction, useCommandPalette } from '@/hooks/use-command-palette';
 import { useTheme } from '@/hooks/use-theme';
 import { blockOfflineNavigation } from '@/lib/network/online-status';
-import { GITHUB_URL, primaryNav, SUPPORT_EMAIL, settingsLink } from '@/lib/site/links';
+import { GITHUB_URL, primaryNav, settingsLink, SUPPORT_EMAIL } from '@/lib/site/links';
 import type { ThemePreference } from '@/lib/theme/theme';
 
 const navIcons: Record<string, LucideIcon> = {

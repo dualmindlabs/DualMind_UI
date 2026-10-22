@@ -58,7 +58,7 @@ function HomeLink({ className }: { className?: string }) {
         className,
       )}
     >
-      <Emblem interactive className="size-6" />
+      <Emblem interactive className="hidden size-6 min-[22rem]:block" />
       <Wordmark title={null} className="h-3" />
     </a>
   );
