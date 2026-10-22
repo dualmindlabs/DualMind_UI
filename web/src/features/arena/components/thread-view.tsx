@@ -153,12 +153,8 @@ export function ThreadView({ threadId }: { threadId: string | null }) {
             ) : null}
           </p>
           {thread || threadId === null ? (
-            <h1 className="sr-only">
-              {thread?.title ?? live[0]?.prompt ?? 'New battle'}
-            </h1>
-          ) : (
-            null
-          )}
+            <h1 className="sr-only">{thread?.title ?? live[0]?.prompt ?? 'New battle'}</h1>
+          ) : null}
           {threadId === null ? null : (
             <Button
               variant="secondary"

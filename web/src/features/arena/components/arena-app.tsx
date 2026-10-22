@@ -30,7 +30,7 @@ import { ThreadView } from './thread-view';
 
 /**
  * The stage: the deep background with the two minds' spotlights falling from the top (cyan on
- * the left card, terracotta on the right), a hairline where the two meet, and a vignette that
+ * the left card, terracotta on the right) and a vignette that
  * pulls the eye to the middle. Painted once; nothing here moves.
  */
 function StageBackdrop() {
@@ -40,7 +40,6 @@ function StageBackdrop() {
       className="pointer-events-none absolute inset-0 overflow-hidden mesh-duel"
     >
       <div className="absolute inset-x-0 top-0 h-[80%] bg-[radial-gradient(44rem_36rem_at_26%_-8%,color-mix(in_oklab,var(--mind-a)_26%,transparent),transparent_72%),radial-gradient(44rem_36rem_at_74%_-8%,color-mix(in_oklab,var(--mind-b)_26%,transparent),transparent_72%)]" />
-      <div className="absolute inset-y-0 left-1/2 hidden w-px bg-linear-to-b from-line-strong via-line to-transparent md:block" />
       <div className="absolute inset-0 bg-[radial-gradient(120%_90%_at_50%_30%,transparent_58%,color-mix(in_oklab,var(--bg-deep)_85%,transparent))]" />
     </div>
   );
@@ -206,7 +205,6 @@ function ArenaLayout({ empty }: { empty: boolean }) {
                     className="pointer-events-none absolute inset-x-0 -top-8 h-8 bg-linear-to-t from-bg-deep to-transparent"
                   />
                   <Composer onSend={send} busy={battle.busy} onStop={battle.stop} />
-                  
                 </div>
               </>
             )}

@@ -86,7 +86,7 @@ export function AnswerPane({
       {letter ? (
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute -right-3 -bottom-10 font-semibold tracking-tighter text-[13rem] leading-none text-fg opacity-[0.035] select-none"
+          className="pointer-events-none absolute -right-3 -bottom-10 text-[13rem] leading-none font-semibold tracking-tighter text-fg opacity-[0.035] select-none"
         >
           {letter}
         </span>

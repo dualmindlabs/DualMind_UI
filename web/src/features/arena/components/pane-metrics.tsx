@@ -13,10 +13,7 @@ export function PaneMetrics({ items }: { items: readonly PaneMetric[] }) {
       className="relative mt-auto flex flex-wrap gap-x-5 gap-y-1 px-5 pt-1 pb-6 font-mono text-caption sm:px-8"
     >
       {items.map(([term, value]) => (
-        <div
-          key={term}
-          className="flex items-baseline gap-1.5"
-        >
+        <div key={term} className="flex items-baseline gap-1.5">
           <dt className="text-muted">{term}</dt>
           <dd className="font-medium text-fg tabular-nums">{value}</dd>
         </div>

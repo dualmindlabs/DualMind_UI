@@ -101,7 +101,12 @@ export function RevealPanel({ turn }: { turn: LiveTurn }) {
               data-testid="reveal-name"
               initial={reduce ? false : { opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ type: 'spring', stiffness: 160, damping: 22, delay: 0.25 + index * 0.14 }}
+              transition={{
+                type: 'spring',
+                stiffness: 160,
+                damping: 22,
+                delay: 0.25 + index * 0.14,
+              }}
               className={cn(
                 'grid min-w-0 content-start gap-2',
                 side === 'a' ? 'justify-items-start text-start' : 'justify-items-end text-end',

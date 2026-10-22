@@ -102,13 +102,13 @@ export function VoteBar({ onVote, chosen, optional = false, error, className }: 
           'group/vote relative isolate flex h-20 min-w-0 cursor-pointer items-center gap-3 overflow-hidden text-lead font-semibold tracking-tight text-fg pointer-coarse:h-24',
           PRESSABLE,
           look.shape,
-          'aria-pressed:text-on-accent aria-disabled:cursor-default aria-disabled:not-aria-pressed:opacity-40',
+          'aria-disabled:cursor-default aria-disabled:not-aria-pressed:opacity-40 aria-pressed:text-on-accent',
         )}
       >
         <span
           aria-hidden="true"
           className={cn(
-            '-z-10 absolute inset-0 scale-x-0 opacity-25 transition-[transform,opacity] duration-(--dur-slow) ease-out-expo',
+            'absolute inset-0 -z-10 scale-x-0 opacity-25 transition-[transform,opacity] duration-(--dur-slow) ease-out-expo',
             'group-hover/vote:scale-x-100 group-focus-visible/vote:scale-x-100',
             'group-aria-pressed/vote:scale-x-100 group-aria-pressed/vote:opacity-100',
             look.fill,
