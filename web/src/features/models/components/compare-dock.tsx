@@ -27,7 +27,7 @@ function Side({
 }: {
   entry: LeaderboardEntry | undefined;
   who: 'a' | 'b';
-  chance?: number;
+  chance?: number | undefined;
   onUnpin: (id: string) => void;
 }) {
   const align = who === 'b' ? 'sm:flex-row-reverse sm:text-right' : '';
