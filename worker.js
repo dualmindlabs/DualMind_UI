@@ -146,7 +146,17 @@ const arena = {
     // The text routes of the API docs (BE-5): /leaderboard.md, /llms.txt, /problems/ and
     // /problems/<slug>. GET and HEAD are served, anything else gets a 405 problem.
     if (isDocRoute(pathname)) {
-      return handleDocRoute(request, env, ctx);
+      const docResponse = await handleDocRoute(request, env, ctx);
+      // A browser that follows an unknown /problems/<slug> gets the site's 404 page, not raw JSON.
+      if (
+        docResponse.status === 404 &&
+        pathname.startsWith('/problems') &&
+        (request.headers.get('accept') || '').toLowerCase().includes('text/html')
+      ) {
+        const notFound = await serveNotFoundPage(request, env);
+        if (notFound) return notFound;
+      }
+      return docResponse;
     }
 
     // 2. Permanent redirects for legacy URLs, from the table in server/redirects.js.
