@@ -138,6 +138,22 @@ export const isAbortError = (error: unknown) => isApiErrorKind(error, 'aborted')
 export const isRateLimitError = (error: unknown) => isApiErrorKind(error, 'rate_limited');
 export const isNotFoundError = (error: unknown) => isApiErrorKind(error, 'not_found');
 
+/** Codes of the 503 the API sends when neither the model nor its backup answered. */
+const UPSTREAM_UNAVAILABLE_CODES: ReadonlySet<string> = new Set([
+  'MODEL_UNAVAILABLE',
+  'UPSTREAM_UNAVAILABLE',
+]);
+
+/** Both models failed (503 `upstream_unavailable`): nothing was stored, trying again is fine. */
+export const isUpstreamUnavailableError = (error: unknown) =>
+  error instanceof ApiError &&
+  error.status === 503 &&
+  UPSTREAM_UNAVAILABLE_CODES.has(error.code.toUpperCase());
+
+/** A vote the API already counted (409 `ALREADY_VOTED`): the user's vote stands, not an error. */
+export const isAlreadyVotedError = (error: unknown) =>
+  error instanceof ApiError && error.status === 409;
+
 export function isRetryableError(error: unknown): boolean {
   return error instanceof ApiError && error.retryable;
 }
@@ -369,7 +385,9 @@ export function getUserMessage(error: unknown): string {
         ? 'Too many requests. Wait a moment and try again.'
         : `Too many requests. Try again in ${seconds(error.retryAfterMs)} seconds.`;
     case 'server':
-      return 'Something went wrong on our side. Please try again.';
+      return isUpstreamUnavailableError(error)
+        ? 'Both models are busy right now. Try again in a moment.'
+        : 'Something went wrong on our side. Please try again.';
     case 'bad_response':
       return 'The server sent an answer we could not read. Please try again.';
   }

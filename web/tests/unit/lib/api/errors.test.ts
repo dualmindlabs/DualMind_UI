@@ -6,6 +6,7 @@ import {
   type ApiErrorKind,
   getUserMessage,
   isAbortError,
+  isAlreadyVotedError,
   isApiError,
   isApiErrorKind,
   isAuthError,
@@ -13,6 +14,7 @@ import {
   isNotFoundError,
   isRateLimitError,
   isRetryableError,
+  isUpstreamUnavailableError,
 } from '@/lib/api';
 import {
   errorFromResponse,
@@ -307,6 +309,67 @@ describe('getUserMessage', () => {
       'Too many requests. Try again in 3 seconds.',
     );
     expect(getUserMessage(error('rate_limited'))).toMatch(/wait a moment/i);
+  });
+
+  it('says both models are busy for the 503 upstream_unavailable problem', () => {
+    const problem = errorFromResponse({
+      status: 503,
+      headers: new Headers({ 'retry-after': '5' }),
+      body: {
+        type: 'https://arena.dualmindlab.tech/problems/upstream_unavailable',
+        title: 'Models unavailable',
+        status: 503,
+        detail: 'No model answered.',
+        code: 'MODEL_UNAVAILABLE',
+        message: 'No model answered.',
+        models: ['a', 'b'],
+      },
+    });
+    expect(problem.kind).toBe('server');
+    expect(problem.code).toBe('MODEL_UNAVAILABLE');
+    expect(isUpstreamUnavailableError(problem)).toBe(true);
+    expect(getUserMessage(problem)).toBe('Both models are busy right now. Try again in a moment.');
+    // The slug alone (the code member missing) is enough, through the Worker's problem body.
+    const bySlug = errorFromResponse({
+      status: 503,
+      headers: new Headers(),
+      body: {
+        type: 'https://arena.dualmindlab.tech/problems/upstream_unavailable',
+        title: 'Models unavailable',
+        status: 503,
+      },
+    });
+    expect(bySlug.code).toBe('UPSTREAM_UNAVAILABLE');
+    expect(getUserMessage(bySlug)).toBe('Both models are busy right now. Try again in a moment.');
+  });
+
+  it('keeps the generic server message for any other 5xx, including a plain 503', () => {
+    expect(isUpstreamUnavailableError(error('server', { status: 503, code: 'SERVER_ERROR' }))).toBe(
+      false,
+    );
+    expect(isUpstreamUnavailableError(error('server', { status: 500, code: 'MODEL_UNAVAILABLE' }))).toBe(
+      false,
+    );
+    expect(getUserMessage(error('server', { status: 503 }))).toBe(
+      'Something went wrong on our side. Please try again.',
+    );
+  });
+
+  it('recognises a vote the API already counted (409)', () => {
+    const duplicate = errorFromResponse({
+      status: 409,
+      headers: new Headers(),
+      body: {
+        type: 'https://arena.dualmindlab.tech/problems/conflict',
+        title: 'Conflict',
+        status: 409,
+        code: 'ALREADY_VOTED',
+      },
+    });
+    expect(duplicate.code).toBe('ALREADY_VOTED');
+    expect(isAlreadyVotedError(duplicate)).toBe(true);
+    expect(isAlreadyVotedError(error('validation', { status: 400 }))).toBe(false);
+    expect(isAlreadyVotedError(new Error('x'))).toBe(false);
   });
 
   it('has a generic message for anything that is not an ApiError', () => {

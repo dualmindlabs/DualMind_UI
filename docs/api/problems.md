@@ -20,6 +20,7 @@ Every error under `/api/v2` is `application/problem+json` ([RFC 9457](https://ww
 | `not_enabled` | 501 | Feature not enabled | the route needs a binding or secret this deployment does not have; carries `feature` |
 | `bad_gateway` | 502 | Bad gateway | the DualMind API is unreachable or answered nonsense |
 | `gateway_timeout` | 504 | Gateway timeout | the DualMind API did not answer in time |
+| `upstream_unavailable` | 503 | Models unavailable | neither the requested model nor its backup answered a battle or chat call; nothing was stored, so trying again is safe (`code` `MODEL_UNAVAILABLE`, `Retry-After`) |
 | `service_unavailable` | 503 | Service unavailable | the v2 router could not be loaded (answered by worker.js) |
 
 Identifier URL: `https://arena.dualmindlab.tech/problems/<slug>`.

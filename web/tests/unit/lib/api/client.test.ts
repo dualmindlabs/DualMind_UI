@@ -87,6 +87,30 @@ describe('request bodies', () => {
     expect(fetch).toHaveBeenCalledOnce();
   });
 
+  it('startBattle sends Idempotency-Key when given, and nothing when not', async () => {
+    const { fetch, calls } = scriptedFetch(jsonResponse({}, { status: 500 }));
+    const api = createApiClient({ fetch, getAccessToken: token });
+    await rejectionOf(api.startBattle({ prompt: 'Hi', idempotencyKey: 'f3b1c0de-0001' }));
+    await rejectionOf(api.startBattle({ prompt: 'Hi' }));
+    expect(calls[0]?.headers.get('idempotency-key')).toBe('f3b1c0de-0001');
+    expect(calls[1]?.headers.get('idempotency-key')).toBeNull();
+    // The key is a header, never part of the body the API hashes.
+    expect(calls[0]?.body).not.toHaveProperty('idempotencyKey');
+    expect(calls[0]?.headers.get('authorization')).toBe('Bearer jwt');
+  });
+
+  it('startBattle refuses a key the API would reject, before any request', async () => {
+    const { fetch } = scriptedFetch(jsonResponse({}));
+    const api = createApiClient({ fetch, getAccessToken: token });
+    for (const key of ['', 'has space', 'x'.repeat(129), 'caf\u00e9']) {
+      await expect(api.startBattle({ prompt: 'Hi', idempotencyKey: key })).rejects.toMatchObject({
+        kind: 'validation',
+        code: 'INVALID_ARGUMENT',
+      });
+    }
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
   it('sendChat defaults the model to auto', async () => {
     const { fetch, calls } = scriptedFetch(jsonResponse({ message: 'ok' }));
     const api = createApiClient({ fetch, getAccessToken: token });

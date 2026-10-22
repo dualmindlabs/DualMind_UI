@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import {
+  flag,
   isRecord,
   mutationResultSchema,
   optionalNumber,
@@ -74,6 +75,13 @@ export const answerSchema = z.preprocess(
       finishReason: optionalString.catch(null),
       responseTimeMs: optionalNumber.catch(null),
       timestamp: optionalString.catch(null),
+      /**
+       * The model that really answered, when it is not the one asked for (a fallback). Never show
+       * it before a vote: it names a model.
+       */
+      servedBy: optionalString.catch(null).optional(),
+      /** A backup model answered in place of the one asked for. */
+      fallbackUsed: flag(false).catch(false).optional(),
     }),
   ),
 );
@@ -102,17 +110,31 @@ const battleArenaSchema = z
 /**
  * `POST /api/arena/dualchat`: two answers to one prompt and the `comparisonId` the vote refers
  * to. `agent1` is shown on the left (Mind A), `agent2` on the right (Mind B).
+ *
+ * When a backup model answered for either side the API stores no comparison: `comparisonId` is
+ * missing (null here), `fallbackUsed` is true, and the battle cannot be voted on. A missing id
+ * is accepted, an empty string is still a broken response.
  */
 export const battleSchema = withAliases(
   z.object({
-    comparisonId: z.string().min(1),
+    comparisonId: z
+      .string()
+      .min(1)
+      .nullish()
+      .transform(value => value ?? null),
     agent1: answerSchema,
     agent2: answerSchema,
     arena: battleArenaSchema,
     totalResponseTimeMs: optionalNumber.catch(null),
     timestamp: optionalString.catch(null),
+    fallbackUsed: flag(false).catch(false),
   }),
-).transform(({ arena, ...battle }) => ({ ...battle, comparison: arena }));
+).transform(({ arena, fallbackUsed, ...battle }) => ({
+  ...battle,
+  comparison: arena,
+  fallbackUsed:
+    fallbackUsed || battle.agent1.fallbackUsed === true || battle.agent2.fallbackUsed === true,
+}));
 
 export type Battle = z.output<typeof battleSchema>;
 

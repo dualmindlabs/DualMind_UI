@@ -4,10 +4,12 @@ import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'r
 import { useApiClient } from '@/hooks/use-api-client';
 import { useShouldReduceMotion } from '@/hooks/use-should-reduce-motion';
 import {
+  ApiError,
   apiKeys,
   createVoteQueue,
   getUserMessage,
   isAbortError,
+  isApiErrorKind,
   type QueuedVote,
   toThreadTitle,
   type VoteChoice,
@@ -15,6 +17,7 @@ import {
 } from '@/lib/api';
 import { resolveDisplayName } from '@/lib/models/display-name';
 
+import { createAttemptTracker } from '../lib/battle-attempt';
 import {
   battleReducer,
   type BattleState,
@@ -22,6 +25,7 @@ import {
   isBusy,
   type LiveTurn,
 } from '../lib/battle-machine';
+import { FORBIDDEN_THREAD_MESSAGE, UNRATED_NOTES, voteFailure } from '../lib/battle-notes';
 import { type ArenaMode, MODE_DETAILS } from '../lib/modes';
 
 /** How long the progressive reveal of a finished answer takes (both panes in parallel). */
@@ -73,6 +77,8 @@ export function useBattle({
   const [state, dispatch] = useReducer(battleReducer, INITIAL_BATTLE);
   const controller = useRef<AbortController | null>(null);
   const stateRef = useRef(state);
+  // One Idempotency-Key per battle attempt; a retry of the same request reuses it.
+  const [attempts] = useState(() => createAttemptTracker());
   const [queue] = useState<VoteQueue>(() => createVoteQueue({ send: vote => api.vote(vote) }));
   const [pending, setPending] = useState<readonly QueuedVote[]>(() => queue.list());
 
@@ -100,9 +106,11 @@ export function useBattle({
         () => {
           dispatch({ type: 'shown', id: turn.id, at: Date.now() });
           announce(
-            turn.mode === 'battle'
-              ? 'Both answers are ready. Vote with 1 for A, 2 for B, 3 for a tie or 4 if both are bad.'
-              : 'Both answers are ready.',
+            turn.comparisonId === null
+              ? `Both answers are ready. ${UNRATED_NOTES[turn.unrated ?? 'unknown']}`
+              : turn.mode === 'battle'
+                ? 'Both answers are ready. Vote with 1 for A, 2 for B, 3 for a tie or 4 if both are bad.'
+                : 'Both answers are ready.',
           );
         },
         reduce ? 0 : REVEAL_MS,
@@ -147,8 +155,9 @@ export function useBattle({
       controller.current = abort;
 
       void (async () => {
+        let thread: string | null = null;
         try {
-          const thread = await ensureThread(prompt, options.mode);
+          thread = await ensureThread(prompt, options.mode);
           if (abort.signal.aborted) return;
           if (options.mode === 'direct') {
             let opened = false;
@@ -171,19 +180,31 @@ export function useBattle({
             dispatch({ type: 'stream-done', id, usage: null, at: Date.now() });
             announce('The answer is complete.');
           } else {
-            const battle = await api.startBattle(
-              {
-                prompt,
-                threadId: thread ?? undefined,
-                model1: options.pair?.a ?? undefined,
-                model2: options.pair?.b ?? undefined,
-              },
-              { signal: abort.signal },
-            );
+            const request = {
+              prompt,
+              threadId: thread ?? undefined,
+              model1: options.pair?.a ?? undefined,
+              model2: options.pair?.b ?? undefined,
+            };
+            const battle = await api
+              .startBattle(
+                { ...request, idempotencyKey: attempts.keyFor(request) },
+                { signal: abort.signal },
+              )
+              .catch((error: unknown) => {
+                // A stopped call or a refused key (409) starts over with a new key; any other
+                // failure keeps it, so Try again with the same prompt cannot make a second battle.
+                if (isAbortError(error) || abort.signal.aborted || isConflict(error)) {
+                  attempts.settle();
+                }
+                throw error;
+              });
+            attempts.settle();
             dispatch({
               type: 'answers',
               id,
               comparisonId: battle.comparisonId,
+              fallbackUsed: battle.fallbackUsed,
               a: battle.agent1,
               b: battle.agent2,
               at: Date.now(),
@@ -195,6 +216,12 @@ export function useBattle({
             announce('Stopped.');
             return;
           }
+          if (isApiErrorKind(error, 'forbidden') && thread !== null) {
+            // A stale link to someone else's thread: Try again cannot help, a new battle can.
+            dispatch({ type: 'fail', id, message: FORBIDDEN_THREAD_MESSAGE, kind: 'forbidden' });
+            announce(FORBIDDEN_THREAD_MESSAGE);
+            return;
+          }
           dispatch({ type: 'fail', id, message: getUserMessage(error) });
           announce(`The answers did not arrive. ${getUserMessage(error)}`);
         } finally {
@@ -202,7 +229,7 @@ export function useBattle({
         }
       })();
     },
-    [api, ensureThread, announce],
+    [api, ensureThread, announce, attempts],
   );
 
   const stop = useCallback(() => {
@@ -229,8 +256,16 @@ export function useBattle({
           announce(revealMessage(turn, choice, result.status === 'queued'));
         })
         .catch((error: unknown) => {
-          dispatch({ type: 'vote-failed', id: turnId, message: getUserMessage(error) });
-          announce(`The vote was not saved. ${getUserMessage(error)}`);
+          const failure = voteFailure(error);
+          // 403 and 404 are final: close the vote instead of offering the same call again.
+          dispatch(
+            failure.closed
+              ? { type: 'vote-closed', id: turnId }
+              : { type: 'vote-failed', id: turnId, message: failure.message },
+          );
+          announce(
+            failure.closed ? failure.message : `The vote was not saved. ${failure.message}`,
+          );
         });
     },
     [queue, announce],
@@ -256,6 +291,8 @@ export function useBattle({
     [state, busy, send, vote, stop, showAll, reset, pending.length],
   );
 }
+
+const isConflict = (error: unknown) => error instanceof ApiError && error.status === 409;
 
 const CHOICE_WORDS: Record<VoteChoice, string> = {
   left: 'You voted A',

@@ -1,6 +1,7 @@
 // The same-origin /api/* proxy to the DualMind API (ADR 0006, docs/architecture.md "API proxy").
 //
-// - Forwards only Authorization, Content-Type, Accept, Accept-Language and X-Request-Id; cookies,
+// - Forwards only Authorization, Content-Type, Accept, Accept-Language, X-Request-Id and
+//   Idempotency-Key (safe retries of a battle); cookies,
 //   client hints and everything else stay on the Arena origin.
 // - Every request has an id: the caller's X-Request-Id when it looks sane, otherwise a new UUID.
 //   It goes to the backend and comes back on the response, so logs on both sides line up.
@@ -48,6 +49,8 @@ export const FORWARDED_REQUEST_HEADERS = Object.freeze([
   'accept',
   'accept-language',
   'x-request-id',
+  // BE-6: a retried battle (dualchat) carries the key of its first attempt; the API runs it once.
+  'idempotency-key',
 ]);
 
 // The rule lives in server/request-id.js, shared with the v2 router; re-exported for v1 callers.

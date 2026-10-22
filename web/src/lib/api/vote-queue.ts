@@ -13,7 +13,13 @@
 import { z } from 'zod';
 
 import type { VoteInput } from './endpoints/arena';
-import { type ApiError, isApiError, isRetryableError, toApiError } from './errors';
+import {
+  type ApiError,
+  isAlreadyVotedError,
+  isApiError,
+  isRetryableError,
+  toApiError,
+} from './errors';
 import { VOTE_CHOICES } from './schemas/arena';
 
 export const VOTE_QUEUE_STORAGE_KEY = 'dm.voteQueue.v1';
@@ -295,6 +301,9 @@ export function createVoteQueue(options: VoteQueueOptions): VoteQueue {
       return { status: 'sent' };
     } catch (error) {
       const apiError = toApiError(error);
+      // 409: the API already counted a vote for this battle (a retry racing the first send).
+      // Show it as counted, not as an error.
+      if (isAlreadyVotedError(apiError)) return { status: 'sent' };
       if (!isApiError(error) || !isRetryableError(apiError)) throw apiError;
       enqueue(vote, apiError);
       scheduleRetry(apiError.retryAfterMs ?? 0);

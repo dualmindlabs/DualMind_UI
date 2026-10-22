@@ -12,7 +12,7 @@ The legacy app calls `api.dualmindlab.tech` cross-origin. The Worker already pro
 
 - The new app calls **same-origin `/api/*`** only; the Worker proxies it to the backend.
 - The proxy (`server/api-proxy.js`, slice S1b) is hardened and tested against a fake upstream:
-  - forwards only `Authorization`, `Content-Type`, `Accept`, `Accept-Language` and `X-Request-Id`;
+  - forwards only `Authorization`, `Content-Type`, `Accept`, `Accept-Language`, `X-Request-Id` and `Idempotency-Key` (added later for safe battle retries);
   - every request carries an id: the caller's `X-Request-Id` if it is 8-128 characters of `[A-Za-z0-9._:-]`, otherwise a new UUID; it goes to the backend and is echoed on the response;
   - no CORS: the Worker sends no `Access-Control-*` headers, strips the backend's, and no longer answers every `OPTIONS` with a 204 (`OPTIONS /api/*` is proxied like other methods);
   - no `x-dualmind-proxy-*` headers;

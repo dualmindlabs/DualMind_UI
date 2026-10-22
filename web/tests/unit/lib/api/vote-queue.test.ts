@@ -116,6 +116,28 @@ describe('submit', () => {
     expect(queue.size()).toBe(0);
   });
 
+  it('shows a vote the API already counted (409) as sent, not as an error', async () => {
+    const { queue, send } = setup();
+    send.mockRejectedValueOnce(failure('validation', 409));
+    await expect(queue.submit(vote('c-dup'))).resolves.toEqual({ status: 'sent' });
+    expect(queue.size()).toBe(0);
+  });
+
+  it.each([
+    ['forbidden', 403],
+    ['not_found', 404],
+    ['validation', 400],
+  ] as const)('rethrows a %s (%i) so the caller stops, and never queues it', async (kind, status) => {
+    const { queue, send, setOnline } = setup();
+    send.mockRejectedValue(failure(kind, status));
+    await expect(queue.submit(vote('c-1'))).rejects.toMatchObject({ kind, status });
+    expect(queue.size()).toBe(0);
+    // Nothing is retried later either: no timer, no second send.
+    setOnline(true);
+    await queue.flush();
+    expect(send).toHaveBeenCalledOnce();
+  });
+
   it('queues without sending while offline', async () => {
     const { queue, send, setOnline } = setup();
     setOnline(false);
@@ -166,6 +188,17 @@ describe('flush', () => {
       .mockRejectedValueOnce(failure('validation', 400))
       .mockRejectedValueOnce(failure('not_found', 404));
     await expect(queue.flush()).resolves.toEqual({ sent: 1, dropped: 2, remaining: 0 });
+  });
+
+  it('drops a queued vote that comes back 409, 403 or 404 and goes on with the next', async () => {
+    const { queue, send } = setup();
+    for (const id of ['dup', 'not-yours', 'gone', 'ok']) queue.enqueue(vote(id));
+    send
+      .mockRejectedValueOnce(failure('validation', 409))
+      .mockRejectedValueOnce(failure('forbidden', 403))
+      .mockRejectedValueOnce(failure('not_found', 404));
+    await expect(queue.flush()).resolves.toEqual({ sent: 1, dropped: 3, remaining: 0 });
+    expect(send).toHaveBeenCalledTimes(4);
   });
 
   it('counts a 2xx with an unreadable body as sent', async () => {
