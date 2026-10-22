@@ -55,10 +55,7 @@ function Pane({ side, picked }: { side: 'a' | 'b'; picked?: boolean }) {
 /** A still picture of one battle: the prompt, two anonymous answers and the vote. Decorative. */
 function SampleDuel() {
   return (
-    <div
-      aria-hidden="true"
-      className="grid w-full max-w-xl gap-3 select-none"
-    >
+    <div aria-hidden="true" className="grid w-full max-w-xl gap-3 select-none">
       <div className="surface-duel flex items-center gap-3 px-4 py-3">
         <ModelMark name="You" who="human" size="sm" />
         <span className="text-ui-sm text-fg">
