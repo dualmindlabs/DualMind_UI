@@ -23,7 +23,7 @@ import { cn } from '@/lib/utils/cn';
 
 import { togglePinned } from '../lib/compare';
 import { CompareDock } from './compare-dock';
-import { ModelCard, type ModelLayout } from './model-card';
+import { ModelCard, type ModelLayout, ModelListHead } from './model-card';
 import { ModelsControls } from './models-controls';
 import { ModelsHero } from './models-hero';
 
@@ -146,6 +146,8 @@ export function ModelsPage() {
       return <NoMatch query={view.filters.query} onClear={view.clearFilters} />;
     }
     return (
+      <div className="grid gap-2">
+        {layout === 'list' ? <ModelListHead /> : null}
       <ul aria-label="Models" className={layout === 'cards' ? GRID : LIST}>
         {view.visible.map(entry => {
           const slot = pinned.indexOf(entry.id);
@@ -162,6 +164,7 @@ export function ModelsPage() {
           );
         })}
       </ul>
+      </div>
     );
   }
 

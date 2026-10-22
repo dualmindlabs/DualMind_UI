@@ -16,6 +16,23 @@ import { cn } from '@/lib/utils/cn';
 
 export type ModelLayout = 'cards' | 'list';
 
+/** The column heads of the list layout (wide screens only; each row also labels its own values). */
+export function ModelListHead() {
+  return (
+    <div
+      aria-hidden="true"
+      className="hidden grid-cols-[2.25rem_minmax(0,1fr)_4.5rem_6rem_5rem_7rem_7.5rem] gap-x-4 px-4 pb-1 md:grid"
+    >
+      <span className="col-span-2 eyebrow text-muted">Model</span>
+      <span className="eyebrow text-right text-muted">Rank</span>
+      <span className="eyebrow text-right text-muted">Elo</span>
+      <span className="eyebrow text-right text-muted">Win rate</span>
+      <span className="eyebrow text-right text-muted">Battles</span>
+      <span />
+    </div>
+  );
+}
+
 export interface ModelCardProps {
   entry: LeaderboardEntry;
   /** The top rating on the board, for the "vs #1" gap. */
@@ -149,7 +166,7 @@ export function ModelCard({
         <div
           className={cn(
             'group/model surface-duel relative grid items-center gap-x-4 gap-y-3 px-4 py-3 transition-[border-color] duration-(--dur-fast) hover:border-line-strong',
-            'grid-cols-[auto_minmax(0,1fr)_auto] md:grid-cols-[auto_minmax(0,1fr)_4.5rem_6rem_5rem_7rem_auto]',
+            'grid-cols-[auto_minmax(0,1fr)_auto] md:grid-cols-[2.25rem_minmax(0,1fr)_4.5rem_6rem_5rem_7rem_7.5rem]',
             pinOutline(pinSlot),
           )}
         >
