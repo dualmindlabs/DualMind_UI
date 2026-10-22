@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { RotateCw, SearchX, Share2 } from 'lucide-react';
+import { Plus, RotateCw, SearchX, Share2 } from 'lucide-react';
 import { useMemo } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils/cn';
 import { useArena } from '../hooks/use-arena';
 import { useModelOptions } from '../hooks/use-model-options';
 import { useNow } from '../hooks/use-now';
+import { FORBIDDEN_THREAD_MESSAGE } from '../lib/battle-notes';
 import { MODE_DETAILS } from '../lib/modes';
 import { formatThreadTime, threadTime } from '../lib/thread-groups';
 import { toTurns } from '../lib/turns';
@@ -103,11 +104,20 @@ export function ThreadView({ threadId }: { threadId: string | null }) {
   }, [messages.data, mode, live]);
 
   if (threadId !== null && messages.isError) {
-    const missing = isApiErrorKind(messages.error, 'not_found', 'forbidden');
-    return missing ? (
+    if (isApiErrorKind(messages.error, 'forbidden')) {
+      // A stale link to someone else's thread (the API answers 403 for it).
+      return (
+        <ThreadMessage
+          title={FORBIDDEN_THREAD_MESSAGE.replace(/\.$/, '')}
+          body="Sign in with the account that started it, or begin a new battle of your own."
+          action={{ label: 'New battle', onClick: newBattle, icon: Plus }}
+        />
+      );
+    }
+    return isApiErrorKind(messages.error, 'not_found') ? (
       <ThreadMessage
         title="This thread is not here"
-        body="It may have been deleted, or it belongs to another account."
+        body="It may have been deleted, or made private."
         action={{ label: 'Start a new battle', onClick: newBattle }}
       />
     ) : (

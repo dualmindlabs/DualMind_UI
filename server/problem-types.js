@@ -26,6 +26,7 @@ export const PROBLEM_TYPES = Object.freeze({
   not_enabled: { status: 501, title: 'Feature not enabled', usedFor: 'the route needs a binding or secret this deployment does not have; carries `feature`', help: 'The feature is not switched on for this deployment yet. `feature` names it. Try the production site, or try again later.' },
   bad_gateway: { status: 502, title: 'Bad gateway', usedFor: 'the DualMind API is unreachable or answered nonsense', help: 'The DualMind API is unreachable or answered with something unusable. Wait `Retry-After` seconds and try again.' },
   gateway_timeout: { status: 504, title: 'Gateway timeout', usedFor: 'the DualMind API did not answer in time', help: 'The DualMind API did not answer in time. Wait `Retry-After` seconds and try again.' },
+  upstream_unavailable: { status: 503, title: 'Models unavailable', usedFor: 'neither the requested model nor its backup answered a battle or chat call; nothing was stored, so trying again is safe (`code` `MODEL_UNAVAILABLE`, `Retry-After`)', help: 'Neither the model you asked for nor its backup answered, and nothing was stored. Wait `Retry-After` seconds and send the same request again; with an `Idempotency-Key` the retry cannot create a second battle.' },
   service_unavailable: { status: 503, title: 'Service unavailable', usedFor: 'the v2 router could not be loaded (answered by worker.js)', help: 'The API is starting up or being updated. Try again in a few seconds.' },
 });
 

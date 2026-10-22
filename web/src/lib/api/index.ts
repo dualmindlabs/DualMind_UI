@@ -32,6 +32,7 @@ export {
   type ApiErrorKind,
   getUserMessage,
   isAbortError,
+  isAlreadyVotedError,
   isApiError,
   isApiErrorKind,
   isAuthError,
@@ -39,6 +40,7 @@ export {
   isNotFoundError,
   isRateLimitError,
   isRetryableError,
+  isUpstreamUnavailableError,
 } from './errors';
 
 // Endpoint inputs and helpers

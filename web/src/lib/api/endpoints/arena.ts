@@ -34,6 +34,12 @@ export interface BattleInput {
   system?: string | undefined;
   /** Appends the battle to this thread. */
   threadId?: string | undefined;
+  /**
+   * Sent as `Idempotency-Key`: the same key with the same body returns the first battle instead
+   * of a second one (BE-6, behind a flag on the API; ignored while the flag is off). 1 to 128
+   * printable ASCII characters, such as a UUID.
+   */
+  idempotencyKey?: string | undefined;
 }
 
 export interface ChatInput {
@@ -62,9 +68,11 @@ export interface StreamChatOptions extends CallOptions {
 export interface ArenaEndpoints {
   /**
    * `POST /api/arena/dualchat`: one prompt, two models, both answers and a `comparisonId`.
-   * 60 s timeout. **Never retried automatically**: the API stores a comparison per call, so a
-   * retry after a timeout would create a second battle. Retry only on a user action.
-   * The answers name their models; hide them until the vote in a blind battle.
+   * 60 s timeout. **Never retried here**: the API stores a comparison per call, so a retry
+   * after a timeout could create a second battle. Retry only on a user action, with the same
+   * `idempotencyKey` when the prompt is the same.
+   * The answers name their models; hide them until the vote in a blind battle. A battle a backup
+   * model answered has no `comparisonId` and cannot be voted on.
    */
   startBattle: (input: BattleInput, options?: CallOptions) => Promise<Battle>;
   /** `POST /api/arena/chat`: one model (or `auto`), full answer. 60 s timeout, never retried. */
@@ -96,6 +104,21 @@ function chatBody(input: ChatInput) {
     threadId: input.threadId,
     temperature: input.temperature,
   });
+}
+
+const IDEMPOTENCY_KEY_RE = /^[\x21-\x7e]{1,128}$/;
+
+/** The `Idempotency-Key` header for a battle, or nothing when no key is set. */
+function idempotencyHeaders(key: string | undefined): Record<string, string> {
+  if (key === undefined) return {};
+  if (!IDEMPOTENCY_KEY_RE.test(key)) {
+    throw new ApiError({
+      kind: 'validation',
+      code: 'INVALID_ARGUMENT',
+      message: 'idempotencyKey must be 1 to 128 printable ASCII characters',
+    });
+  }
+  return { 'Idempotency-Key': key };
 }
 
 export function createArenaEndpoints(transport: Transport): ArenaEndpoints {
@@ -150,8 +173,9 @@ export function createArenaEndpoints(transport: Transport): ArenaEndpoints {
   }
 
   return {
-    startBattle: async (input, options) =>
-      await transport.json(
+    startBattle: async (input, options) => {
+      const headers = { ...options?.headers, ...idempotencyHeaders(input.idempotencyKey) };
+      return await transport.json(
         {
           method: 'POST',
           path: '/api/arena/dualchat',
@@ -174,8 +198,9 @@ export function createArenaEndpoints(transport: Transport): ArenaEndpoints {
           }),
           schema: battleSchema,
         },
-        options,
-      ),
+        { ...options, headers },
+      );
+    },
 
     sendChat: async (input, options) =>
       await transport.json(

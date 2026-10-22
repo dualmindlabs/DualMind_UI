@@ -72,10 +72,14 @@ describe('mock adapter parity: every endpoint function works against it', () => 
     expect(battle.comparison?.verdict).toBe('Pending user vote');
 
     await expect(
-      api.vote({ comparisonId: battle.comparisonId, voteChoice: 'right', voteDurationMs: 3200.4 }),
+      api.vote({
+        comparisonId: battle.comparisonId as string,
+        voteChoice: 'right',
+        voteDurationMs: 3200.4,
+      }),
     ).resolves.toEqual({ success: true, message: 'Vote recorded' });
     await expect(
-      api.vote({ comparisonId: battle.comparisonId, voteChoice: 'left' }),
+      api.vote({ comparisonId: battle.comparisonId as string, voteChoice: 'left' }),
     ).rejects.toMatchObject({ kind: 'validation', code: 'DUPLICATE_VOTE' });
   });
 
@@ -129,7 +133,7 @@ describe('mock adapter parity: every endpoint function works against it', () => 
     ]);
 
     const battle = await api.startBattle({ prompt: 'Fastest animal?', threadId: created.threadId });
-    await api.vote({ comparisonId: battle.comparisonId, voteChoice: 'tie' });
+    await api.vote({ comparisonId: battle.comparisonId as string, voteChoice: 'tie' });
     const messages = await api.listThreadMessages(created.threadId);
     expect(messages).toMatchObject([
       { promptText: 'Fastest animal?', voteChoice: 'tie', hasVoted: true, position: 0 },

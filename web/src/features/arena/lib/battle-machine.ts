@@ -41,10 +41,18 @@ export interface LiveTurn {
   /** Null in Direct mode. */
   b: LiveAnswer | null;
   comparisonId: string | null;
+  /**
+   * Why this battle cannot be voted on, when it cannot: a backup model answered (`fallback`, the
+   * API stored no comparison), the answer came without a comparison id (`unknown`), or the API
+   * refused the vote for good (`closed`). Null while voting is open or in Direct mode.
+   */
+  unrated: Unrated | null;
   vote: VoteChoice | null;
   /** The vote is stored in the offline queue and will be sent on reconnect (F-18). */
   votePending: boolean;
   error: string | null;
+  /** What kind of failure `error` is, when the screen offers more than Try again. */
+  errorKind: 'forbidden' | null;
   /** Epoch ms: sent, answers arrived (or the stream started), text fully shown. */
   sentAt: number;
   answeredAt: number | null;
@@ -57,13 +65,17 @@ export interface BattleState {
   turns: LiveTurn[];
 }
 
+export type Unrated = 'fallback' | 'unknown' | 'closed';
+
 export type BattleAction =
   | { type: 'submit'; id: string; prompt: string; mode: ArenaMode; at: number }
   | { type: 'thread'; threadId: string }
   | {
       type: 'answers';
       id: string;
-      comparisonId: string;
+      comparisonId: string | null;
+      /** A backup model answered for a side; the battle is not rated. */
+      fallbackUsed?: boolean;
       a: Answer;
       b: Answer;
       at: number;
@@ -75,7 +87,9 @@ export type BattleAction =
   | { type: 'vote'; id: string; choice: VoteChoice }
   | { type: 'voted'; id: string; queued: boolean }
   | { type: 'vote-failed'; id: string; message: string }
-  | { type: 'fail'; id: string; message: string }
+  /** The API refused the vote for good (403, 404): voting closes, the answers stay. */
+  | { type: 'vote-closed'; id: string }
+  | { type: 'fail'; id: string; message: string; kind?: 'forbidden' }
   | { type: 'stop'; id: string }
   | { type: 'reset'; threadId?: string | null };
 
@@ -104,6 +118,11 @@ function update(
     return next;
   });
   return changed ? { ...state, turns } : state;
+}
+
+/** After the text is shown: a rated battle waits for the vote, an unrated one is simply done. */
+function afterReveal(turn: LiveTurn): TurnPhase {
+  return turn.comparisonId === null ? 'done' : 'awaiting_vote';
 }
 
 const IN_FLIGHT: readonly TurnPhase[] = ['submitting', 'answering'];
@@ -138,9 +157,11 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
             a: null,
             b: null,
             comparisonId: null,
+            unrated: null,
             vote: null,
             votePending: false,
             error: null,
+            errorKind: null,
             sentAt: action.at,
             answeredAt: null,
             shownAt: null,
@@ -157,6 +178,12 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
               a: toLive(action.a),
               b: toLive(action.b),
               comparisonId: action.comparisonId,
+              unrated:
+                action.comparisonId === null
+                  ? action.fallbackUsed
+                    ? 'fallback'
+                    : 'unknown'
+                  : null,
               answeredAt: action.at,
             },
       );
@@ -197,7 +224,7 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
       return update(state, action.id, turn =>
         turn.phase !== 'answering' || turn.mode === 'direct'
           ? null
-          : { ...turn, phase: 'awaiting_vote', shownAt: action.at },
+          : { ...turn, phase: afterReveal(turn), shownAt: action.at },
       );
     case 'vote':
       return update(state, action.id, turn =>
@@ -215,9 +242,24 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
           ? null
           : { ...turn, phase: 'awaiting_vote', vote: null, error: action.message },
       );
+    case 'vote-closed':
+      return update(state, action.id, turn =>
+        turn.phase !== 'voting'
+          ? null
+          : {
+              ...turn,
+              phase: 'done',
+              vote: null,
+              unrated: 'closed',
+              comparisonId: null,
+              error: null,
+            },
+      );
     case 'fail':
       return update(state, action.id, turn =>
-        !IN_FLIGHT.includes(turn.phase) ? null : { ...turn, phase: 'error', error: action.message },
+        !IN_FLIGHT.includes(turn.phase)
+          ? null
+          : { ...turn, phase: 'error', error: action.message, errorKind: action.kind ?? null },
       );
     case 'stop':
       return update(state, action.id, turn => {
@@ -225,7 +267,7 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
         if (turn.phase !== 'answering') return null;
         // A finished battle answer is shown at once; a stream keeps what arrived.
         if (turn.mode === 'direct') return { ...turn, phase: 'stopped' };
-        return { ...turn, phase: 'awaiting_vote', shownAt: turn.answeredAt };
+        return { ...turn, phase: afterReveal(turn), shownAt: turn.answeredAt };
       });
   }
 }

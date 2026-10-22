@@ -49,6 +49,7 @@ describe('request side', () => {
           Accept: 'application/json',
           'Accept-Language': 'en',
           'X-Request-Id': 'req-from-client-1',
+          'Idempotency-Key': 'f3b1c0de-0000-4000-8000-000000000001',
           Cookie: 'dm_preview=1; sb-token=secret',
           'User-Agent': 'test',
           'X-Forwarded-For': '1.2.3.4',
@@ -64,6 +65,30 @@ describe('request side', () => {
     expect(sent?.get('authorization')).toBe('Bearer token');
     expect(sent?.get('x-request-id')).toBe('req-from-client-1');
     expect(sent?.get('cookie')).toBeNull();
+  });
+
+  it('forwards Idempotency-Key as sent, and adds none when the client sent none', async () => {
+    const upstream = fakeUpstream(() => json({ ok: true }));
+    await proxyApi(
+      apiRequest('/api/arena/dualchat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Idempotency-Key': 'key-123' },
+        body: '{"prompt":"hi"}',
+      }),
+      {},
+      { fetchImpl: upstream.fetchImpl },
+    );
+    await proxyApi(
+      apiRequest('/api/arena/dualchat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: '{"prompt":"hi"}',
+      }),
+      {},
+      { fetchImpl: upstream.fetchImpl },
+    );
+    expect(upstream.calls[0]?.headers.get('idempotency-key')).toBe('key-123');
+    expect(upstream.calls[1]?.headers.get('idempotency-key')).toBeNull();
   });
 
   it('maps /api/health to /health and keeps the query', async () => {

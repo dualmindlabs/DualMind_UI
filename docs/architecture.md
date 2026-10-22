@@ -230,7 +230,7 @@ Permanent (301), same origin, query string kept (the browser keeps the `#hash`).
 
 ### API proxy (`server/api-proxy.js`)
 
-- Forwards only `Authorization`, `Content-Type`, `Accept`, `Accept-Language` and `X-Request-Id`; cookies, client hints and every other header stay on the Arena origin.
+- Forwards only `Authorization`, `Content-Type`, `Accept`, `Accept-Language`, `X-Request-Id` and `Idempotency-Key` (safe retries of a battle); cookies, client hints and every other header stay on the Arena origin.
 - **Request ids:** the caller's `X-Request-Id` when it is 8-128 characters of `[A-Za-z0-9._:-]`, otherwise a new UUID. It is sent to the backend and echoed on the response.
 - **No CORS.** The Arena calls its own origin, so the Worker sends no `Access-Control-*` headers and strips the backend's (other sites cannot read API responses through the Arena origin). The old blanket `OPTIONS` 204 is gone; `OPTIONS /api/*` is proxied like any other method. If a cross-origin caller ever needs the proxy, add an explicit allow-list of origins here instead of `*`.
 - No `x-dualmind-proxy-*` debug headers.

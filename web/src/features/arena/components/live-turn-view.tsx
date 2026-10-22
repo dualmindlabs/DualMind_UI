@@ -1,4 +1,4 @@
-import { CloudOff, FastForward, RotateCw } from 'lucide-react';
+import { CloudOff, FastForward, Plus, RotateCw } from 'lucide-react';
 import { useId } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import { resolveDisplayName } from '@/lib/models/display-name';
 import { useArena } from '../hooks/use-arena';
 import { useRevealText } from '../hooks/use-reveal-text';
 import { type LiveAnswer, type LiveTurn, namesShown } from '../lib/battle-machine';
+import { UNRATED_NOTES } from '../lib/battle-notes';
 import { countWords, formatDuration, VOTE_LABELS } from '../lib/turns';
 import { AnswerPane } from './answer-pane';
 import { PanePair } from './pane-pair';
@@ -75,7 +76,7 @@ function LivePane({ turn, side, answer }: PaneProps) {
       side={side}
       text={text}
       modelLabel={shown ? modelLabel(answer) : null}
-      hiddenNote="Hidden until you vote"
+      {...(turn.unrated === null ? { hiddenNote: 'Hidden until you vote' } : {})}
       // Blind integrity: timing and length hint at the model, so they wait for the reveal.
       meta={generating || !shown ? null : formatDuration(answer?.responseTimeMs)}
       chosen={chosen}
@@ -98,7 +99,7 @@ function LivePane({ turn, side, answer }: PaneProps) {
  */
 export function LiveTurnView({ turn, number }: { turn: LiveTurn; number: number }) {
   const promptId = useId();
-  const { battle } = useArena();
+  const { battle, newBattle } = useArena();
   const optional = turn.mode === 'side';
   const showVote =
     turn.mode !== 'direct' && (turn.phase === 'awaiting_vote' || turn.phase === 'voting');
@@ -131,6 +132,11 @@ export function LiveTurnView({ turn, number }: { turn: LiveTurn; number: number 
           Show all
         </Button>
       ) : null}
+      {turn.unrated !== null && turn.mode !== 'direct' ? (
+        <p className="text-ui-sm text-fg-soft" data-testid="unrated-note">
+          {UNRATED_NOTES[turn.unrated]}
+        </p>
+      ) : null}
       {showVote ? (
         <VoteBar
           className="sticky bottom-2 z-10"
@@ -162,15 +168,27 @@ export function LiveTurnView({ turn, number }: { turn: LiveTurn; number: number 
           role="alert"
           className="grid justify-items-start gap-2 rounded-lg border border-bad/50 bg-surface px-4 py-3"
         >
-          <p className="text-ui-sm text-fg">The answers did not arrive. {turn.error}</p>
-          <Button
-            variant="secondary"
-            size="xs"
-            onClick={() => battle.send(turn.prompt, { mode: turn.mode, pair: null })}
-          >
-            <RotateCw aria-hidden="true" strokeWidth={1.75} />
-            Try again
-          </Button>
+          {turn.errorKind === 'forbidden' ? (
+            <>
+              <p className="text-ui-sm text-fg">{turn.error}</p>
+              <Button variant="secondary" size="xs" onClick={newBattle}>
+                <Plus aria-hidden="true" strokeWidth={1.75} />
+                New battle
+              </Button>
+            </>
+          ) : (
+            <>
+              <p className="text-ui-sm text-fg">The answers did not arrive. {turn.error}</p>
+              <Button
+                variant="secondary"
+                size="xs"
+                onClick={() => battle.send(turn.prompt, { mode: turn.mode, pair: null })}
+              >
+                <RotateCw aria-hidden="true" strokeWidth={1.75} />
+                Try again
+              </Button>
+            </>
+          )}
         </div>
       ) : null}
       {turn.phase === 'stopped' ? <p className="text-ui-sm text-muted">Stopped.</p> : null}

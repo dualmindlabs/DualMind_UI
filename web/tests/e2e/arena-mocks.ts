@@ -141,6 +141,8 @@ export interface ArenaMockState {
   bodies: Array<{ path: string; body: Record<string, unknown> }>;
   /** While true, votes fail like a dropped connection (the offline queue keeps them). */
   offline: boolean;
+  /** The Idempotency-Key header of each dualchat request, in order (empty when none was sent). */
+  idempotencyKeys: string[];
 }
 
 export function seedThreads(): Array<Record<string, unknown>> {
@@ -201,6 +203,13 @@ export async function mockArena(
     failThreads?: boolean;
     /** Delay of the battle answer, in milliseconds (the waiting state's screenshot). */
     battleDelayMs?: number;
+    /**
+     * `fallback`: a backup model answered, so the API stores no comparison (no `comparisonId`,
+     * `fallbackUsed: true`). `unavailable`: neither model answered (503 `upstream_unavailable`).
+     */
+    battle?: 'fallback' | 'unavailable';
+    /** Thread ids that belong to another account: their reads answer 403. */
+    foreignThreads?: string[];
   } = {},
 ): Promise<ArenaMockState> {
   const state: ArenaMockState = {
@@ -208,6 +217,7 @@ export async function mockArena(
     requests: [],
     bodies: [],
     offline: false,
+    idempotencyKeys: [],
   };
   let battles = 0;
   const session = sessionJson();
@@ -277,8 +287,24 @@ export async function mockArena(
     if (path === '/api/arena/dualchat') {
       const body = request.postDataJSON() as Record<string, unknown>;
       state.bodies.push({ path, body });
+      state.idempotencyKeys.push(request.headers()['idempotency-key'] ?? '');
       if (options.battleDelayMs)
         await new Promise(resolve => setTimeout(resolve, options.battleDelayMs));
+      if (options.battle === 'unavailable') {
+        return route.fulfill({
+          status: 503,
+          contentType: 'application/problem+json',
+          headers: { 'Retry-After': '5' },
+          body: JSON.stringify({
+            type: 'https://arena.dualmindlab.tech/problems/upstream_unavailable',
+            title: 'Models unavailable',
+            status: 503,
+            detail: 'Neither model answered.',
+            code: 'MODEL_UNAVAILABLE',
+            message: 'Neither model answered.',
+          }),
+        });
+      }
       battles += 1;
       const pick = (id: unknown, fallback: 0 | 1) =>
         MODELS.find(item => item.modelId === id) ?? PAIR[fallback];
@@ -300,6 +326,19 @@ export async function mockArena(
           totalTokens: 12 + Math.ceil(text.length / 4),
         },
       });
+      if (options.battle === 'fallback') {
+        // Like the API: no comparison is stored, so there is no `comparisonId`.
+        return json(route, 200, {
+          success: true,
+          fallbackUsed: true,
+          agent1: answer(ANSWER_A, left, 1840),
+          agent2: {
+            ...answer(ANSWER_B, right, 2310),
+            servedBy: 'groq/compound-mini',
+            fallbackUsed: true,
+          },
+        });
+      }
       return json(route, 200, {
         success: true,
         comparisonId: `c-live-${battles}`,
@@ -324,6 +363,18 @@ export async function mockArena(
     const match = /^\/api\/threads\/([^/]+)(\/messages|\/visibility)?$/.exec(path);
     if (match) {
       const id = decodeURIComponent(match[1] ?? '');
+      if (options.foreignThreads?.includes(id)) {
+        return route.fulfill({
+          status: 403,
+          contentType: 'application/problem+json',
+          body: JSON.stringify({
+            type: 'https://arena.dualmindlab.tech/problems/forbidden',
+            title: 'Forbidden',
+            status: 403,
+            code: 'FORBIDDEN',
+          }),
+        });
+      }
       const thread = state.threads.find(item => item.threadId === id);
       if (!thread)
         return json(route, 404, { success: false, error: 'Thread not found', code: 'NOT_FOUND' });

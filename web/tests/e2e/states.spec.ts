@@ -427,6 +427,20 @@ const arenaScenarios: Scenario[] = [
   },
   {
     screen: 'arena',
+    state: 'upstream-unavailable',
+    run: async ({ page }) => {
+      // The 503 problem of the fallback PR: neither model answered and nothing was stored.
+      await mockArena(page, { battle: 'unavailable' });
+      await sendPrompt(page);
+      const alert = page.getByRole('alert').filter({ hasText: 'The answers did not arrive.' });
+      await expect(alert).toBeVisible({ timeout: 15_000 });
+      await expect(alert).toContainText('Both models are busy right now. Try again in a moment.');
+      await expect(alert.getByRole('button', { name: /Try again/ })).toBeVisible();
+      return { focus: alert };
+    },
+  },
+  {
+    screen: 'arena',
     state: 'rate-limited',
     run: async ({ page }) => {
       await failBattle(page, 'limited');

@@ -247,9 +247,45 @@ describe('arena', () => {
     expect(battleSchema.parse({ ...dualchat, arena: undefined }).comparison).toBeNull();
   });
 
-  it('fails a battle without a comparisonId or an answer', () => {
+  it('fails a battle with an empty comparisonId or a missing answer', () => {
     expect(battleSchema.safeParse({ ...dualchat, comparisonId: '' }).success).toBe(false);
     expect(battleSchema.safeParse({ ...dualchat, agent2: null }).success).toBe(false);
+  });
+
+  it('accepts a battle without a comparisonId (a backup answered; not rated)', () => {
+    const { comparisonId: _omitted, ...rest } = dualchat;
+    const withoutId = battleSchema.parse(rest);
+    expect(withoutId.comparisonId).toBeNull();
+    expect(withoutId.fallbackUsed).toBe(false);
+    expect(battleSchema.parse({ ...rest, comparisonId: null }).comparisonId).toBeNull();
+    const fallback = battleSchema.parse({
+      ...rest,
+      fallbackUsed: true,
+      agent2: { ...dualchat.agent2, servedBy: 'groq/compound-mini', fallbackUsed: true },
+    });
+    expect(fallback.comparisonId).toBeNull();
+    expect(fallback.fallbackUsed).toBe(true);
+    expect(fallback.agent2).toMatchObject({ servedBy: 'groq/compound-mini', fallbackUsed: true });
+  });
+
+  it('reads servedBy and fallbackUsed, and flags a battle when only one side says so', () => {
+    const battle = battleSchema.parse({
+      ...dualchat,
+      agent1: { ...dualchat.agent1, fallbackUsed: true },
+    });
+    expect(battle.fallbackUsed).toBe(true);
+    expect(battle.comparisonId).toBe(dualchat.comparisonId);
+    // Today's API sends neither field.
+    expect(battleSchema.parse(dualchat).fallbackUsed).toBe(false);
+    expect(battleSchema.parse(dualchat).agent1.servedBy).toBeUndefined();
+    // Junk in the new fields never fails a battle.
+    expect(
+      battleSchema.parse({
+        ...dualchat,
+        fallbackUsed: 'maybe',
+        agent1: { ...dualchat.agent1, servedBy: 7 },
+      }).fallbackUsed,
+    ).toBe(false);
   });
 
   it('reads the answer text from output_text parts, then message, then text', () => {

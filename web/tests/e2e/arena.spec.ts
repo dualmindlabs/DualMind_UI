@@ -208,6 +208,22 @@ test.describe('threads', () => {
   });
 });
 
+test.describe('thread of another account', () => {
+  test('a stale link says it belongs to another account and offers a New battle', async ({
+    page,
+  }) => {
+    await mockArena(page, { foreignThreads: ['t-theirs'] });
+    await openArena(page, '/?arena=new&thread=t-theirs');
+    const heading = page.getByRole('heading', {
+      name: 'This conversation belongs to another account',
+    });
+    await expect(heading).toBeVisible({ timeout: 20_000 });
+    // The header has a New battle button too: take the one inside the panel.
+    await heading.locator('xpath=..').getByRole('button', { name: 'New battle' }).click();
+    await expect(page).toHaveURL(/\/$/);
+  });
+});
+
 test.describe('composer', () => {
   test('modes, model pickers in the legacy keys, starters and the palette', async ({ page }) => {
     await mockArena(page);
@@ -437,6 +453,67 @@ test.describe('battles', () => {
     await expect(turn).toContainText('one word at a time');
     await expect(turn.locator('strong')).toHaveText('one word at a time');
   });
+});
+
+test.describe('battles with the new API behaviour', () => {
+  test('sends one Idempotency-Key per battle attempt', async ({ page }) => {
+    const state = await mockArena(page);
+    await openArena(page);
+    await page.getByRole('textbox', { name: 'Your prompt' }).fill('Explain recursion');
+    await page.keyboard.press('Enter');
+    await expect(page.getByTestId('live-turn').first()).toHaveAttribute(
+      'data-phase',
+      'awaiting_vote',
+      { timeout: 15_000 },
+    );
+    expect(state.idempotencyKeys).toHaveLength(1);
+    expect(state.idempotencyKeys[0]).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
+    );
+  });
+
+  test('a battle a backup model answered is not rated: no vote, one calm line, no names', async ({
+    page,
+  }) => {
+    const problems = collectProblems(page);
+    await mockArena(page, { battle: 'fallback' });
+    await openArena(page);
+    await page.getByRole('textbox', { name: 'Your prompt' }).fill('Explain recursion');
+    await page.keyboard.press('Enter');
+    const turn = page.getByTestId('live-turn').first();
+    await expect(turn).toHaveAttribute('data-phase', 'done', { timeout: 15_000 });
+    await expect(turn.getByTestId('unrated-note')).toHaveText(
+      'One model was unavailable, so a backup answered. This battle is not rated.',
+    );
+    await expect(turn.getByTestId('vote-bar')).toHaveCount(0);
+    await expect(turn.getByTestId('pane-model')).toHaveCount(0);
+    await expect(turn).not.toContainText(/compound|llama/i);
+    await expect(page.getByTestId('arena-announcer')).toContainText('This battle is not rated');
+    expect(problems).toEqual([]);
+  });
+});
+
+test.describe('fallback battle screenshots', () => {
+  for (const viewport of [
+    { label: 'desktop', width: 1440, height: 900 },
+    { label: 'phone', width: 390, height: 844 },
+  ] as const) {
+    for (const theme of ['dark', 'light'] as const) {
+      test(`arena-fallback: ${viewport.label}, ${theme}`, async ({ page }) => {
+        await page.setViewportSize({ width: viewport.width, height: viewport.height });
+        await storeTheme(page, theme);
+        await mockArena(page, { battle: 'fallback' });
+        await openArena(page);
+        await page.getByRole('textbox', { name: 'Your prompt' }).fill('Explain recursion');
+        await page.keyboard.press('Enter');
+        const turn = page.getByTestId('live-turn').first();
+        await expect(turn).toHaveAttribute('data-phase', 'done', { timeout: 15_000 });
+        await turn.getByTestId('unrated-note').scrollIntoViewIfNeeded();
+        await settle(page, 400);
+        await page.screenshot({ path: shotPath(`arena-fallback-${viewport.label}-${theme}`) });
+      });
+    }
+  }
 });
 
 test.describe('battle screenshots', () => {

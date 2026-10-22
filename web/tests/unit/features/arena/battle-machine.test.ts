@@ -124,3 +124,87 @@ describe('battle state machine', () => {
     expect(run(withThread, { type: 'reset', threadId: 'x' })).toEqual({ threadId: 'x', turns: [] });
   });
 });
+
+describe('a battle that cannot be voted on', () => {
+  const submitted = run(INITIAL_BATTLE, {
+    type: 'submit',
+    id: 't1',
+    prompt: 'Hi',
+    mode: 'battle',
+    at: 0,
+  });
+  const noVote = (fallbackUsed?: boolean) =>
+    run(submitted, {
+      type: 'answers',
+      id: 't1',
+      comparisonId: null,
+      ...(fallbackUsed === undefined ? {} : { fallbackUsed }),
+      a: answer('A', 'alpha'),
+      b: answer('B', 'beta'),
+      at: 10,
+    });
+
+  it('a backup answer (no comparisonId) is unrated and never waits for a vote', () => {
+    const answered = noVote(true);
+    expect(answered.turns[0]).toMatchObject({ comparisonId: null, unrated: 'fallback' });
+    const shown = run(answered, { type: 'shown', id: 't1', at: 20 });
+    expect(shown.turns[0]?.phase).toBe('done');
+    expect(turnAwaitingVote(shown)).toBeUndefined();
+    expect(isBusy(shown)).toBe(false);
+    // Names stay hidden: nothing was rated, and the label would name the wrong model.
+    expect(namesShown({ mode: 'battle', phase: shown.turns[0]?.phase ?? 'done' })).toBe(false);
+  });
+
+  it('Show all on an unrated battle also ends without a vote', () => {
+    const stopped = run(noVote(true), { type: 'stop', id: 't1' });
+    expect(stopped.turns[0]?.phase).toBe('done');
+  });
+
+  it('a missing id without the fallback flag is unrated as unknown', () => {
+    expect(noVote().turns[0]?.unrated).toBe('unknown');
+  });
+
+  it('a rated battle is unchanged', () => {
+    const answered = run(submitted, {
+      type: 'answers',
+      id: 't1',
+      comparisonId: 'c1',
+      a: answer('A', 'alpha'),
+      b: answer('B', 'beta'),
+      at: 10,
+    });
+    expect(answered.turns[0]?.unrated).toBeNull();
+    expect(run(answered, { type: 'shown', id: 't1', at: 20 }).turns[0]?.phase).toBe(
+      'awaiting_vote',
+    );
+  });
+
+  it('a vote refused for good (403, 404) closes voting instead of reopening it', () => {
+    const voting = run(
+      submitted,
+      {
+        type: 'answers',
+        id: 't1',
+        comparisonId: 'c1',
+        a: answer('A', 'alpha'),
+        b: answer('B', 'beta'),
+        at: 10,
+      },
+      { type: 'shown', id: 't1', at: 20 },
+      { type: 'vote', id: 't1', choice: 'left' },
+    );
+    const closed = run(voting, { type: 'vote-closed', id: 't1' });
+    expect(closed.turns[0]).toMatchObject({ phase: 'done', unrated: 'closed', vote: null });
+    expect(turnAwaitingVote(closed)).toBeUndefined();
+    // A transient failure still reopens the bar.
+    expect(run(voting, { type: 'vote-failed', id: 't1', message: 'x' }).turns[0]?.phase).toBe(
+      'awaiting_vote',
+    );
+  });
+
+  it('a failure can carry a kind for the screen', () => {
+    const failed = run(submitted, { type: 'fail', id: 't1', message: 'm', kind: 'forbidden' });
+    expect(failed.turns[0]).toMatchObject({ phase: 'error', errorKind: 'forbidden' });
+    expect(run(submitted, { type: 'fail', id: 't1', message: 'm' }).turns[0]?.errorKind).toBeNull();
+  });
+});
