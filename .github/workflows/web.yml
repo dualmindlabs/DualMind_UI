@@ -61,10 +61,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version-file: .node-version
           cache: npm
@@ -115,7 +115,7 @@ jobs:
 
       - name: Upload the autofix patch
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: web-autofix
           path: ${{ runner.temp }}/autofix/
@@ -133,10 +133,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version-file: .node-version
           cache: npm
@@ -376,7 +376,7 @@ jobs:
       # Merged into one `web-screenshots` artifact by the e2e-summary job.
       - name: Upload screenshots
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: web-screenshots-shard-${{ matrix.shard }}
           path: web/screenshots/
@@ -397,7 +397,7 @@ jobs:
 
       - name: Upload Playwright report
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-report-shard-${{ matrix.shard }}
           path: |
@@ -417,7 +417,7 @@ jobs:
       - name: Merge the shards' screenshots into web-screenshots
         id: merge
         continue-on-error: true
-        uses: actions/upload-artifact/merge@v4
+        uses: actions/upload-artifact/merge@v7
         with:
           name: web-screenshots
           pattern: web-screenshots-shard-*
@@ -426,7 +426,7 @@ jobs:
 
       - name: Download the merged screenshots
         if: steps.merge.outcome == 'success'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: web-screenshots
           path: screenshots
