@@ -32,7 +32,7 @@ export function EmptyState({
         )}
         {details.eyebrow}
       </p>
-      <h1 ref={headingRef} className="max-w-4xl text-h1 text-balance text-fg">
+      <h1 ref={headingRef} className="max-w-5xl text-h1 text-balance text-fg">
         {details.heading.plain}{' '}
         <span className="block human-voice text-human">{details.heading.human}</span>
       </h1>

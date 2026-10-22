@@ -192,7 +192,7 @@ function ArenaLayout({ empty }: { empty: boolean }) {
                   aria-hidden="true"
                   className="pointer-events-none absolute inset-0 bg-grid opacity-60"
                 />
-                <div className="relative mx-auto grid w-full max-w-4xl gap-8 px-4 py-8 max-md:mt-auto sm:px-6 md:my-auto md:gap-10">
+                <div className="relative mx-auto grid w-full max-w-5xl gap-8 px-4 py-8 max-md:mt-auto sm:px-6 md:my-auto">
                   <EmptyState headingRef={heading} />
                   <div ref={heroBox} className="mx-auto w-full max-w-3xl max-md:order-2">
                     <Composer
