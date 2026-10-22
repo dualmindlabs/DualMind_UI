@@ -19,7 +19,7 @@ export function AuthHeading({
   return (
     <div className="grid gap-4">
       <p className="kicker text-mind-a">{eyebrow}</p>
-      <h1 className="text-h1 text-balance text-fg">
+      <h1 className="text-h2 text-balance text-fg">
         {title}
         {voice ? (
           <>
