@@ -6,7 +6,11 @@ name: Web app
 #          installs and builds web/, then composes dist/ from the legacy files and the web build),
 #          then the real worker.js serves dist/ in `wrangler dev`, and Playwright checks it:
 #          routes and headers, hydration, theme, keyboard, overflow, axe in both themes, and
-#          screenshots uploaded as the `web-screenshots` artifact.
+#          screenshots. The suite runs in four shards (one Worker and one browser each; about 440
+#          tests no longer fit one 25-minute job); shard 1 also runs the dist checks, the bundle
+#          report and Lighthouse.
+#   e2e-summary: merges the shards' screenshots into the one `web-screenshots` artifact, lists
+#          them in the job summary and fails if any shard failed.
 # Nothing here deploys: Workers Builds deploys master and builds a preview for every branch.
 
 on:
@@ -119,9 +123,13 @@ jobs:
           retention-days: 7
 
   e2e:
-    name: Composed build, Playwright and screenshots
+    name: Playwright shard ${{ matrix.shard }} of 4
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
 
     steps:
       - name: Checkout repository
@@ -146,6 +154,7 @@ jobs:
         run: node build.js
 
       - name: Check the composed dist/ and report sizes
+        if: matrix.shard == 1
         run: |
           set -euo pipefail
           test -f dist/design/index.html
@@ -204,6 +213,7 @@ jobs:
       # The WebGL effects and Motion's feature bundles must stay in their own chunks, loaded only
       # when a page uses them (components/motion/webgl-gate.tsx, motion-provider.tsx).
       - name: Check that effects are code-split and report the bundle
+        if: matrix.shard == 1
         run: |
           set -euo pipefail
           gz() { gzip -9c "$1" | wc -c; }
@@ -283,13 +293,29 @@ jobs:
           # Checked after the tests (last step), so an overrun still gets screenshots and Lighthouse.
           echo "LANDING_JS_GZIP=${landing_total}" >> "$GITHUB_ENV"
 
+      # The browser download is cached per lockfile and retried: four shards download it at
+      # once, and the Playwright CDN sometimes answers with the wrong certificate
+      # (ERR_TLS_CERT_ALTNAME_INVALID on cdn.playwright.dev).
+      - name: Cache the Playwright browser
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('web/package-lock.json') }}
+
       - name: Install Playwright Chromium
         working-directory: web
-        run: npx playwright install --with-deps chromium
+        run: |
+          for attempt in 1 2 3 4; do
+            if npx playwright install --with-deps chromium; then exit 0; fi
+            echo "::warning::Playwright install failed (attempt ${attempt}); retrying in 20 s"
+            sleep 20
+          done
+          exit 1
 
-      - name: Run Playwright (wrangler dev + Chromium)
+      # Shards split by spec file (fullyParallel is off), so a file's tests keep their order.
+      - name: Run Playwright (wrangler dev + Chromium), shard ${{ matrix.shard }} of 4
         working-directory: web
-        run: npx playwright test
+        run: npx playwright test --shard=${{ matrix.shard }}/4
 
       # Lighthouse (mobile, simulated throttling) on the landing page through the same Worker,
       # with the preview cookie on every request. Budgets in web/lighthouserc.json: accessibility 1,
@@ -298,7 +324,7 @@ jobs:
       # JavaScript up front, which caps the simulated mobile score near 0.8 (PR #40). The scores are
       # in the job summary on every run. Reports: the `lighthouse` artifact.
       - name: Start the Worker for Lighthouse
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        if: ${{ matrix.shard == 1 && !cancelled() && steps.build.outcome == 'success' }}
         working-directory: web
         run: |
           node tests/e2e/serve-dist.mjs --port 8790 > "$RUNNER_TEMP/lighthouse-server.log" 2>&1 &
@@ -312,7 +338,7 @@ jobs:
 
       - name: Lighthouse CI (/, mobile)
         id: lighthouse
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        if: ${{ matrix.shard == 1 && !cancelled() && steps.build.outcome == 'success' }}
         uses: treosh/lighthouse-ci-action@12.6.2
         with:
           # ?preview= sets the preview cookie on the first response, so the robots.txt fetch passes
@@ -347,33 +373,21 @@ jobs:
         run: |
           if [ -f "$RUNNER_TEMP/lighthouse-server.pid" ]; then kill "$(cat "$RUNNER_TEMP/lighthouse-server.pid")" || true; fi
 
+      # Merged into one `web-screenshots` artifact by the e2e-summary job.
       - name: Upload screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: web-screenshots
+          name: web-screenshots-shard-${{ matrix.shard }}
           path: web/screenshots/
           if-no-files-found: warn
-          retention-days: 14
-
-      - name: List the screenshots in the job summary
-        if: always()
-        run: |
-          {
-            echo "### Screenshots of /, /design/, /leaderboard/, /models/ and the sign-in pages"
-            echo
-            echo "Download the \`web-screenshots\` artifact from [this run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifacts):"
-            echo
-            for f in web/screenshots/*.png; do
-              [ -e "$f" ] && echo "- \`$(basename "$f")\`"
-            done
-          } >> "$GITHUB_STEP_SUMMARY"
+          retention-days: 1
 
       # Marketing pages: at most 180 KB of gzipped JavaScript before any interaction
       # (docs/redesign/migration-plan.md section 7). Reported as a warning until the shared shell
       # is slimmed down (see the Lighthouse note above); the number is in the bundle report.
       - name: Check the JavaScript budget of /
-        if: ${{ !cancelled() && env.LANDING_JS_GZIP != '' }}
+        if: ${{ matrix.shard == 1 && !cancelled() && env.LANDING_JS_GZIP != '' }}
         run: |
           if [ "$LANDING_JS_GZIP" -gt 184320 ]; then
             echo "::warning::/ loads ${LANDING_JS_GZIP} bytes of gzipped JavaScript up front; the budget is 184320 (180 KB)"
@@ -385,8 +399,52 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report
+          name: playwright-report-shard-${{ matrix.shard }}
           path: |
             web/playwright-report/
             web/test-results/
           retention-days: 7
+
+  # One place to read the result and fetch the screenshots: `gh run download <id> -n web-screenshots`.
+  e2e-summary:
+    name: Composed build, Playwright and screenshots
+    needs: e2e
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Merge the shards' screenshots into web-screenshots
+        id: merge
+        continue-on-error: true
+        uses: actions/upload-artifact/merge@v4
+        with:
+          name: web-screenshots
+          pattern: web-screenshots-shard-*
+          retention-days: 14
+          delete-merged: true
+
+      - name: Download the merged screenshots
+        if: steps.merge.outcome == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: web-screenshots
+          path: screenshots
+
+      - name: List the screenshots in the job summary
+        run: |
+          {
+            echo "### Screenshots"
+            echo
+            echo "Download the \`web-screenshots\` artifact from [this run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifacts) ($(ls screenshots/*.png 2>/dev/null | wc -l) files):"
+            echo
+            for f in screenshots/*.png; do
+              [ -e "$f" ] && echo "- \`$(basename "$f")\`"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Every shard passed
+        if: needs.e2e.result != 'success'
+        run: |
+          echo "::error::A Playwright shard did not pass (result: ${{ needs.e2e.result }}); see its job and the playwright-report-shard-* artifacts"
+          exit 1
