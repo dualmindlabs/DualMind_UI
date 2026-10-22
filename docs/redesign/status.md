@@ -83,6 +83,8 @@ Harsh, 22 Oct: do not merge these for now. Every merge to DualMind_Back `master`
 | 7 | [#31](https://github.com/dualmindlabs/DualMind_Back/pull/31) | 5.4 #7 (M1, M2) | `database/migrations/` (0001 baseline reconstructed from code, 0002 constraints, each with a rollback), `migrations.yml` proves up, down and up again on Postgres 16 | Merging applies nothing. `0001` is for empty databases only, never the live project; `0002` has a pre-check query per constraint (needs-harsh #13) |
 | 8 | [#33](https://github.com/dualmindlabs/DualMind_Back/pull/33) | 5.4 #8, BE-6 | `Idempotency-Key` on `dualchat`: a replay returns the same `comparisonId`, the same key with another body gets 409; behind `be6_idempotency` (default off) | Apply `0003` (preview first) **before** switching the flag on: the flag-on path writes `comparisons.status` |
 
+Backend W2 (rankings) code, also open and not merged (library code and tests only: no route, migration, flag or deploy wiring yet; needs-harsh #16 and #18): [#36](https://github.com/dualmindlabs/DualMind_Back/pull/36) BE-14 vote-integrity rules, [#37](https://github.com/dualmindlabs/DualMind_Back/pull/37) BE-9 Bradley-Terry fit with bootstrap intervals, [#38](https://github.com/dualmindlabs/DualMind_Back/pull/38) BE-10 rating-change estimator, [#39](https://github.com/dualmindlabs/DualMind_Back/pull/39) BE-11 head-to-head matrix.
+
 Still to build after these merge: 5.4 #4, one `ProblemDetails` error body from every controller (it touches every controller, so it waits for 1-6). Rollback for any of them: revert its merge commit on `master` (redeploys the previous image); none changes data until a migration is applied.
 
 ## Resume plan (in this order)
