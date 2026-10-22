@@ -28,7 +28,10 @@ export function Hero() {
             DualMind Arena <span aria-hidden="true">/</span> Design system{' '}
             <span aria-hidden="true">/</span> v0.2
           </p>
-          <h1 id="hero-title" className="mt-6 animate-rise text-display [animation-delay:80ms]">
+          <h1
+            id="hero-title"
+            className="mt-6 animate-rise text-display [font-size:clamp(3rem,1rem+6.2vw,6.75rem)] [animation-delay:80ms]"
+          >
             {`${BRAND_PRIMARY_LEAD} `}
             <span className="human-voice text-human">{BRAND_PRIMARY_VOICE}</span>
           </h1>
