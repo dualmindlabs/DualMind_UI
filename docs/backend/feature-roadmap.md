@@ -16,17 +16,17 @@ Legend: Impact and Effort are **H**igh, **M**edium, **L**ow (effort: L < 1 day, 
 | BE-3 | Rate limits with headers | Worker | **Done** ([#51](https://github.com/dualmindlabs/DualMind_UI/pull/51)) |
 | BE-4 | Fast public leaderboard (edge cache) | Worker | Next (design ready) |
 | BE-5 | Developer portal, OpenAPI, `llms.txt` | Worker + web | Next (design ready) |
-| BE-6 | Safe retries (idempotency keys) | **.NET API** (comparison id minted up front, `Idempotency-Key` table) | Next |
+| BE-6 | Safe retries (idempotency keys) | **.NET API** (comparison id minted up front, `Idempotency-Key` table) | **PR open** ([DualMind_Back #33](https://github.com/dualmindlabs/DualMind_Back/pull/33), behind flag `be6_idempotency`, default off; needs Harsh's go to merge and to apply migration `0003`) |
 | BE-7 | Ledger | **Dropped**: the .NET database is the source of truth | |
-| BE-8 | Leaderboard history | **.NET API** (snapshot table + job) | Planned |
-| BE-9 | Honest ratings (Bradley-Terry + CIs) | **.NET API** (rating runs table, job) | Planned |
-| BE-10 | Rating change on reveal | **.NET API** (vote response) | Planned |
-| BE-11 | Head-to-head matrix | **.NET API** (+ Worker cache) | Planned |
+| BE-8 | Leaderboard history | **.NET API** (snapshot table + job) | Design ready ([BE-8](./designs/BE-8-leaderboard-history.md)) |
+| BE-9 | Honest ratings (Bradley-Terry + CIs) | **.NET API** (rating runs table, job) | Design ready ([BE-9](./designs/BE-9-honest-ratings.md)) |
+| BE-10 | Rating change on reveal | **.NET API** (vote response) | Design ready ([BE-10](./designs/BE-10-rating-change-on-reveal.md)) |
+| BE-11 | Head-to-head matrix | **.NET API** (+ Worker cache) | Design ready ([BE-11](./designs/BE-11-head-to-head-matrix.md)) |
 | BE-12 | Category leaderboards | **.NET API** (category column, classifier call) | Planned |
 | BE-13 | Prompt moderation | **.NET API** (before providers are called) | Planned |
-| BE-14 | Vote integrity | **.NET API** (validation, one vote per comparison, flags) | Next (first .NET PRs) |
+| BE-14 | Vote integrity | **.NET API** (validation, one vote per comparison, flags) | Design ready ([BE-14](./designs/BE-14-vote-integrity.md)); part covered by DualMind_Back #28 (validation, 409) |
 | BE-15 | Your verdicts (personal stats) | **.NET API** | Planned |
-| BE-16 | Position and style control | **.NET API** (side recorded, covariates) | Planned |
+| BE-16 | Position and style control | **.NET API** (side recorded, covariates) | Design ready ([BE-16](./designs/BE-16-position-and-style-control.md)) |
 | BE-17 | Edge arena: streaming battles on Workers AI | Worker | Planned |
 | BE-18 | Live arena (WebSockets) | Worker (Durable Objects) | Planned |
 | BE-19 | Share cards | Worker + R2 | Planned |
@@ -50,7 +50,7 @@ Legend: Impact and Effort are **H**igh, **M**edium, **L**ow (effort: L < 1 day, 
 
 1. **.NET W1, safety first** (from [api-repo-review.md](./api-repo-review.md)): require sign-in on unauthenticated write routes; validate votes (whitelist, one vote per comparison, ownership); stop recording fallback answers as the original model's; mint `comparisonId` before calling providers + `Idempotency-Key` (BE-6); one problem+json error shape at the source; no `ex.Message` leaks.
 2. **Edge W1 finish:** BE-4 leaderboard cache, BE-5 developer portal.
-3. **.NET W2, rankings:** BE-14 integrity, BE-9 ratings with CIs, BE-10 rating change, BE-8 history, BE-11 head-to-head, BE-16 position/style.
+3. **.NET W2, rankings** (designs ready: [designs/README.md](./designs/README.md#wave-w2-rankings-be-14-be-9-be-10-be-8-be-11-be-16)): BE-14 integrity, BE-9 ratings with CIs, BE-10 rating change, BE-8 history, BE-11 head-to-head, BE-16 position/style. Build order: BE-14, BE-16 slice A, BE-9, BE-10, BE-8, BE-11, BE-16 slice B.
 4. **Showcase:** streaming `dualchat` in .NET (B-1) and BE-17 edge arena, BE-20 status page, BE-18 live, BE-19 share cards.
 5. **People and data:** BE-15, BE-12, BE-13, BE-21, BE-22, BE-24, BE-23.
 6. **W6, product features from the 21 Oct poll (BE-25 to BE-34)**, after the rankings wave because most read BE-8, BE-9, BE-11 or BE-12 (details in section 2): BE-28 model cards, BE-31 cost-quality, BE-33 prompt gallery, BE-30 seasons, BE-25 API keys, BE-29 battle of the day and embeds, BE-32 profiles, BE-34 collections then the Hugging Face dataset, BE-26 private arenas, BE-27 multi-turn battles. Designs: [designs/README.md](./designs/README.md#wave-w6-product-features-chosen-in-the-21-oct-poll-be-25-to-be-34).
