@@ -237,7 +237,7 @@ test.describe('every keyboard stop shows a focus ring', () => {
         item.minStops,
       );
       expect(missing, `${item.name}: focused with no visible ring`).toEqual([]);
-      // Code blocks sit in a figure that clips its corners: their ring is drawn inside.
+      // Code blocks sit in a figure that clips its corners: the figure draws their ring.
       expect(clipped.filter(line => line.startsWith('<pre'))).toEqual([]);
     });
   }
@@ -254,8 +254,12 @@ test.describe('every keyboard stop shows a focus ring', () => {
       await page.keyboard.press('Tab');
       await code.focus();
       await expect(code).toBeFocused();
-      const offset = await code.evaluate(element => getComputedStyle(element).outlineOffset);
-      expect(parseFloat(offset)).toBeLessThan(0);
+      // The figure around it draws the ring, outside its own clipped corners.
+      const ring = await code.evaluate(element => {
+        const style = getComputedStyle(element.parentElement ?? element);
+        return { style: style.outlineStyle, width: parseFloat(style.outlineWidth) };
+      });
+      expect(ring).toEqual({ style: 'solid', width: 2 });
       await code.scrollIntoViewIfNeeded();
       await settle(page, 300);
       await page.screenshot({ path: shotPath(`focus-ring-code-block-desktop-${theme}`) });
