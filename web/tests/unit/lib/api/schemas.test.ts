@@ -280,8 +280,11 @@ describe('arena', () => {
     expect(battleSchema.parse(dualchat).agent1.servedBy).toBeUndefined();
     // Junk in the new fields never fails a battle.
     expect(
-      battleSchema.parse({ ...dualchat, fallbackUsed: 'maybe', agent1: { ...dualchat.agent1, servedBy: 7 } })
-        .fallbackUsed,
+      battleSchema.parse({
+        ...dualchat,
+        fallbackUsed: 'maybe',
+        agent1: { ...dualchat.agent1, servedBy: 7 },
+      }).fallbackUsed,
     ).toBe(false);
   });
 

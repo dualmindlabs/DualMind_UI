@@ -347,9 +347,9 @@ describe('getUserMessage', () => {
     expect(isUpstreamUnavailableError(error('server', { status: 503, code: 'SERVER_ERROR' }))).toBe(
       false,
     );
-    expect(isUpstreamUnavailableError(error('server', { status: 500, code: 'MODEL_UNAVAILABLE' }))).toBe(
-      false,
-    );
+    expect(
+      isUpstreamUnavailableError(error('server', { status: 500, code: 'MODEL_UNAVAILABLE' })),
+    ).toBe(false);
     expect(getUserMessage(error('server', { status: 503 }))).toBe(
       'Something went wrong on our side. Please try again.',
     );

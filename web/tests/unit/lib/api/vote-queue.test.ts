@@ -127,16 +127,19 @@ describe('submit', () => {
     ['forbidden', 403],
     ['not_found', 404],
     ['validation', 400],
-  ] as const)('rethrows a %s (%i) so the caller stops, and never queues it', async (kind, status) => {
-    const { queue, send, setOnline } = setup();
-    send.mockRejectedValue(failure(kind, status));
-    await expect(queue.submit(vote('c-1'))).rejects.toMatchObject({ kind, status });
-    expect(queue.size()).toBe(0);
-    // Nothing is retried later either: no timer, no second send.
-    setOnline(true);
-    await queue.flush();
-    expect(send).toHaveBeenCalledOnce();
-  });
+  ] as const)(
+    'rethrows a %s (%i) so the caller stops, and never queues it',
+    async (kind, status) => {
+      const { queue, send, setOnline } = setup();
+      send.mockRejectedValue(failure(kind, status));
+      await expect(queue.submit(vote('c-1'))).rejects.toMatchObject({ kind, status });
+      expect(queue.size()).toBe(0);
+      // Nothing is retried later either: no timer, no second send.
+      setOnline(true);
+      await queue.flush();
+      expect(send).toHaveBeenCalledOnce();
+    },
+  );
 
   it('queues without sending while offline', async () => {
     const { queue, send, setOnline } = setup();

@@ -174,7 +174,9 @@ describe('a battle that cannot be voted on', () => {
       at: 10,
     });
     expect(answered.turns[0]?.unrated).toBeNull();
-    expect(run(answered, { type: 'shown', id: 't1', at: 20 }).turns[0]?.phase).toBe('awaiting_vote');
+    expect(run(answered, { type: 'shown', id: 't1', at: 20 }).turns[0]?.phase).toBe(
+      'awaiting_vote',
+    );
   });
 
   it('a vote refused for good (403, 404) closes voting instead of reopening it', () => {

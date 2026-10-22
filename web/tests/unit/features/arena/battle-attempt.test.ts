@@ -50,6 +50,8 @@ describe('the battle attempt tracker', () => {
     expect(attemptSignature({ prompt: 'a', model1: 'x' })).toBe(
       attemptSignature({ prompt: 'a', model1: 'x', model2: undefined }),
     );
-    expect(attemptSignature({ prompt: 'a b' })).not.toBe(attemptSignature({ prompt: 'a', model1: 'b' }));
+    expect(attemptSignature({ prompt: 'a b' })).not.toBe(
+      attemptSignature({ prompt: 'a', model1: 'b' }),
+    );
   });
 });

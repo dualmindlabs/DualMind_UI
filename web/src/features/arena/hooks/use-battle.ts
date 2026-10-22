@@ -263,9 +263,7 @@ export function useBattle({
               ? { type: 'vote-closed', id: turnId }
               : { type: 'vote-failed', id: turnId, message: failure.message },
           );
-          announce(
-            failure.closed ? failure.message : `The vote was not saved. ${failure.message}`,
-          );
+          announce(failure.closed ? failure.message : `The vote was not saved. ${failure.message}`);
         });
     },
     [queue, announce],

@@ -246,7 +246,14 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
       return update(state, action.id, turn =>
         turn.phase !== 'voting'
           ? null
-          : { ...turn, phase: 'done', vote: null, unrated: 'closed', comparisonId: null, error: null },
+          : {
+              ...turn,
+              phase: 'done',
+              vote: null,
+              unrated: 'closed',
+              comparisonId: null,
+              error: null,
+            },
       );
     case 'fail':
       return update(state, action.id, turn =>
