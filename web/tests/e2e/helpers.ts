@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { expect, type BrowserContext, type Page } from '@playwright/test';
+import { type BrowserContext, expect, type Page } from '@playwright/test';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 
