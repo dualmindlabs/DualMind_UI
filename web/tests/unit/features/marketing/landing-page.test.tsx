@@ -8,8 +8,17 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { LandingPage } from '@/features/marketing';
 import { DEMO_BATTLES } from '@/features/marketing/content/demo';
+import type * as PromptDraft from '@/lib/session/prompt-draft';
+import { sendPromptToSignIn } from '@/lib/session/prompt-draft';
 
 import { renderWithShell } from '../../render-with-shell';
+
+// A typed prompt leaves for sign-in with a full page load; jsdom cannot navigate, so the send is
+// a spy here (the storage and the redirect are covered in tests/unit/lib/session/prompt-draft).
+vi.mock('@/lib/session/prompt-draft', async importOriginal => ({
+  ...(await importOriginal<typeof PromptDraft>()),
+  sendPromptToSignIn: vi.fn(),
+}));
 
 const fixture = readFileSync(
   path.resolve(
@@ -41,6 +50,7 @@ const demo = () =>
 describe('LandingPage', () => {
   beforeEach(() => {
     stubLeaderboard('ok');
+    vi.mocked(sendPromptToSignIn).mockClear();
   });
 
   it('has one h1, landmarks, a skip link and no skipped heading levels', () => {
@@ -142,18 +152,22 @@ describe('LandingPage', () => {
     expect(demo()).toHaveAttribute('data-phase', 'voting');
   });
 
-  it('answers a typed prompt with a recorded battle and an honest sign-in offer', async () => {
+  it('takes a typed prompt to sign-in instead of playing the demo with it (P1-1)', async () => {
     const user = userEvent.setup();
     renderLanding();
+    await waitFor(() => expect(demo()).toHaveAttribute('data-run', '1'));
+    const before = demo().getAttribute('data-run');
+    const status = screen.getByTestId('hero-status');
+    expect(status).toHaveTextContent('Your own prompt runs on real models after a free sign-in.');
     const field = screen.getByRole('textbox', { name: 'Ask both models' });
     await user.type(field, 'Write a sonnet about tabs and spaces{Enter}');
-    const note = await screen.findByTestId('asked-note');
-    expect(note).toHaveTextContent('You asked: “Write a sonnet about tabs and spaces”');
-    expect(
-      within(note).getByRole('link', { name: 'Sign in to battle real models' }),
-    ).toHaveAttribute('href', '/login/');
-    expect(screen.getByText(/Playing a recorded demo below\./)).toBeInTheDocument();
-    expect(demo()).toHaveFocus();
+    expect(vi.mocked(sendPromptToSignIn)).toHaveBeenCalledWith(
+      'Write a sonnet about tabs and spaces',
+    );
+    expect(status).toHaveTextContent('Taking you to sign in. Your prompt goes with you.');
+    // The demo did not restart with someone else's answer to the visitor's question.
+    expect(screen.queryByTestId('asked-note')).toBeNull();
+    expect(demo()).toHaveAttribute('data-run', before ?? '1');
   });
 
   it('plays the matching recorded battle from a chip', async () => {
@@ -163,5 +177,11 @@ describe('LandingPage', () => {
     await user.click(screen.getByRole('button', { name: `Play the recorded battle: ${prompt}` }));
     expect(screen.getByTestId('demo-prompt')).toHaveTextContent(prompt);
     expect(screen.queryByTestId('asked-note')).toBeNull();
+    expect(vi.mocked(sendPromptToSignIn)).not.toHaveBeenCalled();
+    const status = screen.getByTestId('hero-status');
+    expect(status).toHaveTextContent('Playing a recorded battle below.');
+    expect(
+      within(status).getByRole('link', { name: 'Sign in to battle real models' }),
+    ).toHaveAttribute('href', '/login/');
   });
 });

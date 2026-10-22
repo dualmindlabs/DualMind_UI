@@ -180,21 +180,32 @@ test('demo battle: the full keyboard flow with announcements', async ({ page }) 
   await expect(announcer).toContainText('You voted: Both are bad.');
 });
 
-test('a prompt from the hero plays the recorded demo and offers the sign-in', async ({ page }) => {
+test('a prompt from the hero is kept and carried to sign-in, unsent', async ({ page }) => {
   await page.goto('/');
   const field = page.getByRole('textbox', { name: 'Ask both models' });
   await field.fill('Write a sonnet about tabs and spaces');
   await field.press('Enter');
+  await page.waitForURL(/\/login\/\?redirect=%2F$/);
+  const notice = page.getByTestId('prompt-draft-notice');
+  await expect(notice).toContainText('Write a sonnet about tabs and spaces');
+  await expect(notice).toContainText('Nothing is sent until you send it');
+});
+
+test('a demo chip still plays the recorded battle and offers the sign-in', async ({ page }) => {
+  await page.goto('/');
+  await page
+    .getByRole('button', { name: /^Play the recorded battle:/ })
+    .first()
+    .click();
   const region = demo(page);
   await expect(region).toBeFocused();
   await expect(region).toBeInViewport();
-  await expect(page.getByTestId('asked-note')).toContainText(
-    'Write a sonnet about tabs and spaces',
+  const status = page.getByTestId('hero-status');
+  await expect(status).toContainText('Playing a recorded battle below.');
+  await expect(status.getByRole('link', { name: 'Sign in to battle real models' })).toHaveAttribute(
+    'href',
+    '/login/',
   );
-  await expect(
-    page.getByTestId('asked-note').getByRole('link', { name: 'Sign in to battle real models' }),
-  ).toHaveAttribute('href', '/login/');
-  await expect(page.getByText('Playing a recorded demo below.')).toBeVisible();
 });
 
 test.describe('signed-in hand-off (visitors who keep the legacy arena)', () => {

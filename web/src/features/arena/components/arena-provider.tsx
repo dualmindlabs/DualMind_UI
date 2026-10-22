@@ -5,6 +5,7 @@ import { useSearchParams } from 'react-router';
 import { useApiClient } from '@/hooks/use-api-client';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { threadQuery } from '@/lib/api';
+import { clearPromptDraft, readPromptDraft } from '@/lib/session/prompt-draft';
 
 import { ArenaContext, type ArenaState } from '../hooks/use-arena';
 import { useBattle } from '../hooks/use-battle';
@@ -34,9 +35,12 @@ export function ArenaProvider({ children }: { children: ReactNode }) {
 
   const [historyOpen, setHistoryOpen] = useState(false);
   const [shareThreadId, setShareThreadId] = useState<string | null>(null);
+  // A prompt typed on the landing page before signing in (UI audit P1-1): it opens in the box,
+  // focused and not sent. Read once; the effect below clears it from the tab.
+  const [landingDraft] = useState(() => readPromptDraft());
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [shortcutsReturnFocus, setShortcutsReturnFocus] = useState<HTMLElement | null>(null);
-  const [draft, setDraft] = useState('');
+  const [draft, setDraft] = useState(landingDraft ?? '');
   const [announcement, setAnnouncement] = useState({ id: 0, message: '' });
   const composerRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -90,6 +94,16 @@ export function ArenaProvider({ children }: { children: ReactNode }) {
     // After the current render: the composer may be about to move (empty state to thread).
     requestAnimationFrame(() => composerRef.current?.focus());
   }, []);
+
+  useEffect(() => {
+    if (landingDraft === null) return;
+    clearPromptDraft();
+    focusComposer();
+    const frame = requestAnimationFrame(() =>
+      announce('Your prompt from the home page is in the box. Send it when you are ready.'),
+    );
+    return () => cancelAnimationFrame(frame);
+  }, [landingDraft, focusComposer, announce]);
 
   const openThread = useCallback(
     (id: string) => {
