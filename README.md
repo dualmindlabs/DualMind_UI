@@ -12,6 +12,7 @@
 ## Contents
 
 - [What is this?](#what-is-this)
+- [Screenshots](#screenshots)
 - [Features](#features)
 - [Tech stack](#tech-stack)
 - [Architecture](#architecture)
@@ -28,6 +29,18 @@
 This repository is the front-end of **DualMind Arena**, the model comparison app built by DualMind Labs. You type a prompt, two models answer it side by side without their names, and you vote for the better answer. Votes feed an Elo rating system that powers a public leaderboard.
 
 The app is a static, framework-free web app (HTML, CSS and ES modules). A Cloudflare Worker (`dualmind-arena`) serves it at [arena.dualmindlab.tech](https://arena.dualmindlab.tech). Users sign in with Supabase Auth, and all chat, vote, thread and leaderboard data comes from the DualMind API ([DualMind_Back](https://github.com/dualmindlabs/DualMind_Back)) at `api.dualmindlab.tech`.
+
+## Screenshots
+
+A blind battle after the vote: both answers, the revealed names, the verdict and what to do next.
+
+<img src="./docs/images/readme/arena-reveal-dark.png" alt="The signed-in arena after a vote: two answers side by side, Llama 3.3 70B Instruct marked as your pick, the verdict, both model names, and buttons for a follow-up, a rematch, sharing and a new battle" width="1440">
+
+| Landing page | Leaderboard |
+| --- | --- |
+| <img src="./docs/images/readme/landing-dark.png" alt="The landing page: the headline Two models. One prompt. You decide., a prompt box, demo prompts and live battle, vote and model counts" width="600"> | <img src="./docs/images/readme/leaderboard-dark.png" alt="The leaderboard: a searchable, sortable table of models ranked by Elo with provider filters, win rates and battle counts" width="600"> |
+
+The images come from the Playwright run in CI (`web.yml`, artifact `web-screenshots`), with recorded leaderboard data and mocked answers, in the dark theme on a 1440 px wide window.
 
 ## Features
 
