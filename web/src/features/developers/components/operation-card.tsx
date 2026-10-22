@@ -2,6 +2,7 @@ import { Badge } from '@/components/ui/badge';
 
 import type { ReferenceOperation } from '../lib/reference';
 import { CodeBlock } from './code-block';
+import { Inline } from './inline';
 import { ScrollTable } from './scroll-table';
 
 /** One operation of the OpenAPI document: what it does, its parameters, and every response. */
@@ -18,7 +19,9 @@ export function OperationCard({ operation }: { operation: ReferenceOperation }) 
         <code className="break-all">{operation.path}</code>
       </h3>
       {operation.summary ? <p className="lead">{operation.summary}</p> : null}
-      {operation.description ? <p>{operation.description}</p> : null}
+      {operation.description ? <p>
+          <Inline text={operation.description} />
+        </p> : null}
       <p>
         {operation.requiresAuth ? (
           <>
