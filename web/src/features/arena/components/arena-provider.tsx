@@ -51,7 +51,7 @@ export function ArenaProvider({ children }: { children: ReactNode }) {
   const openThreadData = threadId !== null && thread?.threadId === threadId ? thread : undefined;
   const mode = openThreadData ? modeFromThread(openThreadData.mode) : selectedMode;
 
-  // `?arena=new` did its job in the head script (it stored the choice); keep the address clean.
+  // A leftover `?arena=` (classic-arena era links) means nothing now; keep the address clean.
   useEffect(() => {
     if (!searchParams.has('arena')) return;
     setSearchParams(

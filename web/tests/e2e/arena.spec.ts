@@ -96,7 +96,8 @@ test.describe('the arena at /', () => {
     await page.addInitScript(() => window.localStorage.setItem('dm.arena', 'legacy'));
     await openArena(page, '/?arena=legacy');
     await expect(page.getByTestId('arena')).toBeVisible();
-    await expect(page).toHaveURL(/\/\?arena=legacy$/);
+    // The arena drops the old parameter from the address.
+    await expect(page).toHaveURL(/\/$/);
   });
 });
 

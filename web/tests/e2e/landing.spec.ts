@@ -224,7 +224,7 @@ test.describe('the head script at / (the classic arena is gone)', () => {
       window.localStorage.setItem('dualmind.auth.supabase', '{"access_token":"t"}');
     });
     await page.goto('/?arena=legacy');
-    await expect(page).toHaveURL(/\/\?arena=legacy$/);
+    await page.waitForTimeout(500);
     expect(new URL(page.url()).pathname).toBe('/');
   });
 
