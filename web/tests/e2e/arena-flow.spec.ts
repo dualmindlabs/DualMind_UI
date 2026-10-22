@@ -506,3 +506,21 @@ test.describe('errors', () => {
     );
   });
 });
+
+test.describe('README', () => {
+  test('screenshot: a revealed battle with the next steps, dark', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await storeTheme(page, 'dark');
+    await mockArena(page);
+    await openArena(page);
+    const turn = await sendBattle(page, 'Explain recursion to a ten-year-old');
+    await turn.getByRole('button', { name: /A is better/ }).click();
+    await expect(turn).toHaveAttribute('data-phase', 'revealed');
+    await settle(page, 2600);
+    // The whole turn on screen, from the prompt to the next steps, with no focus ring.
+    await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+    await turn.evaluate(element => element.scrollIntoView({ block: 'start' }));
+    await settle(page, 300);
+    await page.screenshot({ path: shotPath('readme-arena-reveal-dark') });
+  });
+});

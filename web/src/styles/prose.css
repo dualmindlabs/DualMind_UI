@@ -333,8 +333,14 @@
     font-size: 0.875em;
   }
 
+  /*
+   * As wide as the cells need, and at least the pane: words stay on one line and a wide table
+   * scrolls inside its region (markdown.tsx) instead of folding every cell into a column of
+   * single words.
+   */
   & :where(table) {
-    width: 100%;
+    width: max-content;
+    min-width: 100%;
     border-collapse: collapse;
     font-size: var(--text-ui-sm);
     font-variant-numeric: tabular-nums;

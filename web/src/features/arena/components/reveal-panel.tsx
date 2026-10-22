@@ -97,7 +97,9 @@ export function RevealPanel({ turn }: { turn: LiveTurn }) {
         ))}
       </ul>
 
-      <div className="flex flex-wrap items-center gap-2 border-t border-line pt-3">
+      {/* Phones: two columns (New battle across both when it would sit alone). Wider: one row,
+          New battle at the end. */}
+      <div className="grid grid-cols-2 gap-2 border-t border-line pt-3 sm:flex sm:flex-wrap sm:items-center">
         <Button
           variant="secondary"
           size="sm"
@@ -106,7 +108,11 @@ export function RevealPanel({ turn }: { turn: LiveTurn }) {
         >
           <MessageSquareText aria-hidden="true" strokeWidth={1.75} />
           Ask a follow-up
-          {shortcutsEnabled ? <Kbd aria-hidden="true">/</Kbd> : null}
+          {shortcutsEnabled ? (
+            <Kbd aria-hidden="true" className="hidden sm:inline-flex">
+              /
+            </Kbd>
+          ) : null}
         </Button>
         {turn.mode === 'battle' ? (
           <Button
@@ -130,12 +136,15 @@ export function RevealPanel({ turn }: { turn: LiveTurn }) {
           size="sm"
           aria-keyshortcuts={shortcutsEnabled ? 'N' : undefined}
           onClick={newBattle}
-          className="sm:ms-auto"
+          className="odd:col-span-2 sm:ms-auto"
         >
           <Plus aria-hidden="true" strokeWidth={1.75} />
           New battle
           {shortcutsEnabled ? (
-            <Kbd aria-hidden="true" className="border-current/30 bg-transparent text-current">
+            <Kbd
+              aria-hidden="true"
+              className="hidden border-current/30 bg-transparent text-current sm:inline-flex"
+            >
               N
             </Kbd>
           ) : null}
