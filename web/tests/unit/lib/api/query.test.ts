@@ -104,7 +104,7 @@ describe('query builders (against the mock)', () => {
     const getLeaderboard = vi.fn(real.getLeaderboard);
     const api: ApiClient = { ...real, getLeaderboard };
     const rows = await queryClient.fetchQuery(leaderboardQuery(api));
-    expect(rows).toHaveLength(7);
+    expect(rows.items).toHaveLength(7);
     expect(getLeaderboard).toHaveBeenCalledWith({
       signal: expect.any(AbortSignal) as unknown,
       retry: false,

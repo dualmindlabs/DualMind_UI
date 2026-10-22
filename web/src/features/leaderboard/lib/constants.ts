@@ -1,3 +1,5 @@
+import { PROVISIONAL_BELOW } from '@contract/leaderboard';
+
 /**
  * The rating threshold: a model with fewer battles than this is "Not yet rated": it is listed in
  * its own group without a rank, and never reaches the podium or the landing page's top five.
@@ -7,7 +9,7 @@
  * battles); revisit it when confidence intervals arrive from the API (backend roadmap BE-9)
  * and the board can show real uncertainty instead.
  */
-export const PROVISIONAL_BATTLES = 5;
+export const PROVISIONAL_BATTLES = PROVISIONAL_BELOW;
 
 /** The provider filter's "every provider" value. */
 export const ALL_PROVIDERS = 'all';

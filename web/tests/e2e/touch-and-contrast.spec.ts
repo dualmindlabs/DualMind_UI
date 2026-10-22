@@ -11,12 +11,12 @@ import { passGate, settle, shotPath, storeTheme } from './helpers';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const BOARD = readFileSync(
-  path.join(here, '..', 'fixtures', 'api', 'model-stats.board.recorded.json'),
+  path.join(here, '..', 'fixtures', 'api', 'leaderboard-v2.board.json'),
   'utf8',
 );
 
 async function mockStats(page: Page) {
-  await page.route('**/api/arena/model-stats', (route: Route) =>
+  await page.route('**/api/v2/leaderboard', (route: Route) =>
     route.fulfill({ status: 200, contentType: 'application/json', body: BOARD }),
   );
 }

@@ -27,7 +27,7 @@ function useModelNames(): ReadonlyMap<string, string> {
   // The public leaderboard has every model's display name; without it the ids are shortened.
   const board = useQuery({ ...leaderboardQuery(api), retry: false });
   return useMemo(
-    () => new Map((board.data ?? []).map(stat => [stat.modelName, stat.displayName])),
+    () => new Map((board.data?.items ?? []).map(stat => [stat.modelName, stat.displayName])),
     [board.data],
   );
 }

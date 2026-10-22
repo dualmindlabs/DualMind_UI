@@ -23,7 +23,7 @@ vi.mock('@/lib/session/prompt-draft', async importOriginal => ({
 const fixture = readFileSync(
   path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
-    '../../../fixtures/api/model-stats.board.recorded.json',
+    '../../../fixtures/api/leaderboard-v2.board.json',
   ),
   'utf8',
 );
@@ -34,7 +34,7 @@ const renderLanding = () => renderWithShell(<LandingPage />, '/');
 function stubLeaderboard(answer: 'ok' | 'fail') {
   const fetchMock = vi.fn((input: RequestInfo | URL) => {
     const url = input instanceof Request ? input.url : String(input);
-    if (!url.includes('/api/arena/model-stats')) return Promise.reject(new TypeError('offline'));
+    if (!url.includes('/api/v2/leaderboard')) return Promise.reject(new TypeError('offline'));
     if (answer === 'fail') return Promise.reject(new TypeError('Failed to fetch'));
     return Promise.resolve(
       new Response(fixture, { status: 200, headers: { 'content-type': 'application/json' } }),

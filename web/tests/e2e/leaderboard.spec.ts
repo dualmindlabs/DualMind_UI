@@ -13,17 +13,17 @@ import {
   OG_WIDTH,
 } from './og-board-template';
 
-// /leaderboard/ and /models/ through the real Worker, with GET /api/arena/model-stats answered
-// by the recorded live board (53 models, web/tests/fixtures/api/model-stats.board.recorded.json),
+// /leaderboard/ and /models/ through the real Worker, with GET /api/v2/leaderboard answered
+// by the recorded live board (53 models, web/tests/fixtures/api/leaderboard-v2.board.json),
 // so nothing reaches production. Prerendering, the board, sorting, search and filters, the
 // details sheet and drawer, error and empty states, CSP, axe, overflow and the screenshots.
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const BOARD = readFileSync(
-  path.join(here, '..', 'fixtures', 'api', 'model-stats.board.recorded.json'),
+  path.join(here, '..', 'fixtures', 'api', 'leaderboard-v2.board.json'),
   'utf8',
 );
-const STATS = '**/api/arena/model-stats';
+const STATS = '**/api/v2/leaderboard';
 
 /** The recorded board has 53 models; 49 have the 5 battles that earn a rank (PROVISIONAL_BATTLES). */
 const MODELS = 53;
@@ -33,7 +33,7 @@ const withCookie = { headers: { Cookie: PREVIEW_COOKIE }, maxRedirects: 0 };
 
 type Reply = 'ok' | 'empty' | 'error';
 
-/** Answers model-stats with `reply()` on every request (the board refreshes in the background). */
+/** Answers the v2 leaderboard with `reply()` on every request (the board refreshes in the background). */
 async function mockStats(page: Page, reply: () => Reply = () => 'ok') {
   await page.route(STATS, async (route: Route) => {
     const mode = reply();
@@ -48,7 +48,7 @@ async function mockStats(page: Page, reply: () => Reply = () => 'ok') {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: mode === 'empty' ? '{"success":true,"items":[]}' : BOARD,
+      body: mode === 'empty' ? '{"items":[],"meta":{"generatedAt":"2026-10-21T18:30:00.000Z","count":0,"provisionalBelow":5,"source":"dualmind-api:model-stats"}}' : BOARD,
     });
   });
 }

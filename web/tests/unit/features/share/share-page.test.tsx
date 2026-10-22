@@ -48,7 +48,12 @@ const row = (vote: string | null) => ({
 });
 
 const BOARD = {
-  success: true,
+  meta: {
+    generatedAt: '2026-10-21T18:30:00.000Z',
+    count: 1,
+    provisionalBelow: 5,
+    source: 'dualmind-api:model-stats',
+  },
   items: [
     {
       modelId: 'm-a',
@@ -61,6 +66,8 @@ const BOARD = {
       totalLosses: 1,
       totalTies: 0,
       totalResponses: 2,
+      winRate: 50,
+      provisional: true,
     },
   ],
 };
@@ -72,7 +79,7 @@ function fakeFetch(answers: Answer[]) {
   const fetch = (url: string, init: RequestInit) => {
     calls.push({ url, headers: new Headers(init.headers) });
     const path = new URL(url).pathname;
-    if (path === '/api/arena/model-stats') return Promise.resolve(jsonResponse(BOARD));
+    if (path === '/api/v2/leaderboard') return Promise.resolve(jsonResponse(BOARD));
     const answer = answers.length > 1 ? answers.shift()! : answers[0]!;
     if (answer === 'offline') return Promise.reject(new TypeError('Failed to fetch'));
     if (answer === 'private') {

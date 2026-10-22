@@ -77,7 +77,7 @@ export {
 export type { MutationResult, Usage } from './schemas/common';
 export type { FeatureFlag } from './schemas/flags';
 export type { Health } from './schemas/health';
-export type { ModelStat } from './schemas/leaderboard';
+export type { LeaderboardData, ModelStat } from './schemas/leaderboard';
 export { displayNameFromModelName, KNOWN_PROVIDERS, type ModelSummary } from './schemas/models';
 export {
   type Thread,

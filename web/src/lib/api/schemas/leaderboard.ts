@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { leaderboardResponseSchema, PROVISIONAL_BELOW } from '@contract/leaderboard';
+
 import { resolveDisplayName } from '@/lib/models/display-name';
 
 import { count, listOf, numeric, optionalString, withAliases } from './common';
@@ -37,6 +39,8 @@ export const modelStatSchema = withAliases(
 ).transform(({ winRate, ...stat }) => ({
   ...stat,
   displayName: resolveDisplayName(stat.modelName, stat.displayName),
+  // The v1 route has no flag: derive it from the shared rule (contract/leaderboard.ts).
+  provisional: stat.totalResponses < PROVISIONAL_BELOW,
   // Same formula as the API (ties count as non-wins), rounded to two decimals like it.
   winRate:
     winRate ??
@@ -45,7 +49,41 @@ export const modelStatSchema = withAliases(
       : 0),
 }));
 
-/** `{ success, items }` today; ranked by the API (ties share a rank). */
+/** `{ success, items }` from v1; ranked by the API (ties share a rank). */
 export const leaderboardSchema = listOf(modelStatSchema);
 
 export type ModelStat = z.output<typeof modelStatSchema>;
+
+/** What `getLeaderboard()` returns, whichever route answered. */
+export interface LeaderboardData {
+  items: ModelStat[];
+  /** Models with fewer battles than this are `provisional` (`meta.provisionalBelow` on v2). */
+  provisionalBelow: number;
+  /** When the data last changed (v2 `meta.generatedAt`); null from the v1 fallback. */
+  generatedAt: string | null;
+  /** Which route answered. */
+  source: 'v2' | 'v1';
+}
+
+/** `GET /api/v2/leaderboard`: the shared contract schema, mapped to the app's shape. */
+export const leaderboardV2Schema = leaderboardResponseSchema.transform(
+  (body): LeaderboardData => ({
+    items: body.items.map(item => ({
+      ...item,
+      displayName: resolveDisplayName(item.modelName, item.displayName),
+    })),
+    provisionalBelow: body.meta.provisionalBelow,
+    generatedAt: body.meta.generatedAt,
+    source: 'v2',
+  }),
+);
+
+/** The v1 rows in the v2 shape (the fallback; goes in the next release with the v1 route). */
+export const leaderboardV1AsDataSchema = leaderboardSchema.transform(
+  (items): LeaderboardData => ({
+    items,
+    provisionalBelow: PROVISIONAL_BELOW,
+    generatedAt: null,
+    source: 'v1',
+  }),
+);

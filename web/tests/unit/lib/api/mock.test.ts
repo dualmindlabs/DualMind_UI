@@ -55,9 +55,10 @@ describe('mock adapter parity: every endpoint function works against it', () => 
   });
 
   it('leaderboard, normalised like the recorded live response', async () => {
-    await expect(mockClient().getLeaderboard()).resolves.toEqual(
-      leaderboardSchema.parse(modelStats),
-    );
+    await expect(mockClient().getLeaderboard()).resolves.toMatchObject({
+      source: 'v2',
+      items: leaderboardSchema.parse(modelStats),
+    });
   });
 
   it('battle: two labelled demo answers from two different models, then one vote', async () => {
@@ -244,7 +245,7 @@ describe('mock scenarios (x-mock-scenario header)', () => {
 
   it('returns empty lists', async () => {
     const api = mockClient();
-    await expect(api.getLeaderboard(scenario('empty'))).resolves.toEqual([]);
+    await expect(api.getLeaderboard(scenario('empty'))).resolves.toMatchObject({ items: [] });
     await expect(api.listThreads({}, scenario('empty'))).resolves.toEqual([]);
     await expect(api.listModels(scenario('empty'))).resolves.toEqual([]);
   });
@@ -311,7 +312,7 @@ describe('mock transport behaviour', () => {
   it('uses the app token when one is given, instead of the demo token', async () => {
     const api = createApiClient({ mock: true, getAccessToken: () => null });
     await expect(api.listModels()).rejects.toMatchObject({ kind: 'auth', code: 'NO_ACCESS_TOKEN' });
-    await expect(api.getLeaderboard()).resolves.toHaveLength(MOCK_MODEL_STATS.length);
+    expect((await api.getLeaderboard()).items).toHaveLength(MOCK_MODEL_STATS.length);
   });
 
   it('honours latency and aborts during it', async () => {

@@ -10,7 +10,7 @@ import { OG_HEIGHT, OG_TEMPLATE, OG_WIDTH } from './og-template';
 // signed-in hand-off to the legacy arena, axe, overflow, and the review screenshots.
 
 const HEADLINE = /Two models\. One prompt\.\s*You decide\./;
-const STATS = '**/api/arena/model-stats';
+const STATS = '**/api/v2/leaderboard';
 
 test.beforeEach(async ({ context, baseURL }) => {
   await passGate(context, baseURL ?? 'http://127.0.0.1:8787');
