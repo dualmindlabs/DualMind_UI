@@ -158,7 +158,7 @@ describe('mutation builders (against the mock)', () => {
     const queue = createVoteQueue({ send: vote => api.vote(vote), storage: null });
     await expect(
       mutate(queryClient, voteMutation(queue), {
-        comparisonId: battle.comparisonId,
+        comparisonId: battle.comparisonId as string,
         voteChoice: 'left',
       }),
     ).resolves.toEqual({ status: 'sent' });

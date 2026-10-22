@@ -214,10 +214,12 @@ test.describe('thread of another account', () => {
   }) => {
     await mockArena(page, { foreignThreads: ['t-theirs'] });
     await openArena(page, '/?arena=new&thread=t-theirs');
-    await expect(
-      page.getByRole('heading', { name: 'This conversation belongs to another account' }),
-    ).toBeVisible({ timeout: 20_000 });
-    await page.getByRole('button', { name: 'New battle' }).click();
+    const heading = page.getByRole('heading', {
+      name: 'This conversation belongs to another account',
+    });
+    await expect(heading).toBeVisible({ timeout: 20_000 });
+    // The header has a New battle button too: take the one inside the panel.
+    await heading.locator('xpath=..').getByRole('button', { name: 'New battle' }).click();
     await expect(page).toHaveURL(/\/$/);
   });
 });
