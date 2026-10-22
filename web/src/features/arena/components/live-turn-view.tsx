@@ -131,7 +131,7 @@ export function LiveTurnView({
   return (
     <article
       aria-labelledby={promptId}
-      className="grid gap-8"
+      className="grid grid-cols-[minmax(0,1fr)] gap-8"
       data-testid="live-turn"
       data-phase={turn.phase}
     >

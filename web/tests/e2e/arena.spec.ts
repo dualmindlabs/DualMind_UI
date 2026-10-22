@@ -105,6 +105,7 @@ test.describe('history', () => {
   test('groups threads by day, searches, renames and deletes', async ({ page }) => {
     const state = await mockArena(page);
     await openArena(page);
+    await page.getByRole('button', { name: 'Open the history' }).click();
     const history = page.getByRole('navigation', { name: 'Your threads' });
     for (const group of ['Today', 'Yesterday', 'Last 7 days', 'Older']) {
       await expect(history.getByRole('heading', { name: group })).toBeVisible();
@@ -140,12 +141,14 @@ test.describe('history', () => {
   test('an empty history and a failed one have their own states', async ({ page }) => {
     await mockArena(page, { threads: [] });
     await openArena(page);
+    await page.getByRole('button', { name: 'Open the history' }).click();
     await expect(page.getByText('No threads yet.')).toBeVisible();
   });
 
   test('a failed history offers a retry', async ({ page }) => {
     await mockArena(page, { failThreads: true });
     await openArena(page);
+    await page.getByRole('button', { name: 'Open the history' }).click();
     await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible({ timeout: 20_000 });
   });
 });
@@ -190,6 +193,7 @@ test.describe('threads', () => {
   test('opening threads from the history and N for a new battle', async ({ page }) => {
     await mockArena(page);
     await openArena(page);
+    await page.getByRole('button', { name: 'Open the history' }).click();
     await page.getByRole('link', { name: /Write a haiku about merge conflicts/ }).click();
     await expect(page).toHaveURL(/\?thread=t-haiku/);
     await expect(page.getByText('Side by side', { exact: false }).first()).toBeVisible();
@@ -444,6 +448,10 @@ test.describe('battles', () => {
     const turn = page.getByTestId('live-turn').first();
     await expect(turn).toHaveAttribute('data-phase', 'awaiting_vote', { timeout: 15_000 });
     await expect(turn.getByTestId('pane-model').nth(1)).toContainText('Gemma 3n E2B IT');
+    await turn
+      .getByRole('button', { name: 'Vote now' })
+      .click({ timeout: 1500 })
+      .catch(() => undefined);
     await expect(turn.getByText('Voting is optional here.')).toBeVisible();
     const body = state.bodies.find(item => item.path === '/api/arena/dualchat')?.body;
     expect(body?.model2).toBe('1fe310c7-24d1-49a5-a042-2e409e009524');

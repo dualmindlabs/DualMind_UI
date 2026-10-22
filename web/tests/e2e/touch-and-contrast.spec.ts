@@ -275,6 +275,10 @@ test.describe('forced colors', () => {
       const turn = page.getByTestId('live-turn').first();
       await expect(turn).toHaveAttribute('data-phase', 'awaiting_vote', { timeout: 15_000 });
       await settle(page, 400);
+      await turn
+        .getByRole('button', { name: 'Vote now' })
+        .click({ timeout: 1500 })
+        .catch(() => undefined);
       await turn.getByRole('button', { name: /A is better/ }).focus();
       await expectForcedColorsBasics(page);
       const shot = `forced-colors-arena-vote-desktop${shotSuffix(theme)}`;

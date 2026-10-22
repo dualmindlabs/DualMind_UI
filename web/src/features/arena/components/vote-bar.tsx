@@ -92,7 +92,10 @@ export function VoteBar({ onVote, chosen, optional = false, error, className }: 
   }, []);
 
   return (
-    <div className={cn('grid justify-items-center gap-2', className)} data-testid="vote-bar">
+    <div
+      className={cn('grid grid-cols-[minmax(0,1fr)] justify-items-center gap-2', className)}
+      data-testid="vote-bar"
+    >
       <div className={cn(PILL, 'motion-safe:animate-rise')}>
         <div
           ref={group}
@@ -176,7 +179,7 @@ export function VoteHint({ read, onSkip, className }: VoteHintProps) {
   const left =
     !read.a && !read.b ? 'Read both answers to vote' : read.a ? 'Now read B' : 'Now read A';
   return (
-    <div className={cn('grid', className)} data-testid="vote-hint">
+    <div className={cn('grid grid-cols-[minmax(0,1fr)]', className)} data-testid="vote-hint">
       <div
         className={cn(
           PILL,

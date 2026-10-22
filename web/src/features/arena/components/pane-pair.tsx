@@ -223,7 +223,7 @@ export function PanePair({
   ] as const;
 
   return (
-    <div className={cn('grid gap-6', className)} data-view={view}>
+    <div className={cn('grid grid-cols-[minmax(0,1fr)] gap-6', className)} data-view={view}>
       <div className="sticky top-2 z-10 flex flex-col items-center gap-2">
         <div
           role="group"
@@ -315,7 +315,10 @@ export function PanePair({
         data-testid="pane-stage"
         className={cn(
           'relative',
-          comparing ? 'grid gap-10 md:grid-cols-2 md:gap-8' : 'mx-auto w-full max-w-[42rem]',
+          'min-w-0',
+          comparing
+            ? 'grid grid-cols-[minmax(0,1fr)] gap-10 md:grid-cols-2 md:gap-8'
+            : 'mx-auto w-full max-w-[42rem]',
         )}
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}

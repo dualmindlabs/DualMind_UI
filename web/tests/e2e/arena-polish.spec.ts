@@ -408,6 +408,10 @@ test.describe('button feel on touch screens', () => {
     await send.click();
     const turn = page.getByTestId('live-turn').first();
     await expect(turn).toHaveAttribute('data-phase', 'awaiting_vote', { timeout: 15_000 });
+    await turn
+      .getByRole('button', { name: 'Vote now' })
+      .click({ timeout: 1500 })
+      .catch(() => undefined);
     await expectTouchSized(
       turn.getByRole('group', { name: 'Your verdict' }).getByRole('button'),
       'vote',

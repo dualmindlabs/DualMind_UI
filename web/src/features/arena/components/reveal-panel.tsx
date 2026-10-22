@@ -147,7 +147,7 @@ export function RevealPanel({ turn }: { turn: LiveTurn }) {
                         ? 'border-mind-a glow-a'
                         : 'border-mind-b glow-b'
                       : 'border-line',
-                    stepBack && 'opacity-70',
+                    stepBack && 'saturate-50',
                   )}
                 >
                   <div className="flex items-start justify-between gap-3">

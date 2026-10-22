@@ -99,7 +99,7 @@ export function AnswerPane({
           <>
             <Markdown
               streaming={streaming}
-              className="answer-prose max-w-[66ch] text-[1.0625rem]! leading-[1.8]! sm:text-[1.125rem]!"
+              className="answer-prose max-w-[66ch] text-[1.0625rem]! leading-[1.75]! sm:text-[1.125rem]!"
             >
               {text}
             </Markdown>

@@ -188,6 +188,7 @@ test.describe('arena offline', () => {
     const problems = collectProblems(page);
     await mockArena(page);
     await openArena(page);
+    await page.getByRole('button', { name: 'Open the history' }).click();
     await goOffline(context, page);
     await page.getByRole('link', { name: /Write a haiku about merge conflicts/ }).click();
     await page.waitForTimeout(2500);
@@ -317,6 +318,7 @@ test.describe('a crash inside the arena', () => {
     });
     await page.goto('/');
     await expect(page.getByTestId('arena')).toBeVisible();
+    await page.getByRole('button', { name: 'Open the history' }).click();
     await page.evaluate(() => ((window as unknown as { dmCrash: boolean }).dmCrash = true));
     await page.getByRole('link', { name: /Explain recursion to a ten-year-old/ }).click();
     const panel = page.getByTestId('arena-error');
