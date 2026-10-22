@@ -392,6 +392,8 @@ test.describe('offline screenshots', () => {
         await page.goto('/leaderboard/');
         await expect(page.getByTestId('root-error')).toBeVisible();
         await expect(page.getByTestId('root-error')).toContainText('You are offline.');
+        // The error screen keeps the visitor's theme (it is re-applied after a hydration error).
+        await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
         await settle(page, 600);
         await page.screenshot({ path: shotPath(`root-offline-${viewport.label}-${theme}`) });
       });

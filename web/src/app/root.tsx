@@ -27,6 +27,7 @@ import { useOnlineStatus } from '@/hooks/use-online-status';
 import { isChunkLoadError } from '@/lib/network/chunk-error';
 import { reloadWhenOnline } from '@/lib/network/reload-when-online';
 import { wantsSessionHandoff } from '@/lib/session/handoff';
+import { applyThemePreference, readThemePreference } from '@/lib/theme/theme';
 import { backgrounds } from '@/styles/tokens';
 
 import type { Route } from './+types/root';
@@ -113,6 +114,13 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   const offline = !online && !notFound;
   const chunk = isChunkLoadError(error);
   const recoverable = (offline || chunk) && !notFound;
+
+  // When the error comes up during hydration, React renders the document again on the client
+  // and the data-theme the head script put on <html> is lost, so a dark-theme visitor got a
+  // light error screen. Apply the stored theme again.
+  useEffect(() => {
+    applyThemePreference(readThemePreference());
+  }, []);
 
   useEffect(() => {
     if (!recoverable) return;
