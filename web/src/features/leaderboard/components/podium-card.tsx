@@ -50,7 +50,7 @@ export function PodiumCard({ entry, place, eloStart, domain, movement, onOpen }:
   const range = ratingRange(entry);
 
   return (
-    <li className={cn('min-w-0', leader && 'md:col-span-2 lg:col-span-1 lg:row-span-2')}>
+    <li className={cn('min-w-0', leader && 'md:col-span-2')}>
       <div className={cn('h-full', leader ? 'surface-a glow-a' : 'surface-duel hover-rise')}>
         <SpotlightCard
           spotlightColor={leader ? '--mind-a' : '--line-strong'}
