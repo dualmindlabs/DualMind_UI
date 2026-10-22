@@ -259,7 +259,7 @@ test.describe('print', () => {
     await storeTheme(page, 'dark');
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/leaderboard/');
-    await expect(page.locator('main')).toContainText('Rankings');
+    await expect(page.locator('main')).toContainText('Full rankings');
     await settle(page, 600);
     await page.emulateMedia({ media: 'print', reducedMotion: 'reduce' });
     await expectNoSiteChrome(page);

@@ -155,10 +155,7 @@ function SharedView({ threadId, shared }: { threadId: string; shared: SharedThre
         )}
       </PageContainer>
 
-      <section
-        aria-labelledby="share-cta"
-        className="border-t border-line bg-surface print:hidden"
-      >
+      <section aria-labelledby="share-cta" className="border-t border-line bg-surface print:hidden">
         <PageContainer className="grid gap-6 py-14 md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:py-20">
           <div className="grid gap-3">
             <h2 id="share-cta" className="text-h2 font-medium text-balance text-fg">

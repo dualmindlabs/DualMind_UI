@@ -84,7 +84,8 @@ describe('pageMeta', () => {
     const meta = pageMeta(base);
     const keys = meta.map(tag => {
       const fields: Tag = { ...tag };
-      return String(fields.property ?? fields.name ?? fields.rel ?? Object.keys(fields)[0]);
+      const key = fields.property ?? fields.name ?? fields.rel ?? Object.keys(fields)[0];
+      return typeof key === 'string' ? key : JSON.stringify(key);
     });
     expect(new Set(keys).size).toBe(keys.length);
   });
