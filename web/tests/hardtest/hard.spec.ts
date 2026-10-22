@@ -238,6 +238,7 @@ for (const vp of VIEWPORTS) {
         await prompt.fill(PROMPT);
         await finish(page, { id: 'arena-2-typing', vp, theme: th }, found);
 
+        await prompt.click();
         await page.keyboard.press('Enter');
         const turn = page.getByTestId('live-turn').first();
         await expect(turn).toHaveAttribute('data-phase', 'awaiting_vote', { timeout: 15_000 });
