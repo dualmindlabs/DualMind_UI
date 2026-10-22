@@ -170,7 +170,7 @@ One table; the first matching row wins, and without a match the Workers static a
 | hashed-build-file | Vite output, `/assets/<name>-<hash>.<ext>` (pattern `HASHED_ASSET_RE`, checked against the build by `build.js`) | `public, max-age=31536000, immutable` |
 | share | `/share` and everything below it: the share page, set by `server/share.js` | `no-store, no-cache, must-revalidate` |
 | web-page | HTML pages of the web app (from the manifest) and the SPA fallback | `no-cache`: revalidated on every visit, cheap because Workers static assets send an ETag (a matching `If-None-Match` gets a 304) |
-| legacy-code | legacy HTML (also directory URLs and clean URLs such as `/auth-verify`), JS, CSS and JSON | `no-store, no-cache, must-revalidate, max-age=0`, until the cutover |
+| legacy-code | legacy HTML (also directory URLs and clean URLs such as `/login-modern`), JS, CSS and JSON | `no-store, no-cache, must-revalidate, max-age=0`, until the cutover |
 | image | `.png .jpg .jpeg .webp .gif .svg .ico` | `public, max-age=31536000, immutable`, as before |
 
 `/design/` and `/__spa-fallback` also send `X-Robots-Tag: noindex, nofollow`.

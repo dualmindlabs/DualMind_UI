@@ -78,7 +78,7 @@ export function fakeAssets(files: Record<string, string>): FakeAssets {
  */
 export const DIST: Record<string, string> = {
   '/index.html': '<!doctype html><title>DualMind Arena: blind battles between AI models</title>',
-  '/auth-verify.html': '<!doctype html><title>Legacy auth check</title>',
+  '/legacy-sample.html': '<!doctype html><title>Legacy sample</title>',
   '/leaderboard/index.html': '<!doctype html><title>Legacy leaderboard</title>',
   '/models/index.html': '<!doctype html><title>Legacy models</title>',
   '/about/index.html': '<!doctype html><title>About DualMind Arena</title>',

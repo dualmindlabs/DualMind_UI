@@ -56,14 +56,7 @@ test('hashed build files are immutable; legacy files keep their headers', async 
   );
 });
 
-test('legacy pages are still served', async ({ request }) => {
-  for (const page of ['/auth-verify']) {
-    const response = await request.get(page, withCookie);
-    expect(response.status(), page).toBe(200);
-    expect(response.headers()['content-type'], page).toContain('text/html');
-    expect(response.headers()['cache-control'], page).toBe(LEGACY_NO_STORE);
-  }
-  // / is the prerendered landing page (and the arena for signed-in visitors).
+test('/ is the prerendered landing page', async ({ request }) => {
   const home = await (await request.get('/', withCookie)).text();
   expect(home).not.toContain('data-spa-fallback');
   expect(home).toContain('blind battles between AI models');
@@ -127,19 +120,6 @@ test('/design/: security headers, enforced CSP with script hashes, ETag revalida
     headers: { ...withCookie.headers, 'If-None-Match': etag ?? '' },
   });
   expect(again.status()).toBe(304);
-});
-
-test('legacy pages: report-only CSP, no-store, no X-XSS-Protection', async ({ request }) => {
-  for (const page of ['/auth-verify']) {
-    const headers = (await request.get(page, withCookie)).headers();
-    expect(headers['content-security-policy'], page).toBeUndefined();
-    expect(headers['content-security-policy-report-only'], page).toContain(
-      'https://cdn.jsdelivr.net',
-    );
-    expect(headers['cache-control'], page).toBe(LEGACY_NO_STORE);
-    expect(headers['strict-transport-security'], page).toBeTruthy();
-    expect(headers['x-xss-protection'], page).toBeUndefined();
-  }
 });
 
 test('hashed files: immutable, base security headers, no CSP', async ({ request }) => {

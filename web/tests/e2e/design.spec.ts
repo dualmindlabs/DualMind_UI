@@ -83,24 +83,6 @@ test('the enforced CSP blocks an injected inline script on /design/', async ({ p
   expect(violations.some(text => text.includes('Content Security Policy'))).toBe(true);
 });
 
-test('legacy pages raise no CSP report-only violations', async ({ page }) => {
-  const violations: string[] = [];
-  await page.exposeFunction('reportCspViolation', (text: string) => violations.push(text));
-  await page.addInitScript(() => {
-    document.addEventListener('securitypolicyviolation', event => {
-      const report = (window as unknown as { reportCspViolation: (text: string) => void })
-        .reportCspViolation;
-      report(`${location.pathname}: ${event.violatedDirective} ${event.blockedURI}`);
-    });
-  });
-  for (const path of ['/auth-verify.html']) {
-    await page.goto(path);
-    await page.waitForLoadState('load');
-    await page.waitForTimeout(1500);
-  }
-  expect(violations).toEqual([]);
-});
-
 test('keyboard: the skip link comes first and moves focus to the content', async ({ page }) => {
   await page.goto('/design/');
   await page.keyboard.press('Tab');
