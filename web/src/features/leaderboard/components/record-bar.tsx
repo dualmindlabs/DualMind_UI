@@ -6,6 +6,9 @@ export interface RecordBarProps {
   wins: number;
   ties: number;
   losses: number;
+  /** A thin bar without the legend, for a table cell; the numbers are named for screen readers. */
+  compact?: boolean;
+  className?: string;
 }
 
 const SEGMENTS = [
@@ -19,16 +22,17 @@ const SEGMENTS = [
  * that carries the numbers, so the colours are never the only signal. Wins take the Mind A
  * accent; ties and losses stay neutral, because a loss is not an error state.
  */
-export function RecordBar({ wins, ties, losses }: RecordBarProps) {
+export function RecordBar({ wins, ties, losses, compact = false, className }: RecordBarProps) {
   const values = { wins, ties, losses };
   const total = wins + ties + losses;
 
   return (
-    <figure className="grid gap-3">
+    <figure className={cn('grid', compact ? 'gap-0' : 'gap-3', className)}>
       <div
         aria-hidden="true"
         className={cn(
-          'flex h-2.5 w-full gap-0.5 overflow-hidden rounded-full',
+          'flex w-full gap-0.5 overflow-hidden rounded-full',
+          compact ? 'h-1.5' : 'h-3',
           total === 0 && 'bg-line',
         )}
       >
@@ -42,7 +46,7 @@ export function RecordBar({ wins, ties, losses }: RecordBarProps) {
             ))
           : null}
       </div>
-      <figcaption>
+      <figcaption className={compact ? 'sr-only' : undefined}>
         <ul className="flex flex-wrap gap-x-5 gap-y-1.5 text-ui-sm text-fg-soft">
           {SEGMENTS.map(segment => (
             <li key={segment.key} className="inline-flex items-center gap-2">
