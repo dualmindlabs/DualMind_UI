@@ -166,6 +166,11 @@ test.describe('arena offline', () => {
     await expect(turn).toHaveAttribute('data-phase', 'awaiting_vote', { timeout: 15_000 });
     state.offline = true;
     await goOffline(context, page);
+    // The vote pill opens once both answers are read, or on "Vote now".
+    await turn
+      .getByRole('button', { name: 'Vote now' })
+      .click({ timeout: 1500 })
+      .catch(() => undefined);
     await turn.getByRole('button', { name: /A is better/ }).click();
     await expect(turn.getByTestId('vote-pending')).toBeVisible();
     await expect(notice(page)).toContainText('(1 waiting)');
@@ -183,6 +188,7 @@ test.describe('arena offline', () => {
     const problems = collectProblems(page);
     await mockArena(page);
     await openArena(page);
+    await page.getByRole('button', { name: 'Open the history' }).click();
     await goOffline(context, page);
     await page.getByRole('link', { name: /Write a haiku about merge conflicts/ }).click();
     await page.waitForTimeout(2500);
@@ -312,14 +318,15 @@ test.describe('a crash inside the arena', () => {
     });
     await page.goto('/');
     await expect(page.getByTestId('arena')).toBeVisible();
+    await page.getByRole('button', { name: 'Open the history' }).click();
     await page.evaluate(() => ((window as unknown as { dmCrash: boolean }).dmCrash = true));
     await page.getByRole('link', { name: /Explain recursion to a ten-year-old/ }).click();
     const panel = page.getByTestId('arena-error');
     await expect(panel).toBeVisible();
     await expect(panel).toContainText('Something broke in the arena.');
     await expect(page.getByTestId('root-error')).toHaveCount(0);
-    // The rest of the arena is still there.
-    await expect(page.getByRole('navigation', { name: 'Your threads' })).toBeVisible();
+    // The rest of the arena is still there: the header, with the history one press away.
+    await expect(page.getByRole('button', { name: 'Open the history' })).toBeVisible();
     await page.evaluate(() => ((window as unknown as { dmCrash: boolean }).dmCrash = false));
     await panel.getByRole('button', { name: 'Try again' }).click();
     await expect(page.getByTestId('arena-error')).toHaveCount(0);
@@ -350,6 +357,11 @@ test.describe('offline screenshots', () => {
         await expect(turn).toHaveAttribute('data-phase', 'awaiting_vote', { timeout: 15_000 });
         state.offline = true;
         await goOffline(context, page);
+        // The vote pill opens once both answers are read, or on "Vote now".
+        await turn
+          .getByRole('button', { name: 'Vote now' })
+          .click({ timeout: 1500 })
+          .catch(() => undefined);
         await turn.getByRole('button', { name: /A is better/ }).click();
         await expect(notice(page)).toContainText('(1 waiting)');
         await settle(page, 600);

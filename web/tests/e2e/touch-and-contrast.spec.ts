@@ -275,6 +275,9 @@ test.describe('forced colors', () => {
       const turn = page.getByTestId('live-turn').first();
       await expect(turn).toHaveAttribute('data-phase', 'awaiting_vote', { timeout: 15_000 });
       await settle(page, 400);
+      // Opened from the keyboard, so the focus that follows still counts as keyboard focus.
+      await turn.getByRole('button', { name: 'Vote now' }).focus();
+      await page.keyboard.press('Enter');
       await turn.getByRole('button', { name: /A is better/ }).focus();
       await expectForcedColorsBasics(page);
       const shot = `forced-colors-arena-vote-desktop${shotSuffix(theme)}`;

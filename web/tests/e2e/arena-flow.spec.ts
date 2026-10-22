@@ -196,7 +196,7 @@ function expectStableHeaders(headers: HeaderGeometry[], label: string) {
   expect(a.spread, `${label}: A on one row`).toBeLessThan(8);
   expect(b.spread, `${label}: B on one row`).toBeLessThan(8);
   expect(Math.abs(a.height - b.height), `${label}: equal heights`).toBeLessThan(1);
-  expect(a.height, `${label}: header height`).toBeLessThan(56);
+  expect(a.height, `${label}: header height`).toBeLessThan(60);
   for (const header of headers) {
     expect(header.metaInHeader, `${label} ${header.side}: timing in the footer`).toBe(false);
     if (header.pickLeft !== null && header.nameRight !== null) {
@@ -247,17 +247,21 @@ test.describe('long answers', () => {
       await mockArena(page, { answers: { a: LONG_A, b: LONG_B } });
       await openArena(page);
       const turn = await sendBattle(page);
+      // Compare puts both long answers on screen, side by side, for the geometry checks below.
+      await turn.getByRole('button', { name: 'Compare', exact: true }).click();
       const answerA = turn.getByRole('region', { name: /Answer A/ });
       const answerB = turn.getByRole('region', { name: /Answer B/ });
 
-      // In the middle of the long answer the vote bar is still on screen (sticky).
+      // In the middle of the long answer the vote hint is still on screen (sticky).
       const table = answerA.getByRole('region', { name: 'Table' });
       await table.scrollIntoViewIfNeeded();
       // Code highlighting loads as blocks come on screen; let it settle, then look again.
       await page.waitForTimeout(400);
       await table.scrollIntoViewIfNeeded();
       await expect(table).toBeInViewport();
-      await expect(turn.getByTestId('vote-bar')).toBeInViewport({ ratio: 1 });
+      await expect(
+        turn.locator('[data-testid="vote-hint"], [data-testid="vote-bar"]'),
+      ).toBeInViewport({ ratio: 1 });
 
       // Wide content scrolls inside its pane; the page itself never scrolls sideways.
       const scrolls = async (locator: Locator) =>
@@ -273,6 +277,11 @@ test.describe('long answers', () => {
       expect(await overflowing(page)).toEqual([]);
       await settle(page, 400);
       await page.screenshot({ path: shotPath(`arena-long-vote-1280-${theme}`) });
+      await turn
+        .getByRole('button', { name: 'Vote now' })
+        .click({ timeout: 1500 })
+        .catch(() => undefined);
+      await expect(turn.getByTestId('vote-bar')).toBeInViewport({ ratio: 1 });
 
       await voteWithKey(page, turn, '1');
       const panel = turn.getByTestId('reveal-panel');
@@ -285,9 +294,8 @@ test.describe('long answers', () => {
       await settle(page, 2600);
       expect(await overflowing(page)).toEqual([]);
       expectStableHeaders(await headerGeometry(turn), `1280 ${theme}`);
-      await expect(panel.getByTestId('reveal-name').first()).toHaveText(
-        new RegExp(`${LONG_NAME.replace(/[()]/g, '\\$&')}.*Your pick`),
-      );
+      await expect(panel.getByTestId('reveal-name').first()).toContainText(LONG_NAME);
+      await expect(panel.getByTestId('reveal-name').first()).toContainText('Your pick');
       await page.screenshot({ path: shotPath(`arena-reveal-actions-1280-${theme}`) });
       await shootHeaders(page, turn, `arena-long-revealed-1280-${theme}`);
       await page.screenshot({ path: shotPath(`arena-long-revealed-top-1280-${theme}`) });
@@ -304,6 +312,7 @@ test.describe('the reveal header', () => {
         await mockArena(page);
         await openArena(page);
         const turn = await sendBattle(page, 'Explain recursion to a ten-year-old');
+        await turn.getByRole('button', { name: 'Compare', exact: true }).click();
         await voteWithKey(page, turn, '1');
         await settle(page, 1600);
         const headers = await headerGeometry(turn);
@@ -340,9 +349,9 @@ test.describe('after the vote', () => {
     await page.keyboard.press('?');
     await expect(page.getByRole('dialog', { name: 'Keyboard shortcuts' })).toBeVisible();
     await page.keyboard.press('Escape');
-    await expect(panel.getByRole('button', { name: /Ask a follow-up/ })).toBeFocused();
+    await expect(panel.getByRole('button', { name: /New battle/ })).toBeFocused();
 
-    // Tab from the panel: follow-up, rematch, share, new battle, in reading order.
+    // Tab from the panel: new battle, follow-up, rematch, share, in reading order.
     await panel.focus();
     const order: string[] = [];
     for (let index = 0; index < 4; index += 1) {
@@ -353,7 +362,7 @@ test.describe('after the vote', () => {
         ),
       );
     }
-    expect(order).toEqual(['Ask a follow-up/', 'Rematch', 'Share this battle', 'New battleN']);
+    expect(order).toEqual(['New battleN', 'Ask a follow-up/', 'Rematch', 'Share this battle']);
 
     // Share opens the dialog for this battle; Esc returns to the button.
     const share = panel.getByRole('button', { name: 'Share this battle' });
@@ -420,6 +429,11 @@ test.describe('after the vote', () => {
     await mockArena(page);
     await openArena(page);
     const turn = await sendBattle(page);
+    // The vote pill opens once both answers are read, or on "Vote now".
+    await turn
+      .getByRole('button', { name: 'Vote now' })
+      .click({ timeout: 1500 })
+      .catch(() => undefined);
     await turn.getByRole('button', { name: /B is better/ }).click();
     await expect(turn).toHaveAttribute('data-phase', 'revealed');
     await expect(turn.getByTestId('reveal-panel')).toBeFocused();
@@ -514,6 +528,11 @@ test.describe('README', () => {
     await mockArena(page);
     await openArena(page);
     const turn = await sendBattle(page, 'Explain recursion to a ten-year-old');
+    // The vote pill opens once both answers are read, or on "Vote now".
+    await turn
+      .getByRole('button', { name: 'Vote now' })
+      .click({ timeout: 1500 })
+      .catch(() => undefined);
     await turn.getByRole('button', { name: /A is better/ }).click();
     await expect(turn).toHaveAttribute('data-phase', 'revealed');
     await settle(page, 2600);

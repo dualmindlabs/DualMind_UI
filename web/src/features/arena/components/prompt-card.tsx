@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import { cn } from '@/lib/utils/cn';
 
 export interface PromptCardProps {
@@ -8,19 +10,40 @@ export interface PromptCardProps {
   className?: string;
 }
 
+/** Past this many characters the prompt folds to three lines, with a way to unfold it. */
+const LONG = 220;
+
 /**
- * The visitor's prompt, in the human's terra: a rule, the "You" label and the text as written
- * (line breaks kept).
+ * The visitor's prompt as a quiet header over the answers: a small "You asked" label and the text
+ * as written (line breaks kept) in the soft ink, set in the same column as the answer. No box.
+ * A long prompt folds to three lines with a More button.
  */
 export function PromptCard({ id, number, prompt, className }: PromptCardProps) {
+  const long = prompt.length > LONG || prompt.split('\n').length > 4;
+  const [open, setOpen] = useState(false);
   return (
-    <div className={cn('grid gap-1.5 border-l-2 border-human pl-4', className)}>
-      <h2 id={id} className="eyebrow text-human">
-        You<span className="sr-only">, prompt {number}</span>
+    <div className={cn('mx-auto grid w-full max-w-[42rem] gap-2', className)}>
+      <h2 id={id} className="text-ui-sm font-medium text-human">
+        You asked<span className="sr-only">, prompt {number}</span>
       </h2>
-      <p className="max-w-[72ch] text-body font-medium break-words whitespace-pre-wrap text-fg">
+      <p
+        className={cn(
+          'text-lead font-medium break-words whitespace-pre-wrap text-fg-soft',
+          long && !open && 'line-clamp-3',
+        )}
+      >
         {prompt}
       </p>
+      {long ? (
+        <button
+          type="button"
+          aria-expanded={open}
+          onClick={() => setOpen(current => !current)}
+          className="w-fit cursor-pointer text-ui-sm font-medium text-muted underline-offset-4 hover:text-fg hover:underline"
+        >
+          {open ? 'Less' : 'More'}
+        </button>
+      ) : null}
     </div>
   );
 }

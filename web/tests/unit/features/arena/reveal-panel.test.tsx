@@ -81,7 +81,7 @@ describe('RevealPanel', () => {
     expect(elsewhere).toHaveFocus();
   });
 
-  it('offers a follow-up, a rematch, sharing and a new battle, in that order', async () => {
+  it('offers a new battle first, then a follow-up, a rematch and sharing', async () => {
     const user = userEvent.setup();
     const spies = {
       focusComposer: vi.fn(),
@@ -92,10 +92,10 @@ describe('RevealPanel', () => {
     panel(revealed(), { ...spies, threadId: 't-1' });
     const buttons = within(screen.getByTestId('reveal-panel')).getAllByRole('button');
     expect(buttons.map(button => button.textContent)).toEqual([
+      'New battleN',
       'Ask a follow-up/',
       'Rematch',
       'Share this battle',
-      'New battleN',
     ]);
     await user.click(screen.getByRole('button', { name: /Ask a follow-up/ }));
     expect(spies.focusComposer).toHaveBeenCalled();

@@ -56,7 +56,12 @@ export function TurnView({ turn, names, audience = 'owner' }: TurnViewProps) {
   const hiddenNote = copy.hidden;
 
   return (
-    <article aria-labelledby={promptId} className="grid gap-4" data-testid="turn">
+    <article
+      aria-labelledby={promptId}
+      className="grid grid-cols-[minmax(0,1fr)] gap-8"
+      data-testid="turn"
+      data-turn=""
+    >
       <PromptCard id={promptId} number={turn.number} prompt={turn.prompt} />
       {turn.b === null ? (
         <AnswerPane
@@ -93,7 +98,10 @@ export function TurnView({ turn, names, audience = 'owner' }: TurnViewProps) {
         />
       )}
       {verdict ? (
-        <p className="flex items-center gap-2 text-ui-sm text-fg-soft" data-testid="turn-verdict">
+        <p
+          className="mx-auto flex w-full max-w-[42rem] items-center gap-2 text-ui-sm text-fg-soft"
+          data-testid="turn-verdict"
+        >
           <Scale aria-hidden="true" className="size-4 text-human" strokeWidth={1.75} />
           {copy.verdict} <span className="font-medium text-human">{verdict}</span>
         </p>

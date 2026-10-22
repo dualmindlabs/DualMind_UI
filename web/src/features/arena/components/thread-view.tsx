@@ -23,24 +23,37 @@ import { toTurns } from '../lib/turns';
 import { LiveTurnView } from './live-turn-view';
 import { TurnView } from './turn-view';
 
+/**
+ * Where the thread settles: the top of the newest turn, not the bottom of it. Reading starts at
+ * the prompt and the first line of the answer, whatever the answers' length, and nothing scrolls
+ * away while a model is still writing.
+ */
+function newestTurnTop(
+  bottom: number,
+  { scrollElement, contentElement }: { scrollElement: HTMLElement; contentElement: HTMLElement },
+): number {
+  const turns = contentElement.querySelectorAll('[data-turn]');
+  const last = turns[turns.length - 1];
+  if (!last) return bottom;
+  const top =
+    last.getBoundingClientRect().top -
+    scrollElement.getBoundingClientRect().top +
+    scrollElement.scrollTop -
+    16;
+  return Math.max(0, Math.min(bottom, top));
+}
+
 function TurnSkeleton() {
   return (
-    <div className="grid gap-4" aria-hidden="true">
-      <div className="grid gap-2 border-l-2 border-line pl-4">
-        <Skeleton className="h-3 w-12" />
-        <Skeleton className="h-4 w-2/3" />
+    <div className="mx-auto grid w-full max-w-[42rem] gap-8" aria-hidden="true">
+      <div className="grid gap-2">
+        <Skeleton className="h-3 w-16" />
+        <Skeleton className="h-5 w-2/3" />
       </div>
-      <div className="grid gap-4 md:grid-cols-2">
-        {[0, 1].map(index => (
-          <div key={index} className="overflow-hidden rounded-lg border border-line">
-            <Skeleton className="h-12 rounded-none" />
-            <div className="grid gap-2.5 p-5">
-              <Skeleton className="h-3.5 w-full" />
-              <Skeleton className="h-3.5 w-11/12" />
-              <Skeleton className="h-3.5 w-4/5" />
-              <Skeleton className="h-3.5 w-2/3" />
-            </div>
-          </div>
+      <Skeleton className="h-11 w-72 max-w-full justify-self-center rounded-full" />
+      <div className="grid gap-3">
+        {['w-full', 'w-11/12', 'w-full', 'w-4/5', 'w-10/12', 'w-2/3'].map((width, index) => (
+          <Skeleton key={index} className={`h-4 ${width}`} />
         ))}
       </div>
     </div>
@@ -133,39 +146,28 @@ export function ThreadView({ threadId }: { threadId: string | null }) {
   const wide = mode !== 'direct';
 
   return (
-    <ChatContainerRoot className="min-h-0 flex-1">
+    <ChatContainerRoot className="min-h-0 flex-1" targetScrollTop={newestTurnTop}>
       <ChatContainerContent
         scrollClassName="overscroll-contain"
         className={cn(
-          'mx-auto w-full gap-10 px-4 pt-6 pb-10 sm:px-6',
+          'mx-auto w-full gap-16 px-4 pt-4 pb-32 sm:px-6',
           wide ? 'max-w-6xl' : 'max-w-3xl',
         )}
       >
-        <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-4 gap-y-1.5">
-          <p className="col-start-1 eyebrow text-muted">
-            {MODE_DETAILS[mode].label}
+        <header className="mx-auto flex w-full max-w-[42rem] items-center justify-between gap-4">
+          <p className="min-w-0 truncate text-ui-sm text-muted">
+            <span className="font-medium text-fg-soft">{MODE_DETAILS[mode].label}</span>
             {thread ? (
-              <span className="text-muted">
+              <span>
                 {' · '}
                 {thread.messageCount} {thread.messageCount === 1 ? 'turn' : 'turns'}
                 {time === null ? null : ` · ${formatThreadTime(time, now)}`}
               </span>
             ) : null}
           </p>
-          {thread || threadId === null ? (
-            <h1 className="col-start-1 text-h3 font-semibold text-balance text-fg sm:text-h2">
-              {thread?.title ?? live[0]?.prompt ?? 'New battle'}
-            </h1>
-          ) : (
-            <Skeleton className="col-start-1 h-8 w-2/3" />
-          )}
+          <h1 className="sr-only">{thread?.title ?? live[0]?.prompt ?? 'New battle'}</h1>
           {threadId === null ? null : (
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => openShare(threadId)}
-              className="col-start-2 row-span-2 row-start-1 self-center"
-            >
+            <Button variant="ghost" size="sm" onClick={() => openShare(threadId)}>
               <Share2 aria-hidden="true" strokeWidth={1.75} />
               Share
             </Button>

@@ -50,7 +50,7 @@ test('a stored theme applies before any app JavaScript runs (no flash)', async (
   await page.goto('/design/');
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
   expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe(
-    'rgb(255, 255, 255)',
+    'rgb(247, 248, 250)',
   );
 });
 
@@ -58,11 +58,11 @@ test('"system" follows prefers-color-scheme', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'light' });
   await page.goto('/design/');
   expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe(
-    'rgb(255, 255, 255)',
+    'rgb(247, 248, 250)',
   );
   await page.emulateMedia({ colorScheme: 'dark' });
   expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe(
-    'rgb(15, 17, 21)',
+    'rgb(8, 9, 11)',
   );
 });
 

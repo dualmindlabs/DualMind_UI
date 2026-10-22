@@ -105,6 +105,7 @@ test.describe('history', () => {
   test('groups threads by day, searches, renames and deletes', async ({ page }) => {
     const state = await mockArena(page);
     await openArena(page);
+    await page.getByRole('button', { name: 'Open the history' }).click();
     const history = page.getByRole('navigation', { name: 'Your threads' });
     for (const group of ['Today', 'Yesterday', 'Last 7 days', 'Older']) {
       await expect(history.getByRole('heading', { name: group })).toBeVisible();
@@ -140,12 +141,14 @@ test.describe('history', () => {
   test('an empty history and a failed one have their own states', async ({ page }) => {
     await mockArena(page, { threads: [] });
     await openArena(page);
+    await page.getByRole('button', { name: 'Open the history' }).click();
     await expect(page.getByText('No threads yet.')).toBeVisible();
   });
 
   test('a failed history offers a retry', async ({ page }) => {
     await mockArena(page, { failThreads: true });
     await openArena(page);
+    await page.getByRole('button', { name: 'Open the history' }).click();
     await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible({ timeout: 20_000 });
   });
 });
@@ -174,11 +177,15 @@ test.describe('threads', () => {
     const link = first.getByRole('link', { name: /Python docs/ });
     await expect(link).toHaveAttribute('rel', 'noopener noreferrer nofollow');
     await expect(link).toContainText('docs.python.org');
-    // The history marks the open thread.
+    // The history is a slide-over on the battle stage, and it marks the open thread.
+    await page.getByRole('button', { name: 'Open the history' }).click();
+    await expect(page.getByRole('dialog', { name: 'History' })).toBeVisible();
     await expect(page.getByRole('link', { name: /Explain recursion/ }).first()).toHaveAttribute(
       'aria-current',
       'page',
     );
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog', { name: 'History' })).toBeHidden();
     await expect(page).toHaveTitle('Explain recursion to a ten-year-old · DualMind Arena');
     expect(problems).toEqual([]);
   });
@@ -186,6 +193,7 @@ test.describe('threads', () => {
   test('opening threads from the history and N for a new battle', async ({ page }) => {
     await mockArena(page);
     await openArena(page);
+    await page.getByRole('button', { name: 'Open the history' }).click();
     await page.getByRole('link', { name: /Write a haiku about merge conflicts/ }).click();
     await expect(page).toHaveURL(/\?thread=t-haiku/);
     await expect(page.getByText('Side by side', { exact: false }).first()).toBeVisible();
@@ -323,10 +331,12 @@ test.describe('screenshots', () => {
         await page.screenshot({ path: shotPath(`arena-thread-${viewport.label}-${theme}`) });
 
         if (viewport.label === 'desktop') {
+          // On the battle stage `[` opens the history as a slide-over.
           await page.keyboard.press('[');
+          await expect(page.getByRole('dialog', { name: 'History' })).toBeVisible();
           await settle(page, 500);
-          await page.screenshot({ path: shotPath(`arena-thread-rail-${theme}`) });
-          await page.keyboard.press('[');
+          await page.screenshot({ path: shotPath(`arena-thread-history-${theme}`) });
+          await page.keyboard.press('Escape');
           // The model picker's screenshots are in arena-polish.spec.ts.
         } else {
           await page.getByRole('button', { name: 'Open the history' }).click();
@@ -410,6 +420,11 @@ test.describe('battles', () => {
     const turn = page.getByTestId('live-turn').first();
     await expect(turn).toHaveAttribute('data-phase', 'awaiting_vote', { timeout: 15_000 });
     await context.setOffline(true);
+    // The vote pill opens once both answers are read, or on "Vote now".
+    await turn
+      .getByRole('button', { name: 'Vote now' })
+      .click({ timeout: 1500 })
+      .catch(() => undefined);
     await turn.getByRole('button', { name: /A is better/ }).click();
     await expect(turn.getByTestId('vote-pending')).toBeVisible();
     expect(await page.evaluate(() => window.localStorage.getItem('dm.voteQueue.v1'))).toContain(
@@ -433,6 +448,10 @@ test.describe('battles', () => {
     const turn = page.getByTestId('live-turn').first();
     await expect(turn).toHaveAttribute('data-phase', 'awaiting_vote', { timeout: 15_000 });
     await expect(turn.getByTestId('pane-model').nth(1)).toContainText('Gemma 3n E2B IT');
+    await turn
+      .getByRole('button', { name: 'Vote now' })
+      .click({ timeout: 1500 })
+      .catch(() => undefined);
     await expect(turn.getByText('Voting is optional here.')).toBeVisible();
     const body = state.bodies.find(item => item.path === '/api/arena/dualchat')?.body;
     expect(body?.model2).toBe('1fe310c7-24d1-49a5-a042-2e409e009524');
@@ -535,6 +554,11 @@ test.describe('battle screenshots', () => {
         await expect(turn).toHaveAttribute('data-phase', 'awaiting_vote', { timeout: 15_000 });
         await settle(page, 400);
         await page.screenshot({ path: shotPath(`battle-vote-${viewport.label}-${theme}`) });
+        // The vote pill opens once both answers are read, or on "Vote now".
+        await turn
+          .getByRole('button', { name: 'Vote now' })
+          .click({ timeout: 1500 })
+          .catch(() => undefined);
         await turn.getByRole('button', { name: /B is better/ }).click();
         await expect(turn).toHaveAttribute('data-phase', 'revealed');
         await page.waitForTimeout(500);
@@ -553,6 +577,11 @@ test.describe('battle screenshots', () => {
     await page.keyboard.press('Enter');
     const turn = page.getByTestId('live-turn').first();
     await expect(turn).toHaveAttribute('data-phase', 'awaiting_vote', { timeout: 15_000 });
+    // The vote pill opens once both answers are read, or on "Vote now".
+    await turn
+      .getByRole('button', { name: 'Vote now' })
+      .click({ timeout: 1500 })
+      .catch(() => undefined);
     await turn.getByRole('button', { name: /A is better/ }).click();
     await expect(turn.getByTestId('pane-model').first()).toContainText(
       'Llama 3.3 70B Instruct (FP8, fast)',

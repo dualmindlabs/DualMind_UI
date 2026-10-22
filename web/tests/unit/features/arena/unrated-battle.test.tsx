@@ -62,8 +62,10 @@ describe('a battle a backup model answered', () => {
     expect(container).not.toHaveTextContent('Hidden until you vote');
   });
 
-  it('keeps the vote bar for a rated battle', () => {
+  it('keeps the vote for a rated battle: a hint first, the pill once voting is chosen', async () => {
     view(turn({ phase: 'awaiting_vote', comparisonId: 'c-1', unrated: null }));
+    expect(screen.getByTestId('vote-hint')).toBeInTheDocument();
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Vote now' }));
     expect(screen.getByTestId('vote-bar')).toBeInTheDocument();
     expect(screen.queryByTestId('unrated-note')).toBeNull();
   });

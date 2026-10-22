@@ -324,9 +324,7 @@ test.describe('phone polish (P2-9)', () => {
     await expect(page.getByTestId('scroll-cue')).toHaveCount(0);
   });
 
-  test('history rows: the time under the title in the drawer, at the end in the panel', async ({
-    page,
-  }) => {
+  test('history rows: the time under the title in the slide-over', async ({ page }) => {
     await mockArena(page);
     await page.setViewportSize({ width: 390, height: 844 });
     await openArena(page);
@@ -344,18 +342,6 @@ test.describe('phone polish (P2-9)', () => {
         await title.evaluate(element => element.scrollHeight <= element.clientHeight + 1),
       ).toBe(true);
     }
-
-    await page.setViewportSize({ width: 1440, height: 900 });
-    await openArena(page);
-    const panel = page.getByRole('navigation', { name: 'Your threads' });
-    const link = panel.getByRole('link').first();
-    const [titleBox, timeBox] = [
-      await box(link.locator('span').first()),
-      await box(link.getByTestId('thread-time')),
-    ];
-    expect(
-      Math.abs(titleBox.y + titleBox.height / 2 - (timeBox.y + timeBox.height / 2)),
-    ).toBeLessThan(4);
   });
 });
 
@@ -408,10 +394,19 @@ test.describe('button feel on touch screens', () => {
     await send.click();
     const turn = page.getByTestId('live-turn').first();
     await expect(turn).toHaveAttribute('data-phase', 'awaiting_vote', { timeout: 15_000 });
+    await turn
+      .getByRole('button', { name: 'Vote now' })
+      .click({ timeout: 1500 })
+      .catch(() => undefined);
     await expectTouchSized(
       turn.getByRole('group', { name: 'Your verdict' }).getByRole('button'),
       'vote',
     );
+    // The vote pill opens once both answers are read, or on "Vote now".
+    await turn
+      .getByRole('button', { name: 'Vote now' })
+      .click({ timeout: 1500 })
+      .catch(() => undefined);
     await turn.getByRole('button', { name: /B is better/ }).click();
     await expect(turn).toHaveAttribute('data-phase', 'revealed');
     await expectTouchSized(turn.getByRole('button', { name: /^Copy/ }), 'copy');
