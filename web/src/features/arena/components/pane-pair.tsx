@@ -125,7 +125,7 @@ export function PanePair({ a, b, label, writing, className }: PanePairProps) {
         data-view={view}
         className={cn(
           // Phones: one row, one pane per screen width, snapping; overscroll stays inside.
-          'flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+          'flex snap-x snap-mandatory [scrollbar-width:none] gap-3 overflow-x-auto overscroll-x-contain [&::-webkit-scrollbar]:hidden',
           '*:w-full *:shrink-0 *:snap-center *:snap-always',
           // Compare: both answers one under the other, folded.
           comparing && 'max-md:snap-none max-md:flex-col max-md:overflow-visible',
