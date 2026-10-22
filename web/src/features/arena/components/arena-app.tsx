@@ -75,7 +75,10 @@ function ArenaLayout() {
           data-testid="arena"
           className={cn(
             'relative flex min-w-0 flex-1 flex-col outline-none',
-            empty && 'overflow-y-auto md:justify-center',
+            // Auto margins on the inner wrapper, not justify-*: they centre (or, on a phone, sink)
+            // the empty state when it fits and fall back to 0 when it does not, so a short
+            // landscape screen scrolls from the heading instead of clipping it.
+            empty && 'overflow-y-auto',
           )}
         >
           <ArenaErrorBoundary resetKey={threadId}>
@@ -85,7 +88,7 @@ function ArenaLayout() {
                   aria-hidden="true"
                   className="pointer-events-none absolute inset-0 dot-grid [mask-image:radial-gradient(ellipse_60%_50%_at_50%_45%,black,transparent)] opacity-70"
                 />
-                <div className="relative mx-auto grid w-full max-w-3xl gap-8 px-4 py-8 max-md:mt-auto sm:px-6">
+                <div className="relative mx-auto grid w-full max-w-3xl gap-8 px-4 py-8 max-md:mt-auto sm:px-6 md:my-auto">
                   <EmptyState headingRef={heading} />
                   <Composer
                     variant="hero"
