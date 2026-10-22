@@ -15,6 +15,7 @@ import type { AuthChangeEvent, Session, User } from '@supabase/supabase-js';
 
 import type { SupabaseConfig } from '@/config/supabase';
 import type { UserProfile } from '@/lib/api';
+import { isOnline } from '@/lib/network/online-status';
 import { hasAuthParams, hasStoredSession } from '@/lib/session/handoff';
 
 import { type AuthClient, SupabaseUnavailableError } from './client';
@@ -111,6 +112,16 @@ export interface AuthStoreOptions {
    * Supabase for the token) inside it would wait on its own lock. Default: setTimeout(task, 0).
    */
   defer?: ((task: () => void) => void) | undefined;
+  /** Default: `!navigator.onLine`. */
+  isOffline?: (() => boolean) | undefined;
+  /** Calls `callback` at the next `online` event; returns a cancel. Default: window's event. */
+  onceOnline?: ((callback: () => void) => () => void) | undefined;
+  /**
+   * How long the first session read may take. supabase-js retries a failed refresh for up to
+   * 30 s, and a visitor with a stored session should not wait that long on a loading frame:
+   * after this, the stored session is used and the real check follows. Default 8000.
+   */
+  sessionTimeoutMs?: number | undefined;
 }
 
 export interface AuthStore {
@@ -139,6 +150,69 @@ function clearTokensFromAddressBar(): void {
   }
 }
 
+/**
+ * A failed network call, as supabase-js reports it: `AuthRetryableFetchError` (a refresh that
+ * could not reach Supabase, or got a 5xx) or the fetch's own TypeError. Not a session that was
+ * revoked: that one is a 4xx and a real sign-out.
+ */
+function isNetworkAuthError(error: unknown): boolean {
+  if (typeof error !== 'object' || error === null) return false;
+  const { name, message } = error as { name?: unknown; message?: unknown };
+  return (
+    name === 'AuthRetryableFetchError' ||
+    name === 'TypeError' ||
+    (typeof message === 'string' && /failed to fetch|network|load failed/i.test(message))
+  );
+}
+
+/**
+ * The session supabase-js keeps in localStorage, read without supabase-js (it may be expired).
+ * What the arena runs on while the network is down: the user stays signed in on this device,
+ * and the real check happens when the network is back.
+ */
+function readStoredSession(storage: ScannableStorage | null, key: string): Session | null {
+  try {
+    const raw = storage?.getItem(key);
+    if (!raw) return null;
+    const value = JSON.parse(raw) as Partial<Session> | null;
+    if (
+      value &&
+      typeof value.access_token === 'string' &&
+      typeof value.refresh_token === 'string' &&
+      typeof value.user?.id === 'string'
+    ) {
+      return value as Session;
+    }
+  } catch {
+    // Corrupt or blocked storage: no stored session.
+  }
+  return null;
+}
+
+const TIMED_OUT = Symbol('timed-out');
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | typeof TIMED_OUT> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => resolve(TIMED_OUT), ms);
+    promise.then(
+      value => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (error: unknown) => {
+        clearTimeout(timer);
+        reject(error instanceof Error ? error : new Error(String(error)));
+      },
+    );
+  });
+}
+
+function onceOnlineInWindow(callback: () => void): () => void {
+  if (typeof window === 'undefined') return () => {};
+  window.addEventListener('online', callback, { once: true });
+  return () => window.removeEventListener('online', callback);
+}
+
 function safeHasStoredSession(storage: ScannableStorage | null): boolean {
   try {
     return storage !== null && hasStoredSession(storage);
@@ -155,6 +229,9 @@ export function createAuthStore(options: AuthStoreOptions): AuthStore {
   const getLocation = options.getLocation ?? landingUrl;
   const defer = options.defer ?? ((task: () => void) => void setTimeout(task, 0));
   const clearUrlTokens = options.clearUrlTokens ?? clearTokensFromAddressBar;
+  const isOffline = options.isOffline ?? (() => !isOnline());
+  const onceOnline = options.onceOnline ?? onceOnlineInWindow;
+  let cancelRecheck: (() => void) | null = null;
 
   let state: AuthState = config ? INITIAL_AUTH_STATE : UNAVAILABLE_AUTH_STATE;
   const listeners = new Set<() => void>();
@@ -207,6 +284,9 @@ export function createAuthStore(options: AuthStoreOptions): AuthStore {
     if (event === 'SIGNED_OUT') {
       clearSignedOutData(local, tab);
       profileFor = null;
+    } else if (event !== null && state.status === 'signed-in' && isOffline()) {
+      // A session that cannot be read or refreshed without a network is not a sign-out.
+      return;
     }
     dispatch({ type: 'session', session: null, event });
   };
@@ -232,18 +312,45 @@ export function createAuthStore(options: AuthStoreOptions): AuthStore {
   };
 
   const readSession = async () => {
+    cancelRecheck?.();
+    cancelRecheck = null;
     let session: Session | null = null;
-    try {
-      const client = await connect();
-      // Resolves after supabase-js has read the URL (tokens or an error in the hash).
-      const { data } = await client.auth.getSession();
-      session = data.session;
-      if (!session && config) {
-        const migrated = await migrateLegacySession(client, local, config.storageKey);
-        if (migrated.status === 'migrated') session = migrated.session;
+    let offlineFailure = false;
+    const location = getLocation();
+    const fromUrl = hasAuthParams(location.search, location.hash);
+    if (config && !fromUrl && isOffline() && readStoredSession(local, config.storageKey)) {
+      // No network at all: do not wait for a refresh that cannot happen.
+      offlineFailure = true;
+      void connect().catch(() => {});
+    } else {
+      try {
+        const client = await connect();
+        // Resolves after supabase-js has read the URL (tokens or an error in the hash).
+        const read = await withTimeout(client.auth.getSession(), options.sessionTimeoutMs ?? 8000);
+        if (read === TIMED_OUT) {
+          offlineFailure = true;
+        } else {
+          session = read.data.session;
+          const { error } = read;
+          if (!session && error && (isNetworkAuthError(error) || isOffline())) {
+            offlineFailure = true;
+          }
+          if (!session && !offlineFailure && config) {
+            const migrated = await migrateLegacySession(client, local, config.storageKey);
+            if (migrated.status === 'migrated') session = migrated.session;
+          }
+        }
+      } catch {
+        // supabase-js could not load, or the read threw: with no network that says nothing
+        // about the session itself.
+        offlineFailure = true;
       }
-    } catch {
-      session = null;
+    }
+    if (!session && offlineFailure && config) {
+      // Keep the visitor in the arena on the session stored on this device, and check it for
+      // real when the network is back.
+      session = readStoredSession(local, config.storageKey);
+      if (session) cancelRecheck = onceOnline(() => void readSession());
     }
     ready = true;
     clearUrlTokens();
@@ -287,6 +394,8 @@ export function createAuthStore(options: AuthStoreOptions): AuthStore {
       applySession(null, 'SIGNED_OUT');
     },
     dispose() {
+      cancelRecheck?.();
+      cancelRecheck = null;
       unsubscribe?.();
       unsubscribe = null;
       listeners.clear();

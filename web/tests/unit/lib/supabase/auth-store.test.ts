@@ -282,4 +282,153 @@ describe('createAuthStore', () => {
     await expect(store.client()).resolves.toBeDefined();
     expect(loadClient).toHaveBeenCalledTimes(2);
   });
+
+  describe('when the network is down', () => {
+    const stored = fakeSession({ access_token: 'stored-access', expires_at: 1 });
+
+    function offlineSetup(
+      getSession: () => Promise<unknown>,
+      { offline = true }: { offline?: boolean } = {},
+    ) {
+      const fake = fakeClient();
+      fake.auth.getSession.mockImplementation(getSession as never);
+      let online: (() => void) | null = null;
+      let isOffline = offline;
+      const store = createAuthStore({
+        config: CONFIG,
+        loadClient: () => Promise.resolve(fake.client),
+        localStorage: memoryStorage({ [CONFIG.storageKey]: JSON.stringify(stored) }),
+        sessionStorage: memoryStorage(),
+        getLocation: () => ({ search: '', hash: '' }),
+        defer: task => task(),
+        isOffline: () => isOffline,
+        onceOnline: callback => {
+          online = callback;
+          return () => {
+            online = null;
+          };
+        },
+      });
+      return {
+        store,
+        ...fake,
+        reconnect: () => {
+          isOffline = false;
+          online?.();
+        },
+        hasRecheck: () => online !== null,
+      };
+    }
+
+    const retryable = () => ({ name: 'AuthRetryableFetchError', message: 'Failed to fetch' });
+
+    it('keeps the stored session when an expired token cannot be refreshed', async () => {
+      const { store } = offlineSetup(
+        () => Promise.resolve({ data: { session: null }, error: retryable() }),
+        { offline: false },
+      );
+      store.start();
+      await settled();
+      expect(store.getState().status).toBe('signed-in');
+      expect(store.getState().session?.access_token).toBe('stored-access');
+    });
+
+    it('does not wait for a refresh at all while the browser is offline', async () => {
+      const { store, auth } = offlineSetup(() => new Promise(() => {}));
+      store.start();
+      await settled();
+      expect(store.getState().status).toBe('signed-in');
+      expect(auth.getSession).not.toHaveBeenCalled();
+    });
+
+    it('falls back to the stored session when the read takes too long', async () => {
+      vi.useFakeTimers();
+      try {
+        const { store } = offlineSetup(() => new Promise(() => {}), { offline: false });
+        store.start();
+        await vi.advanceTimersByTimeAsync(8100);
+        expect(store.getState().status).toBe('signed-in');
+        expect(store.getState().session?.access_token).toBe('stored-access');
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('keeps the stored session when supabase-js throws or cannot load', async () => {
+      const { store } = offlineSetup(() => Promise.reject(new TypeError('Failed to fetch')), {
+        offline: false,
+      });
+      store.start();
+      await settled();
+      expect(store.getState().status).toBe('signed-in');
+    });
+
+    it('checks the session for real when the network returns', async () => {
+      const results = [
+        { data: { session: null }, error: retryable() },
+        { data: { session: fakeSession({ access_token: 'fresh' }) }, error: null },
+      ];
+      const { store, reconnect, hasRecheck } = offlineSetup(
+        () => Promise.resolve(results.shift() ?? results[0]),
+        { offline: false },
+      );
+      store.start();
+      await settled();
+      expect(hasRecheck()).toBe(true);
+      reconnect();
+      await settled();
+      expect(store.getState().session?.access_token).toBe('fresh');
+    });
+
+    it('signs out when the network is back and the session is really gone', async () => {
+      const results = [
+        { data: { session: null }, error: retryable() },
+        { data: { session: null }, error: null },
+      ];
+      const { store, reconnect } = offlineSetup(
+        () => Promise.resolve(results.shift() ?? results[0]),
+        { offline: false },
+      );
+      store.start();
+      await settled();
+      reconnect();
+      await settled();
+      expect(store.getState().status).toBe('signed-out');
+    });
+
+    it('still signs out when the server says the session is invalid (not a network error)', async () => {
+      const { store } = offlineSetup(
+        () =>
+          Promise.resolve({
+            data: { session: null },
+            error: { name: 'AuthApiError', message: 'Invalid Refresh Token', status: 400 },
+          }),
+        { offline: false },
+      );
+      store.start();
+      await settled();
+      expect(store.getState().status).toBe('signed-out');
+    });
+
+    it('ignores an auth event without a session while offline, but not a real sign-out', async () => {
+      const fake = fakeClient(fakeSession());
+      const store = createAuthStore({
+        config: CONFIG,
+        loadClient: () => Promise.resolve(fake.client),
+        localStorage: memoryStorage({ [CONFIG.storageKey]: '{}' }),
+        sessionStorage: memoryStorage(),
+        getLocation: () => ({ search: '', hash: '' }),
+        defer: task => task(),
+        isOffline: () => true,
+      });
+      const { emit } = fake;
+      store.start();
+      await settled();
+      expect(store.getState().status).toBe('signed-in');
+      emit('TOKEN_REFRESHED', null);
+      expect(store.getState().status).toBe('signed-in');
+      emit('SIGNED_OUT', null);
+      expect(store.getState().status).toBe('signed-out');
+    });
+  });
 });

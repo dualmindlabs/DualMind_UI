@@ -1,13 +1,14 @@
-import { lazy } from 'react';
-
 import { LightRaysPoster } from '@/components/motion/light-rays-poster';
 import { WebGLGate } from '@/components/motion/webgl-gate';
+import { lazyWithRetry } from '@/lib/lazy-with-retry';
 
 // Code-split: the shader loads only when the gate opens (never on phones or reduced motion).
-const LightRays = lazy(() =>
-  import('@/components/vendor/reactbits/light-rays').then(module => ({
-    default: module.LightRays,
-  })),
+const LightRays = lazyWithRetry(
+  () =>
+    import('@/components/vendor/reactbits/light-rays').then(module => ({
+      default: module.LightRays,
+    })),
+  { silent: true },
 );
 
 /**

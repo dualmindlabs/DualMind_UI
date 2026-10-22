@@ -1,13 +1,13 @@
-import { lazy } from 'react';
-
 import { SilkPoster } from '@/components/motion/silk-poster';
 import { WebGLGate } from '@/components/motion/webgl-gate';
+import { lazyWithRetry } from '@/lib/lazy-with-retry';
 
 import type { BrandQuote } from '../content/copy';
 
 // Code-split: the shader loads only when the gate opens (never on phones or with reduced motion).
-const Silk = lazy(() =>
-  import('@/components/vendor/reactbits/silk').then(module => ({ default: module.Silk })),
+const Silk = lazyWithRetry(
+  () => import('@/components/vendor/reactbits/silk').then(module => ({ default: module.Silk })),
+  { silent: true },
 );
 
 /**
