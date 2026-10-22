@@ -123,7 +123,7 @@ export function ModelsControls({
           onValueChange={value => {
             onFiltersChange({ ...filters, provider: value[0] ?? ALL_PROVIDERS });
           }}
-          className="-mx-4 w-auto flex-nowrap gap-2 overflow-x-auto rounded-none border-0 bg-transparent p-0 px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:w-fit sm:max-w-full sm:flex-wrap sm:overflow-visible sm:px-0 [&::-webkit-scrollbar]:hidden"
+          className="-mx-4 w-auto [scrollbar-width:none] flex-nowrap gap-2 overflow-x-auto rounded-none border-0 bg-transparent p-0 px-4 pb-1 sm:mx-0 sm:w-fit sm:max-w-full sm:flex-wrap sm:overflow-visible sm:px-0 [&::-webkit-scrollbar]:hidden"
         >
           {options.map(option => (
             <ToggleGroupItem

@@ -66,7 +66,7 @@ function ListSkeleton({ layout }: { layout: ModelLayout }) {
 function NoMatch({ query, onClear }: { query: string; onClear: () => void }) {
   const trimmed = query.trim();
   return (
-    <div className="surface-duel mesh-duel grid justify-items-center gap-5 px-6 py-14 text-center">
+    <div className="surface-duel grid justify-items-center gap-5 mesh-duel px-6 py-14 text-center">
       <span
         aria-hidden="true"
         className="grid size-14 place-items-center rounded-lg border border-line-strong bg-surface-2 text-fg-soft shadow-raise"

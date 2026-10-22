@@ -81,7 +81,7 @@ function CompareToggle({
   return (
     <label
       className={cn(
-        'group/pin relative z-[3] inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-full border px-3 text-ui-sm font-medium transition-[background-color,border-color,color] duration-(--dur-fast) select-none hit-area',
+        'group/pin hit-area relative z-[3] inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-full border px-3 text-ui-sm font-medium transition-[background-color,border-color,color] duration-(--dur-fast) select-none',
         'has-focus-visible:outline-(length:--focus-width) has-focus-visible:outline-offset-2 has-focus-visible:outline-focus has-focus-visible:outline-solid',
         pinSlot === 0 && 'border-mind-a/55 bg-mind-a-tint text-mind-a',
         pinSlot === 1 && 'border-mind-b/60 bg-mind-b-tint text-mind-b-text',
@@ -193,7 +193,7 @@ export function ModelCard({
     <li className="min-w-0" data-model-id={entry.id}>
       <div
         className={cn(
-          'group/model hover-rise relative flex h-full flex-col gap-5 p-5 transition-[border-color] duration-(--dur-fast) hover:border-line-strong',
+          'group/model relative flex h-full hover-rise flex-col gap-5 p-5 transition-[border-color] duration-(--dur-fast) hover:border-line-strong',
           entry.rank === 1 ? 'surface-a' : 'surface-duel',
           pinOutline(pinSlot),
         )}

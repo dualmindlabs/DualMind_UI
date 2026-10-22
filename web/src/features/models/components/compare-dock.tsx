@@ -92,7 +92,7 @@ export function CompareDock({ models, onClear, onUnpin }: CompareDockProps) {
       aria-label="Model comparison"
       className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6"
     >
-      <div className="surface-float pointer-events-auto mx-auto grid max-w-4xl animate-rise gap-4 p-4 sm:p-5">
+      <div className="pointer-events-auto mx-auto grid max-w-4xl animate-rise gap-4 surface-float p-4 sm:p-5">
         <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-center">
           <Side entry={first} who="a" chance={result?.first} onUnpin={onUnpin} />
           <span
