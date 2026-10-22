@@ -63,6 +63,9 @@ const NOT_FOUND_TARGET = '404.html';
 // files are deleted); a web file that collides with a legacy file still fails the build.
 const replacedByWeb = new Set([]);
 
+// The removed classic arena's page. Kept only so the build can refuse to ship it again.
+const LEGACY_APP_FILE = 'legacy-app.html';
+
 // React Router writes its SPA fallback as __spa-fallback.html when / is prerendered (it would be
 // index.html otherwise). It ends up here either way (served by server/routing.js).
 const SPA_FALLBACK_FILE = '__spa-fallback.html';
