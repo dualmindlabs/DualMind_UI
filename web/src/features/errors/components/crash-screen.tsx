@@ -74,11 +74,11 @@ export function CrashScreen({ error }: { error: unknown }) {
 
   return (
     <main
-      className="mesh-duel relative isolate grid min-h-svh content-center overflow-hidden px-4 py-16 sm:px-6"
+      className="relative isolate grid min-h-svh content-center overflow-hidden mesh-duel px-4 py-16 sm:px-6"
       data-testid="root-error"
       data-kind={kind}
     >
-      <div aria-hidden="true" className="bg-grid pointer-events-none absolute inset-0 -z-10" />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 bg-grid" />
       <div className="mx-auto grid w-full max-w-xl gap-8">
         <a href="/" aria-label="DualMind Arena, home" className="w-fit rounded-sm">
           <Wordmark className="h-4" />

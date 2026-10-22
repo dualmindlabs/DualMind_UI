@@ -70,7 +70,7 @@ function Pane({
         <ModelMark name={who.toUpperCase()} who={who} size="md" />
         <div className="grid gap-0.5">
           <h2 className="text-ui font-semibold text-fg">{title}</h2>
-          <Eyebrow tone="muted" className="normal-case tracking-normal">
+          <Eyebrow tone="muted" className="tracking-normal normal-case">
             {revealed ? name : 'Hidden until you vote'}
           </Eyebrow>
         </div>
@@ -108,9 +108,9 @@ export function NotFoundPage() {
       <main id="main" tabIndex={-1} className="outline-none">
         <section
           aria-labelledby="not-found-title"
-          className="mesh-duel relative isolate overflow-hidden px-4 pt-14 pb-20 text-center sm:px-6 sm:pt-20 sm:pb-28"
+          className="relative isolate overflow-hidden mesh-duel px-4 pt-14 pb-20 text-center sm:px-6 sm:pt-20 sm:pb-28"
         >
-          <div aria-hidden="true" className="bg-grid pointer-events-none absolute inset-0 -z-10" />
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 bg-grid" />
 
           <div className="mx-auto grid max-w-4xl justify-items-center gap-8">
             <p className="kicker">Error 404 · Page not found</p>
@@ -135,29 +135,17 @@ export function NotFoundPage() {
                 className="mx-auto flex max-w-full items-center gap-2.5 rounded-full border border-line bg-surface px-4 py-2 text-ui-sm text-fg-soft shadow-raise"
                 data-testid="not-found-prompt"
               >
-                <span className="eyebrow shrink-0 text-human">Prompt</span>
+                <span className="shrink-0 eyebrow text-human">Prompt</span>
                 <span className="min-w-0 truncate font-mono text-caption text-fg">
                   Where is {missing ?? 'this page'}?
                 </span>
               </p>
 
               <div className="grid gap-4 md:grid-cols-2">
-                <Pane
-                  who="a"
-                  title="Answer A"
-                  name="typo.html"
-                  revealed={revealed}
-                  delay={80}
-                >
+                <Pane who="a" title="Answer A" name="typo.html" revealed={revealed} delay={80}>
                   There is no such page. Check the address for a typo.
                 </Pane>
-                <Pane
-                  who="b"
-                  title="Answer B"
-                  name="moved.html"
-                  revealed={revealed}
-                  delay={200}
-                >
+                <Pane who="b" title="Answer B" name="moved.html" revealed={revealed} delay={200}>
                   It moved, or it never existed. Try the leaderboard.
                 </Pane>
               </div>
@@ -178,10 +166,11 @@ export function NotFoundPage() {
                     className={cn(
                       'bg-surface shadow-raise',
                       option.tone === 'a' &&
-                        'border-mind-a-edge text-mind-a hover:bg-mind-a-tint aria-pressed:glow-a aria-pressed:bg-mind-a-tint',
+                        'border-mind-a-edge text-mind-a hover:bg-mind-a-tint aria-pressed:bg-mind-a-tint aria-pressed:glow-a',
                       option.tone === 'b' &&
-                        'border-mind-b-edge text-mind-b-text hover:bg-mind-b-tint aria-pressed:glow-b aria-pressed:bg-mind-b-tint',
-                      option.tone === 'plain' && 'aria-pressed:border-fg-soft aria-pressed:bg-hover',
+                        'border-mind-b-edge text-mind-b-text hover:bg-mind-b-tint aria-pressed:bg-mind-b-tint aria-pressed:glow-b',
+                      option.tone === 'plain' &&
+                        'aria-pressed:border-fg-soft aria-pressed:bg-hover',
                     )}
                   >
                     {option.label}
@@ -200,7 +189,7 @@ export function NotFoundPage() {
                     <button
                       type="button"
                       onClick={() => setVote(null)}
-                      className="rounded-sm text-mind-a underline underline-offset-4 hit-area"
+                      className="hit-area rounded-sm text-mind-a underline underline-offset-4"
                     >
                       Ask again
                     </button>

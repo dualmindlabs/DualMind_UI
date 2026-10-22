@@ -69,7 +69,9 @@ for (const vp of VIEWPORTS) {
 
       test('404 nested path', async ({ page }) => {
         await page.goto('/leaderboard/nope/deeper');
-        await expect(page.getByTestId('not-found-prompt')).toContainText('/leaderboard/nope/deeper');
+        await expect(page.getByTestId('not-found-prompt')).toContainText(
+          '/leaderboard/nope/deeper',
+        );
         await expect(page.getByTestId('root-error')).toHaveCount(0);
         await capture(page, 'h-404-nested', vp.name, theme);
       });
