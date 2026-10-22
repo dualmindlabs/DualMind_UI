@@ -43,14 +43,14 @@ Other checks from the definition of done:
 | Meta and share card on every route | Fixed in [#82](https://github.com/dualmindlabs/DualMind_UI/pull/82): every page that uses `pageMeta` falls back to `og-default.png` with the large card and `og:locale`; share links keep their Worker-written tags |
 | Favicon and manifest | Fixed in [#82](https://github.com/dualmindlabs/DualMind_UI/pull/82): `favicon.ico`, 192 and 512 px and maskable icons, `site.webmanifest` (fetched with credentials so it passes the waitlist gate). The legacy `manifest.json` (missing icons, linked from nowhere) goes with the S13 cutover |
 | Print styles | Fixed in [#82](https://github.com/dualmindlabs/DualMind_UI/pull/82): no header or footer on any page; a shared battle prints its transcript and address |
-| Focus visible | Checked in [#83](https://github.com/dualmindlabs/DualMind_UI/pull/83): a Tab walk on ten screens fails on any stop without a ring; the code block's ring was cut off by its clipping figure and is now drawn inside |
+| Focus visible | Checked in [#83](https://github.com/dualmindlabs/DualMind_UI/pull/83): a Tab walk on ten screens fails on any stop without a ring; the code block's ring was cut off on three sides by its clipping figure, which now draws the ring itself. Open: in the arena thread the first pane's Copy button, scrolled to the top edge of the thread, loses the top of its ring (`scroll-padding` on the thread scroller, a file the arena lanes hold) |
 | Reduced motion | No gap: CSS and Motion provider, a still version of every effect, screenshots on landing, leaderboard, models, shell, effects, design and the reveal |
 | Empty states | No gap: arena and history, leaderboard and models (empty and no match), settings export, share (private, no answers), palette and model picker |
 | Console errors in CI | No gap: the only console errors in master run 39714203217 are `ERR_INTERNET_DISCONNECTED` from the offline tests; each page spec fails on console errors |
 | F3 manual screen-reader pass | Open: needs a person with VoiceOver or NVDA |
 | F6 per-battle share images | Open: BE-19 (backend) |
 | F11 arena flow | In review: [#77](https://github.com/dualmindlabs/DualMind_UI/pull/77) |
-| B2 developer portal | In review: [#73](https://github.com/dualmindlabs/DualMind_UI/pull/73) |
+| B2 developer portal | Fixed: [#73](https://github.com/dualmindlabs/DualMind_UI/pull/73) (merged during this check; `/developers/` is in the head checks of [#82](https://github.com/dualmindlabs/DualMind_UI/pull/82)) |
 | R1 README screenshots | Open: the arena flow review lane takes them after [#77](https://github.com/dualmindlabs/DualMind_UI/pull/77) |
 | R4 short ROADMAP.md | Open: needs a decision on what to promise in public |
 
