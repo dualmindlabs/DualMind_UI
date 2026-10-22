@@ -1,3 +1,5 @@
+import { Fragment } from 'react';
+
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteHeader } from '@/components/layout/site-header';
 import { SkipLink } from '@/components/layout/skip-link';
@@ -140,7 +142,14 @@ export function DevelopersPage() {
                     <tr key={problem.slug} id={`problem-${problem.slug}`}>
                       <td>
                         <a href={`/problems/${problem.slug}`}>
-                          <code>{problem.slug}</code>
+                          <code className="whitespace-normal!">
+                            {problem.slug.split(/(?<=_)/).map((part, index) => (
+                              <Fragment key={index}>
+                                {index > 0 ? <wbr /> : null}
+                                {part}
+                              </Fragment>
+                            ))}
+                          </code>
                         </a>
                       </td>
                       <td>{problem.status}</td>
