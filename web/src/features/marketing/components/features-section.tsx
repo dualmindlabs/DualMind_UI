@@ -34,7 +34,7 @@ export function FeaturesSection({ stats }: { stats: LiveStatsState }) {
           accent="Judged by people."
           lead="A model’s name can sway a vote before a word is read. The Arena takes the names away, so the only thing left to judge is the answer."
         />
-        <div className="mt-12 grid gap-4 md:mt-16 lg:grid-cols-12 lg:gap-5">
+        <div className="mt-12 grid grid-cols-1 gap-4 md:mt-16 lg:grid-cols-12 lg:gap-5">
           {FEATURES.map(feature => {
             const Icon = icons[feature.id];
             return (

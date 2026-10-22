@@ -24,18 +24,16 @@ export function LeaderCard({ model }: { model: RatedEntry }) {
           #1 right now
         </span>
       </div>
-      <div className="relative mt-8 flex items-center gap-4">
-        <ModelMark name={model.name} who="human" size="lg" />
-        <div className="min-w-0">
-          <h3 className="text-h2 [overflow-wrap:anywhere] text-fg">{model.name}</h3>
-          <p className="mt-2 flex flex-wrap items-center gap-2">
-            <ProviderBadge label={model.providerLabel} via={model.servedBy} />
-          </p>
+      <div className="relative mt-8">
+        <div className="flex items-center gap-3">
+          <ModelMark name={model.name} who="human" size="lg" />
+          <ProviderBadge label={model.providerLabel} via={model.servedBy} />
         </div>
+        <h3 className="mt-5 text-h2 [overflow-wrap:anywhere] text-fg">{model.name}</h3>
       </div>
       <div className="relative mt-10 flex-1">
         <p className="eyebrow text-muted">Elo rating</p>
-        <p className="mt-2 numeric text-[length:clamp(4rem,2.4rem+7vw,7.5rem)] leading-none text-fg">
+        <p className="mt-2 font-display text-[length:clamp(4rem,2.4rem+7vw,7.5rem)] leading-none font-semibold tracking-[-0.05em] text-fg tabular-nums">
           <CountUp to={Math.round(model.elo)} from={1000} duration={1.6} />
         </p>
       </div>

@@ -110,7 +110,7 @@ export function DemoBattle({ demo, rootRef }: DemoBattleProps) {
         </p>
       </div>
 
-      <div className="grid gap-5 p-3 sm:gap-6 sm:p-6">
+      <div className="grid grid-cols-1 gap-5 p-3 sm:gap-6 sm:p-6">
         {state.asked ? <AskedNote prompt={state.asked} /> : null}
 
         <div className="flex items-start gap-3.5">

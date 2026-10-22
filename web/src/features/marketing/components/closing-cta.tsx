@@ -18,7 +18,7 @@ export function ClosingCta() {
   return (
     <section
       aria-labelledby="cta-title"
-      className="relative isolate overflow-hidden border-t border-line py-24 md:py-40"
+      className="relative isolate overflow-hidden border-t border-line py-24 md:py-32"
     >
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute inset-0 bg-grid [mask-image:radial-gradient(ellipse_60%_70%_at_50%_100%,black,transparent)] opacity-60" />

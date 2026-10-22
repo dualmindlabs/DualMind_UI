@@ -11,7 +11,8 @@ import type { LiveStatsState } from '../hooks/use-live-stats';
 import { LiveDot } from './live-dot';
 import { LiveStat } from './live-stat';
 
-const numberClass = 'numeric text-[1.625rem] leading-none text-fg sm:text-stat';
+const numberClass =
+  'font-display font-semibold tabular-nums tracking-[-0.04em] text-[1.625rem] leading-none text-fg sm:text-stat';
 const pendingClass = 'block h-8 w-20 max-w-full animate-pulse rounded-sm bg-surface-3 sm:h-11';
 
 /**
@@ -29,7 +30,7 @@ export function LiveStrip({ stats }: { stats: LiveStatsState }) {
     if (ready) return render(ready);
     if (failed) {
       return (
-        <span className="numeric text-[1.625rem] leading-none text-muted sm:text-stat">
+        <span className="font-display text-[1.625rem] leading-none font-semibold text-muted sm:text-stat">
           <span aria-hidden="true">—</span>
           <span className="sr-only">Unavailable</span>
         </span>

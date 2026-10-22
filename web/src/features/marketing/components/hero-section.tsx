@@ -25,7 +25,7 @@ export function HeroSection({ onAsk, stats }: HeroSectionProps) {
   return (
     <section aria-labelledby="hero-title" className="relative isolate">
       <HeroBackdrop />
-      <div className="mx-auto grid max-w-page items-center gap-14 px-4 pt-28 pb-12 sm:px-6 md:pt-36 lg:grid-cols-[minmax(0,1.04fr)_minmax(0,0.96fr)] lg:gap-10 lg:pb-16 xl:gap-16">
+      <div className="mx-auto grid max-w-page grid-cols-1 items-center gap-14 px-4 pt-28 pb-12 sm:px-6 md:pt-36 lg:grid-cols-[minmax(0,1.04fr)_minmax(0,0.96fr)] lg:gap-10 lg:pb-16 xl:gap-16">
         <div className="flex min-w-0 flex-col items-start">
           <a
             href={LEADERBOARD_HREF}
@@ -72,7 +72,7 @@ export function HeroSection({ onAsk, stats }: HeroSectionProps) {
           />
         </div>
 
-        <DuelPreview className="animate-rise [animation-delay:520ms] lg:justify-self-end" />
+        <DuelPreview className="min-w-0 animate-rise [animation-delay:520ms] lg:justify-self-end" />
       </div>
       <LiveStrip stats={stats} />
     </section>

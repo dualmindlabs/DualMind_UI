@@ -14,7 +14,7 @@ import {
  */
 export function LeaderboardRow({ model }: { model: RatedEntry }) {
   return (
-    <li className="grid grid-cols-[2.5rem_minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 border-b border-line py-4 last:border-b-0 sm:grid-cols-[2.75rem_minmax(0,1fr)_8rem_4.5rem] sm:py-5">
+    <li className="grid flex-1 grid-cols-[2.5rem_minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 border-b border-line py-4 last:border-b-0 sm:grid-cols-[2.75rem_minmax(0,1fr)_8rem_4.5rem] sm:py-5">
       <span className="numeric text-h3 text-muted">
         <span className="sr-only">Rank </span>
         {formatRank(model.rank)}

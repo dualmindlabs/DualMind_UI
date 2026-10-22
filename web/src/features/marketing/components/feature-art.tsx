@@ -62,9 +62,9 @@ function PairingsArt({ stats }: { stats: LiveStatsState }) {
       {rows.map(row => (
         <div
           key={row.label}
-          className="grid grid-cols-[3.5rem_minmax(0,1fr)_1rem_minmax(0,1fr)] items-center gap-2 rounded-lg border border-line bg-surface-2 p-2 shadow-raise"
+          className="grid grid-cols-[4.5rem_minmax(0,1fr)_1rem_minmax(0,1fr)] items-center gap-2 rounded-lg border border-line bg-surface-2 p-2 shadow-raise"
         >
-          <span className="eyebrow text-muted">{row.label}</span>
+          <span className="eyebrow whitespace-nowrap text-muted">{row.label}</span>
           <span className="flex min-w-0 items-center gap-2 rounded-md bg-mind-a-tint p-1.5">
             <ModelMark name={row.a.name} who="a" size="sm" />
             <span className="truncate text-caption font-medium text-fg">{row.a.name}</span>
@@ -121,6 +121,17 @@ function MethodArt() {
         <p className="eyebrow text-muted">Expected score</p>
         <p className="mt-2 font-mono text-ui text-fg sm:text-body">
           E(A) = 1 / (1 + 10<sup className="text-caption">(Rb − Ra) / 400</sup>)
+        </p>
+      </div>
+      <div className="surface-inset px-4 py-3.5">
+        <p className="eyebrow text-muted">Example: A at 1200, B at 1000</p>
+        <div className="mt-3 flex h-2.5 overflow-hidden rounded-full bg-line">
+          <span className="h-full bg-mind-a" style={{ width: '76%' }} />
+          <span className="h-full bg-mind-b" style={{ width: '24%' }} />
+        </div>
+        <p className="mt-2.5 flex justify-between numeric text-caption text-fg-soft">
+          <span>A expected 0.76</span>
+          <span>B expected 0.24</span>
         </p>
       </div>
       <div className="flex flex-wrap gap-2">

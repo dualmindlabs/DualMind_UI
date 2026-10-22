@@ -48,14 +48,14 @@ export function LeaderboardPreview({ stats }: { stats: LiveStatsState }) {
           data-testid="leaderboard-preview"
           data-state={stats.status}
           aria-busy={stats.status === 'loading' ? true : undefined}
-          className="mt-12 grid gap-5 md:mt-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]"
+          className="mt-12 grid grid-cols-1 gap-5 md:mt-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]"
         >
           {leader ? (
             <>
               <LeaderCard model={leader} />
-              <div className="surface-duel px-4 sm:px-6">
+              <div className="surface-duel flex flex-col px-4 sm:px-6">
                 <h3 className="sr-only">Ranks 2 to {rest.length + 1}</h3>
-                <ol>
+                <ol className="flex flex-1 flex-col">
                   {rest.map(model => (
                     <LeaderboardRow key={model.id} model={model} />
                   ))}
