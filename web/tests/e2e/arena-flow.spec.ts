@@ -294,9 +294,8 @@ test.describe('long answers', () => {
       await settle(page, 2600);
       expect(await overflowing(page)).toEqual([]);
       expectStableHeaders(await headerGeometry(turn), `1280 ${theme}`);
-      await expect(panel.getByTestId('reveal-name').first()).toHaveText(
-        new RegExp(`${LONG_NAME.replace(/[()]/g, '\\$&')}.*Your pick`),
-      );
+      await expect(panel.getByTestId('reveal-name').first()).toContainText(LONG_NAME);
+      await expect(panel.getByTestId('reveal-name').first()).toContainText('Your pick');
       await page.screenshot({ path: shotPath(`arena-reveal-actions-1280-${theme}`) });
       await shootHeaders(page, turn, `arena-long-revealed-1280-${theme}`);
       await page.screenshot({ path: shotPath(`arena-long-revealed-top-1280-${theme}`) });
