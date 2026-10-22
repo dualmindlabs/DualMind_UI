@@ -98,6 +98,7 @@ const PHASES: Record<LiveTurn['phase'], string> = {
   awaiting_vote: 'Waiting for your vote',
   voting: 'Sending your vote',
   revealed: 'Revealed',
+  done: 'Done',
   error: 'Failed',
   stopped: 'Stopped',
 };
