@@ -19,9 +19,11 @@ export function OperationCard({ operation }: { operation: ReferenceOperation }) 
         <code className="break-all">{operation.path}</code>
       </h3>
       {operation.summary ? <p className="lead">{operation.summary}</p> : null}
-      {operation.description ? <p>
+      {operation.description ? (
+        <p>
           <Inline text={operation.description} />
-        </p> : null}
+        </p>
+      ) : null}
       <p>
         {operation.requiresAuth ? (
           <>
