@@ -442,9 +442,10 @@ test.describe('the vote dock', () => {
               expect(partBox.x, `${side} ${part} inside its half`).toBeGreaterThanOrEqual(
                 half.x - 0.5,
               );
-              expect(partBox.x + partBox.width, `${side} ${part} inside its half`).toBeLessThanOrEqual(
-                half.x + half.width + 0.5,
-              );
+              expect(
+                partBox.x + partBox.width,
+                `${side} ${part} inside its half`,
+              ).toBeLessThanOrEqual(half.x + half.width + 0.5);
             }
             // The whole label, no ellipsis.
             expect(
