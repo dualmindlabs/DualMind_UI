@@ -4,6 +4,11 @@ name: Redesign screenshots
 # revealed), leaderboard, models, 404 and the design page, at desktop 1440 and phone 390, in dark
 # and light. "before" is the base branch (feat/arena-cutover) with this branch's spec overlaid;
 # "after" is the PR head. Artifacts: shots-before and shots-after (web/shots-out).
+#
+# "before" is a reference only. The specs overlaid on the base include the ones written for the
+# branch's new screens (arena-stage, arena-duel, ...), which by design cannot pass on a base that
+# does not have those screens yet. So a failing "before" run still uploads what it took and warns,
+# without failing the check; "after" (the PR's own screens) still fails the check when it fails.
 on:
   workflow_dispatch:
     inputs:
@@ -78,10 +83,15 @@ jobs:
           done
           exit 1
       - name: Screenshots
+        id: shots
         working-directory: site/web
+        continue-on-error: ${{ matrix.name == 'before' }}
         env:
           SHOT_SPEC: ${{ inputs.spec }}
         run: npx playwright test -c playwright.shots.config.ts $SHOT_SPEC
+      - name: Note a failed reference run
+        if: matrix.name == 'before' && steps.shots.outcome == 'failure'
+        run: echo "::warning title=Screenshots (before)::Some shots failed on the base branch (expected for specs of screens the base does not have yet). The shots that ran are in shots-before."
       - name: Upload
         if: always()
         uses: actions/upload-artifact@v7

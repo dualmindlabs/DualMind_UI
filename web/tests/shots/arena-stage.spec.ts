@@ -5,9 +5,11 @@ import { expect, type Page, test } from '@playwright/test';
 
 import { mockArena } from '../e2e/arena-mocks';
 
-// Arena concept "Stage": the cinematic duel in its moments. Writing, the vote (idle, leaning
-// toward A, B pressed), the reveal mid-flip and settled, history as a slide-over. Desktop 1440
-// and phone 390, dark and light.
+// Arena concept "Stage": the cinematic duel in every moment, for the review sheets. The empty
+// arena, the matchmaking beat, writing (the dock locked), the top of the stage and the vote
+// (idle, leaning toward A, B pressed, and the pill at 360 px), the reveal mid-flip and settled,
+// a failed battle, a backup answer (unrated) and the history slide-over. Desktop 1440 and
+// phone 390, dark and light, motion on.
 
 const OUT = path.resolve(process.cwd(), 'shots-out');
 mkdirSync(OUT, { recursive: true });
@@ -34,7 +36,7 @@ async function shoot(page: Page, name: string, vp: string, theme: string, full =
     content: '[data-slot="site-header"] { position: static !important; }',
   });
   await page.screenshot({
-    path: path.join(OUT, `${name}__${vp}__${theme}.png`),
+    path: path.join(OUT, `stage-${name}__${vp}__${theme}.png`),
     fullPage: full,
   });
   await handle.evaluate(node => (node as Element).remove());
@@ -54,6 +56,14 @@ async function open(page: Page, theme: string, options: Parameters<typeof mockAr
   await expect(page.getByTestId('arena')).toBeVisible();
 }
 
+/** Sends the prompt and waits for both answers: the vote is open. */
+async function toVote(page: Page) {
+  await send(page);
+  const turn = page.getByTestId('live-turn').first();
+  await expect(turn).toHaveAttribute('data-phase', 'awaiting_vote', { timeout: 20_000 });
+  return turn;
+}
+
 for (const vp of VIEWPORTS) {
   for (const theme of THEMES) {
     test.describe(`stage ${vp.name} ${theme}`, () => {
@@ -64,6 +74,20 @@ for (const vp of VIEWPORTS) {
         colorScheme: theme,
       });
 
+      test('empty and matchmaking', async ({ page }) => {
+        await open(page, theme, { battleDelayMs: 6000 });
+        await page.waitForTimeout(600);
+        await shoot(page, '01-empty', vp.name, theme, false);
+        await send(page);
+        // A short beat; the shot is still useful (the locked stage) if it has already passed.
+        await page
+          .getByTestId('matchmaking')
+          .waitFor({ timeout: 3000 })
+          .catch(() => undefined);
+        await page.waitForTimeout(500);
+        await shoot(page, '02-matchmaking', vp.name, theme, false);
+      });
+
       test('writing', async ({ page }) => {
         await open(page, theme, { battleDelayMs: 5000 });
         await send(page);
@@ -71,25 +95,18 @@ for (const vp of VIEWPORTS) {
         const turn = page.getByTestId('live-turn').first();
         await expect(turn).toHaveAttribute('data-phase', 'answering', { timeout: 15_000 });
         await page.waitForTimeout(500);
-        await shoot(page, 'stage-1-writing', vp.name, theme, false);
+        await shoot(page, '03-writing', vp.name, theme, false);
       });
 
       test('vote then reveal', async ({ page }) => {
         await open(page, theme);
-        await send(page);
-        const turn = page.getByTestId('live-turn').first();
-        await expect(turn).toHaveAttribute('data-phase', 'awaiting_vote', { timeout: 20_000 });
+        const turn = await toVote(page);
         await page.waitForTimeout(900);
-        await page.evaluate(() => document.querySelector('main')?.scrollTo(0, 0));
-        await page
-          .getByTestId('live-turn')
-          .first()
-          .evaluate(node => node.scrollIntoView({ block: 'start' }));
+        await turn.evaluate(node => node.scrollIntoView({ block: 'start' }));
         await page.evaluate(() => window.scrollTo(0, 0));
-        await shoot(page, 'stage-0-top', vp.name, theme, false);
-        await page.waitForTimeout(100);
+        await shoot(page, '04-stage-top', vp.name, theme, false);
         await turn.getByTestId('vote-bar').scrollIntoViewIfNeeded();
-        await shoot(page, 'stage-2-vote', vp.name, theme, false);
+        await shoot(page, '05-vote', vp.name, theme, false);
         const a = turn.getByRole('button', { name: /A is better/ });
         const b = turn.getByRole('button', { name: /B is better/ });
         if (!vp.phone) {
@@ -99,31 +116,55 @@ for (const vp of VIEWPORTS) {
             content: '[data-slot="site-header"] { position: static !important; }',
           });
           await page.screenshot({
-            path: path.join(OUT, `stage-3-vote-leans-a__${vp.name}__${theme}.png`),
+            path: path.join(OUT, `stage-06-vote-leans-a__${vp.name}__${theme}.png`),
           });
           await handle.evaluate(node => (node as Element).remove());
         }
         await b.click();
         await expect(turn).toHaveAttribute('data-phase', 'revealed');
         await page.waitForTimeout(350);
-        await shoot(page, 'stage-4-flip', vp.name, theme, false);
+        await shoot(page, '07-flip', vp.name, theme, false);
         await page.waitForTimeout(2200);
-        await shoot(page, 'stage-5-reveal-top', vp.name, theme, false);
-        await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+        await shoot(page, '08-reveal-top', vp.name, theme, false);
         await turn.getByTestId('reveal-panel').scrollIntoViewIfNeeded();
         await page.waitForTimeout(500);
-        await shoot(page, 'stage-6-reveal-verdict', vp.name, theme, false);
+        await shoot(page, '09-reveal-verdict', vp.name, theme, false);
+      });
+
+      test('failed battle', async ({ page }) => {
+        await open(page, theme, { battle: 'unavailable' });
+        await send(page);
+        await expect(page.getByRole('alert').first()).toBeVisible({ timeout: 20_000 });
+        await shoot(page, '10-failed', vp.name, theme, false);
+      });
+
+      test('backup answer, unrated', async ({ page }) => {
+        await open(page, theme, { battle: 'fallback' });
+        await send(page);
+        const note = page.getByTestId('unrated-note');
+        await expect(note).toBeVisible({ timeout: 20_000 });
+        await note.scrollIntoViewIfNeeded();
+        await shoot(page, '11-unrated', vp.name, theme, false);
       });
 
       test('history slide-over', async ({ page }) => {
         await open(page, theme);
-        await send(page);
-        const turn = page.getByTestId('live-turn').first();
-        await expect(turn).toHaveAttribute('data-phase', 'awaiting_vote', { timeout: 20_000 });
+        await toVote(page);
         await page.getByRole('button', { name: 'Open the history' }).click();
         await expect(page.getByRole('dialog', { name: 'History' })).toBeVisible();
-        await shoot(page, 'stage-7-history', vp.name, theme, false);
+        await shoot(page, '12-history', vp.name, theme, false);
       });
+
+      if (vp.phone) {
+        test('the vote pill at 360 px', async ({ page }) => {
+          await page.setViewportSize({ width: 360, height: 740 });
+          await open(page, theme);
+          const turn = await toVote(page);
+          await page.waitForTimeout(900);
+          await turn.getByTestId('vote-bar').scrollIntoViewIfNeeded();
+          await shoot(page, '05-vote-360', vp.name, theme, false);
+        });
+      }
     });
   }
 }
