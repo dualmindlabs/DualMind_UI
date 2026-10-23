@@ -6,10 +6,10 @@ import { expect, type Page, test } from '@playwright/test';
 import { mockArena } from '../e2e/arena-mocks';
 
 // Arena concept "Stage": the cinematic duel in every moment, for the review sheets. The empty
-// arena, the matchmaking beat, writing (the dock locked), the top of the stage and the vote
-// (idle, leaning toward A, B pressed, and the pill at 360 px), the reveal mid-flip and settled,
-// a failed battle, a backup answer (unrated) and the history slide-over. Desktop 1440 and
-// phone 390, dark and light, motion on.
+// arena, the matchmaking beat, a follow-up waiting and writing (the dock locked), the top of the
+// stage and the vote (idle, leaning toward A, B pressed, and the pill at 360 px), the reveal
+// mid-flip and settled, a failed battle, a backup answer (unrated) and the history slide-over.
+// Desktop 1440 and phone 390, dark and light, motion on.
 
 const OUT = path.resolve(process.cwd(), 'shots-out');
 mkdirSync(OUT, { recursive: true });
@@ -39,6 +39,20 @@ async function shoot(page: Page, name: string, vp: string, theme: string, full =
     path: path.join(OUT, `stage-${name}__${vp}__${theme}.png`),
     fullPage: full,
   });
+  await handle.evaluate(node => (node as Element).remove());
+}
+
+/**
+ * A shot without the settle wait, for a moment that lasts about a second (the answers being
+ * written out, REVEAL_MS in use-battle.ts).
+ */
+async function quickShot(page: Page, name: string, vp: string, theme: string) {
+  await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+  await page.mouse.move(0, 0);
+  const handle = await page.addStyleTag({
+    content: '[data-slot="site-header"] { position: static !important; }',
+  });
+  await page.screenshot({ path: path.join(OUT, `stage-${name}__${vp}__${theme}.png`) });
   await handle.evaluate(node => (node as Element).remove());
 }
 
@@ -88,14 +102,23 @@ for (const vp of VIEWPORTS) {
         await shoot(page, '02-matchmaking', vp.name, theme, false);
       });
 
-      test('writing', async ({ page }) => {
-        await open(page, theme, { battleDelayMs: 5000 });
-        await send(page);
-        await expect(page.getByTestId('vote-bar-locked')).toBeVisible();
-        const turn = page.getByTestId('live-turn').first();
-        await expect(turn).toHaveAttribute('data-phase', 'answering', { timeout: 15_000 });
-        await page.waitForTimeout(500);
-        await shoot(page, '03-writing', vp.name, theme, false);
+      test('a follow-up: waiting, then writing', async ({ page }) => {
+        await open(page, theme, { battleDelayMs: 4000 });
+        const first = await toVote(page);
+        await first.getByRole('button', { name: /B is better/ }).click();
+        await expect(first).toHaveAttribute('data-phase', 'revealed');
+        await page.waitForTimeout(1500);
+        const prompt = page.getByRole('textbox', { name: 'Your prompt' });
+        await prompt.fill('Now add a stampede guard');
+        await prompt.press('Enter');
+        const second = page.getByTestId('live-turn').nth(1);
+        await expect(second.getByTestId('vote-bar-locked')).toBeVisible();
+        await expect(second).toHaveAttribute('data-phase', 'submitting');
+        await page.waitForTimeout(400);
+        await quickShot(page, '03-waiting', vp.name, theme);
+        await expect(second).toHaveAttribute('data-phase', 'answering', { timeout: 15_000 });
+        await page.waitForTimeout(350);
+        await quickShot(page, '04-writing', vp.name, theme);
       });
 
       test('vote then reveal', async ({ page }) => {
@@ -104,9 +127,9 @@ for (const vp of VIEWPORTS) {
         await page.waitForTimeout(900);
         await turn.evaluate(node => node.scrollIntoView({ block: 'start' }));
         await page.evaluate(() => window.scrollTo(0, 0));
-        await shoot(page, '04-stage-top', vp.name, theme, false);
+        await shoot(page, '05-stage-top', vp.name, theme, false);
         await turn.getByTestId('vote-bar').scrollIntoViewIfNeeded();
-        await shoot(page, '05-vote', vp.name, theme, false);
+        await shoot(page, '06-vote', vp.name, theme, false);
         const a = turn.getByRole('button', { name: /A is better/ });
         const b = turn.getByRole('button', { name: /B is better/ });
         if (!vp.phone) {
@@ -116,26 +139,26 @@ for (const vp of VIEWPORTS) {
             content: '[data-slot="site-header"] { position: static !important; }',
           });
           await page.screenshot({
-            path: path.join(OUT, `stage-06-vote-leans-a__${vp.name}__${theme}.png`),
+            path: path.join(OUT, `stage-07-vote-leans-a__${vp.name}__${theme}.png`),
           });
           await handle.evaluate(node => (node as Element).remove());
         }
         await b.click();
         await expect(turn).toHaveAttribute('data-phase', 'revealed');
         await page.waitForTimeout(350);
-        await shoot(page, '07-flip', vp.name, theme, false);
+        await shoot(page, '08-flip', vp.name, theme, false);
         await page.waitForTimeout(2200);
-        await shoot(page, '08-reveal-top', vp.name, theme, false);
+        await shoot(page, '09-reveal-top', vp.name, theme, false);
         await turn.getByTestId('reveal-panel').scrollIntoViewIfNeeded();
         await page.waitForTimeout(500);
-        await shoot(page, '09-reveal-verdict', vp.name, theme, false);
+        await shoot(page, '10-reveal-verdict', vp.name, theme, false);
       });
 
       test('failed battle', async ({ page }) => {
         await open(page, theme, { battle: 'unavailable' });
         await send(page);
         await expect(page.getByRole('alert').first()).toBeVisible({ timeout: 20_000 });
-        await shoot(page, '10-failed', vp.name, theme, false);
+        await shoot(page, '11-failed', vp.name, theme, false);
       });
 
       test('backup answer, unrated', async ({ page }) => {
@@ -144,7 +167,7 @@ for (const vp of VIEWPORTS) {
         const note = page.getByTestId('unrated-note');
         await expect(note).toBeVisible({ timeout: 20_000 });
         await note.scrollIntoViewIfNeeded();
-        await shoot(page, '11-unrated', vp.name, theme, false);
+        await shoot(page, '12-unrated', vp.name, theme, false);
       });
 
       test('history slide-over', async ({ page }) => {
@@ -152,7 +175,7 @@ for (const vp of VIEWPORTS) {
         await toVote(page);
         await page.getByRole('button', { name: 'Open the history' }).click();
         await expect(page.getByRole('dialog', { name: 'History' })).toBeVisible();
-        await shoot(page, '12-history', vp.name, theme, false);
+        await shoot(page, '13-history', vp.name, theme, false);
       });
 
       if (vp.phone) {
@@ -162,7 +185,7 @@ for (const vp of VIEWPORTS) {
           const turn = await toVote(page);
           await page.waitForTimeout(900);
           await turn.getByTestId('vote-bar').scrollIntoViewIfNeeded();
-          await shoot(page, '05-vote-360', vp.name, theme, false);
+          await shoot(page, '06-vote-360', vp.name, theme, false);
         });
       }
     });
