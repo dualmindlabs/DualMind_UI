@@ -24,9 +24,9 @@ export interface ThreadItemProps {
 
 /**
  * One thread in the history: a real link (`/?thread=<id>`, so it opens in a new tab too) and a
- * menu with rename, share and delete. The open thread is marked with `aria-current`. In the wide
- * panel the time sits at the end of the row (and gives way to the menu on hover); in the drawer
- * it sits under the title (UI audit P2-9).
+ * menu with rename, share and delete. The open thread is marked with `aria-current`. From `lg`
+ * (the desktop slide-over) the time sits at the end of the row and gives way to the menu on
+ * hover; below `lg` (the phone drawer) it sits under the title (UI audit P2-9).
  */
 export function ThreadItem({
   thread,

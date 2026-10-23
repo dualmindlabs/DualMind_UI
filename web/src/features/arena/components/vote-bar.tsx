@@ -21,17 +21,20 @@ const BY_CHOICE = Object.fromEntries(VOTE_OPTIONS.map(option => [option.choice, 
   (typeof VOTE_OPTIONS)[number]
 >;
 
+// Phones: the letter over the words, centred in each half, with the inner padding keeping both
+// clear of the VS medallion, even as it leans (e2e checks 360 and 390 px). From `sm`: one row,
+// from the outer edge.
 const SIDE = {
   left: {
     who: 'a',
     fill: 'bg-mind-a',
-    shape: 'justify-start rounded-s-full ps-5 sm:ps-8',
+    shape: 'rounded-s-full ps-3 pe-7 sm:justify-start sm:ps-8 sm:pe-0',
     fillOrigin: 'origin-left',
   },
   right: {
     who: 'b',
     fill: 'bg-mind-b-text',
-    shape: 'justify-end rounded-e-full pe-5 sm:pe-8',
+    shape: 'rounded-e-full ps-7 pe-3 sm:justify-end sm:ps-0 sm:pe-8',
     fillOrigin: 'origin-right',
   },
 } as const;
@@ -46,6 +49,8 @@ export interface VoteBarProps {
   /** Side by side: voting is optional, and the bar says so. */
   optional?: boolean;
   error?: string | null;
+  /** The single-key shortcuts are on: show the keys on the buttons and the hint under them. */
+  keys?: boolean;
   className?: string;
 }
 
@@ -54,12 +59,20 @@ export interface VoteBarProps {
  * Mind A's cyan, B on the right in Mind B's terracotta, a VS medallion between them that leans
  * toward the side under the pointer or focus. A side fills with its colour from the outer edge
  * on hover and floods on the press (transform and opacity only); the other side steps back.
- * Tie and Both are bad are small and quiet under it. Keys 1 to 4 outside text fields.
+ * Tie and Both are bad are small and quiet under it. Keys 1 to 4 outside text fields, with a
+ * quiet hint under the pills for keyboard users (wide screens with a fine pointer only).
  *
  * Buttons use aria-disabled while a vote is sent, so focus never falls out of the dock. 80px
  * tall (96 on touch screens); phones get a short buzz where the browser allows it.
  */
-export function VoteBar({ onVote, chosen, optional = false, error, className }: VoteBarProps) {
+export function VoteBar({
+  onVote,
+  chosen,
+  optional = false,
+  error,
+  keys = true,
+  className,
+}: VoteBarProps) {
   const locked = chosen !== null;
   const group = useRef<HTMLDivElement>(null);
 
@@ -95,11 +108,12 @@ export function VoteBar({ onVote, chosen, optional = false, error, className }: 
         type="button"
         aria-pressed={chosen === choice}
         aria-disabled={locked || undefined}
-        aria-keyshortcuts={option.key}
+        aria-keyshortcuts={keys ? option.key : undefined}
         data-side={look.who}
         onClick={() => press(choice)}
         className={cn(
           'group/vote relative isolate flex h-20 min-w-0 cursor-pointer items-center gap-3 overflow-hidden text-lead font-semibold tracking-tight text-fg pointer-coarse:h-24',
+          'max-sm:flex-col max-sm:justify-center max-sm:gap-1',
           PRESSABLE,
           look.shape,
           'aria-disabled:cursor-default aria-disabled:not-aria-pressed:opacity-40 aria-pressed:text-on-accent',
@@ -119,15 +133,19 @@ export function VoteBar({ onVote, chosen, optional = false, error, className }: 
           who={look.who}
           letterOnly
           size="md"
-          className="size-9 group-aria-pressed/vote:border-on-accent/50 group-aria-pressed/vote:bg-transparent group-aria-pressed/vote:text-on-accent"
+          className="size-9 group-aria-pressed/vote:border-on-accent/50 group-aria-pressed/vote:bg-transparent group-aria-pressed/vote:text-on-accent max-sm:size-7"
         />
-        <span className="truncate">{option.label}</span>
-        <Kbd
-          aria-hidden="true"
-          className="hidden transition-colors group-aria-pressed/vote:border-on-accent/40 group-aria-pressed/vote:bg-transparent group-aria-pressed/vote:text-on-accent sm:inline-flex pointer-coarse:hidden"
-        >
-          {option.key}
-        </Kbd>
+        <span data-testid="vote-label" className="max-w-full truncate">
+          {option.label}
+        </span>
+        {keys ? (
+          <Kbd
+            aria-hidden="true"
+            className="hidden transition-colors group-aria-pressed/vote:border-on-accent/40 group-aria-pressed/vote:bg-transparent group-aria-pressed/vote:text-on-accent sm:inline-flex pointer-coarse:hidden"
+          >
+            {option.key}
+          </Kbd>
+        ) : null}
       </button>
     );
   };
@@ -140,17 +158,19 @@ export function VoteBar({ onVote, chosen, optional = false, error, className }: 
         type="button"
         aria-pressed={chosen === choice}
         aria-disabled={locked || undefined}
-        aria-keyshortcuts={option.key}
+        aria-keyshortcuts={keys ? option.key : undefined}
         onClick={() => press(choice)}
         className={cn(SECONDARY, PRESSABLE, 'cursor-pointer')}
       >
         {option.label}
-        <Kbd
-          aria-hidden="true"
-          className="hidden group-aria-pressed/vote:border-bg/40 group-aria-pressed/vote:bg-transparent group-aria-pressed/vote:text-bg sm:inline-flex pointer-coarse:hidden"
-        >
-          {option.key}
-        </Kbd>
+        {keys ? (
+          <Kbd
+            aria-hidden="true"
+            className="hidden group-aria-pressed/vote:border-bg/40 group-aria-pressed/vote:bg-transparent group-aria-pressed/vote:text-bg sm:inline-flex pointer-coarse:hidden"
+          >
+            {option.key}
+          </Kbd>
+        ) : null}
       </button>
     );
   };
@@ -178,8 +198,9 @@ export function VoteBar({ onVote, chosen, optional = false, error, className }: 
           {side('right')}
           <span
             aria-hidden="true"
+            data-testid="vote-vs"
             className={cn(
-              'pointer-events-none absolute top-1/2 left-1/2 z-10 grid size-12 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-line-strong bg-bg font-mono text-caption font-medium text-fg-soft shadow-raise transition-transform duration-(--dur-base) ease-out-expo',
+              'pointer-events-none absolute top-1/2 left-1/2 z-10 grid size-12 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-line-strong bg-bg font-mono text-caption font-medium text-fg-soft shadow-raise transition-transform duration-(--dur-base) ease-out-expo max-sm:size-10',
               'group-has-[[data-side=a]:hover]/tug:-translate-x-[calc(50%+14px)] group-has-[[data-side=b]:hover]/tug:-translate-x-[calc(50%-14px)]',
               'group-has-[[data-side=a]:focus-visible]/tug:-translate-x-[calc(50%+14px)] group-has-[[data-side=b]:focus-visible]/tug:-translate-x-[calc(50%-14px)]',
             )}
@@ -192,12 +213,43 @@ export function VoteBar({ onVote, chosen, optional = false, error, className }: 
           {small('both-bad')}
         </div>
       </div>
+      {keys ? <KeyHint /> : null}
       {error ? (
         <p role="alert" className="text-ui-sm text-bad">
           {error}
         </p>
       ) : null}
     </div>
+  );
+}
+
+/**
+ * The keys, said once under the pills: 1 to 4 vote, `[` opens the history (a slide-over only, so
+ * the key is worth knowing) and `?` lists the rest. Wide screens with a fine pointer only; the
+ * buttons carry `aria-keyshortcuts`, so this line is hidden from screen readers.
+ */
+function KeyHint() {
+  return (
+    <p
+      aria-hidden="true"
+      data-testid="vote-keys"
+      className="hidden items-center justify-center gap-4 text-caption text-muted md:flex pointer-coarse:hidden"
+    >
+      <span className="inline-flex items-center gap-1.5">
+        <Kbd className="h-5 min-w-5">1</Kbd>
+        to
+        <Kbd className="h-5 min-w-5">4</Kbd>
+        to vote
+      </span>
+      <span className="inline-flex items-center gap-1.5">
+        <Kbd className="h-5 min-w-5">[</Kbd>
+        history
+      </span>
+      <span className="inline-flex items-center gap-1.5">
+        <Kbd className="h-5 min-w-5">?</Kbd>
+        shortcuts
+      </span>
+    </p>
   );
 }
 
