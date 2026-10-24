@@ -318,8 +318,8 @@ test.describe('a crash inside the arena', () => {
     await expect(panel).toBeVisible();
     await expect(panel).toContainText('Something broke in the arena.');
     await expect(page.getByTestId('root-error')).toHaveCount(0);
-    // The rest of the arena is still there.
-    await expect(page.getByRole('navigation', { name: 'Your threads' })).toBeVisible();
+    // The rest of the arena is still there: the header, with the history one press away.
+    await expect(page.getByRole('button', { name: 'Open the history' })).toBeVisible();
     await page.evaluate(() => ((window as unknown as { dmCrash: boolean }).dmCrash = false));
     await panel.getByRole('button', { name: 'Try again' }).click();
     await expect(page.getByTestId('arena-error')).toHaveCount(0);

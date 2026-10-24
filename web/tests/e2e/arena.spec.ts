@@ -174,11 +174,15 @@ test.describe('threads', () => {
     const link = first.getByRole('link', { name: /Python docs/ });
     await expect(link).toHaveAttribute('rel', 'noopener noreferrer nofollow');
     await expect(link).toContainText('docs.python.org');
-    // The history marks the open thread.
+    // The history is a slide-over on the battle stage, and it marks the open thread.
+    await page.getByRole('button', { name: 'Open the history' }).click();
+    await expect(page.getByRole('dialog', { name: 'History' })).toBeVisible();
     await expect(page.getByRole('link', { name: /Explain recursion/ }).first()).toHaveAttribute(
       'aria-current',
       'page',
     );
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog', { name: 'History' })).toBeHidden();
     await expect(page).toHaveTitle('Explain recursion to a ten-year-old · DualMind Arena');
     expect(problems).toEqual([]);
   });
@@ -323,10 +327,12 @@ test.describe('screenshots', () => {
         await page.screenshot({ path: shotPath(`arena-thread-${viewport.label}-${theme}`) });
 
         if (viewport.label === 'desktop') {
+          // On the battle stage `[` opens the history as a slide-over.
           await page.keyboard.press('[');
+          await expect(page.getByRole('dialog', { name: 'History' })).toBeVisible();
           await settle(page, 500);
-          await page.screenshot({ path: shotPath(`arena-thread-rail-${theme}`) });
-          await page.keyboard.press('[');
+          await page.screenshot({ path: shotPath(`arena-thread-history-${theme}`) });
+          await page.keyboard.press('Escape');
           // The model picker's screenshots are in arena-polish.spec.ts.
         } else {
           await page.getByRole('button', { name: 'Open the history' }).click();

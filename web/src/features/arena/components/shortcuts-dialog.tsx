@@ -1,3 +1,4 @@
+import { Keyboard } from 'lucide-react';
 import { useRef } from 'react';
 
 import {
@@ -43,7 +44,10 @@ function ShortcutRow({
       data-testid="shortcut-row"
       data-off={off ? '' : undefined}
       className={cn(
-        'flex min-h-9 items-center justify-between gap-4 border-b border-line py-1.5 last:border-b-0',
+        'flex min-h-10 items-center justify-between gap-4 border-b border-line py-1.5 pl-3 last:border-b-0',
+        // The two vote keys carry their mind's colour on the left edge (and the letter in words).
+        entry.description === 'A is better' && 'border-l-2 border-l-mind-a',
+        entry.description === 'B is better' && 'border-l-2 border-l-mind-b',
         off && 'opacity-60',
       )}
     >
@@ -91,23 +95,35 @@ export function ShortcutsDialog() {
     >
       <DialogContent
         data-testid="shortcuts-dialog"
-        className="max-w-lg gap-4"
+        className="max-w-2xl gap-5"
         initialFocus={title}
         finalFocus={() => (shortcutsReturnFocus?.isConnected ? shortcutsReturnFocus : true)}
       >
-        <DialogHeader>
+        <DialogHeader className="grid-cols-[auto_1fr] items-center gap-x-4 gap-y-1 text-left">
+          <span
+            aria-hidden="true"
+            className="row-span-2 grid size-12 place-items-center rounded-lg border border-line-strong bg-surface-2 text-fg shadow-raise"
+          >
+            <Keyboard className="size-5" strokeWidth={1.5} />
+          </span>
           <DialogTitle ref={title} tabIndex={-1} className="outline-none">
             Keyboard shortcuts
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="col-start-2">
             Battle, vote and move around without the mouse. Single keys work when you are not typing
             in a field.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4">
+        <div className="grid gap-x-8 gap-y-5 sm:grid-cols-2">
           {SHORTCUT_GROUPS.map(group => (
-            <section key={group.heading} className="grid gap-1">
-              <h3 className="eyebrow text-muted">{group.heading}</h3>
+            <section
+              key={group.heading}
+              className={cn(
+                'grid content-start gap-1',
+                group.heading === 'Anywhere' && 'sm:row-span-2',
+              )}
+            >
+              <h3 className="eyebrow text-fg-soft">{group.heading}</h3>
               <dl className="grid">
                 {group.entries.map(entry => (
                   <ShortcutRow
