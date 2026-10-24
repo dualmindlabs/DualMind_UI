@@ -10,13 +10,10 @@ export function PaneMetrics({ items }: { items: readonly PaneMetric[] }) {
   return (
     <dl
       data-testid="pane-meta"
-      className="mt-auto flex flex-wrap gap-2 border-t border-line/70 px-3 py-2.5 font-mono text-caption sm:px-4"
+      className="relative mt-auto flex flex-wrap gap-x-5 gap-y-1 px-5 pt-1 pb-6 font-mono text-caption sm:px-8"
     >
       {items.map(([term, value]) => (
-        <div
-          key={term}
-          className="flex items-baseline gap-1.5 rounded-sm border border-line bg-bg-deep/60 px-2 py-1"
-        >
+        <div key={term} className="flex items-baseline gap-1.5">
           <dt className="text-muted">{term}</dt>
           <dd className="font-medium text-fg tabular-nums">{value}</dd>
         </div>

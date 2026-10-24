@@ -25,6 +25,14 @@ function modelLabel(answer: LiveAnswer | null): string | null {
   return resolveDisplayName(model.name, model.displayName);
 }
 
+/**
+ * The vote's dock: pinned to the foot of the stage, so the verdict is always in reach. The answers
+ * fade out over its top padding only; from the question down it is solid, so the question and
+ * the pills never sit on top of the text scrolling under them.
+ */
+const DOCK =
+  'sticky bottom-0 z-10 -mx-4 bg-[linear-gradient(to_top,var(--bg-deep)_calc(100%_-_2.5rem),transparent)] px-4 pt-10 pb-4 sm:-mx-6 sm:px-6';
+
 const WAITING_LINES = ['w-11/12', 'w-full', 'w-4/5', 'w-10/12', 'w-2/3'] as const;
 
 /** Before the first words: staggered skeleton lines (80 ms apart) under a quiet status. */
@@ -114,7 +122,7 @@ export function LiveTurnView({
   latest?: boolean;
 }) {
   const promptId = useId();
-  const { battle, newBattle } = useArena();
+  const { battle, newBattle, shortcutsEnabled } = useArena();
   const optional = turn.mode === 'side';
   const showVote =
     turn.mode !== 'direct' && (turn.phase === 'awaiting_vote' || turn.phase === 'voting');
@@ -124,7 +132,7 @@ export function LiveTurnView({
   return (
     <article
       aria-labelledby={promptId}
-      className="grid gap-4"
+      className="grid grid-cols-[minmax(0,1fr)] gap-6 sm:gap-8"
       data-testid="live-turn"
       data-phase={turn.phase}
     >
@@ -157,16 +165,20 @@ export function LiveTurnView({
         <UnratedNotice>{UNRATED_NOTES[turn.unrated]}</UnratedNotice>
       ) : null}
       {turn.mode === 'battle' && (turn.phase === 'submitting' || turn.phase === 'answering') ? (
-        <VoteBarLocked className="sticky bottom-2 z-10" />
+        <div className={DOCK}>
+          <VoteBarLocked />
+        </div>
       ) : null}
       {showVote ? (
-        <VoteBar
-          className="sticky bottom-2 z-10"
-          optional={optional}
-          chosen={turn.phase === 'voting' ? turn.vote : null}
-          error={turn.error}
-          onVote={choice => battle.vote(turn.id, choice)}
-        />
+        <div className={DOCK}>
+          <VoteBar
+            optional={optional}
+            chosen={turn.phase === 'voting' ? turn.vote : null}
+            error={turn.error}
+            keys={shortcutsEnabled}
+            onVote={choice => battle.vote(turn.id, choice)}
+          />
+        </div>
       ) : null}
       {turn.phase === 'revealed' && turn.vote && latest ? <RevealPanel turn={turn} /> : null}
       {turn.phase === 'revealed' && turn.vote && !latest ? (

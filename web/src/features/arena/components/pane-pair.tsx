@@ -63,7 +63,7 @@ export function PanePair({ a, b, label, writing, className }: PanePairProps) {
   ] as const;
 
   return (
-    <div className={cn('grid gap-3', className)}>
+    <div className={cn('relative grid gap-4', className)}>
       <div
         role="group"
         aria-label={label}
@@ -109,6 +109,16 @@ export function PanePair({ a, b, label, writing, className }: PanePairProps) {
           Compare
         </button>
       </div>
+      <span
+        aria-hidden="true"
+        data-testid="stage-vs"
+        className={cn(
+          'pointer-events-none absolute top-9 left-1/2 z-10 hidden size-11 -translate-x-1/2 place-items-center rounded-full border border-line-strong bg-bg font-mono text-caption font-medium text-fg-soft shadow-raise md:grid',
+          (writing?.a || writing?.b) && 'motion-safe:animate-pulse',
+        )}
+      >
+        VS
+      </span>
       <div
         ref={scroller}
         onScroll={onScroll}
@@ -120,7 +130,7 @@ export function PanePair({ a, b, label, writing, className }: PanePairProps) {
           // Compare: both answers one under the other, folded.
           comparing && 'max-md:snap-none max-md:flex-col max-md:overflow-visible',
           // From md: a plain two-column grid.
-          'md:grid md:grid-cols-2 md:gap-4 md:overflow-visible md:*:w-auto',
+          'md:grid md:grid-cols-2 md:gap-6 md:overflow-visible md:*:w-auto lg:gap-10',
         )}
       >
         {slots.map(slot => (

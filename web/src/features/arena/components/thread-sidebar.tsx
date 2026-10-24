@@ -37,10 +37,10 @@ function RailButton({
 }
 
 /**
- * The thread history. In the empty arena on wide screens: a 272px panel that collapses to a 64px
- * rail (`[`). Once a battle is on (and below `lg`): a slide-over from the left, opened from the
- * header or with `[`, so the stage keeps the whole width. The arena shell tells it which with
- * `wide` (see arena-app.tsx).
+ * The thread history. With `wide` (from the arena shell, see arena-app.tsx) it is a 272px panel
+ * that collapses to a 64px rail (`[`); otherwise a slide-over from the left, opened from the
+ * header or with `[`. The Stage shell never docks it: the history is a slide-over on every screen
+ * and in every stage, so the empty arena and the battle stage keep the whole width.
  */
 export function ThreadSidebar() {
   const { wide, sidebarCollapsed, setSidebarCollapsed, newBattle, historyOpen, setHistoryOpen } =

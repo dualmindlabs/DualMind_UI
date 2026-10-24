@@ -39,6 +39,22 @@ async function openArena(page: Page, path = '/') {
   await expect(page.getByTestId('arena')).toBeVisible();
 }
 
+/**
+ * The history is a slide-over on every screen (Stage): open it from the header button, or with
+ * `[` from the page (not from a text field), and return the dialog.
+ */
+async function openHistory(page: Page, how: 'button' | 'key' = 'button') {
+  if (how === 'key') {
+    await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+    await page.keyboard.press('[');
+  } else {
+    await page.getByRole('button', { name: 'Open the history' }).click();
+  }
+  const drawer = page.getByRole('dialog', { name: 'History' });
+  await expect(drawer).toBeVisible();
+  return drawer;
+}
+
 /** Page-level horizontal overflow: scroll containers (the phone pane row) clip their content. */
 async function overflowing(page: Page) {
   return page.evaluate(() => {
@@ -105,7 +121,10 @@ test.describe('history', () => {
   test('groups threads by day, searches, renames and deletes', async ({ page }) => {
     const state = await mockArena(page);
     await openArena(page);
-    const history = page.getByRole('navigation', { name: 'Your threads' });
+    // Nothing docked beside the empty arena: the history waits behind `[`.
+    await expect(page.getByRole('navigation', { name: 'Your threads' })).toHaveCount(0);
+    const drawer = await openHistory(page, 'key');
+    const history = drawer.getByRole('navigation', { name: 'Your threads' });
     for (const group of ['Today', 'Yesterday', 'Last 7 days', 'Older']) {
       await expect(history.getByRole('heading', { name: group })).toBeVisible();
     }
@@ -140,13 +159,17 @@ test.describe('history', () => {
   test('an empty history and a failed one have their own states', async ({ page }) => {
     await mockArena(page, { threads: [] });
     await openArena(page);
-    await expect(page.getByText('No threads yet.')).toBeVisible();
+    const drawer = await openHistory(page);
+    await expect(drawer.getByText('No threads yet.')).toBeVisible();
   });
 
   test('a failed history offers a retry', async ({ page }) => {
     await mockArena(page, { failThreads: true });
     await openArena(page);
-    await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible({ timeout: 20_000 });
+    const drawer = await openHistory(page);
+    await expect(drawer.getByRole('button', { name: 'Try again' })).toBeVisible({
+      timeout: 20_000,
+    });
   });
 });
 
@@ -190,8 +213,11 @@ test.describe('threads', () => {
   test('opening threads from the history and N for a new battle', async ({ page }) => {
     await mockArena(page);
     await openArena(page);
-    await page.getByRole('link', { name: /Write a haiku about merge conflicts/ }).click();
+    const drawer = await openHistory(page);
+    await drawer.getByRole('link', { name: /Write a haiku about merge conflicts/ }).click();
     await expect(page).toHaveURL(/\?thread=t-haiku/);
+    // Opening a thread closes the slide-over.
+    await expect(drawer).toBeHidden();
     await expect(page.getByText('Side by side', { exact: false }).first()).toBeVisible();
     await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
     await page.keyboard.press('n');

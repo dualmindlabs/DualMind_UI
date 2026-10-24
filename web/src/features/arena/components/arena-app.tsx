@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query';
 import { type ReactNode, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { SkipLink } from '@/components/layout/skip-link';
-import { Kbd } from '@/components/ui/kbd';
 import { useApiClient } from '@/hooks/use-api-client';
 import { useOnlineStatus } from '@/hooks/use-online-status';
 import { useShouldReduceMotion } from '@/hooks/use-should-reduce-motion';
@@ -29,37 +28,10 @@ import { THREAD_LIMIT } from './thread-panel';
 import { ThreadSidebar } from './thread-sidebar';
 import { ThreadView } from './thread-view';
 
-/** What the docked prompt box offers below it: three keys, quiet, for people with a keyboard. */
-function DockHints() {
-  const { shortcutsEnabled } = useArena();
-  if (!shortcutsEnabled) return null;
-  return (
-    <p
-      aria-hidden="true"
-      className="mt-2 hidden items-center justify-center gap-4 text-caption text-muted md:flex pointer-coarse:hidden"
-    >
-      <span className="inline-flex items-center gap-1.5">
-        <Kbd className="h-5 min-w-5">/</Kbd> prompt
-      </span>
-      <span className="inline-flex items-center gap-1.5">
-        <Kbd className="h-5 min-w-5">1</Kbd>
-        <Kbd className="h-5 min-w-5">2</Kbd>
-        <Kbd className="h-5 min-w-5">3</Kbd>
-        <Kbd className="h-5 min-w-5">4</Kbd> vote
-      </span>
-      <span className="inline-flex items-center gap-1.5">
-        <Kbd className="h-5 min-w-5">[</Kbd> history
-      </span>
-      <span className="inline-flex items-center gap-1.5">
-        <Kbd className="h-5 min-w-5">?</Kbd> shortcuts
-      </span>
-    </p>
-  );
-}
-
 /**
- * The battle stage's backdrop: the two minds' pools of light, the grid fading into the dark and,
- * from `md`, a hairline spine where the two answers meet.
+ * The stage: the deep background with the two minds' spotlights falling from the top (cyan on
+ * the left card, terracotta on the right) and a vignette that
+ * pulls the eye to the middle. Painted once; nothing here moves.
  */
 function StageBackdrop() {
   return (
@@ -67,7 +39,8 @@ function StageBackdrop() {
       aria-hidden="true"
       className="pointer-events-none absolute inset-0 overflow-hidden mesh-duel"
     >
-      <div className="absolute inset-y-0 left-1/2 hidden w-px bg-linear-to-b from-transparent via-line-strong to-transparent md:block" />
+      <div className="absolute inset-x-0 top-0 h-[80%] bg-[radial-gradient(44rem_36rem_at_26%_-8%,color-mix(in_oklab,var(--mind-a)_26%,transparent),transparent_72%),radial-gradient(44rem_36rem_at_74%_-8%,color-mix(in_oklab,var(--mind-b)_26%,transparent),transparent_72%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(120%_90%_at_50%_30%,transparent_58%,color-mix(in_oklab,var(--bg-deep)_85%,transparent))]" />
     </div>
   );
 }
@@ -97,6 +70,12 @@ function ArenaLayout({ empty }: { empty: boolean }) {
   // until the turn leaves `submitting`.
   const [pairing, setPairing] = useState(false);
   const firstTurn = battle.state.turns[0];
+  // A battle waiting for its verdict: the verdict takes the foot of the stage alone, the prompt
+  // box steps aside (it returns with the reveal, for the follow-up).
+  const lastTurn = battle.state.turns.at(-1);
+  const deciding =
+    lastTurn?.mode === 'battle' &&
+    (lastTurn.phase === 'awaiting_vote' || lastTurn.phase === 'voting');
 
   if (pairing && firstTurn && firstTurn.phase !== 'submitting') setPairing(false);
 
@@ -218,6 +197,7 @@ function ArenaLayout({ empty }: { empty: boolean }) {
                 </div>
                 <div
                   ref={dock}
+                  hidden={deciding}
                   className="relative mx-auto w-full max-w-3xl px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6"
                 >
                   <div
@@ -225,7 +205,6 @@ function ArenaLayout({ empty }: { empty: boolean }) {
                     className="pointer-events-none absolute inset-x-0 -top-8 h-8 bg-linear-to-t from-bg-deep to-transparent"
                   />
                   <Composer onSend={send} busy={battle.busy} onStop={battle.stop} />
-                  <DockHints />
                 </div>
               </>
             )}
@@ -239,30 +218,25 @@ function ArenaLayout({ empty }: { empty: boolean }) {
 }
 
 /**
- * The shell decides where the history lives. In the empty arena on a wide screen it is docked
- * beside the prompt. Once a battle is on, the stage takes the whole width and the history is a
- * slide-over (the header button, or `[`): the rest of the arena reads `wide` and `toggleHistory`
- * through this context, so it needs no other change.
+ * The shell decides where the history lives: nowhere on screen. It is a slide-over everywhere,
+ * on every screen size and in every stage (the header button, or `[`), so the stage and the empty
+ * arena keep the whole width. The rest of the arena reads `wide` and `toggleHistory` through this
+ * context, so it needs no other change.
  */
 function StageShell({ children }: { children: (empty: boolean) => ReactNode }) {
   const arena = useArena();
   const empty = arena.threadId === null && arena.battle.state.turns.length === 0;
-  const docked = arena.wide && empty;
-  const { historyOpen, setHistoryOpen, toggleHistory } = arena;
+  const { historyOpen, setHistoryOpen } = arena;
   const value = useMemo(
-    () => ({
-      ...arena,
-      wide: docked,
-      toggleHistory: docked ? toggleHistory : () => setHistoryOpen(!historyOpen),
-    }),
-    [arena, docked, toggleHistory, setHistoryOpen, historyOpen],
+    () => ({ ...arena, wide: false, toggleHistory: () => setHistoryOpen(!historyOpen) }),
+    [arena, setHistoryOpen, historyOpen],
   );
   return <ArenaContext.Provider value={value}>{children(empty)}</ArenaContext.Provider>;
 }
 
 /**
  * The signed-in arena at `/` (slice S8, redesigned in A1): the app header, the thread history
- * (docked beside the empty arena on wide screens, a slide-over everywhere else), and the stage:
+ * (a slide-over on demand), and the stage:
  * the empty arena with the prompt box as its hero and the starters, or a full-bleed battle stage
  * (an open thread, `/?thread=<id>`) with the prompt box docked under it.
  */
