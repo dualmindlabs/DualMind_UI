@@ -29,17 +29,19 @@ export function StatusCard({
       <span
         aria-hidden="true"
         className={cn(
-          'grid size-12 place-items-center rounded-full border',
-          tone === 'working' && 'border-line bg-surface-2 text-mind-a',
-          tone === 'success' && 'border-ok/40 bg-ok/10 text-ok',
-          tone === 'error' && 'border-bad/40 bg-bad/10 text-bad',
+          'grid size-14 place-items-center rounded-full border shadow-raise',
+          tone === 'working' && 'border-mind-a-edge bg-mind-a-tint text-mind-a',
+          tone === 'success' &&
+            'border-ok/40 bg-ok/10 text-ok shadow-[0_0_0_6px_color-mix(in_oklab,var(--ok)_9%,transparent)]',
+          tone === 'error' &&
+            'border-bad/40 bg-bad/10 text-bad shadow-[0_0_0_6px_color-mix(in_oklab,var(--bad)_9%,transparent)]',
         )}
       >
-        <Icon className={cn('size-6', tone === 'working' && 'animate-spin')} />
+        <Icon className={cn('size-7', tone === 'working' && 'animate-spin')} />
       </span>
       <div role="status" className="grid gap-2">
-        <h1 className="text-h2 font-medium text-balance text-fg">{title}</h1>
-        <div className="text-body text-fg-soft">{children}</div>
+        <h1 className="text-h2 text-balance text-fg">{title}</h1>
+        <div className="text-lead text-fg-soft">{children}</div>
       </div>
       {typeof progress === 'number' ? (
         <div className="h-1 overflow-hidden rounded-full bg-surface-3" aria-hidden="true">

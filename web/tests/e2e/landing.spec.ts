@@ -67,10 +67,12 @@ test('/ is prerendered: headline, demo answers, SEO tags and the hand-off script
   expect(head).toContain('"@type":"Organization"');
   expect(head).not.toMatch(/name="robots" content="noindex/);
   // The hand-off runs in <head>, before the theme script and before anything is painted.
-  expect(head.indexOf('legacy-app.html')).toBeGreaterThan(-1);
-  expect(head.indexOf('legacy-app.html')).toBeLessThan(head.indexOf('dm.theme'));
+  expect(head.indexOf('update-password.html')).toBeGreaterThan(-1);
+  expect(head.indexOf('update-password.html')).toBeLessThan(head.indexOf('dm.theme'));
+  expect(head).not.toContain('legacy-app.html');
   // Readable without JavaScript: the headline and both demo answers are in the HTML.
-  expect(html).toContain('Two models. One prompt.');
+  expect(html).toContain('Two models.');
+  expect(html).toContain('One prompt.');
   expect(html).toContain('You decide.');
   expect(html).toContain('Recorded demo, answers written for illustration');
   expect(html).toContain('Test questions leak into training data');
@@ -88,11 +90,11 @@ test('without JavaScript the hero and the demo are visible', async ({ browser, b
   const heading = page.getByRole('heading', { level: 1, name: HEADLINE });
   await expect(heading).toBeVisible();
   await page.waitForTimeout(2200);
-  // The CSS entrance has finished without JavaScript: every word is opaque.
-  const words = heading.locator('[aria-hidden="true"] > span > span');
-  expect(await words.count()).toBeGreaterThan(4);
-  for (let index = 0; index < (await words.count()); index += 1) {
-    await expect(words.nth(index)).toHaveCSS('opacity', '1');
+  // The CSS entrance has finished without JavaScript: every line of the headline is opaque.
+  const lines = heading.locator('[data-hero-line]');
+  expect(await lines.count()).toBe(3);
+  for (let index = 0; index < (await lines.count()); index += 1) {
+    await expect(lines.nth(index)).toHaveCSS('opacity', '1');
   }
   await expect(page.getByTestId('demo-text-a')).toContainText('benchmarks');
   await context.close();
@@ -208,48 +210,21 @@ test('a demo chip still plays the recorded battle and offers the sign-in', async
   );
 });
 
-test.describe('signed-in hand-off (visitors who keep the legacy arena)', () => {
-  // The legacy app's own scripts would redirect a fake session to the login page; keep them
-  // out so the test sees where the hand-off lands. Since slice S9 the new arena is the default:
-  // these visitors chose the legacy arena (`dm.arena` = `legacy`); arena.spec.ts covers the rest.
-  test.beforeEach(async ({ page }) => {
-    await page.route(/\/(config\.js|js\/.*)$/, route => route.abort());
-    await page.addInitScript(() => window.localStorage.setItem('dm.arena', 'legacy'));
-  });
-
-  test('a stored legacy session goes to the legacy arena, query and hash kept', async ({
-    page,
-  }) => {
-    await page.addInitScript(() =>
-      window.localStorage.setItem('dualmind.auth.supabase', '{"access_token":"t"}'),
-    );
-    await page.goto('/?ref=e2e#battle', { waitUntil: 'commit' });
-    await page.waitForURL(/\/legacy-app/);
-    const url = new URL(page.url());
-    expect(url.pathname).toMatch(/^\/legacy-app(\.html)?$/);
-    expect(url.search).toBe('?ref=e2e');
-    expect(url.hash).toBe('#battle');
-    await expect(page).toHaveTitle('DualMind - Battle Arena');
-  });
-
-  test('a supabase-js session key hands off too', async ({ page }) => {
-    await page.addInitScript(() =>
-      window.localStorage.setItem('sb-projectref-auth-token', '{"access_token":"t"}'),
-    );
-    await page.goto('/', { waitUntil: 'commit' });
-    await page.waitForURL(/\/legacy-app/);
-  });
-
-  test('an OAuth return keeps its tokens in the hash for the legacy client', async ({ page }) => {
+test.describe('the head script at / (the classic arena is gone)', () => {
+  test('a password recovery link goes on to the new password page, hash kept', async ({ page }) => {
     await page.goto('/#access_token=abc&refresh_token=def&type=recovery', { waitUntil: 'commit' });
-    await page.waitForURL(/\/legacy-app/);
+    await page.waitForURL(/\/update-password/);
     expect(new URL(page.url()).hash).toBe('#access_token=abc&refresh_token=def&type=recovery');
   });
 
-  test('a PKCE return keeps its code', async ({ page }) => {
-    await page.goto('/?code=pkce123', { waitUntil: 'commit' });
-    await page.waitForURL(/\/legacy-app/);
-    expect(new URL(page.url()).search).toBe('?code=pkce123');
+  test('a leftover choice for the classic arena sends nobody there', async ({ page }) => {
+    await page.addInitScript(() => {
+      window.localStorage.setItem('dm.arena', 'legacy');
+      window.localStorage.setItem('dualmind.auth.supabase', '{"access_token":"t"}');
+    });
+    await page.goto('/?arena=legacy');
+    await page.waitForTimeout(500);
+    expect(new URL(page.url()).pathname).toBe('/');
   });
 
   test('signed-out visitors stay on the landing page', async ({ page }) => {
@@ -398,9 +373,9 @@ for (const theme of ['dark', 'light'] as const) {
       document.body.append(layer);
     }, OG_TEMPLATE);
     await page.evaluate(async () => {
-      await document.fonts.load('italic 400 84px "Playfair Display"');
-      await document.fonts.load('800 22px "Bricolage Grotesque Variable"');
-      await document.fonts.load('500 15px "DM Mono"');
+      await document.fonts.load('600 84px "Geist Variable"');
+      await document.fonts.load('700 22px "Geist Variable"');
+      await document.fonts.load('500 15px "Geist Mono Variable"');
       await document.fonts.ready;
     });
     await page.waitForTimeout(300);

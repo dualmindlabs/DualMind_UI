@@ -1,4 +1,3 @@
-import playfairItalicLatin from '@fontsource/playfair-display/files/playfair-display-latin-400-italic.woff2?url';
 import { Suspense } from 'react';
 
 import { ArenaBoot, LazyArenaApp, useHomeView } from '@/features/arena';
@@ -9,22 +8,11 @@ import { absoluteUrl, pageMeta, SITE_NAME } from '@/lib/site/page-meta';
 import type { Route } from './+types/home';
 
 /**
- * The head script decides before the first paint (lib/session/handoff.ts): signed-in visitors of
- * the new arena stay here, other signed-in visitors and Supabase auth returns go to the legacy
- * arena.
+ * The head script decides before the first paint (lib/session/handoff.ts): signed-in visitors and
+ * Supabase auth returns stay here for the arena; password recovery links go on to the new
+ * password page.
  */
 export const handle: SessionHandoffHandle = { sessionHandoff: true };
-
-export const links: Route.LinksFunction = () => [
-  // The hero's human-voice phrase ("You decide.") is above the fold: no late swap, no shift.
-  {
-    rel: 'preload',
-    href: playfairItalicLatin,
-    as: 'font',
-    type: 'font/woff2',
-    crossOrigin: 'anonymous',
-  },
-];
 
 export const meta: Route.MetaFunction = () =>
   pageMeta({

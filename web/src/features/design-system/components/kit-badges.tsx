@@ -1,6 +1,7 @@
 import { Avatar, AvatarBadge, AvatarFallback, AvatarGroup } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Kbd, KbdGroup } from '@/components/ui/kbd';
+import { ModelMark } from '@/components/ui/model-mark';
 import { RoleBadge } from '@/components/ui/role-badge';
 import { Separator } from '@/components/ui/separator';
 
@@ -35,12 +36,21 @@ export function KitBadges() {
           <KitState label="Labels and status">
             <Badge>Beta</Badge>
             <Badge variant="outline">Open weights</Badge>
+            <Badge variant="solid">Winner</Badge>
             <Badge variant="mind-a">Mind A</Badge>
             <Badge variant="mind-b">Mind B</Badge>
             <Badge variant="human">Your pick</Badge>
             <Badge variant="ok">Online</Badge>
             <Badge variant="warn">Provisional</Badge>
             <Badge variant="bad">Offline</Badge>
+          </KitState>
+          <KitState label="Model marks: A, B, You, and by name">
+            <ModelMark name="Model A" who="a" />
+            <ModelMark name="Model B" who="b" />
+            <ModelMark name="You" who="human" />
+            <ModelMark name="Llama 3.3" />
+            <ModelMark name="Mistral Large" />
+            <ModelMark name="Gemini Flash" size="lg" />
           </KitState>
           <div className="grid gap-6 sm:grid-cols-2">
             <KitState label="Avatars">

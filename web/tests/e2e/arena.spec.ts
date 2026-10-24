@@ -4,7 +4,7 @@ import { expect, type Page, test } from '@playwright/test';
 import { mockArena } from './arena-mocks';
 import { passGate, settle, shotPath, storeTheme } from './helpers';
 
-// Slices S8 and S9: the signed-in arena at / (the default; ?arena=legacy keeps the legacy one): the switch from the landing page, the history (groups, search, rename, delete), the
+// Slices S8 and S9: the signed-in arena at / (the only arena since the cutover; a leftover ?arena=legacy changes nothing): the switch from the landing page, the history (groups, search, rename, delete), the
 // composer (modes, model pickers, starters), /?thread= deep links, keyboard, axe, overflow and
 // the review screenshots. Supabase and the API are answered by Playwright routes (arena-mocks.ts).
 
@@ -34,9 +34,25 @@ async function cspViolations(page: Page) {
   return violations;
 }
 
-async function openArena(page: Page, path = '/?arena=new') {
+async function openArena(page: Page, path = '/') {
   await page.goto(path);
   await expect(page.getByTestId('arena')).toBeVisible();
+}
+
+/**
+ * The history is a slide-over on every screen (Stage): open it from the header button, or with
+ * `[` from the page (not from a text field), and return the dialog.
+ */
+async function openHistory(page: Page, how: 'button' | 'key' = 'button') {
+  if (how === 'key') {
+    await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+    await page.keyboard.press('[');
+  } else {
+    await page.getByRole('button', { name: 'Open the history' }).click();
+  }
+  const drawer = page.getByRole('dialog', { name: 'History' });
+  await expect(drawer).toBeVisible();
+  return drawer;
 }
 
 /** Page-level horizontal overflow: scroll containers (the phone pane row) clip their content. */
@@ -65,41 +81,39 @@ async function overflowing(page: Page) {
   });
 }
 
-test.describe('the switch at /', () => {
-  test('?arena=new opts a signed-in visitor in, remembers it and cleans the address', async ({
-    page,
-  }) => {
+test.describe('the arena at /', () => {
+  test('a signed-in visitor gets the arena at /, and a reload keeps it', async ({ page }) => {
     const problems = collectProblems(page);
     const csp = await cspViolations(page);
     await mockArena(page);
     await openArena(page);
     await expect(page).toHaveURL(/\/$/);
-    expect(await page.evaluate(() => window.localStorage.getItem('dm.arena'))).toBe('new');
     await expect(
       page.getByRole('heading', { level: 1, name: /Two models\. One prompt\.\s*You decide\./ }),
     ).toBeVisible();
     await expect(page.locator('[data-landing]')).toHaveCount(0);
     await expect(page).toHaveTitle('Arena · DualMind Arena');
-    // A reload keeps the arena without the parameter.
     await page.reload();
     await expect(page.getByTestId('arena')).toBeVisible();
     expect(problems).toEqual([]);
     expect(csp).toEqual([]);
   });
 
-  test('the new arena is the default for signed-in visitors (slice S9)', async ({ page }) => {
-    await mockArena(page);
-    await page.goto('/');
-    await expect(page.getByTestId('arena')).toBeVisible();
-    await expect(page).toHaveURL(/\/$/);
-  });
-
-  test('?arena=legacy opts out again', async ({ page }) => {
-    await page.route(/\/(config\.js|js\/.*)$/, route => route.abort());
+  test('the account menu has no way back to a classic arena', async ({ page }) => {
     await mockArena(page);
     await openArena(page);
-    await page.goto('/?arena=legacy', { waitUntil: 'commit' });
-    await page.waitForURL(/\/legacy-app/);
+    await page.getByRole('button', { name: /^Account/ }).click();
+    await expect(page.getByRole('menuitem', { name: 'Sign out' })).toBeVisible();
+    await expect(page.getByRole('menuitem', { name: /classic arena/i })).toHaveCount(0);
+  });
+
+  test('a leftover ?arena=legacy or dm.arena=legacy still opens the arena', async ({ page }) => {
+    await mockArena(page);
+    await page.addInitScript(() => window.localStorage.setItem('dm.arena', 'legacy'));
+    await openArena(page, '/?arena=legacy');
+    await expect(page.getByTestId('arena')).toBeVisible();
+    // The arena drops the old parameter from the address.
+    await expect(page).toHaveURL(/\/$/);
   });
 });
 
@@ -107,7 +121,10 @@ test.describe('history', () => {
   test('groups threads by day, searches, renames and deletes', async ({ page }) => {
     const state = await mockArena(page);
     await openArena(page);
-    const history = page.getByRole('navigation', { name: 'Your threads' });
+    // Nothing docked beside the empty arena: the history waits behind `[`.
+    await expect(page.getByRole('navigation', { name: 'Your threads' })).toHaveCount(0);
+    const drawer = await openHistory(page, 'key');
+    const history = drawer.getByRole('navigation', { name: 'Your threads' });
     for (const group of ['Today', 'Yesterday', 'Last 7 days', 'Older']) {
       await expect(history.getByRole('heading', { name: group })).toBeVisible();
     }
@@ -142,13 +159,17 @@ test.describe('history', () => {
   test('an empty history and a failed one have their own states', async ({ page }) => {
     await mockArena(page, { threads: [] });
     await openArena(page);
-    await expect(page.getByText('No threads yet.')).toBeVisible();
+    const drawer = await openHistory(page);
+    await expect(drawer.getByText('No threads yet.')).toBeVisible();
   });
 
   test('a failed history offers a retry', async ({ page }) => {
     await mockArena(page, { failThreads: true });
     await openArena(page);
-    await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible({ timeout: 20_000 });
+    const drawer = await openHistory(page);
+    await expect(drawer.getByRole('button', { name: 'Try again' })).toBeVisible({
+      timeout: 20_000,
+    });
   });
 });
 
@@ -158,7 +179,7 @@ test.describe('threads', () => {
   }) => {
     const problems = collectProblems(page);
     await mockArena(page);
-    await openArena(page, '/?arena=new&thread=t-recursion');
+    await openArena(page, '/?thread=t-recursion');
     await expect(
       page.getByRole('heading', { level: 1, name: 'Explain recursion to a ten-year-old' }),
     ).toBeVisible();
@@ -176,11 +197,15 @@ test.describe('threads', () => {
     const link = first.getByRole('link', { name: /Python docs/ });
     await expect(link).toHaveAttribute('rel', 'noopener noreferrer nofollow');
     await expect(link).toContainText('docs.python.org');
-    // The history marks the open thread.
+    // The history is a slide-over on the battle stage, and it marks the open thread.
+    await page.getByRole('button', { name: 'Open the history' }).click();
+    await expect(page.getByRole('dialog', { name: 'History' })).toBeVisible();
     await expect(page.getByRole('link', { name: /Explain recursion/ }).first()).toHaveAttribute(
       'aria-current',
       'page',
     );
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog', { name: 'History' })).toBeHidden();
     await expect(page).toHaveTitle('Explain recursion to a ten-year-old · DualMind Arena');
     expect(problems).toEqual([]);
   });
@@ -188,8 +213,11 @@ test.describe('threads', () => {
   test('opening threads from the history and N for a new battle', async ({ page }) => {
     await mockArena(page);
     await openArena(page);
-    await page.getByRole('link', { name: /Write a haiku about merge conflicts/ }).click();
+    const drawer = await openHistory(page);
+    await drawer.getByRole('link', { name: /Write a haiku about merge conflicts/ }).click();
     await expect(page).toHaveURL(/\?thread=t-haiku/);
+    // Opening a thread closes the slide-over.
+    await expect(drawer).toBeHidden();
     await expect(page.getByText('Side by side', { exact: false }).first()).toBeVisible();
     await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
     await page.keyboard.press('n');
@@ -199,7 +227,7 @@ test.describe('threads', () => {
 
   test('a missing thread says so and offers a new battle', async ({ page }) => {
     await mockArena(page);
-    await openArena(page, '/?arena=new&thread=nope');
+    await openArena(page, '/?thread=nope');
     await expect(page.getByRole('heading', { name: 'This thread is not here' })).toBeVisible({
       timeout: 20_000,
     });
@@ -213,7 +241,7 @@ test.describe('thread of another account', () => {
     page,
   }) => {
     await mockArena(page, { foreignThreads: ['t-theirs'] });
-    await openArena(page, '/?arena=new&thread=t-theirs');
+    await openArena(page, '/?thread=t-theirs');
     const heading = page.getByRole('heading', {
       name: 'This conversation belongs to another account',
     });
@@ -264,7 +292,7 @@ test.describe('quality', () => {
     test(`axe: no serious or critical violations, ${theme}`, async ({ page }) => {
       await storeTheme(page, theme);
       await mockArena(page);
-      for (const path of ['/?arena=new', '/?thread=t-recursion']) {
+      for (const path of ['/', '/?thread=t-recursion']) {
         await openArena(page, path);
         await settle(page, 600);
         const results = await new AxeBuilder({ page })
@@ -325,10 +353,12 @@ test.describe('screenshots', () => {
         await page.screenshot({ path: shotPath(`arena-thread-${viewport.label}-${theme}`) });
 
         if (viewport.label === 'desktop') {
+          // On the battle stage `[` opens the history as a slide-over.
           await page.keyboard.press('[');
+          await expect(page.getByRole('dialog', { name: 'History' })).toBeVisible();
           await settle(page, 500);
-          await page.screenshot({ path: shotPath(`arena-thread-rail-${theme}`) });
-          await page.keyboard.press('[');
+          await page.screenshot({ path: shotPath(`arena-thread-history-${theme}`) });
+          await page.keyboard.press('Escape');
           // The model picker's screenshots are in arena-polish.spec.ts.
         } else {
           await page.getByRole('button', { name: 'Open the history' }).click();

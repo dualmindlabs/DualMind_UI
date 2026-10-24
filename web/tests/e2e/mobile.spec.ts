@@ -111,6 +111,15 @@ for (const phone of PHONES) {
       await settle(page, 600);
       expect(await overflowX(page), 'battle').toBeLessThanOrEqual(0);
       await expectInsideViewport(page, page.getByTestId('vote-bar'), 'the vote bar');
+      // The stage keeps one decision on screen: the prompt box steps aside until the vote.
+      await expect(page.getByRole('textbox', { name: 'Your prompt' })).toBeHidden();
+      await page
+        .getByTestId('vote-bar')
+        .getByRole('button', { name: /A is better/ })
+        .click();
+      await expect(turn).toHaveAttribute('data-phase', 'revealed');
+      await settle(page, 900);
+      expect(await overflowX(page), 'reveal').toBeLessThanOrEqual(0);
       await expectInsideViewport(
         page,
         page.getByRole('textbox', { name: 'Your prompt' }),

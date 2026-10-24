@@ -184,7 +184,11 @@ test.describe('arena offline', () => {
     await mockArena(page);
     await openArena(page);
     await goOffline(context, page);
-    await page.getByRole('link', { name: /Write a haiku about merge conflicts/ }).click();
+    // The history is a slide-over (Stage): it opens offline, from the list it already has.
+    await page.getByRole('button', { name: 'Open the history' }).click();
+    const drawer = page.getByRole('dialog', { name: 'History' });
+    await expect(drawer).toBeVisible();
+    await drawer.getByRole('link', { name: /Write a haiku about merge conflicts/ }).click();
     await page.waitForTimeout(2500);
     await expectArenaStays(page, problems, 'e: open thread offline');
   });
@@ -312,14 +316,18 @@ test.describe('a crash inside the arena', () => {
     });
     await page.goto('/');
     await expect(page.getByTestId('arena')).toBeVisible();
+    // The history is a slide-over (Stage): open it first, then crash the thread it opens.
+    await page.getByRole('button', { name: 'Open the history' }).click();
+    const drawer = page.getByRole('dialog', { name: 'History' });
+    await expect(drawer).toBeVisible();
     await page.evaluate(() => ((window as unknown as { dmCrash: boolean }).dmCrash = true));
-    await page.getByRole('link', { name: /Explain recursion to a ten-year-old/ }).click();
+    await drawer.getByRole('link', { name: /Explain recursion to a ten-year-old/ }).click();
     const panel = page.getByTestId('arena-error');
     await expect(panel).toBeVisible();
     await expect(panel).toContainText('Something broke in the arena.');
     await expect(page.getByTestId('root-error')).toHaveCount(0);
-    // The rest of the arena is still there.
-    await expect(page.getByRole('navigation', { name: 'Your threads' })).toBeVisible();
+    // The rest of the arena is still there: the header, with the history one press away.
+    await expect(page.getByRole('button', { name: 'Open the history' })).toBeVisible();
     await page.evaluate(() => ((window as unknown as { dmCrash: boolean }).dmCrash = false));
     await panel.getByRole('button', { name: 'Try again' }).click();
     await expect(page.getByTestId('arena-error')).toHaveCount(0);

@@ -62,7 +62,7 @@ export function SiteNav({ activePath, label = 'Main', size = 'md', className }: 
                       <m.span
                         layoutId={`${scope}-highlight`}
                         aria-hidden="true"
-                        className="absolute inset-0 -z-10 rounded-full bg-hover"
+                        className="absolute inset-0 -z-10 rounded-full border border-line bg-hover"
                       />
                     ) : null}
                     {link.label}
@@ -70,7 +70,7 @@ export function SiteNav({ activePath, label = 'Main', size = 'md', className }: 
                       <m.span
                         layoutId={`${scope}-current`}
                         aria-hidden="true"
-                        className="absolute inset-x-3 bottom-1 h-0.5 rounded-full bg-mind-a"
+                        className="absolute inset-x-3.5 -bottom-px h-0.5 rounded-full bg-mind-a shadow-[0_0_10px_1px_color-mix(in_oklab,var(--mind-a)_55%,transparent)]"
                       />
                     ) : null}
                   </a>

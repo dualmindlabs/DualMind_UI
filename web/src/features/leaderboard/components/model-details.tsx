@@ -11,6 +11,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer';
+import { ModelMark } from '@/components/ui/model-mark';
 import {
   Sheet,
   SheetBody,
@@ -25,6 +26,7 @@ import { cn } from '@/lib/utils/cn';
 import { TABLE_QUERY, useMediaQuery } from '../hooks/use-media-query';
 import { ARENA_HREF, RATINGS_HELP_HREF } from '../lib/constants';
 import { formatRank } from '../lib/format';
+import type { Movement } from '../lib/movement';
 import type { Leaderboard } from '../types';
 import { ModelDetailsBody } from './model-details-body';
 import { ProviderBadge } from './provider-badge';
@@ -38,6 +40,8 @@ export interface ModelDetailsProps {
   returnFocusRef: RefObject<HTMLElement | null>;
   /** Which page opened it: each links to the other. */
   from: 'leaderboard' | 'models';
+  /** How the selected model's rank moved since the visitor's last visit. */
+  movement?: ReadonlyMap<string, Movement> | undefined;
 }
 
 function Links({ from }: { from: ModelDetailsProps['from'] }) {
@@ -77,6 +81,7 @@ export function ModelDetails({
   onOpenChange,
   returnFocusRef,
   from,
+  movement,
 }: ModelDetailsProps) {
   const wide = useMediaQuery(TABLE_QUERY);
   const entry = board?.entries.find(item => item.id === selectedId);
@@ -103,14 +108,17 @@ export function ModelDetails({
         >
           <SheetHeader className="gap-3">
             {eyebrow}
-            <SheetTitle className="text-h2 font-medium break-words">{entry.name}</SheetTitle>
+            <div className="flex items-center gap-3.5">
+              <ModelMark name={entry.providerLabel} size="lg" />
+              <SheetTitle className="text-h2 break-words">{entry.name}</SheetTitle>
+            </div>
             <SheetDescription className="font-code break-all">
               <span className="sr-only">Model id: </span>
               {entry.modelName}
             </SheetDescription>
           </SheetHeader>
           <SheetBody className="pb-2">
-            <ModelDetailsBody entry={entry} board={board} />
+            <ModelDetailsBody entry={entry} board={board} movement={movement?.get(entry.id)} />
           </SheetBody>
           <SheetFooter className="flex-wrap sm:justify-start">
             <Links from={from} />
@@ -128,14 +136,17 @@ export function ModelDetails({
             {eyebrow}
             <DrawerCloseButton className="-mt-1 -mr-2 shrink-0" />
           </div>
-          <DrawerTitle className="text-h3 break-words">{entry.name}</DrawerTitle>
+          <div className="flex items-center gap-3">
+            <ModelMark name={entry.providerLabel} size="md" />
+            <DrawerTitle className="text-h3 break-words">{entry.name}</DrawerTitle>
+          </div>
           <DrawerDescription className="font-code break-all">
             <span className="sr-only">Model id: </span>
             {entry.modelName}
           </DrawerDescription>
         </DrawerHeader>
         <div className="px-5 pb-2">
-          <ModelDetailsBody entry={entry} board={board} />
+          <ModelDetailsBody entry={entry} board={board} movement={movement?.get(entry.id)} />
         </div>
         <DrawerFooter>
           <Links from={from} />

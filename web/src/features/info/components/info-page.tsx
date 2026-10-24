@@ -1,9 +1,11 @@
 import type { ReactNode } from 'react';
 
 import { Reveal } from '@/components/motion/reveal';
+import { PageHero } from '@/components/ui/page-hero';
 
 import type { PageContent, Section } from '../content';
 import { BlockList, type BlockOverrides } from './block-list';
+import { HeroDuel } from './hero-duel';
 import { PageHeading } from './page-heading';
 import { PageShell } from './page-shell';
 import { SectionHeading } from './section-heading';
@@ -37,15 +39,18 @@ function InfoSection({
       <section
         id={section.id}
         aria-labelledby={headingId}
-        className="scroll-mt-24 border-t border-line py-12 md:py-16"
+        className="scroll-mt-24 border-t border-line py-14 md:py-20"
       >
         <div
           className={
-            wide ? 'grid gap-y-8' : 'grid gap-x-16 gap-y-6 lg:grid-cols-[15rem_minmax(0,1fr)]'
+            wide ? 'grid gap-y-8' : 'grid gap-x-16 gap-y-6 lg:grid-cols-[18rem_minmax(0,1fr)]'
           }
         >
           <div className={wide ? undefined : 'lg:sticky lg:top-28 lg:self-start'}>
-            <p aria-hidden="true" className="eyebrow text-muted tabular-nums">
+            <p
+              aria-hidden="true"
+              className="inline-flex h-7 items-center rounded-sm border border-line-strong bg-surface-2 px-2.5 numeric text-label text-fg-soft shadow-raise"
+            >
               {String(number).padStart(2, '0')}
             </p>
             <SectionHeading
@@ -53,8 +58,8 @@ function InfoSection({
               id={headingId}
               className={
                 wide
-                  ? 'mt-3 max-w-reading text-h2 font-medium text-balance text-fg'
-                  : 'mt-3 max-w-[22ch] text-h3 font-medium text-balance text-fg'
+                  ? 'mt-4 max-w-reading text-h2 text-balance text-fg'
+                  : 'mt-4 max-w-[16ch] text-h2 text-balance text-fg'
               }
             />
           </div>
@@ -81,15 +86,9 @@ export function InfoPage({
 }: InfoPageProps) {
   return (
     <PageShell overlay>
-      <div className="relative isolate overflow-hidden bg-bg-deep">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 -z-10 dot-grid [mask-image:radial-gradient(ellipse_60%_80%_at_20%_30%,black,transparent)]"
-        />
-        <div className="mx-auto max-w-page px-4 pt-32 pb-16 sm:px-6 md:pt-40 md:pb-24">
-          <PageHeading page={page} />
-        </div>
-      </div>
+      <PageHero aside={<HeroDuel />}>
+        <PageHeading page={page} size="display" />
+      </PageHero>
       {beforeSections}
       <div className="mx-auto max-w-page px-4 pb-8 sm:px-6">
         {page.sections.map((section, index) => (
