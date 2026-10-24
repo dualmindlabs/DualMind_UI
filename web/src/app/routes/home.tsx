@@ -1,4 +1,3 @@
-import playfairItalicLatin from '@fontsource/playfair-display/files/playfair-display-latin-400-italic.woff2?url';
 import { Suspense } from 'react';
 
 import { ArenaBoot, LazyArenaApp, useHomeView } from '@/features/arena';
@@ -14,17 +13,6 @@ import type { Route } from './+types/home';
  * password page.
  */
 export const handle: SessionHandoffHandle = { sessionHandoff: true };
-
-export const links: Route.LinksFunction = () => [
-  // The hero's human-voice phrase ("You decide.") is above the fold: no late swap, no shift.
-  {
-    rel: 'preload',
-    href: playfairItalicLatin,
-    as: 'font',
-    type: 'font/woff2',
-    crossOrigin: 'anonymous',
-  },
-];
 
 export const meta: Route.MetaFunction = () =>
   pageMeta({

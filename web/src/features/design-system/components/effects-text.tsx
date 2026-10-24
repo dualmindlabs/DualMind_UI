@@ -88,7 +88,7 @@ export function EffectsText() {
           <p className="text-muted">
             <FuzzyText fontSize="clamp(5rem, 16vw, 9rem)">404</FuzzyText>
           </p>
-          <p className="human-voice text-h3 text-fg-soft">This page lost the vote.</p>
+          <p className="text-h3 human-voice text-fg-soft">This page lost the vote.</p>
         </div>
       </EffectFrame>
     </div>
