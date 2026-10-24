@@ -71,7 +71,8 @@ test('/ is prerendered: headline, demo answers, SEO tags and the hand-off script
   expect(head.indexOf('update-password.html')).toBeLessThan(head.indexOf('dm.theme'));
   expect(head).not.toContain('legacy-app.html');
   // Readable without JavaScript: the headline and both demo answers are in the HTML.
-  expect(html).toContain('Two models. One prompt.');
+  expect(html).toContain('Two models.');
+  expect(html).toContain('One prompt.');
   expect(html).toContain('You decide.');
   expect(html).toContain('Recorded demo, answers written for illustration');
   expect(html).toContain('Test questions leak into training data');
@@ -89,11 +90,11 @@ test('without JavaScript the hero and the demo are visible', async ({ browser, b
   const heading = page.getByRole('heading', { level: 1, name: HEADLINE });
   await expect(heading).toBeVisible();
   await page.waitForTimeout(2200);
-  // The CSS entrance has finished without JavaScript: every word is opaque.
-  const words = heading.locator('[aria-hidden="true"] > span > span');
-  expect(await words.count()).toBeGreaterThan(4);
-  for (let index = 0; index < (await words.count()); index += 1) {
-    await expect(words.nth(index)).toHaveCSS('opacity', '1');
+  // The CSS entrance has finished without JavaScript: every line of the headline is opaque.
+  const lines = heading.locator('[data-hero-line]');
+  expect(await lines.count()).toBe(3);
+  for (let index = 0; index < (await lines.count()); index += 1) {
+    await expect(lines.nth(index)).toHaveCSS('opacity', '1');
   }
   await expect(page.getByTestId('demo-text-a')).toContainText('benchmarks');
   await context.close();
