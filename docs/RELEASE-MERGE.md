@@ -67,7 +67,13 @@ Prettier and unit tests; the four Playwright shards and the composed build with 
 API (v2) typecheck, Workers tests and OpenAPI check; Build & Lint; CodeQL; GitGuardian; Workers
 Builds (preview). Redesign screenshots: 190 shots passed, every page at desktop 1440 and phone 390
 in dark and light (artifact `shots-after` of run 40053566277). Only the old Vercel project fails,
-as on every commit (needs-harsh item 2). This file was added after that run; it changes no code.
+as on every commit (needs-harsh item 2).
+
+One fix after the merges: on the run for the docs commit, shard 2 failed twice in a row on
+`focus-rings.spec.ts` "the ring on a code block in a shared battle (dark)": the code figure's
+outline read 3px (the CSS `medium` default) instead of 2px, in the fast runs (under 1s) only; the
+same code passed on the two other runs (1.3s). The ring is right once styles settle, so the test
+now polls the outline (`expect.poll`) instead of reading it once. No product code changed.
 
 ## Left for Harsh
 

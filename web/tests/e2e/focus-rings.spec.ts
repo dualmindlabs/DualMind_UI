@@ -254,12 +254,17 @@ test.describe('every keyboard stop shows a focus ring', () => {
       await page.keyboard.press('Tab');
       await code.focus();
       await expect(code).toBeFocused();
-      // The figure around it draws the ring, outside its own clipped corners.
-      const ring = await code.evaluate(element => {
-        const style = getComputedStyle(element.parentElement ?? element);
-        return { style: style.outlineStyle, width: parseFloat(style.outlineWidth) };
-      });
-      expect(ring).toEqual({ style: 'solid', width: 2 });
+      // The figure around it draws the ring, outside its own clipped corners. Poll: right after
+      // focus the :has() style can still be settling (outline-width briefly reads 3px, the
+      // `medium` default), which made a single read flaky on fast runs.
+      await expect
+        .poll(() =>
+          code.evaluate(element => {
+            const style = getComputedStyle(element.parentElement ?? element);
+            return { style: style.outlineStyle, width: parseFloat(style.outlineWidth) };
+          }),
+        )
+        .toEqual({ style: 'solid', width: 2 });
       await code.scrollIntoViewIfNeeded();
       await settle(page, 300);
       await page.screenshot({ path: shotPath(`focus-ring-code-block-desktop-${theme}`) });
