@@ -5,6 +5,7 @@ import { PROBLEM_TYPES } from '../../server/problem-types.js';
 import { renderLeaderboardMarkdown, escapeMarkdownCell } from '../../server/v2/docs/leaderboard-md.ts';
 import { renderLlmsTxt } from '../../server/v2/docs/llms.ts';
 import { renderProblemIndex, renderProblemPage } from '../../server/v2/docs/problems.ts';
+import { prefersHtml, renderProblemIndexHtml, renderProblemPageHtml } from '../../server/v2/docs/problems-html.ts';
 import { isDocRoute } from '../../server/v2/docs/routes.ts';
 import { resetLeaderboardState } from '../../server/v2/leaderboard/service.ts';
 import { problemSchema } from '../../contract/common.ts';
@@ -171,6 +172,46 @@ describe('GET /problems/', () => {
     expect(problemSchema.parse(await missing.json())).toMatchObject({ status: 404, instance: '/problems/nope' });
     expect((await call('/problems/__proto__')).status).toBe(404);
     expect((await call('/problems/rate_limited', { method: 'POST', body: 'x' })).status).toBe(405);
+  });
+});
+
+describe('GET /problems as a web page', () => {
+  const browser = { Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' };
+
+  it('picks the page only when Accept names text/html first', () => {
+    expect(prefersHtml(browser.Accept)).toBe(true);
+    expect(prefersHtml('text/markdown, text/html')).toBe(false);
+    expect(prefersHtml('*/*')).toBe(false);
+    expect(prefersHtml(null)).toBe(false);
+  });
+
+  it('answers a browser with a styled page for the index and for every slug, and keeps Markdown for the rest', async () => {
+    const index = await call('/problems/', { headers: browser });
+    expect(index.status).toBe(200);
+    expect(index.headers.get('content-type')).toBe('text/html; charset=utf-8');
+    expect(index.headers.get('vary')).toBe('Accept');
+    const html = await index.text();
+    expect(html).toBe(renderProblemIndexHtml(`https://${host}`));
+    for (const slug of Object.keys(PROBLEM_TYPES)) expect(html).toContain(`href="/problems/${slug}"`);
+
+    for (const [slug, entry] of Object.entries(PROBLEM_TYPES)) {
+      const response = await call(`/problems/${slug}`, { headers: browser });
+      expect(response.status, slug).toBe(200);
+      expect(response.headers.get('content-type'), slug).toBe('text/html; charset=utf-8');
+      const page = await response.text();
+      expect(page, slug).toBe(renderProblemPageHtml(slug as keyof typeof PROBLEM_TYPES, `https://${host}`));
+      expect(page, slug).toContain(`<h1>${entry.title}</h1>`);
+    }
+
+    const markdown = await call('/problems/', { headers: { Accept: '*/*' } });
+    expect(markdown.headers.get('content-type')).toBe('text/markdown; charset=utf-8');
+    expect(markdown.headers.get('vary')).toBe('Accept');
+  });
+
+  it('escapes registry text and never inlines anything else', () => {
+    const html = renderProblemPageHtml('validation_error', 'https://x.test');
+    expect(html).not.toContain('<script>alert');
+    expect(html).toContain('<code>errors[]</code>');
   });
 });
 

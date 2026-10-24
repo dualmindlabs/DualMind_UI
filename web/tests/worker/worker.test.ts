@@ -232,7 +232,15 @@ describe('legacy pages and files', () => {
   });
 
   it('answers unknown paths with the 404 page and status 404', async () => {
-    for (const unknown of ['/does-not-exist', '/does-not-exist/', '/about/nope?x=1']) {
+    for (const unknown of [
+      '/does-not-exist',
+      '/does-not-exist/',
+      '/about/nope?x=1',
+      // Deeper than the one id a share link has: not a share page (B4, it used to answer 200).
+      '/share/x/y/z',
+      '/share/x/y/',
+      '/leaderboard/nope/deeper',
+    ]) {
       const response = await preview(unknown);
       expect(response.status, unknown).toBe(404);
       expect(response.headers.get('content-type'), unknown).toContain('text/html');
@@ -336,6 +344,11 @@ describe('routing helpers (server/routing.js)', () => {
     expect(isSpaFallbackRoute('/share/')).toBe(true);
     expect(isSpaFallbackRoute('/share/index.html')).toBe(true);
     expect(isSpaFallbackRoute('/shared')).toBe(false);
+    // A prefix route stands for one more segment: deeper addresses are not pages (they get a 404).
+    expect(isSpaFallbackRoute('/share/x/')).toBe(true);
+    expect(isSpaFallbackRoute('/share/x/y')).toBe(false);
+    expect(isSpaFallbackRoute('/share/x/y/z')).toBe(false);
+    expect(isSpaFallbackRoute('/share/index.html/x')).toBe(false);
   });
 
   it('serves the SPA fallback page with status 200 and no-cache', async () => {
