@@ -73,7 +73,11 @@ One fix after the merges: on the run for the docs commit, shard 2 failed twice i
 `focus-rings.spec.ts` "the ring on a code block in a shared battle (dark)": the code figure's
 outline read 3px (the CSS `medium` default) instead of 2px, in the fast runs (under 1s) only; the
 same code passed on the two other runs (1.3s). The ring is right once styles settle, so the test
-now polls the outline (`expect.poll`) instead of reading it once. No product code changed.
+now polls the outline (`expect.poll`) instead of reading it once. The next run then failed once
+on `shell.spec.ts` "typing filters the commands and Enter runs the selected one": the test typed
+right after Ctrl+K, before the palette's input had focus, so the keys were lost and the first
+command stayed selected. The palette tests now wait for the input to be focused before typing.
+No product code changed in either fix.
 
 ## Left for Harsh
 
