@@ -3,6 +3,8 @@ import { type ReactNode, useId } from 'react';
 
 import { cn } from '@/lib/utils/cn';
 
+import { SETTINGS_SECTIONS } from '../lib/sections';
+
 export interface SettingsSectionProps {
   id: string;
   title: string;
@@ -21,10 +23,24 @@ export function SettingsSection({ id, title, description, children }: SettingsSe
       className="grid scroll-mt-24 gap-5 focus:outline-none"
       data-testid={`settings-${id}`}
     >
-      <header className="grid gap-1.5">
-        <h2 id={`${id}-title`} className="text-h3 font-medium text-fg">
-          {title}
-        </h2>
+      <header className="grid gap-2">
+        <div className="flex items-center gap-3">
+          <span
+            aria-hidden="true"
+            className="grid h-6 min-w-8 place-items-center rounded-sm border border-line bg-surface-2 px-1.5 numeric text-caption text-muted"
+          >
+            {String(
+              Math.max(
+                0,
+                SETTINGS_SECTIONS.findIndex(section => section.id === id),
+              ) + 1,
+            ).padStart(2, '0')}
+          </span>
+          <h2 id={`${id}-title`} className="text-h3 text-fg">
+            {title}
+          </h2>
+          <span aria-hidden="true" className="h-px flex-1 bg-line" />
+        </div>
         {description ? (
           <p className="max-w-reading text-ui-sm text-fg-soft">{description}</p>
         ) : null}
@@ -53,8 +69,7 @@ export interface SettingsCardProps {
 
 /**
  * A settings card, the Vercel-style pattern: a title and a line, the control, and a footer strip
- * for the hint and the action. Hairline border, no glow (design-direction.md section 13,
- * "precision instrument").
+ * for the hint and the action. The lit `surface-duel` (a top edge and a lift shadow); the danger tone is a red-tinted surface.
  */
 export function SettingsCard({
   title,
@@ -71,8 +86,10 @@ export function SettingsCard({
     <div
       data-testid={testId}
       className={cn(
-        'overflow-hidden rounded-xl border bg-surface shadow-raise',
-        tone === 'danger' ? 'border-bad/45' : 'border-line',
+        'overflow-hidden',
+        tone === 'danger'
+          ? 'rounded-lg border border-bad/45 bg-[linear-gradient(180deg,color-mix(in_oklab,var(--bad)_7%,var(--surface-2)),var(--surface))] shadow-lift'
+          : 'surface-duel',
         className,
       )}
     >
