@@ -14,9 +14,11 @@ export function StepsTimeline({ block }: { block: StepsBlock }) {
       data={block.items.map((item, index) => ({
         title: item.title,
         content: (
-          <div className="max-w-reading pb-8">
-            <p className="mb-3 eyebrow text-human tabular-nums">Step {index + 1}</p>
-            <p className="text-h3 font-normal [text-wrap:pretty] text-fg-soft">
+          <div className="surface-duel max-w-reading p-6 md:p-8">
+            <p className="mb-4 inline-flex h-6 items-center rounded-sm border border-human/50 bg-human-tint px-2 eyebrow text-human tabular-nums">
+              Step {index + 1}
+            </p>
+            <p className="text-lead [text-wrap:pretty] text-fg">
               <RichText text={item.body} />
             </p>
           </div>
