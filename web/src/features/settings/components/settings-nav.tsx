@@ -66,7 +66,7 @@ export function SettingsNav({ className }: { className?: string }) {
                   'flex h-9 items-center gap-2.5 rounded-md border px-3 text-ui-sm font-medium whitespace-nowrap transition-colors duration-(--dur-fast) ease-out-expo pointer-coarse:h-11',
                   'max-lg:rounded-full',
                   current
-                    ? 'border-line bg-surface-2 text-fg shadow-raise'
+                    ? 'border-line bg-surface-2 text-fg shadow-raise lg:border-l-2 lg:border-l-mind-a'
                     : 'border-transparent text-fg-soft hover:bg-hover hover:text-fg max-lg:border-line',
                 )}
               >

@@ -1,7 +1,8 @@
-import { PanelLeftClose, PanelLeftOpen, Plus, Search } from 'lucide-react';
+import { History as HistoryIcon, PanelLeftClose, PanelLeftOpen, Plus, Search } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { Kbd } from '@/components/ui/kbd';
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils/cn';
@@ -36,8 +37,10 @@ function RailButton({
 }
 
 /**
- * The thread history. Wide screens: a 272px panel that collapses to a 64px rail (`[`). Smaller
- * screens: a drawer from the left, opened from the header.
+ * The thread history. With `wide` (from the arena shell, see arena-app.tsx) it is a 272px panel
+ * that collapses to a 64px rail (`[`); otherwise a slide-over from the left, opened from the
+ * header or with `[`. The Stage shell never docks it: the history is a slide-over on every screen
+ * and in every stage, so the empty arena and the battle stage keep the whole width.
  */
 export function ThreadSidebar() {
   const { wide, sidebarCollapsed, setSidebarCollapsed, newBattle, historyOpen, setHistoryOpen } =
@@ -46,8 +49,17 @@ export function ThreadSidebar() {
   if (!wide) {
     return (
       <Sheet open={historyOpen} onOpenChange={setHistoryOpen}>
-        <SheetContent side="left" className="w-[min(100%-3rem,20rem)] gap-0 p-0 pt-12">
-          <SheetTitle className="sr-only">History</SheetTitle>
+        <SheetContent
+          side="left"
+          className="w-[min(100%-3rem,22rem)] gap-0 border-line-strong bg-surface p-0 shadow-float"
+        >
+          <div className="flex h-14 shrink-0 items-center gap-2.5 border-b border-line pr-14 pl-5">
+            <HistoryIcon aria-hidden="true" className="size-4 text-muted" strokeWidth={1.75} />
+            <SheetTitle className="text-ui font-semibold">History</SheetTitle>
+            <Kbd aria-hidden="true" className="ml-auto max-lg:hidden">
+              [
+            </Kbd>
+          </div>
           <SheetDescription className="sr-only">
             Your battles and chats, newest first. Choose one to open it.
           </SheetDescription>
@@ -62,7 +74,7 @@ export function ThreadSidebar() {
       aria-label="History"
       data-collapsed={sidebarCollapsed ? '' : undefined}
       className={cn(
-        'flex shrink-0 flex-col border-r border-line bg-surface transition-[width] duration-(--dur-base) ease-out-expo',
+        'flex shrink-0 flex-col border-r border-line bg-surface/80 transition-[width] duration-(--dur-base) ease-out-expo',
         sidebarCollapsed ? 'w-16' : 'w-68',
       )}
     >

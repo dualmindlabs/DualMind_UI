@@ -93,5 +93,5 @@ Still to build after these merge: 5.4 #4, one `ProblemDetails` error body from e
 2. When Harsh says go: merge the DualMind_Back PRs in the order above, one at a time, watching each deploy and its post-deploy probe; web #79 must be live before #29.
 3. Then 5.4 #4 (one error body) in DualMind_Back, rebased on everything above.
 4. Backend W2 (rankings): designs merged in [#80](https://github.com/dualmindlabs/DualMind_UI/pull/80) ([designs/README.md](../backend/designs/README.md), BE-14, BE-16, BE-9, BE-10, BE-8, BE-11). Build after Harsh answers needs-harsh #16; first BE-14 and BE-16 slice A (record the side, randomise `topper` mode).
-5. S13 cutover after Harsh's answers in [needs-harsh.md](./needs-harsh.md) (items 1a and 11); i18n readiness (P1-9) after it.
+5. S13a (the classic arena removed) is a ready PR waiting on item 1a in [needs-harsh.md](./needs-harsh.md); then S13b (`config.js`, `auth-verify.html`, enforced CSP everywhere); i18n readiness (P1-9) after it.
 6. No performance work (Harsh, 2026-10-21).

@@ -47,7 +47,7 @@ export function VoteBar() {
       <p aria-live="polite" className="mt-3 text-ui-sm text-muted">
         {chosen
           ? `Your verdict: ${chosen.label}. In the Arena, this is when both names are revealed.`
-          : 'Your choice turns terra: the colour belongs to you, never to a model.'}
+          : 'Your choice turns champagne: the colour belongs to you, never to a model.'}
       </p>
     </div>
   );

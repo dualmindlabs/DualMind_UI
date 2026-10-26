@@ -54,11 +54,11 @@ function HomeLink({ className }: { className?: string }) {
       href="/"
       aria-label="DualMind Arena, home"
       className={cn(
-        'pointer-events-auto hit-area relative inline-flex shrink-0 items-center gap-2.5 rounded-sm',
+        'group/home pointer-events-auto hit-area relative inline-flex shrink-0 items-center gap-2.5 rounded-sm',
         className,
       )}
     >
-      <Emblem className="hidden size-6 sm:block" />
+      <Emblem interactive className="hidden size-6 min-[22rem]:block" />
       <Wordmark title={null} className="h-3" />
     </a>
   );
@@ -117,15 +117,20 @@ export function SiteHeader({
         data-slot="site-header"
         data-variant="app"
         className={cn(
-          'z-40 h-14 border-b border-line bg-glass backdrop-blur-md',
+          'relative z-40 h-14 border-b border-line bg-glass backdrop-blur-md',
           position === 'sticky' && 'sticky top-0',
           className,
         )}
       >
+        {/* The duel in one hairline: Mind A on the left, Mind B on the right, fading to nothing. */}
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 -bottom-px h-px bg-[linear-gradient(90deg,transparent,var(--mind-a-edge)_22%,var(--edge-hi)_50%,var(--mind-b-edge)_78%,transparent)]"
+        />
         <div className="flex h-full items-center gap-2 px-3 sm:gap-3 sm:px-6">
           {leading}
           <HomeLink />
-          <span aria-hidden="true" className="mx-2 hidden h-5 w-px bg-line lg:block" />
+          <span aria-hidden="true" className="mx-2 hidden h-5 w-px bg-line-strong/60 lg:block" />
           <SiteNav activePath={path} label={navLabel} size="sm" className="hidden lg:block" />
           <div className="ml-auto flex items-center gap-1.5">{actions}</div>
         </div>
@@ -153,7 +158,9 @@ export function SiteHeader({
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-y-2 left-1/2 w-(--pill-w) -translate-x-1/2 scale-x-[1.04] scale-y-110 rounded-full border border-line bg-glass opacity-0 shadow-raise-strong backdrop-blur-md transition-[opacity,scale] duration-(--dur-slow) ease-out-expo group-data-condensed/header:pointer-events-auto group-data-condensed/header:scale-100 group-data-condensed/header:opacity-100"
-        />
+        >
+          <span className="absolute inset-x-10 top-0 h-px bg-[linear-gradient(90deg,transparent,var(--edge-hi),transparent)]" />
+        </div>
         <div className="relative flex w-full items-center gap-3 px-4 sm:px-6">
           <div className="flex items-center gap-8 transition-[translate] duration-(--dur-slow) ease-out-expo lg:group-data-condensed/header:translate-x-(--nav-shift)">
             <HomeLink />

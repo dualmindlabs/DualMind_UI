@@ -8,8 +8,8 @@ import { cn } from '@/lib/utils/cn';
 
 export interface CommandPaletteTriggerProps {
   /**
-   * `icon`: a square icon button (phones, compact bars). `pill`: a search-field look with the
-   * shortcut; the word "Search" shows from the `xl` breakpoint.
+   * `icon`: a square icon button (phones, compact bars). `pill`: a recessed search field with
+   * the shortcut; the word "Search" shows from the `xl` breakpoint.
    */
   appearance?: 'icon' | 'pill';
   className?: string;
@@ -43,13 +43,14 @@ export function CommandPaletteTrigger({
   }
 
   // The name comes from the content ("Search Ctrl K"), so it always contains the visible text;
-  // "Search" is read out even where only the shortcut is shown.
+  // "Search" is read out even where only the shortcut is shown. Recessed like a field, so the
+  // header reads as controls on a surface.
   return (
     <Button
-      variant="secondary"
+      variant="ghost"
       size="sm"
       className={cn(
-        'justify-start gap-2 rounded-full pr-1.5 pl-3 text-muted hover:text-fg xl:w-44',
+        'justify-start gap-2 rounded-full border-line bg-bg-deep pr-1.5 pl-3 text-muted shadow-[inset_0_1px_2px_color-mix(in_oklab,black_18%,transparent)] hover:border-line-strong hover:bg-bg-deep hover:text-fg xl:w-52',
         className,
       )}
       {...shared}

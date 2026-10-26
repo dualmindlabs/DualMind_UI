@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Removed
+
+- The classic arena (cutover slice S13a, Harsh's go on 22 Oct): `/?arena=legacy`, "Open the classic arena" in the account menu and the command palette, `/legacy-app.html` (now a 404), the legacy home page and its `js/`, `css/` and `components/`. Signed-in visitors and Supabase auth returns stay on `/` for the new arena; a leftover `?arena=` parameter or `dm.arena` value is ignored. `config.js` stays until the Cloudflare build variables are set (needs-harsh item 1a).
+
 ### Added
 
 - The arena is ready for the four API changes of #28, #29, #30 and #33 ([DualMind_Back#28](https://github.com/dualmindlabs/DualMind_Back/pull/28), [#29](https://github.com/dualmindlabs/DualMind_Back/pull/29), [#30](https://github.com/dualmindlabs/DualMind_Back/pull/30), [#33](https://github.com/dualmindlabs/DualMind_Back/pull/33)) and still works against today's API. A battle without a `comparisonId` (a backup model answered) is accepted, offers no vote and says why in one line ("One model was unavailable, so a backup answered. This battle is not rated."), without naming a model. A 503 `upstream_unavailable` reads "Both models are busy right now. Try again in a moment."; the slug is in the problem registry and `docs/api/problems.md`. A vote the API already counted (409) shows as counted; a vote refused with 403 or 404 closes the vote bar with a short message instead of offering the same call again; a thread that belongs to another account (403) shows "This conversation belongs to another account" with a New battle action. Each battle attempt sends an `Idempotency-Key` (a UUID) that a Try again of the same prompt reuses, and the `/api` proxy forwards that one extra header.

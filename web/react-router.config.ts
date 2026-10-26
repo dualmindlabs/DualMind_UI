@@ -8,8 +8,8 @@ import type { Config } from '@react-router/dev/config';
  *   (`/design` -> build/client/design/index.html) and hydrates in the browser.
  * - `/` is prerendered (the landing page, slice S3), so React Router writes its SPA fallback (the
  *   root route's HydrateFallback) to build/client/__spa-fallback.html; build.js copies it to
- *   dist/ and the Worker serves it for client-only routes. The landing page replaces the legacy
- *   dist/index.html, whose copy lives on as dist/legacy-app.html until the arena slice (S8).
+ *   dist/ and the Worker serves it for client-only routes. The landing page is dist/index.html
+ *   (the classic arena is gone).
  *
  * Add a path here when its slice moves a page to this app (see docs/redesign/migration-plan.md).
  * Client-only routes (/update-password.html, /auth-callback.html, /share/<id>, /settings/) are

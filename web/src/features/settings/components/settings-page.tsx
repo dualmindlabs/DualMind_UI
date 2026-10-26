@@ -25,10 +25,14 @@ import { ShortcutsSection } from './shortcuts-section';
 
 function PageHeading({ email }: { email?: string | null | undefined }) {
   return (
-    <header className="grid gap-2 border-b border-line pb-8">
-      <p className="eyebrow text-mind-a">Account</p>
-      <h1 className="text-h1 font-medium text-fg">Settings</h1>
-      <p className="max-w-reading text-ui text-fg-soft">
+    <header className="relative isolate overflow-hidden rounded-xl border border-line mesh-duel p-6 shadow-lift sm:p-10">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 -z-10 bg-grid opacity-60"
+      />
+      <p className="kicker text-mind-a">Account</p>
+      <h1 className="mt-4 text-h1 text-fg">Settings</h1>
+      <p className="mt-3 max-w-reading text-lead text-fg-soft">
         Your profile, how the Arena looks and behaves, and a copy of your data
         {email ? (
           <>
@@ -58,9 +62,9 @@ function LoadingState() {
       </div>
       <div className="grid max-w-3xl gap-4">
         <Skeleton className="h-6 w-32" />
-        <Skeleton className="h-28 w-full rounded-xl" />
-        <Skeleton className="h-40 w-full rounded-xl" />
-        <Skeleton className="h-40 w-full rounded-xl" />
+        <Skeleton className="h-28 w-full rounded-lg" />
+        <Skeleton className="h-40 w-full rounded-lg" />
+        <Skeleton className="h-40 w-full rounded-lg" />
       </div>
     </div>
   );
@@ -70,7 +74,7 @@ function LoadingState() {
 function NoSessionState({ unavailable }: { unavailable: boolean }) {
   return (
     <div className="max-w-reading pt-10" data-testid="settings-signed-out">
-      <div className="grid justify-items-start gap-5 rounded-xl border border-line bg-surface px-6 py-8 shadow-raise sm:px-8">
+      <div className="surface-duel grid justify-items-start gap-5 px-6 py-8 sm:px-8">
         <span
           aria-hidden="true"
           className="grid size-11 place-items-center rounded-lg border border-line bg-surface-2 text-fg-soft"
@@ -78,7 +82,7 @@ function NoSessionState({ unavailable }: { unavailable: boolean }) {
           <LockKeyhole className="size-5" strokeWidth={1.75} />
         </span>
         <div className="grid gap-2">
-          <h2 className="text-h3 font-medium text-fg">
+          <h2 className="text-h3 text-fg">
             {unavailable ? 'Sign-in is unavailable here' : 'Sign in to see your settings'}
           </h2>
           <p className="text-ui text-fg-soft">
@@ -113,7 +117,7 @@ function SignedIn({ user, profileName }: { user: User; profileName: string | nul
     if (SETTINGS_SECTIONS.some(section => section.id === id)) goToSection(id, false);
   }, []);
   return (
-    <div className="grid gap-10 pt-8 lg:grid-cols-[13.5rem_minmax(0,1fr)] lg:gap-14">
+    <div className="grid gap-10 pt-10 lg:grid-cols-[13.5rem_minmax(0,1fr)] lg:gap-14">
       <SettingsNav className="lg:sticky lg:top-24 lg:self-start" />
       <div className="grid max-w-3xl min-w-0 gap-14">
         <ProfileSection user={user} profileName={profileName} />

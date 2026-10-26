@@ -23,14 +23,14 @@ const THEME_OPTIONS: ReadonlyArray<ChoiceOption<ThemePreference>> = [
     value: 'light',
     label: 'Light',
     icon: Sun,
-    description: 'Bright surfaces',
+    description: 'Paper, warm and bright',
     preview: <ThemePreview preference="light" />,
   },
   {
     value: 'dark',
     label: 'Dark',
     icon: Moon,
-    description: 'Graphite, easy at night',
+    description: 'Midnight, easy at night',
     preview: <ThemePreview preference="dark" />,
   },
 ];
