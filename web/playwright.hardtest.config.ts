@@ -23,14 +23,16 @@ export default defineConfig({
     trace: 'off',
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
-  webServer: EXTERNAL
-    ? undefined
+  ...(EXTERNAL
+    ? {}
     : {
-        command: `node tests/e2e/serve-dist.mjs --port ${PORT}`,
-        url: `http://127.0.0.1:${PORT}/design/?preview=dualmind-preview`,
-        reuseExistingServer: !process.env.CI,
-        timeout: 120_000,
-        stdout: 'pipe',
-        stderr: 'pipe',
-      },
+        webServer: {
+          command: `node tests/e2e/serve-dist.mjs --port ${PORT}`,
+          url: `http://127.0.0.1:${PORT}/design/?preview=dualmind-preview`,
+          reuseExistingServer: !process.env.CI,
+          timeout: 120_000,
+          stdout: 'pipe' as const,
+          stderr: 'pipe' as const,
+        },
+      }),
 });

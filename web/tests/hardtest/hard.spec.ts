@@ -47,7 +47,7 @@ interface Ctx {
 /** Runs the battery on the current page, saves the screenshot and the findings. */
 async function finish(page: Page, ctx: Ctx, found: Probe, extra: string[] = [], opts: { axeExclude?: string[]; allowNoise?: boolean } = {}) {
   await settle(page, 900);
-  const findings = [...extra, ...(await audit(page, { phone: ctx.vp.phone, probe: found, axeExclude: opts.axeExclude }))];
+  const findings = [...extra, ...(await audit(page, { phone: ctx.vp.phone, probe: found, ...(opts.axeExclude ? { axeExclude: opts.axeExclude } : {}) }))];
   const name = shotName(ctx.id, ctx.vp.name, ctx.theme);
   await shot(page, name);
   record(name, { ...ctx, vp: ctx.vp.name, url: page.url(), findings });
@@ -373,7 +373,7 @@ for (const target of [
   { id: 'arena', url: '/?arena=new', mocked: true },
 ]) {
   test(`reduced motion: no endless animation on ${target.id}`, async ({ page }) => {
-    test.skip(LIVE && target.mocked, 'needs mocks');
+    test.skip(Boolean(LIVE && target.mocked), 'needs mocks');
     await page.emulateMedia({ reducedMotion: 'reduce' });
     if (target.mocked) await mockArena(page);
     await page.goto(target.url + (LIVE ? `?preview=${PREVIEW}` : ''));
