@@ -299,7 +299,7 @@ jobs:
       # once, and the Playwright CDN sometimes answers with the wrong certificate
       # (ERR_TLS_CERT_ALTNAME_INVALID on cdn.playwright.dev).
       - name: Cache the Playwright browser
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('web/package-lock.json') }}
