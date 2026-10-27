@@ -95,7 +95,9 @@ export async function audit(
   });
   const broken = await page.evaluate(() =>
     [...document.images]
-      .filter(img => img.getBoundingClientRect().width > 0 && (!img.complete || img.naturalWidth === 0))
+      .filter(
+        img => img.getBoundingClientRect().width > 0 && (!img.complete || img.naturalWidth === 0),
+      )
       .map(img => img.currentSrc || img.src)
       .slice(0, 5),
   );
@@ -114,7 +116,11 @@ export async function audit(
         // Links inside running text are exempt (WCAG 2.5.8 inline exception).
         if (element.tagName === 'A' && style.display === 'inline') {
           const parent = element.parentElement;
-          if (parent && (parent.textContent ?? '').trim().length > (element.textContent ?? '').trim().length + 3) continue;
+          if (
+            parent &&
+            (parent.textContent ?? '').trim().length > (element.textContent ?? '').trim().length + 3
+          )
+            continue;
         }
         // Visually hidden helpers (skip links, sr-only inputs behind a label).
         if (box.width <= 1 || box.height <= 1) continue;
@@ -123,11 +129,17 @@ export async function audit(
         const width = Math.max(box.width, extended ? parseFloat(pseudo.width) || 0 : 0);
         const height = Math.max(box.height, extended ? parseFloat(pseudo.height) || 0 : 0);
         if (width < 43.5 || height < 43.5) {
-          const label = (element.getAttribute('aria-label') ?? element.textContent ?? element.tagName)
+          const label = (
+            element.getAttribute('aria-label') ??
+            element.textContent ??
+            element.tagName
+          )
             .replace(/\s+/g, ' ')
             .trim()
             .slice(0, 30);
-          out.push(`${element.tagName.toLowerCase()} "${label}" ${Math.round(width)}x${Math.round(height)}`);
+          out.push(
+            `${element.tagName.toLowerCase()} "${label}" ${Math.round(width)}x${Math.round(height)}`,
+          );
         }
       }
       return out.slice(0, 12);
@@ -180,5 +192,8 @@ export async function audit(
 }
 
 export function record(id: string, data: Record<string, unknown>) {
-  writeFileSync(path.join(RESULTS, `${id.replace(/[^\w.-]+/g, '_')}.json`), JSON.stringify(data, null, 1));
+  writeFileSync(
+    path.join(RESULTS, `${id.replace(/[^\w.-]+/g, '_')}.json`),
+    JSON.stringify(data, null, 1),
+  );
 }

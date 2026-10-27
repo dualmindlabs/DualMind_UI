@@ -31,7 +31,9 @@ const SHARES = JSON.parse(
 const PREVIEW = 'dualmind-preview';
 
 test.beforeEach(async ({ context, baseURL }) => {
-  await context.addCookies([{ name: 'dm_preview', value: '1', url: baseURL ?? 'http://127.0.0.1:8787' }]);
+  await context.addCookies([
+    { name: 'dm_preview', value: '1', url: baseURL ?? 'http://127.0.0.1:8787' },
+  ]);
 });
 
 async function theme(page: Page, value: 'dark' | 'light') {
@@ -45,9 +47,22 @@ interface Ctx {
 }
 
 /** Runs the battery on the current page, saves the screenshot and the findings. */
-async function finish(page: Page, ctx: Ctx, found: Probe, extra: string[] = [], opts: { axeExclude?: string[]; allowNoise?: boolean } = {}) {
+async function finish(
+  page: Page,
+  ctx: Ctx,
+  found: Probe,
+  extra: string[] = [],
+  opts: { axeExclude?: string[]; allowNoise?: boolean } = {},
+) {
   await settle(page, 900);
-  const findings = [...extra, ...(await audit(page, { phone: ctx.vp.phone, probe: found, ...(opts.axeExclude ? { axeExclude: opts.axeExclude } : {}) }))];
+  const findings = [
+    ...extra,
+    ...(await audit(page, {
+      phone: ctx.vp.phone,
+      probe: found,
+      ...(opts.axeExclude ? { axeExclude: opts.axeExclude } : {}),
+    })),
+  ];
   const name = shotName(ctx.id, ctx.vp.name, ctx.theme);
   await shot(page, name);
   record(name, { ...ctx, vp: ctx.vp.name, url: page.url(), findings });
@@ -105,7 +120,12 @@ for (const vp of VIEWPORTS) {
           if (route.status && response?.status() !== route.status) {
             extra.push(`expected HTTP ${route.status}, got ${response?.status()}`);
           }
-          if (!route.status && response && response.status() >= 400 && route.id !== 'share-unknown-id') {
+          if (
+            !route.status &&
+            response &&
+            response.status() >= 400 &&
+            route.id !== 'share-unknown-id'
+          ) {
             extra.push(`unexpected HTTP ${response.status()}`);
           }
           // The 404 page logs the failed document load itself: not an app error.
@@ -147,7 +167,11 @@ for (const vp of VIEWPORTS) {
   for (const th of THEMES) {
     test.describe(`states ${vp.name} ${th}`, () => {
       test.skip(LIVE, 'forced states need mocks');
-      test.use({ viewport: { width: vp.width, height: vp.height }, hasTouch: vp.phone, isMobile: vp.phone });
+      test.use({
+        viewport: { width: vp.width, height: vp.height },
+        hasTouch: vp.phone,
+        isMobile: vp.phone,
+      });
 
       test('leaderboard loading', async ({ page }) => {
         const found = probe(page, true);
@@ -164,7 +188,10 @@ for (const vp of VIEWPORTS) {
         release();
       });
 
-      for (const [state, status, retry] of [['error', 500, undefined], ['rate-limited', 429, '30']] as const) {
+      for (const [state, status, retry] of [
+        ['error', 500, undefined],
+        ['rate-limited', 429, '30'],
+      ] as const) {
         test(`leaderboard ${state}`, async ({ page }) => {
           const found = probe(page, true);
           await theme(page, th);
@@ -173,11 +200,17 @@ for (const vp of VIEWPORTS) {
               status,
               contentType: 'application/problem+json',
               headers: retry ? { 'Retry-After': retry } : {},
-              body: JSON.stringify({ type: `${PROBLEM}${status === 429 ? 'rate-limited' : 'internal'}`, title: 'x', status }),
+              body: JSON.stringify({
+                type: `${PROBLEM}${status === 429 ? 'rate-limited' : 'internal'}`,
+                title: 'x',
+                status,
+              }),
             }),
           );
           await page.goto('/leaderboard/');
-          await expect(page.getByRole('alert').filter({ hasText: 'did not load' })).toBeVisible({ timeout: 20_000 });
+          await expect(page.getByRole('alert').filter({ hasText: 'did not load' })).toBeVisible({
+            timeout: 20_000,
+          });
           await finish(page, { id: `leaderboard-${state}`, vp, theme: th }, found);
         });
       }
@@ -186,7 +219,10 @@ for (const vp of VIEWPORTS) {
         const found = probe(page, true);
         await theme(page, th);
         await page.addInitScript(() => {
-          Object.defineProperty(window.navigator, 'onLine', { configurable: true, get: () => false });
+          Object.defineProperty(window.navigator, 'onLine', {
+            configurable: true,
+            get: () => false,
+          });
           const real = window.matchMedia.bind(window);
           window.matchMedia = (query: string) => {
             if (!query.includes('prefers-color-scheme')) throw new Error('forced crash');
@@ -224,7 +260,11 @@ for (const vp of VIEWPORTS) {
   for (const th of THEMES) {
     test.describe(`arena ${vp.name} ${th}`, () => {
       test.skip(LIVE, 'signed-in screens need mocks');
-      test.use({ viewport: { width: vp.width, height: vp.height }, hasTouch: vp.phone, isMobile: vp.phone });
+      test.use({
+        viewport: { width: vp.width, height: vp.height },
+        hasTouch: vp.phone,
+        isMobile: vp.phone,
+      });
 
       test('empty, typing, awaiting vote, reveal, share dialog, rematch', async ({ page }) => {
         const found = probe(page);
@@ -248,7 +288,9 @@ for (const vp of VIEWPORTS) {
         await expect(turn).toHaveAttribute('data-phase', 'revealed');
         await finish(page, { id: 'arena-4-reveal', vp, theme: th }, found);
 
-        const share = page.getByTestId('reveal-panel').getByRole('button', { name: 'Share this battle' });
+        const share = page
+          .getByTestId('reveal-panel')
+          .getByRole('button', { name: 'Share this battle' });
         await share.click();
         await expect(page.getByRole('dialog', { name: 'Share this battle' })).toBeVisible();
         await finish(page, { id: 'arena-5-share-dialog', vp, theme: th }, found);
@@ -268,7 +310,10 @@ for (const vp of VIEWPORTS) {
         await finish(page, { id: 'arena-thread-history', vp, theme: th }, found);
       });
 
-      test('battle failed, rate limited, offline notice, arena crash panel', async ({ page, context }) => {
+      test('battle failed, rate limited, offline notice, arena crash panel', async ({
+        page,
+        context,
+      }) => {
         const found = probe(page, true);
         await theme(page, th);
         await mockArena(page);
@@ -278,7 +323,12 @@ for (const vp of VIEWPORTS) {
               status,
               contentType: 'application/problem+json',
               headers: extraHeaders,
-              body: JSON.stringify({ type: `${PROBLEM}${status === 429 ? 'rate-limited' : 'internal'}`, title: 'x', status, retryAfter: 30 }),
+              body: JSON.stringify({
+                type: `${PROBLEM}${status === 429 ? 'rate-limited' : 'internal'}`,
+                title: 'x',
+                status,
+                retryAfter: 30,
+              }),
             }),
           );
         await page.goto('/?arena=new');
@@ -286,13 +336,20 @@ for (const vp of VIEWPORTS) {
         await fail(500);
         await page.getByRole('textbox', { name: 'Your prompt' }).fill(PROMPT);
         await page.keyboard.press('Enter');
-        await expect(page.getByRole('alert').filter({ hasText: 'did not arrive' })).toBeVisible({ timeout: 15_000 });
+        await expect(page.getByRole('alert').filter({ hasText: 'did not arrive' })).toBeVisible({
+          timeout: 15_000,
+        });
         await finish(page, { id: 'arena-state-battle-failed', vp, theme: th }, found);
 
         await page.unroute('**/api/arena/dualchat');
         await fail(429, { 'Retry-After': '30' });
-        await page.getByRole('button', { name: /Try again/ }).first().click();
-        await expect(page.getByRole('alert').filter({ hasText: /Too many requests/ })).toBeVisible({ timeout: 15_000 });
+        await page
+          .getByRole('button', { name: /Try again/ })
+          .first()
+          .click();
+        await expect(page.getByRole('alert').filter({ hasText: /Too many requests/ })).toBeVisible({
+          timeout: 15_000,
+        });
         await finish(page, { id: 'arena-state-rate-limited', vp, theme: th }, found);
 
         await context.setOffline(true);
@@ -328,7 +385,9 @@ for (const vp of VIEWPORTS) {
 test.describe('keyboard flow through the arena (desktop)', () => {
   test.skip(LIVE, 'needs mocks');
   test.use({ viewport: { width: 1440, height: 900 } });
-  test('Tab reaches the prompt, Enter sends, 1 votes, Tab walks the next steps', async ({ page }) => {
+  test('Tab reaches the prompt, Enter sends, 1 votes, Tab walks the next steps', async ({
+    page,
+  }) => {
     const found = probe(page);
     await mockArena(page);
     await page.goto('/?arena=new');
@@ -337,7 +396,12 @@ test.describe('keyboard flow through the arena (desktop)', () => {
     let reached = false;
     for (let i = 0; i < 40 && !reached; i += 1) {
       await page.keyboard.press('Tab');
-      reached = await page.evaluate(() => (document.activeElement as HTMLElement | null)?.getAttribute('aria-label') === 'Your prompt' || (document.activeElement as HTMLElement | null)?.matches('textarea') === true);
+      reached = await page.evaluate(
+        () =>
+          (document.activeElement as HTMLElement | null)?.getAttribute('aria-label') ===
+            'Your prompt' ||
+          (document.activeElement as HTMLElement | null)?.matches('textarea') === true,
+      );
     }
     if (!reached) findings.push('Tab never reached the prompt box in 40 presses');
     await page.keyboard.type('Keyboard only battle');
@@ -348,18 +412,36 @@ test.describe('keyboard flow through the arena (desktop)', () => {
     await page.keyboard.press('1');
     await expect(turn).toHaveAttribute('data-phase', 'revealed');
     const panel = page.getByTestId('reveal-panel');
-    if (!(await panel.evaluate(el => el === document.activeElement))) findings.push('focus did not move to the result panel after the vote');
+    if (!(await panel.evaluate(el => el === document.activeElement)))
+      findings.push('focus did not move to the result panel after the vote');
     const names: string[] = [];
     for (let i = 0; i < 4; i += 1) {
       await page.keyboard.press('Tab');
-      names.push(await page.evaluate(() => (document.activeElement?.textContent ?? '').replace(/\s+/g, ' ').trim()));
+      names.push(
+        await page.evaluate(() =>
+          (document.activeElement?.textContent ?? '').replace(/\s+/g, ' ').trim(),
+        ),
+      );
     }
-    if (!names.some(name => /Rematch/.test(name))) findings.push(`Tab from the panel does not reach Rematch: ${names.join(' | ')}`);
+    if (!names.some(name => /Rematch/.test(name)))
+      findings.push(`Tab from the panel does not reach Rematch: ${names.join(' | ')}`);
     await page.keyboard.press('Control+k');
-    if (!(await page.getByRole('combobox').isVisible().catch(() => false))) findings.push('Ctrl+K did not open the command palette');
+    if (
+      !(await page
+        .getByRole('combobox')
+        .isVisible()
+        .catch(() => false))
+    )
+      findings.push('Ctrl+K did not open the command palette');
     await page.keyboard.press('Escape');
     await page.keyboard.press('?');
-    if (!(await page.getByRole('dialog', { name: 'Keyboard shortcuts' }).isVisible().catch(() => false))) findings.push('? did not open the shortcuts');
+    if (
+      !(await page
+        .getByRole('dialog', { name: 'Keyboard shortcuts' })
+        .isVisible()
+        .catch(() => false))
+    )
+      findings.push('? did not open the shortcuts');
     findings.push(...found.errors);
     record('behaviour-keyboard-arena', { findings });
     expect.soft(findings).toEqual([]);
@@ -384,20 +466,43 @@ for (const target of [
         .filter(a => a.playState === 'running')
         .map(a => {
           const timing = a.effect?.getTiming();
-          const name = (a as CSSAnimation).animationName ?? (a as CSSTransition).transitionProperty ?? 'anim';
-          return { name, infinite: timing?.iterations === Infinity, duration: Number(timing?.duration ?? 0) };
+          const name =
+            (a as CSSAnimation).animationName ?? (a as CSSTransition).transitionProperty ?? 'anim';
+          return {
+            name,
+            infinite: timing?.iterations === Infinity,
+            duration: Number(timing?.duration ?? 0),
+          };
         })
         .filter(a => a.infinite || a.duration > 600)
         .slice(0, 6),
     );
     record(`behaviour-reduced-motion-${target.id}`, { running });
-    expect.soft(running, 'long or endless animations while prefers-reduced-motion: reduce').toEqual([]);
+    expect
+      .soft(running, 'long or endless animations while prefers-reduced-motion: reduce')
+      .toEqual([]);
   });
 }
 
 test('internal link crawl: every same-origin link answers < 400', async ({ page, context }) => {
   test.setTimeout(240_000);
-  const seeds = ['/', '/leaderboard/', '/models/', '/about/', '/credits/', '/how-it-works/', '/faq/', '/privacy/', '/terms/', '/cookies/', '/developers/', '/login/', '/signup/', '/forgot-password/', '/problems/'];
+  const seeds = [
+    '/',
+    '/leaderboard/',
+    '/models/',
+    '/about/',
+    '/credits/',
+    '/how-it-works/',
+    '/faq/',
+    '/privacy/',
+    '/terms/',
+    '/cookies/',
+    '/developers/',
+    '/login/',
+    '/signup/',
+    '/forgot-password/',
+    '/problems/',
+  ];
   const seen = new Set<string>();
   const queue = [...seeds];
   const bad: string[] = [];
@@ -425,7 +530,8 @@ test('internal link crawl: every same-origin link answers < 400', async ({ page,
       if (/^\/(api|cdn-cgi)\//.test(link.pathname)) continue;
       if (link.hash && link.pathname === here.pathname) {
         const id = decodeURIComponent(link.hash.slice(1));
-        if (id && (await page.locator(`[id="${id}"]`).count()) === 0) hashBad.push(`${url} -> #${id}`);
+        if (id && (await page.locator(`[id="${id}"]`).count()) === 0)
+          hashBad.push(`${url} -> #${id}`);
         continue;
       }
       const next = link.pathname + link.search;
@@ -438,7 +544,13 @@ test('internal link crawl: every same-origin link answers < 400', async ({ page,
     }
   }
   // Also the other files a crawler reads.
-  for (const file of ['/sitemap.xml', '/robots.txt', '/llms.txt', '/favicon.ico', '/manifest.json']) {
+  for (const file of [
+    '/sitemap.xml',
+    '/robots.txt',
+    '/llms.txt',
+    '/favicon.ico',
+    '/manifest.json',
+  ]) {
     const r = await context.request.get(file);
     if (r.status() >= 400) bad.push(`${r.status()} ${file}`);
   }
@@ -449,7 +561,17 @@ test('internal link crawl: every same-origin link answers < 400', async ({ page,
 
 test('unknown paths answer a real 404; known ones 200', async ({ context }) => {
   const findings: string[] = [];
-  for (const p of ['/nope', '/nope/', '/a/b/c/d', '/leaderboard/nope', '/models/nope/x', '/share/x/y/z', '/index.php', '/.env', '/wp-admin/']) {
+  for (const p of [
+    '/nope',
+    '/nope/',
+    '/a/b/c/d',
+    '/leaderboard/nope',
+    '/models/nope/x',
+    '/share/x/y/z',
+    '/index.php',
+    '/.env',
+    '/wp-admin/',
+  ]) {
     const r = await context.request.get(p, { maxRedirects: 0 });
     if (r.status() !== 404) findings.push(`${p} -> ${r.status()} (want 404)`);
   }
@@ -470,16 +592,21 @@ test('security headers and CSP on HTML, API and 404 responses', async ({ context
     if (!csp) findings.push(`${p}: no Content-Security-Policy`);
     else {
       if (!h['content-security-policy']) findings.push(`${p}: CSP is report-only`);
-      if (/script-src[^;]*'unsafe-inline'/.test(csp)) findings.push(`${p}: script-src allows unsafe-inline`);
-      if (/script-src[^;]*'unsafe-eval'/.test(csp)) findings.push(`${p}: script-src allows unsafe-eval`);
-      if (!/frame-ancestors/.test(csp) && !h['x-frame-options']) findings.push(`${p}: no frame-ancestors`);
+      if (/script-src[^;]*'unsafe-inline'/.test(csp))
+        findings.push(`${p}: script-src allows unsafe-inline`);
+      if (/script-src[^;]*'unsafe-eval'/.test(csp))
+        findings.push(`${p}: script-src allows unsafe-eval`);
+      if (!/frame-ancestors/.test(csp) && !h['x-frame-options'])
+        findings.push(`${p}: no frame-ancestors`);
       if (!/object-src 'none'/.test(csp)) findings.push(`${p}: object-src not none`);
     }
-    if (h['x-content-type-options'] !== 'nosniff') findings.push(`${p}: x-content-type-options missing`);
+    if (h['x-content-type-options'] !== 'nosniff')
+      findings.push(`${p}: x-content-type-options missing`);
     if (!h['referrer-policy']) findings.push(`${p}: referrer-policy missing`);
     if (!h['permissions-policy']) findings.push(`${p}: permissions-policy missing`);
     if (LIVE && !h['strict-transport-security']) findings.push(`${p}: HSTS missing`);
-    if (h['server'] && /\d/.test(h['server'])) findings.push(`${p}: server header leaks a version (${h['server']})`);
+    if (h['server'] && /\d/.test(h['server']))
+      findings.push(`${p}: server header leaks a version (${h['server']})`);
   }
   record('behaviour-security-headers', { findings });
   expect.soft(findings).toEqual([]);
@@ -490,7 +617,9 @@ test('CSP violations on the main pages', async ({ page }) => {
   await page.exposeFunction('reportCsp', (text: string) => violations.push(text));
   await page.addInitScript(() =>
     document.addEventListener('securitypolicyviolation', event =>
-      (window as unknown as { reportCsp: (t: string) => void }).reportCsp(`${event.violatedDirective} ${event.blockedURI}`),
+      (window as unknown as { reportCsp: (t: string) => void }).reportCsp(
+        `${event.violatedDirective} ${event.blockedURI}`,
+      ),
     ),
   );
   for (const p of ['/', '/leaderboard/', '/models/', '/faq/', '/login/', '/developers/']) {
