@@ -36,6 +36,6 @@
     "vite": "8.3.6"
   },
   "overrides": {
-    "playwright-core": "1.61.1"
+    "playwright-core": "1.65.0"
   }
 }
