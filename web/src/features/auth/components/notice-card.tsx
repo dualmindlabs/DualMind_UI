@@ -18,12 +18,7 @@ export function NoticeCard({
   className?: string;
 }) {
   return (
-    <section
-      className={cn(
-        'grid gap-4 rounded-lg border border-line bg-surface p-5 shadow-raise',
-        className,
-      )}
-    >
+    <section className={cn('grid gap-4 surface-inset p-5', className)}>
       <div className="flex items-start gap-3">
         <span
           aria-hidden="true"

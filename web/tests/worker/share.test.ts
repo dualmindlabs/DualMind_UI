@@ -124,6 +124,9 @@ describe('share ids', () => {
   it('knows which paths are the share page', () => {
     expect(isShareRoute('/share')).toBe(true);
     expect(isShareRoute('/share/x')).toBe(true);
+    expect(isShareRoute('/share/x/')).toBe(true);
+    expect(isShareRoute('/share/x/y')).toBe(false);
+    expect(isShareRoute('/share/x/y/z')).toBe(false);
     expect(isShareRoute('/shared')).toBe(false);
     expect(isShareRoute('/')).toBe(false);
   });

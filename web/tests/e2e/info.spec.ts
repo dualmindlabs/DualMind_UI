@@ -488,7 +488,8 @@ test.describe('404', () => {
       expect(response.headers()['x-robots-tag'], path).toBe('noindex');
       expect(response.headers()['content-security-policy'], path).toContain("script-src 'self'");
       const html = await response.text();
-      expect(html, path).toContain('This page took a wrong turn.');
+      expect(html, path).toContain('This page took a');
+      expect(html, path).toContain('wrong turn.');
       expect(html, path).toContain('<title>Page not found · DualMind Arena</title>');
       expect(html, path).toMatch(/<meta name="robots" content="noindex"\/?>/);
     }
@@ -519,12 +520,56 @@ test.describe('404', () => {
     expect(errors).toEqual([]);
   });
 
-  test('the fuzzy 404 is plain text under reduced motion', async ({ page }) => {
+  test('the 404 numerals are text, not a canvas, under reduced motion', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/does-not-exist');
     await settle(page, 400);
     expect(await page.locator('h1 canvas').count()).toBe(0);
     await expect(page.locator('h1')).toContainText('404');
+  });
+
+  test('a nested address hydrates cleanly, keeps the theme and marks no page as current', async ({
+    page,
+  }) => {
+    // A nested address under a nav link (/leaderboard/...) used to mark that link as current on
+    // the client only: hydration error #418, then the unthemed root error screen.
+    const errors: string[] = [];
+    page.on('console', message => {
+      if (message.type() !== 'error') return;
+      if (message.text().includes('404 (Not Found)')) return;
+      errors.push(message.text());
+    });
+    page.on('pageerror', error => errors.push(error.message));
+    await storeTheme(page, 'dark');
+    for (const path of ['/leaderboard/nope/deeper', '/about/nope', '/models/x/y/z']) {
+      await page.goto(path);
+      await settle(page, 600);
+      await expect(page.getByTestId('root-error')).toHaveCount(0);
+      await expect(page.getByRole('heading', { level: 1 })).toContainText('404');
+      await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+      await expect(page.locator('header [aria-current="page"]')).toHaveCount(0);
+      await expect(page.getByTestId('not-found-prompt')).toContainText(path);
+    }
+    expect(errors).toEqual([]);
+  });
+
+  test('the duel: a vote reveals the names and the verdict, and can be asked again', async ({
+    page,
+  }) => {
+    await page.goto('/does-not-exist');
+    await settle(page, 600);
+    const group = page.getByRole('group', { name: 'Which answer is better?' });
+    await expect(page.getByTestId('not-found-pane-a')).toContainText('Hidden until you vote');
+    await group.getByRole('button', { name: 'Both bad' }).click();
+    await expect(group.getByRole('button', { name: 'Both bad' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    await expect(page.getByTestId('not-found-pane-a')).toContainText('typo.html');
+    await expect(page.getByTestId('not-found-pane-b')).toContainText('moved.html');
+    await expect(page.getByTestId('not-found-verdict')).toContainText('The only correct vote');
+    await page.getByRole('button', { name: 'Ask again' }).click();
+    await expect(page.getByTestId('not-found-pane-a')).toContainText('Hidden until you vote');
   });
 
   for (const theme of ['dark', 'light'] as const) {

@@ -28,6 +28,7 @@
 }
 @import './tokens.css';
 @import './base.css';
+@import './surfaces.css';
 @import './prose.css';
 @import './effects.css';
 @import './print.css';

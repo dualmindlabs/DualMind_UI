@@ -1,26 +1,38 @@
-import { CloudOff, MessageSquareText, Plus, Scale, Share2, Shuffle } from 'lucide-react';
+import { CloudOff, MessageSquareText, Plus, Share2, Shuffle } from 'lucide-react';
+import { motion } from 'motion/react';
 import { useEffect, useId, useRef } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Kbd } from '@/components/ui/kbd';
-import { RoleBadge } from '@/components/ui/role-badge';
-import { resolveDisplayName } from '@/lib/models/display-name';
+import { ModelMark } from '@/components/ui/model-mark';
+import { useShouldReduceMotion } from '@/hooks/use-should-reduce-motion';
+import { modelMaker, resolveDisplayName } from '@/lib/models/display-name';
 import { cn } from '@/lib/utils/cn';
 
 import { useArena } from '../hooks/use-arena';
 import type { LiveAnswer, LiveTurn } from '../lib/battle-machine';
 import { VOTE_LABELS } from '../lib/turns';
+import { ModelRating, RatingOdds } from './model-rating';
 
 function nameOf(answer: LiveAnswer | null): string {
   const model = answer?.model;
   return model ? resolveDisplayName(model.name, model.displayName) : 'Unknown model';
 }
 
+const VERDICT_TONE = {
+  left: 'text-mind-a',
+  right: 'text-mind-b-text',
+  tie: 'text-fg',
+  'both-bad': 'text-fg',
+} as const;
+
 /**
- * The end of a vote, under the newest turn: the verdict, both names in full (the pane headers
- * may cut a long name short, and after a long answer they are a screen away) and what comes next:
- * a follow-up on the same pair, a rematch (the same prompt for two other models), sharing, a new
- * battle.
+ * The end of a vote, under the two cards: the verdict as a headline across the middle of the
+ * stage, then the two models (name, maker, standing counting up; the pick marked) with a
+ * tug-of-war bar that settles on how the board expects the pair to fare, then what comes next.
+ * The cards above have already turned over to the model names and the winner glows. Both names
+ * are written in full here (the card headers may cut a long name short). Reduced motion:
+ * everything is simply there.
  *
  * The vote bar leaves when the vote lands, and focus would fall back to the page. When it does,
  * it moves here instead (a group named by the verdict), so Tab continues with the next steps; the
@@ -31,6 +43,7 @@ export function RevealPanel({ turn }: { turn: LiveTurn }) {
     useArena();
   const panel = useRef<HTMLDivElement>(null);
   const titleId = useId();
+  const reduce = useShouldReduceMotion();
 
   useEffect(() => {
     const active = document.activeElement;
@@ -52,20 +65,26 @@ export function RevealPanel({ turn }: { turn: LiveTurn }) {
       aria-labelledby={titleId}
       tabIndex={-1}
       data-testid="reveal-panel"
-      className="grid gap-3 rounded-xl border border-line bg-surface p-3 shadow-raise motion-safe:animate-fade-in sm:p-4"
+      className="relative mx-auto grid w-full max-w-3xl justify-items-center gap-8 pt-4 pb-6 text-center outline-none motion-safe:animate-fade-in"
     >
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-        <p
-          id={titleId}
-          data-testid="verdict"
-          className="flex items-center gap-2 text-ui-sm text-fg-soft"
-        >
-          <Scale aria-hidden="true" className="size-4 text-human" strokeWidth={1.75} />
-          Your verdict: <span className="font-medium text-human">{VOTE_LABELS[turn.vote]}</span>
+      <div className="grid justify-items-center gap-2">
+        <p id={titleId} data-testid="verdict" className="grid justify-items-center gap-1">
+          <span className="text-ui-sm font-medium text-fg-soft">Your verdict:</span>{' '}
+          <motion.span
+            initial={reduce ? false : { opacity: 0, y: 18, scale: 0.94 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ type: 'spring', stiffness: 140, damping: 18, delay: 0.05 }}
+            className={cn(
+              'text-h2 font-semibold tracking-tight text-balance',
+              VERDICT_TONE[turn.vote],
+            )}
+          >
+            {VOTE_LABELS[turn.vote]}
+          </motion.span>
         </p>
         {pending ? (
           <span
-            className="inline-flex items-center gap-1.5 rounded-full border border-warn/60 px-2.5 py-0.5 text-caption text-warn"
+            className="inline-flex w-fit items-center gap-1.5 rounded-full border border-warn/60 px-2.5 py-0.5 text-caption text-warn"
             data-testid="vote-pending"
           >
             <CloudOff aria-hidden="true" className="size-3.5" strokeWidth={1.75} />
@@ -74,35 +93,50 @@ export function RevealPanel({ turn }: { turn: LiveTurn }) {
         ) : null}
       </div>
 
-      <ul aria-label="The two models" className="grid gap-2 sm:grid-cols-2">
-        {sides.map(({ side, answer, picked }) => (
-          <li
-            key={side}
-            data-testid="reveal-name"
-            className={cn(
-              'flex min-w-0 items-start gap-2.5 rounded-lg border px-3 py-2',
-              picked ? 'border-human/50 bg-human-tint' : 'border-line bg-surface-2',
-            )}
-          >
-            <RoleBadge who={side} letterOnly size="sm" className="mt-px" />
-            <span className="min-w-0 text-ui-sm font-medium [overflow-wrap:anywhere] text-fg">
-              {nameOf(answer)}
-            </span>
-            {picked ? (
-              <span className="ms-auto shrink-0 pt-0.5 eyebrow whitespace-nowrap text-human">
-                Your pick
+      <div className="grid w-full gap-5">
+        <ul aria-label="The two models" className="grid w-full grid-cols-2 gap-3 sm:gap-8">
+          {sides.map(({ side, answer, picked }, index) => (
+            <motion.li
+              key={side}
+              data-testid="reveal-name"
+              initial={reduce ? false : { opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                type: 'spring',
+                stiffness: 160,
+                damping: 22,
+                delay: 0.25 + index * 0.14,
+              }}
+              className={cn(
+                'grid min-w-0 content-start gap-2',
+                side === 'a' ? 'justify-items-start text-start' : 'justify-items-end text-end',
+              )}
+            >
+              <ModelMark name={nameOf(answer)} who={side} size="lg" />
+              <span className="min-w-0 text-ui font-semibold tracking-tight [overflow-wrap:anywhere] text-fg">
+                {nameOf(answer)}
               </span>
-            ) : null}
-          </li>
-        ))}
-      </ul>
+              {answer?.model ? (
+                <span className="text-caption text-fg-soft">
+                  {modelMaker(answer.model.name, answer.model.provider ?? '').label}
+                </span>
+              ) : null}
+              <ModelRating answer={answer} />
+              {picked ? (
+                <span className="rounded-full border border-human/50 bg-human-tint px-2.5 py-0.5 text-caption font-semibold whitespace-nowrap text-human">
+                  Your pick
+                </span>
+              ) : null}
+            </motion.li>
+          ))}
+        </ul>
+        <RatingOdds a={turn.a} b={turn.b} />
+      </div>
 
-      {/* Phones: two columns (New battle across both when it would sit alone). Wider: one row,
-          New battle at the end. */}
-      <div className="grid grid-cols-2 gap-2 border-t border-line pt-3 sm:flex sm:flex-wrap sm:items-center">
+      {/* The next steps: three quiet ones, then the one that matters. */}
+      <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
         <Button
-          variant="secondary"
-          size="sm"
+          variant="ghost"
           aria-keyshortcuts={shortcutsEnabled ? '/' : undefined}
           onClick={focusComposer}
         >
@@ -116,8 +150,7 @@ export function RevealPanel({ turn }: { turn: LiveTurn }) {
         </Button>
         {turn.mode === 'battle' ? (
           <Button
-            variant="secondary"
-            size="sm"
+            variant="ghost"
             title="The same prompt, two other models"
             onClick={() => rematch(turn.prompt)}
           >
@@ -126,17 +159,17 @@ export function RevealPanel({ turn }: { turn: LiveTurn }) {
           </Button>
         ) : null}
         {shareId ? (
-          <Button variant="ghost" size="sm" onClick={() => openShare(shareId)}>
+          <Button variant="ghost" onClick={() => openShare(shareId)}>
             <Share2 aria-hidden="true" strokeWidth={1.75} />
             Share this battle
           </Button>
         ) : null}
         <Button
           variant="primary"
-          size="sm"
+          size="lg"
           aria-keyshortcuts={shortcutsEnabled ? 'N' : undefined}
           onClick={newBattle}
-          className="odd:col-span-2 sm:ms-auto"
+          className="max-sm:w-full"
         >
           <Plus aria-hidden="true" strokeWidth={1.75} />
           New battle

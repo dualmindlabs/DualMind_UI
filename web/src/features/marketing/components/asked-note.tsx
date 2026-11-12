@@ -10,7 +10,7 @@ export function AskedNote({ prompt }: { prompt: string }) {
   return (
     <div
       data-testid="asked-note"
-      className="flex flex-col gap-3 rounded-lg border border-human/40 bg-human-tint p-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6"
+      className="flex flex-col gap-3 rounded-xl border border-human/40 bg-human-tint p-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6"
     >
       <p className="min-w-0 text-ui text-fg">
         <span className="font-medium">You asked: </span>

@@ -27,8 +27,8 @@ export function ControlsSection() {
         <div className="rounded-lg border border-line bg-surface p-5 shadow-raise sm:p-6">
           <h3 className="text-h3 font-semibold">Buttons</h3>
           <p className="mt-1 text-ui-sm text-fg-soft">
-            Primary for the main action, human (terra) for your own action, outline for the rest.
-            The full set is in Components below.
+            Primary for the main action, Mind B (terracotta) for the other corner, human (champagne)
+            for your own action, outline for the rest. The full set is in Components below.
           </p>
           <div className="mt-6 flex flex-wrap items-center gap-3">
             <Button>

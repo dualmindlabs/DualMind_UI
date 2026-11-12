@@ -1,7 +1,8 @@
 /**
- * Badge: a short label in the DM Mono label voice.
+ * Badge: a short label in the Geist Mono label voice.
  * Source: shadcn/ui `badge` (base-vega), MIT, see ./LICENSE.md.
- * Changes: our variants (neutral, outline, the three roles, status with a dot), 12px caps.
+ * Changes: our variants (neutral, outline, the three roles, status with a dot, solid for a count or a
+ * winner), 12px caps.
  * Role badges with the A / B letters are in ./role-badge.tsx.
  */
 import { cva, type VariantProps } from 'class-variance-authority';
@@ -10,11 +11,13 @@ import type { ComponentProps } from 'react';
 import { cn } from '@/lib/utils/cn';
 
 export const badgeVariants = cva(
-  'inline-flex h-6 w-fit shrink-0 items-center gap-1.5 overflow-hidden rounded-sm border px-2 font-mono text-label leading-none font-medium tracking-[0.16em] whitespace-nowrap uppercase [&>svg]:size-3 [&>svg]:shrink-0',
+  'inline-flex h-6 w-fit shrink-0 items-center gap-1.5 overflow-hidden rounded-sm border px-2 font-mono text-label leading-none font-medium tracking-[0.1em] whitespace-nowrap uppercase [&>svg]:size-3 [&>svg]:shrink-0',
   {
     variants: {
       variant: {
-        neutral: 'border-line bg-surface-2 text-fg-soft',
+        neutral: 'border-line bg-surface-2 text-fg-soft shadow-raise',
+        // A filled badge: the winner, a rank, a count that matters. Ink on cyan, white on teal.
+        solid: 'border-transparent bg-mind-a text-on-accent',
         outline: 'border-line-strong text-fg-soft',
         'mind-a': 'border-mind-a/45 bg-mind-a-tint text-mind-a',
         'mind-b': 'border-mind-b/55 bg-mind-b-tint text-mind-b-text',

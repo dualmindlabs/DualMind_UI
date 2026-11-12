@@ -1,6 +1,9 @@
 import type { ReactNode } from 'react';
 
-/** Eyebrow, page heading (one phrase in the human voice) and a lead line. */
+/**
+ * Kicker, page heading (one phrase in the human voice, underlined) and a lead line. The kicker is
+ * the quiet Geist lead-in with its short rule; the heading is the tight Geist 600 `text-h1`.
+ */
 export function AuthHeading({
   eyebrow,
   title,
@@ -9,14 +12,14 @@ export function AuthHeading({
 }: {
   eyebrow: string;
   title: string;
-  /** The phrase after the title in Playfair italic, terra. */
+  /** The phrase after the title, underlined in the human colour. */
   voice?: string;
   lead?: ReactNode;
 }) {
   return (
-    <div className="grid gap-3">
-      <p className="eyebrow text-mind-a">{eyebrow}</p>
-      <h1 className="text-h1 font-medium text-balance text-fg">
+    <div className="grid gap-4">
+      <p className="kicker text-mind-a">{eyebrow}</p>
+      <h1 className="text-h2 text-balance text-fg">
         {title}
         {voice ? (
           <>
@@ -25,7 +28,7 @@ export function AuthHeading({
           </>
         ) : null}
       </h1>
-      {lead ? <p className="text-body text-fg-soft">{lead}</p> : null}
+      {lead ? <p className="text-lead text-fg-soft">{lead}</p> : null}
     </div>
   );
 }

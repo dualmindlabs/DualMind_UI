@@ -84,7 +84,9 @@ test.describe('header and command palette (desktop)', () => {
     await settle(page, 300);
 
     // A theme command: the page switches without leaving.
+    // Wait for the palette's input before typing: keys pressed while it is still opening are lost.
     await page.keyboard.press('Control+K');
+    await expect(palette(page).getByRole('combobox')).toBeFocused();
     await page.keyboard.type('light theme');
     await expect(palette(page).getByRole('option', { selected: true })).toContainText(
       'Use the light theme',
@@ -95,6 +97,7 @@ test.describe('header and command palette (desktop)', () => {
 
     // A page: Enter navigates (the leaderboard is still a legacy page, so a full load).
     await page.keyboard.press('Control+K');
+    await expect(palette(page).getByRole('combobox')).toBeFocused();
     await page.keyboard.type('leader');
     const selected = palette(page).getByRole('option', { selected: true });
     await expect(selected).toContainText('Leaderboard');
@@ -241,6 +244,7 @@ for (const viewport of viewports) {
       // The command palette, filtered.
       await page.keyboard.press('Control+K');
       await expect(palette(page)).toBeVisible();
+      await expect(palette(page).getByRole('combobox')).toBeFocused();
       await page.keyboard.type('the');
       await page.waitForTimeout(400);
       await page.screenshot({ path: name('palette'), animations: 'disabled' });

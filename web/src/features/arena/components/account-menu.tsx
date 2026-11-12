@@ -1,4 +1,4 @@
-import { Keyboard, LogOut, Settings, Undo2 } from 'lucide-react';
+import { Keyboard, LogOut, Settings } from 'lucide-react';
 import { useContext, useRef } from 'react';
 
 import { buttonVariants } from '@/components/ui/button';
@@ -18,15 +18,14 @@ import { settingsLink } from '@/lib/site/links';
 import { cn } from '@/lib/utils/cn';
 
 import { ArenaContext } from '../hooks/use-arena';
-import { leaveForClassicArena } from '../lib/classic-arena';
 
 function initialOf(name: string): string {
   return name.trim().charAt(0).toUpperCase() || 'Y';
 }
 
 /**
- * The signed-in visitor's menu: who is signed in, the keyboard shortcuts, settings, the classic
- * arena, and sign out. The name set on /settings/ (Supabase `full_name`) comes first, then the API
+ * The signed-in visitor's menu: who is signed in, the keyboard shortcuts, settings, and
+ * sign out. The name set on /settings/ (Supabase `full_name`) comes first, then the API
  * profile's.
  */
 export function AccountMenu() {
@@ -75,10 +74,6 @@ export function AccountMenu() {
           <Settings aria-hidden="true" strokeWidth={1.75} />
           {settingsLink.label}
         </DropdownMenuLinkItem>
-        <DropdownMenuItem onClick={leaveForClassicArena}>
-          <Undo2 aria-hidden="true" strokeWidth={1.75} />
-          Open the classic arena
-        </DropdownMenuItem>
         <DropdownMenuItem onClick={() => void signOut()}>
           <LogOut aria-hidden="true" strokeWidth={1.75} />
           Sign out

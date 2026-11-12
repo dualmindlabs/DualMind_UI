@@ -17,16 +17,26 @@
     --fg-soft: #1c1f24;
     --muted: #4b515c;
     --line-strong: #7d838e;
-    --mind-a: #09738f;
+    --mind-a: #17728a;
     /* The light theme's text colours: code and badges printed from the dark theme stay legible. */
-    --mind-b: #6d28d9;
-    --mind-b-text: #6d28d9;
-    --ok: #047857;
-    --warn: #a16207;
-    --bad: #b91c1c;
-    --human: #7a3f22;
+    --mind-b: #b25f37;
+    --mind-b-text: #9e4d25;
+    --ok: #1b7a4e;
+    --warn: #855400;
+    --bad: #b3261e;
+    --human: #16794f;
     --human-tint: #ffffff;
     --mind-a-tint: #ffffff;
+    --mind-b-tint: #ffffff;
+  }
+
+  /* No mesh and no grain on paper. */
+  body {
+    background-image: none;
+  }
+
+  body::before {
+    display: none;
   }
 
   body {

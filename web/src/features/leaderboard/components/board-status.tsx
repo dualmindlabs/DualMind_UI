@@ -45,6 +45,10 @@ export function BoardStatus({
     <div className={cn('grid gap-3', className)}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p role="status" className="text-ui-sm text-fg-soft">
+          <span
+            aria-hidden="true"
+            className="mr-2 inline-block size-1.5 rounded-full bg-ok align-middle"
+          />
           {shown === total ? (
             <>
               <span className="font-mono text-fg tabular-nums">{formatCount(total)}</span> {noun}
@@ -74,7 +78,7 @@ export function BoardStatus({
       {stale ? (
         <div
           role="alert"
-          className="flex flex-wrap items-start gap-3 rounded-md border border-warn/40 bg-surface px-4 py-3 text-ui-sm text-fg-soft"
+          className="surface-duel flex flex-wrap items-start gap-3 border-warn/50 px-4 py-3.5 text-ui-sm text-fg-soft"
         >
           <TriangleAlert
             aria-hidden="true"

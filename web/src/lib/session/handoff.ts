@@ -2,28 +2,24 @@
  * The landing page's signed-in switch (docs/redesign/migration-plan.md section 3.3).
  *
  * `/` is the prerendered landing page, and the signed-in arena (src/features/arena/) renders at
- * `/` itself. The legacy arena stays reachable at /legacy-app.html (build.js) for one release:
+ * `/` itself. The classic arena and its `?arena=legacy` switch were removed at the cutover (S13).
  *
  * - A signed-in visitor, or a visit with Supabase auth parameters in the URL (an OAuth or
- *   magic-link return; supabase-js in the new app reads them), stays on `/`: the script marks
+ *   magic-link return; supabase-js in the app reads them), stays on `/`: the script marks
  *   <html data-arena> before the first paint, CSS hides the landing page and shows the arena's
  *   loading frame, and the app renders the arena once the session is confirmed
  *   (src/app/routes/home.tsx). A password recovery link goes on to /update-password.html with its
  *   hash.
- * - `?arena=legacy` (or `localStorage['dm.arena'] = 'legacy'`, set by "Open the classic arena")
- *   keeps the legacy arena: signed-in visitors and auth returns are sent there before the first
- *   paint, query string and hash kept. `?arena=new` comes back. The parameter stores the choice.
+ * - A leftover `?arena=` parameter or `localStorage['dm.arena']` from the classic-arena era is
+ *   ignored.
  *
  * SESSION_HANDOFF_SCRIPT runs inline in the landing page's <head> (the Content-Security-Policy
  * allows it by its sha256, computed by build.js). It is built from the same regular expressions
- * and constants as the functions below, and the unit tests run it against the same cases, so the
- * two cannot drift apart.
+ * and constants as the functions below, and the unit tests run it against the same cases, so
+ * the two cannot drift apart.
  */
 
-/** Where the legacy arena lives during the migration (a copy of the legacy index.html). */
-export const LEGACY_APP_PATH = '/legacy-app.html';
-
-/** The legacy app's Supabase session (js/auth/supabase-auth.js, `storageKey`). */
+/** The removed classic app's Supabase session key; still read for the one-time session migration. */
 export const LEGACY_SESSION_KEY = 'dualmind.auth.supabase';
 
 /**
@@ -41,26 +37,11 @@ export const AUTH_QUERY_RE = /[?&](code|token_hash)=/;
 /** Email links: recovery, sign-up confirmation, magic link, invite, email change. */
 export const AUTH_TYPE_RE = /[#?&]type=(recovery|signup|magiclink|invite|email_change)(&|$)/;
 
-/** Where the visitor's arena choice is stored: `new` or `legacy`. */
-export const ARENA_CHOICE_KEY = 'dm.arena';
-
-export type ArenaChoice = 'new' | 'legacy';
-
-/** `?arena=new` or `?arena=legacy` on `/`: stores the choice. */
-export const ARENA_PARAM_RE = /[?&]arena=(new|legacy)(?:&|$)/;
-
 /**
  * Set on <html> by the inline script when the signed-in arena renders at `/`: CSS then hides the
  * landing page and shows the arena's loading frame until the app takes over.
  */
 export const ARENA_ATTRIBUTE = 'data-arena';
-
-/**
- * Whether signed-in visitors get the new arena without opting in. On since the battle flow
- * (slice S9); `?arena=legacy` (or the account menu) keeps the legacy arena for one release, and
- * `?arena=new` comes back.
- */
-export const NEW_ARENA_BY_DEFAULT = true;
 
 /** Where password recovery links continue in the new app (slice S6). */
 export const RECOVERY_PATH = '/update-password.html';
@@ -86,14 +67,9 @@ export function hasStoredSession(storage: SessionStorage): boolean {
   return false;
 }
 
-/** True when the URL carries Supabase auth parameters that the legacy app must handle. */
+/** True when the URL carries Supabase auth parameters that the app finishes on `/`. */
 export function hasAuthParams(search: string, hash: string): boolean {
   return AUTH_HASH_RE.test(hash) || AUTH_QUERY_RE.test(search) || AUTH_TYPE_RE.test(hash + search);
-}
-
-/** The legacy app's URL with the visitor's query string and hash. */
-export function handoffTarget(search: string, hash: string): string {
-  return `${LEGACY_APP_PATH}${search}${hash}`;
 }
 
 /**
@@ -103,38 +79,9 @@ export function handoffTarget(search: string, hash: string): string {
  */
 export const HANDOFF_PATH = '/';
 
-/** The choice in the URL (`?arena=`), or null. */
-export function arenaChoiceFromSearch(search: string): ArenaChoice | null {
-  const match = ARENA_PARAM_RE.exec(search);
-  return match ? (match[1] as ArenaChoice) : null;
-}
-
-/** The visitor's choice: the URL first, then storage. Unreadable storage counts as no choice. */
-export function readArenaChoice(
-  search: string,
-  storage: Pick<Storage, 'getItem'> | null,
-): ArenaChoice | null {
-  const fromUrl = arenaChoiceFromSearch(search);
-  if (fromUrl) return fromUrl;
-  try {
-    const stored = storage?.getItem(ARENA_CHOICE_KEY) ?? null;
-    return stored === 'new' || stored === 'legacy' ? stored : null;
-  } catch {
-    return null;
-  }
-}
-
-/** True when this choice gets the new arena (see NEW_ARENA_BY_DEFAULT). */
-export function usesNewArena(choice: ArenaChoice | null): boolean {
-  return NEW_ARENA_BY_DEFAULT ? choice !== 'legacy' : choice === 'new';
-}
-
-/** What `/` shows: the landing page, the new arena, or a hand-off to the legacy arena. */
+/** What `/` shows: the landing page, the arena, or a hand-off to the new password page. */
 export type LandingView =
-  | { kind: 'landing' }
-  | { kind: 'arena' }
-  | { kind: 'legacy'; target: string }
-  | { kind: 'recovery'; target: string };
+  { kind: 'landing' } | { kind: 'arena' } | { kind: 'recovery'; target: string };
 
 /**
  * Decides what `/` shows. Storage that cannot be read (blocked cookies, private mode) counts as
@@ -151,11 +98,7 @@ export function landingView(
   } catch {
     signedIn = false;
   }
-  const target = handoffTarget(location.search, location.hash);
   const auth = hasAuthParams(location.search, location.hash);
-  if (!usesNewArena(readArenaChoice(location.search, storage))) {
-    return auth || signedIn ? { kind: 'legacy', target } : { kind: 'landing' };
-  }
   // The new app finishes sign-ins itself (supabase-js reads the tokens); a recovery link goes on
   // to the new password page with its hash, like /auth-callback.html does.
   if (RECOVERY_TYPE_RE.test(location.hash + location.search)) {
@@ -165,14 +108,14 @@ export function landingView(
 }
 
 /**
- * Where to send the visitor, or null to stay on `/` (the landing page or the new arena).
+ * Where to send the visitor, or null to stay on `/` (the landing page or the arena).
  */
 export function handoffDestination(
   location: Pick<Location, 'search' | 'hash'> & { pathname?: string },
   storage: SessionStorage | null,
 ): string | null {
   const view = landingView(location, storage);
-  return view.kind === 'legacy' || view.kind === 'recovery' ? view.target : null;
+  return view.kind === 'recovery' ? view.target : null;
 }
 
 /** A route `handle` that asks the root layout for the hand-off script. */
@@ -190,23 +133,18 @@ export function wantsSessionHandoff(handle: unknown): handle is SessionHandoffHa
 
 /**
  * The inline <head> script: the same rules as landingView(), in plain ES5. It never throws
- * (storage access can), it does nothing outside `/` (see HANDOFF_PATH), it stores an `?arena=`
- * choice, and it replaces the history entry so Back does not bounce the visitor.
+ * (storage access can), it does nothing outside `/` (see HANDOFF_PATH), and it replaces the history entry so Back does not bounce the visitor.
  */
 export const SESSION_HANDOFF_SCRIPT = [
   '(function(){try{',
   'var w=window,l=w.location,q=l.search,h=l.hash;',
   `if(l.pathname!==${JSON.stringify(HANDOFF_PATH)})return;`,
   'var ',
-  `a=${AUTH_HASH_RE.toString()}.test(h)||${AUTH_QUERY_RE.toString()}.test(q)||${AUTH_TYPE_RE.toString()}.test(h+q),`,
-  `m=${ARENA_PARAM_RE.toString()}.exec(q),c=m?m[1]:null,s=false;`,
+  `a=${AUTH_HASH_RE.toString()}.test(h)||${AUTH_QUERY_RE.toString()}.test(q)||${AUTH_TYPE_RE.toString()}.test(h+q),s=false;`,
   'try{var t=w.localStorage,v=function(x){return x!==null&&x!==""&&x!=="null"};',
-  `if(c){t.setItem(${JSON.stringify(ARENA_CHOICE_KEY)},c)}else{c=t.getItem(${JSON.stringify(ARENA_CHOICE_KEY)})}`,
   `s=v(t.getItem(${JSON.stringify(LEGACY_SESSION_KEY)}));`,
   `for(var i=0;!s&&i<t.length;i++){var k=t.key(i);s=k!==null&&${SUPABASE_SESSION_KEY_RE.toString()}.test(k)&&v(t.getItem(k))}`,
   '}catch(e){s=false}',
-  `var n=${NEW_ARENA_BY_DEFAULT ? 'c!=="legacy"' : 'c==="new"'};`,
-  `if(!n){if(a||s){l.replace(${JSON.stringify(LEGACY_APP_PATH)}+q+h)}return}`,
   `if(${RECOVERY_TYPE_RE.toString()}.test(h+q)){l.replace(${JSON.stringify(RECOVERY_PATH)}+q+h);return}`,
   `if(a||s){w.document.documentElement.setAttribute(${JSON.stringify(ARENA_ATTRIBUTE)},"")}`,
   '}catch(e){}})();',

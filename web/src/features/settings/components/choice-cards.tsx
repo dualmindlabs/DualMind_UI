@@ -73,7 +73,7 @@ export function ChoiceCards<T extends string>({
               dense ? 'p-2 sm:p-3.5' : 'p-3.5',
               'transition-[border-color,background-color,box-shadow] duration-(--dur-fast) ease-out-expo',
               checked
-                ? 'border-mind-a bg-mind-a-tint shadow-[inset_0_0_0_1px_var(--mind-a)]'
+                ? 'border-mind-a bg-mind-a-tint glow-a'
                 : 'border-line hover:border-line-strong hover:bg-surface-3',
             )}
           >

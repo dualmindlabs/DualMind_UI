@@ -324,7 +324,7 @@ test.describe('phone polish (P2-9)', () => {
     await expect(page.getByTestId('scroll-cue')).toHaveCount(0);
   });
 
-  test('history rows: the time under the title in the drawer, at the end in the panel', async ({
+  test('history rows: the time under the title on a phone, at the end on a desktop', async ({
     page,
   }) => {
     await mockArena(page);
@@ -345,9 +345,15 @@ test.describe('phone polish (P2-9)', () => {
       ).toBe(true);
     }
 
+    // On a desktop the history is the same slide-over (Stage), wide enough for one row each.
     await page.setViewportSize({ width: 1440, height: 900 });
     await openArena(page);
-    const panel = page.getByRole('navigation', { name: 'Your threads' });
+    await page.getByRole('button', { name: 'Open the history' }).click();
+    const panel = page
+      .getByRole('dialog', { name: 'History' })
+      .getByRole('navigation', { name: 'Your threads' });
+    await expect(panel).toBeVisible();
+    await settle(page, 500);
     const link = panel.getByRole('link').first();
     const [titleBox, timeBox] = [
       await box(link.locator('span').first()),

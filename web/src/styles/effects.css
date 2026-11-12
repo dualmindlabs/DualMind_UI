@@ -9,6 +9,7 @@
  */
 
 @theme {
+  --animate-skeleton: dm-skeleton 1.7s var(--ease-in-out) infinite;
   --animate-fade-in: dm-fade-in var(--dur-slow) var(--ease-out-expo) both;
   --animate-blur-in: dm-blur-in var(--blur-in-duration, var(--dur-cinematic)) var(--ease-out-expo)
     both;
@@ -21,6 +22,16 @@
   --animate-orbit: dm-orbit var(--orbit-duration, 6s) linear infinite;
   --animate-placeholder-in: dm-placeholder-in var(--dur-base) var(--ease-out-expo) both;
   --animate-placeholder-out: dm-placeholder-out var(--dur-base) var(--ease-out-expo) both;
+
+  /* Skeleton: a band of light crosses the placeholder; transform only. */
+  @keyframes dm-skeleton {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(100%);
+    }
+  }
 
   @keyframes dm-fade-in {
     from {

@@ -10,13 +10,14 @@ import { cn } from '@/lib/utils/cn';
 
 import type { BreachState } from '../hooks/use-breach-check';
 
-const METER: Record<PasswordStrength, { width: string; tone: string }> = {
-  empty: { width: 'w-0', tone: 'bg-line-strong' },
-  'too-weak': { width: 'w-1/12', tone: 'bg-bad' },
-  weak: { width: 'w-2/6', tone: 'bg-bad' },
-  fair: { width: 'w-3/6', tone: 'bg-warn' },
-  good: { width: 'w-4/6', tone: 'bg-warn' },
-  strong: { width: 'w-full', tone: 'bg-ok' },
+/** How many of the four segments are lit, and in which tone. */
+const METER: Record<PasswordStrength, { lit: number; tone: string }> = {
+  empty: { lit: 0, tone: 'bg-line-strong' },
+  'too-weak': { lit: 1, tone: 'bg-bad' },
+  weak: { lit: 1, tone: 'bg-bad' },
+  fair: { lit: 2, tone: 'bg-warn' },
+  good: { lit: 3, tone: 'bg-warn' },
+  strong: { lit: 4, tone: 'bg-ok' },
 };
 
 function BreachLine({ state }: { state: BreachState }) {
@@ -79,14 +80,18 @@ export function PasswordStrengthHint({
   return (
     <div id={id} className="grid gap-2.5 text-caption text-muted">
       <div className="flex items-center gap-3">
-        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-3" aria-hidden="true">
-          <div
-            className={cn(
-              'h-full rounded-full transition-[width,background-color] duration-(--dur-base) ease-out-expo',
-              meter.width,
-              meter.tone,
-            )}
-          />
+        <div className="grid flex-1 grid-cols-4 gap-1.5" aria-hidden="true">
+          {[1, 2, 3, 4].map(step => (
+            <div key={step} className="h-1.5 overflow-hidden rounded-full bg-surface-3">
+              <div
+                className={cn(
+                  'h-full origin-left rounded-full transition-transform duration-(--dur-base) ease-out-expo',
+                  meter.tone,
+                  step <= meter.lit ? 'scale-x-100' : 'scale-x-0',
+                )}
+              />
+            </div>
+          ))}
         </div>
         <p className="min-w-16 text-right font-medium text-fg-soft">
           <span className="sr-only">Strength: </span>

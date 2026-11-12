@@ -13,6 +13,7 @@ import { problem, ProblemError, type ProblemSlug } from '../problems.ts';
 import { renderLeaderboardMarkdown } from './leaderboard-md.ts';
 import { renderLlmsTxt } from './llms.ts';
 import { problemSlugFromPath, renderProblemIndex, renderProblemPage } from './problems.ts';
+import { prefersHtml, renderProblemIndexHtml, renderProblemPageHtml } from './problems-html.ts';
 
 export const LEADERBOARD_MD_PATH = '/leaderboard.md';
 export const LLMS_PATH = '/llms.txt';
@@ -95,23 +96,32 @@ export async function serveDocRoute(request: Request, env: Env, ctx?: ExecutionC
     }
   }
 
-  // /problems, /problems/ and /problems/<slug>
+  // /problems, /problems/ and /problems/<slug>: a styled page for a browser (Accept names
+  // text/html), Markdown for everything else. Vary: Accept keeps caches from mixing the two.
+  const html = prefersHtml(request.headers.get('accept'));
+  const problemsOptions = (body: string) => ({
+    body,
+    type: html ? 'text/html; charset=utf-8' : 'text/markdown; charset=utf-8',
+    cacheControl: CACHE_STATIC,
+    etagPrefix: html ? 'problems-html' : 'problems',
+    extra: { Vary: 'Accept' },
+  });
   if (url.pathname === PROBLEMS_PATH || url.pathname === `${PROBLEMS_PATH}/`) {
-    return textResponse(request, requestId, 'problems', {
-      body: renderProblemIndex(origin),
-      type: 'text/markdown; charset=utf-8',
-      cacheControl: CACHE_STATIC,
-      etagPrefix: 'problems',
-    });
+    return textResponse(
+      request,
+      requestId,
+      'problems',
+      problemsOptions(html ? renderProblemIndexHtml(origin) : renderProblemIndex(origin)),
+    );
   }
   const slug = problemSlugFromPath(url.pathname);
   if (slug) {
-    return textResponse(request, requestId, 'problems', {
-      body: renderProblemPage(slug, origin),
-      type: 'text/markdown; charset=utf-8',
-      cacheControl: CACHE_STATIC,
-      etagPrefix: 'problems',
-    });
+    return textResponse(
+      request,
+      requestId,
+      'problems',
+      problemsOptions(html ? renderProblemPageHtml(slug, origin) : renderProblemPage(slug, origin)),
+    );
   }
   return fail('not_found', 'No such problem type.');
 }

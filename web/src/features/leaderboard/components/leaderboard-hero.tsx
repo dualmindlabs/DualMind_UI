@@ -17,32 +17,26 @@ export interface LeaderboardHeroProps {
 
 /**
  * The page header: the title with its one human-voice phrase, what the board measures, the two
- * next steps, and the live stats strip. Everything but the numbers is in the prerendered HTML.
+ * next steps, and the live stats strip, on the duel mesh with a fading grid. Everything but the
+ * numbers is in the prerendered HTML.
  */
 export function LeaderboardHero({ summary, updatedAt, refreshing, stale }: LeaderboardHeroProps) {
   return (
-    <header className="relative isolate overflow-hidden border-b border-line bg-bg-deep">
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 -z-10 dot-grid [mask-image:radial-gradient(ellipse_70%_80%_at_70%_0%,black,transparent)] opacity-60"
-      />
-      <PageContainer className="grid gap-10 pt-14 pb-12 md:pt-20 md:pb-16 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:items-end lg:gap-14">
-        <div className="grid max-w-3xl gap-6">
-          <p className="flex items-center gap-3">
-            <span className="eyebrow text-muted">Leaderboard</span>
-            <span aria-hidden="true" className="h-px w-8 bg-line-strong" />
-            <span className="eyebrow text-muted">Elo from blind votes</span>
-          </p>
-          <h1 className="text-h1 font-medium text-fg">
+    <header className="grain relative isolate overflow-hidden border-b border-line mesh-duel">
+      <div aria-hidden="true" className="absolute inset-0 -z-10 bg-grid opacity-70" />
+      <PageContainer className="grid gap-12 pt-14 pb-12 md:pt-24 md:pb-20 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:items-end lg:gap-16">
+        <div className="grid max-w-3xl gap-7">
+          <p className="kicker">Leaderboard · Elo from blind votes</p>
+          <h1 className="max-w-[14ch] text-h1 text-fg">
             Every model, ranked by <span className="human-voice text-human">blind votes.</span>
           </h1>
-          <p className="max-w-reading text-body text-fg-soft">
+          <p className="max-w-[52ch] text-lead text-fg-soft">
             Two anonymous models answer the same prompt. People vote for the better answer before
             they see any names, and each vote moves an Elo rating. Models with fewer than{' '}
             {PROVISIONAL_BATTLES} battles are listed as not yet rated, without a rank.
           </p>
           <div className="flex flex-wrap items-center gap-3">
-            <a href={ARENA_HREF} className={cn(buttonVariants({ variant: 'primary' }))}>
+            <a href={ARENA_HREF} className={cn(buttonVariants({ variant: 'primary' }), 'press')}>
               <Swords aria-hidden="true" strokeWidth={1.75} />
               Start a battle
             </a>

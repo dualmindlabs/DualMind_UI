@@ -216,11 +216,14 @@ function ExportCard({ account }: { account: ExportAccount }) {
     );
   } else {
     summary = (
-      <p className="text-ui-sm text-fg-soft" data-testid="export-count">
-        <span className="font-medium text-fg tabular-nums">
+      <p
+        className="flex flex-wrap items-baseline gap-x-3 surface-inset px-5 py-4 text-ui text-fg-soft"
+        data-testid="export-count"
+      >
+        <span className="numeric text-stat text-fg">
           {count >= EXPORT_THREAD_LIMIT ? `${EXPORT_THREAD_LIMIT}+` : count}
         </span>{' '}
-        {count === 1 ? 'thread' : 'threads'} ready to export.
+        <span>{count === 1 ? 'thread' : 'threads'} ready to export.</span>
       </p>
     );
   }

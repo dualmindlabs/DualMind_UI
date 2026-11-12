@@ -1,7 +1,10 @@
+import { useMemo } from 'react';
+
 import { PageContainer } from '@/components/layout/page-container';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteHeader } from '@/components/layout/site-header';
 import { SkipLink } from '@/components/layout/skip-link';
+import { SectionTitle } from '@/components/ui/section-title';
 import { useApiClient } from '@/hooks/use-api-client';
 
 import { useBoardView } from '../hooks/use-board-view';
@@ -9,6 +12,8 @@ import { useLeaderboard } from '../hooks/use-leaderboard';
 import { TABLE_QUERY, useMediaQuery } from '../hooks/use-media-query';
 import { useModelCommands } from '../hooks/use-model-commands';
 import { useModelDetails } from '../hooks/use-model-details';
+import { useRankMovement } from '../hooks/use-rank-movement';
+import { rangeDomain } from '../lib/confidence';
 import { PROVISIONAL_BATTLES, RATINGS_HELP_HREF } from '../lib/constants';
 import { isRated } from '../lib/entries';
 import { hasActiveFilters } from '../lib/filter';
@@ -43,6 +48,8 @@ export function LeaderboardPage() {
   const details = useModelDetails();
   const wide = useMediaQuery(TABLE_QUERY);
   useModelCommands(board?.entries, details.openModel);
+  const movement = useRankMovement(board?.rated);
+  const domain = useMemo(() => rangeDomain(board?.rated ?? []), [board?.rated]);
 
   const leaderId = board?.rated[0]?.id;
   const loading = board === undefined && query.isPending;
@@ -93,9 +100,17 @@ export function LeaderboardPage() {
             onSort={view.toggleSort}
             onOpen={details.openModel}
             leaderId={leaderId}
+            domain={domain}
+            movement={movement}
           />
         ) : (
-          <BoardCardList entries={rated} onOpen={details.openModel} leaderId={leaderId} />
+          <BoardCardList
+            entries={rated}
+            onOpen={details.openModel}
+            leaderId={leaderId}
+            domain={domain}
+            movement={movement}
+          />
         )}
         {unrated.length > 0 ? (
           <UnratedGroup
@@ -105,6 +120,7 @@ export function LeaderboardPage() {
             sort={view.sort}
             onSort={view.toggleSort}
             onOpen={details.openModel}
+            domain={domain}
           />
         ) : null}
       </div>
@@ -124,32 +140,34 @@ export function LeaderboardPage() {
         />
 
         {failed || board?.rated.length === 0 ? null : (
-          <section aria-labelledby="podium-title" className="pt-12 md:pt-16">
-            <PageContainer className="grid gap-5">
-              <p id="podium-title" className="eyebrow text-muted">
-                Top three
-              </p>
+          <section aria-labelledby="podium-title" className="pt-12 md:pt-20">
+            <PageContainer className="grid gap-8">
+              <SectionTitle
+                id="podium-title"
+                level="h2"
+                kicker="Top three"
+                title="The models to beat"
+              />
               <Podium
                 entries={board?.rated}
                 eloStart={board ? eloStartFor(board.summary.bottomElo) : 0}
+                domain={domain}
+                movement={movement}
                 onOpen={details.openModel}
               />
             </PageContainer>
           </section>
         )}
 
-        <section id="rankings" aria-labelledby="rankings-title" className="py-12 md:py-16">
+        <section id="rankings" aria-labelledby="rankings-title" className="py-14 md:py-20">
           <PageContainer className="grid gap-6">
-            <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-3">
-              <div className="grid gap-2">
-                <h2 id="rankings-title" className="text-h2 font-medium text-fg">
-                  Full rankings
-                </h2>
-                <p className="max-w-reading text-ui text-fg-soft">
-                  Sort any column, search by name or model id, or narrow to one provider. Select a
-                  model for its record and win rate across the board.
-                </p>
-              </div>
+            <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
+              <SectionTitle
+                id="rankings-title"
+                kicker="The full board"
+                title="Full rankings"
+                lead="Sort any column, search by name or model id, or narrow to one provider. Select a model for its record, rating range and rivals."
+              />
               <p className="flex items-center gap-2 text-caption text-muted">
                 <span aria-hidden="true" className="size-1.5 rounded-full bg-warn" />
                 Fewer than {PROVISIONAL_BATTLES} battles: listed as not yet rated, without a rank
@@ -194,6 +212,7 @@ export function LeaderboardPage() {
         onOpenChange={details.onOpenChange}
         returnFocusRef={details.returnFocusRef}
         from="leaderboard"
+        movement={movement}
       />
     </>
   );

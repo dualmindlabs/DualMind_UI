@@ -1,0 +1,64 @@
+/*
+ * Motion for the duel glyph (features/errors). Transform and opacity only; the global
+ * reduced-motion rule in styles/base.css also stops every animation here.
+ */
+
+/* A dot that travels from A toward B along the glyph's link and gives up halfway (offline). */
+.glyph-dot {
+  animation: glyph-travel 2.4s var(--ease-snap, ease-in-out) infinite;
+}
+
+@keyframes glyph-travel {
+  0% {
+    transform: translateX(0);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  70% {
+    transform: translateX(var(--glyph-reach, 1.5rem));
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(var(--glyph-reach, 1.5rem));
+    opacity: 0;
+  }
+}
+
+/* A soft pulse on a status dot ("reconnecting"). */
+.glyph-pulse {
+  animation: glyph-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes glyph-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.7);
+    opacity: 0.35;
+  }
+}
+
+/* The crashed pane gives a small, single shake on arrival. */
+.glyph-crash {
+  animation: glyph-crash 520ms var(--ease-snap, ease-out) 1 both;
+}
+
+@keyframes glyph-crash {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0);
+  }
+  30% {
+    transform: translate3d(3px, 2px, 0) rotate(5deg);
+  }
+  60% {
+    transform: translate3d(-2px, 3px, 0) rotate(6deg);
+  }
+  100% {
+    transform: translate3d(0, 3px, 0) rotate(6deg);
+  }
+}

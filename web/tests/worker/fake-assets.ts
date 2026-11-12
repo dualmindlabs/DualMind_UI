@@ -74,11 +74,11 @@ export function fakeAssets(files: Record<string, string>): FakeAssets {
 
 /**
  * A small composed dist/: legacy pages and files plus the web app's output. Since slice S3 the
- * landing page is the web app's /index.html, and the legacy arena lives on as /legacy-app.html.
+ * landing page is the web app's /index.html; the classic arena is gone.
  */
 export const DIST: Record<string, string> = {
   '/index.html': '<!doctype html><title>DualMind Arena: blind battles between AI models</title>',
-  '/legacy-app.html': '<!doctype html><title>Legacy arena</title>',
+  '/legacy-sample.html': '<!doctype html><title>Legacy sample</title>',
   '/leaderboard/index.html': '<!doctype html><title>Legacy leaderboard</title>',
   '/models/index.html': '<!doctype html><title>Legacy models</title>',
   '/about/index.html': '<!doctype html><title>About DualMind Arena</title>',

@@ -17,9 +17,10 @@ import { ModelStrip } from './model-strip';
 import { StepsSection } from './steps-section';
 
 /**
- * The landing page (`/` for signed-out visitors): hero with the composer and live numbers, the
- * model strip, how a battle works with the recorded demo, why blind battles, the four steps, the
- * live top five and the closing call to action. One live leaderboard request feeds every number.
+ * The landing page (`/` for signed-out visitors): hero with the composer, a live duel and the live
+ * numbers, the model strip, the playable recorded battle, the four steps with product visuals,
+ * why blind battles, the live top five and the closing call to action. One live leaderboard
+ * request feeds every number.
  */
 export function LandingPage() {
   const stats = useLiveStats();
@@ -46,8 +47,8 @@ export function LandingPage() {
         <HeroSection onAsk={ask} stats={stats} />
         <ModelStrip stats={stats} />
         <BattleSection demo={demo} demoRef={demoRef} />
-        <FeaturesSection />
-        <StepsSection />
+        <StepsSection stats={stats} />
+        <FeaturesSection stats={stats} />
         <LeaderboardPreview stats={stats} />
         <ClosingCta />
       </main>

@@ -131,9 +131,9 @@ export function UpdatePasswordPage({ link }: { link: CallbackUrl }) {
   } else {
     content = (
       <div className="grid gap-6">
-        <div className="grid gap-2">
-          <p className="eyebrow text-mind-a">Password reset</p>
-          <h1 className="text-h2 font-medium text-fg">Choose a new password</h1>
+        <div className="grid gap-3">
+          <p className="kicker text-mind-a">Password reset</p>
+          <h1 className="text-h2 text-fg">Choose a new password</h1>
           <p className="text-body break-all text-fg-soft">For {accountLabel(user)}</p>
         </div>
         <form noValidate onSubmit={event => void submit(event)} className="grid gap-5">

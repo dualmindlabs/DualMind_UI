@@ -29,7 +29,7 @@ export function ShortcutsSection() {
       title="Keyboard shortcuts"
       description="The arena works from the keyboard. Single keys work when you are not typing in a text field."
     >
-      <div className="overflow-hidden rounded-xl border border-line bg-surface shadow-raise">
+      <div className="surface-duel overflow-hidden">
         {groups.map((group, index) => (
           <table
             key={group.heading}

@@ -12,9 +12,9 @@ interface LiveStatProps {
 /** One number of the live strip: a label in the label voice over a large tabular value. */
 export function LiveStat({ label, children, className }: LiveStatProps) {
   return (
-    <div className={cn('min-w-0 px-4 py-5 sm:px-6', className)}>
+    <div className={cn('min-w-0 px-4 py-5 sm:px-6 sm:py-6', className)}>
       <dt className="eyebrow text-muted">{label}</dt>
-      <dd className="mt-2.5 flex min-h-12 items-center">{children}</dd>
+      <dd className="mt-3 flex min-h-10 items-center sm:min-h-14">{children}</dd>
     </div>
   );
 }

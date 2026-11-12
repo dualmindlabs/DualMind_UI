@@ -9,14 +9,12 @@ import {
   Plus,
   Share2,
   Swords,
-  Undo2,
 } from 'lucide-react';
 import { useMemo } from 'react';
 
 import { type CommandGroupDefinition, useCommandPaletteGroup } from '@/hooks/use-command-palette';
 import type { Thread } from '@/lib/api';
 
-import { leaveForClassicArena } from '../lib/classic-arena';
 import { ARENA_MODES, type ArenaMode, MODE_DETAILS } from '../lib/modes';
 import { useArena } from './use-arena';
 
@@ -43,7 +41,7 @@ const PALETTE_THREADS = 12;
 /**
  * The arena's commands in the palette (Ctrl+K or Cmd+K, new-features.md F-1): new battle,
  * share the open thread, switch mode, jump to a recent thread, the history, the keyboard
- * shortcuts, and the way back to the classic arena.
+ * shortcuts.
  */
 export function useArenaCommands(threads: readonly Thread[] | undefined): void {
   const {
@@ -104,13 +102,6 @@ export function useArenaCommands(threads: readonly Thread[] | undefined): void {
           icon: Keyboard,
           hint: '?',
           perform: () => openShortcuts(),
-        },
-        {
-          id: 'arena-classic',
-          label: 'Open the classic arena',
-          keywords: ['legacy', 'old', 'previous', 'back'],
-          icon: Undo2,
-          perform: leaveForClassicArena,
         },
       ],
     }),
