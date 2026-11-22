@@ -17,6 +17,8 @@ export function Wordmark({ className = '' }: { className?: string }) {
         sequential
         encryptedClassName="text-cyan"
       />
+      {/* A real space keeps the visible text "DUALMIND Arena", so it matches the accessible name of the nav link. */}
+      {' '}
       <span className="text-cyan">Arena</span>
     </span>
   );
