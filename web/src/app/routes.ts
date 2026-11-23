@@ -14,6 +14,8 @@ export default [
   // Live rankings and the model directory (slice S7), from the public model-stats API.
   route('leaderboard', 'routes/leaderboard.tsx'),
   route('models', 'routes/models.tsx'),
+  // How the crowd board is computed (renders GET /api/leaderboard/methodology, static fallback).
+  route('methodology', 'routes/methodology.tsx'),
 
   // Info and legal pages (slice S4).
   route('about', 'routes/about.tsx'),
@@ -46,6 +48,9 @@ export default [
   // noindex; SPA_FALLBACK_ROUTES and isNoindexPath in server/routing.js). Signed-out visitors go
   // to /login/?redirect=%2Fsettings%2F (hooks/use-require-auth.ts).
   route('settings', 'routes/settings.tsx'),
+
+  // Compare mode (backend flag be9_compare_mode): /compare/ and /compare/<shareId>, client-only.
+  route('compare/:shareId?', 'routes/compare.tsx'),
 
   // Anything else: the 404 page. Prerendered as /404 (build.js moves it to dist/404.html, which
   // the Worker serves with status 404); this entry also covers client-side navigation.

@@ -1,0 +1,226 @@
+/*
+ * Depth: surfaces, rules, glows and meshes. Layered, lit from the top, with real shadows from the
+ * tokens (raise, lift, float, glow-a, glow-b). No backdrop blur, no animated blur: every effect
+ * here is a gradient or a shadow, painted once. Colours and shadows come from tokens.css, so both
+ * themes (Midnight and Paper) follow.
+ *
+ *   surface-duel    a neutral card or pane: lit top edge, soft gradient, lift shadow
+ *   surface-a/b     the same, tinted for Mind A or Mind B, with a 2px rule across the top
+ *   surface-inset   a recessed well (code, wells, the empty state of a list)
+ *   surface-float   menus, docks, dialogs: the highest, with the float shadow
+ *   glow-a/b        the 1px ring and halo of a winner or a selection
+ *   rule-a/b        only the 2px top rule in the role colour
+ *   mesh-duel       a hero background: Mind A and Mind B pools of light on the deep background
+ *   grain           paper grain on a section that has its own background (the page has it already)
+ *   hairline-top    the lit top edge alone, for a custom surface
+ */
+
+@utility surface-duel {
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(180deg, var(--surface-2) 0%, var(--surface) 46%);
+  box-shadow: var(--lift);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0 12% auto;
+    height: 1px;
+    pointer-events: none;
+    background: linear-gradient(90deg, transparent, var(--edge-hi), transparent);
+  }
+}
+
+@utility surface-a {
+  position: relative;
+  border: 1px solid var(--mind-a-edge);
+  border-radius: var(--radius-lg);
+  background:
+    radial-gradient(
+      120% 60% at 50% -12%,
+      color-mix(in oklab, var(--mind-a) 14%, transparent),
+      transparent 62%
+    ),
+    linear-gradient(180deg, var(--surface-2) 0%, var(--surface) 46%);
+  box-shadow: var(--lift);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -1px 14px auto;
+    height: 2px;
+    border-radius: 0 0 2px 2px;
+    pointer-events: none;
+    background: var(--mind-a);
+  }
+}
+
+@utility surface-b {
+  position: relative;
+  border: 1px solid var(--mind-b-edge);
+  border-radius: var(--radius-lg);
+  background:
+    radial-gradient(
+      120% 60% at 50% -12%,
+      color-mix(in oklab, var(--mind-b) 14%, transparent),
+      transparent 62%
+    ),
+    linear-gradient(180deg, var(--surface-2) 0%, var(--surface) 46%);
+  box-shadow: var(--lift);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -1px 14px auto;
+    height: 2px;
+    border-radius: 0 0 2px 2px;
+    pointer-events: none;
+    background: var(--mind-b);
+  }
+}
+
+@utility surface-inset {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--bg-deep);
+  box-shadow:
+    inset 0 1px 3px color-mix(in oklab, black 22%, transparent),
+    0 1px 0 color-mix(in oklab, var(--fg) 5%, transparent);
+}
+
+@utility surface-float {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  background: linear-gradient(
+    180deg,
+    var(--surface-2),
+    color-mix(in oklab, var(--surface-2) 94%, var(--bg))
+  );
+  box-shadow: var(--float);
+}
+
+@utility glow-a {
+  box-shadow: var(--glow-a);
+}
+
+@utility glow-b {
+  box-shadow: var(--glow-b);
+}
+
+@utility rule-a {
+  border-top: 2px solid var(--mind-a);
+}
+
+@utility rule-b {
+  border-top: 2px solid var(--mind-b);
+}
+
+@utility hairline-top {
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0 12% auto;
+    height: 1px;
+    pointer-events: none;
+    background: linear-gradient(90deg, transparent, var(--edge-hi), transparent);
+  }
+}
+
+@utility mesh-duel {
+  background-color: var(--bg-deep);
+  background-image:
+    radial-gradient(
+      54rem 30rem at 12% 0%,
+      color-mix(in oklab, var(--mind-a) calc(var(--mesh-strength) * 1.7), transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      54rem 30rem at 88% 0%,
+      color-mix(in oklab, var(--mind-b) calc(var(--mesh-strength) * 1.7), transparent),
+      transparent 70%
+    );
+  background-repeat: no-repeat;
+}
+
+@utility mesh-a {
+  background-image: radial-gradient(
+    48rem 26rem at 20% 0%,
+    color-mix(in oklab, var(--mind-a) calc(var(--mesh-strength) * 1.7), transparent),
+    transparent 70%
+  );
+  background-repeat: no-repeat;
+}
+
+@utility mesh-b {
+  background-image: radial-gradient(
+    48rem 26rem at 80% 0%,
+    color-mix(in oklab, var(--mind-b) calc(var(--mesh-strength) * 1.7), transparent),
+    transparent 70%
+  );
+  background-repeat: no-repeat;
+}
+
+@utility grain {
+  position: relative;
+  isolation: isolate;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: var(--fg);
+    opacity: var(--grain-opacity);
+    -webkit-mask-image: var(--grain-image);
+    mask-image: var(--grain-image);
+    mask-size: 160px 160px;
+  }
+}
+
+/* A control that gives under a press: only transform moves, and only when motion is allowed. */
+@utility press {
+  transition: transform var(--dur-instant) var(--ease-snap);
+
+  @media (prefers-reduced-motion: no-preference) {
+    &:active {
+      transform: scale(0.97);
+    }
+  }
+}
+
+/* A card that rises toward the pointer: translate on hover, only when motion is allowed. */
+@utility hover-rise {
+  transition: transform var(--dur-fast) var(--ease-snap);
+
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    &:hover {
+      transform: translateY(-2px);
+    }
+  }
+}
+
+/* A focus ring drawn inside the element, for things that clip their overflow or sit at an edge. */
+@utility focus-ring-inset {
+  &:focus-visible {
+    outline: var(--focus-width) solid var(--focus);
+    outline-offset: calc(var(--focus-width) * -1);
+  }
+}
+
+@media (forced-colors: active) {
+  .surface-duel,
+  .surface-a,
+  .surface-b,
+  .surface-inset,
+  .surface-float,
+  .glow-a,
+  .glow-b {
+    border: 1px solid CanvasText;
+    box-shadow: none;
+    background: Canvas;
+  }
+}

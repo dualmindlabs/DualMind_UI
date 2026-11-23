@@ -25,6 +25,10 @@ export const apiKeys = {
   leaderboard: {
     all: LEADERBOARD,
     list: () => [...LEADERBOARD, 'list'] as const,
+    board: () => [...LEADERBOARD, 'board'] as const,
+    categories: () => [...LEADERBOARD, 'categories'] as const,
+    category: (category: string) => [...LEADERBOARD, 'category', category] as const,
+    methodology: () => [...LEADERBOARD, 'methodology'] as const,
   },
   threads: {
     all: THREADS,

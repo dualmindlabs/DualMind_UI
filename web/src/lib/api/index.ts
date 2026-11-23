@@ -51,6 +51,13 @@ export {
   type StreamChatOptions,
   type VoteInput,
 } from './endpoints/arena';
+export {
+  COMPARE_DEFAULT_MAX_TOKENS,
+  COMPARE_MAX_PROMPT_CHARS,
+  type CompareInput,
+  isCompareShareId,
+} from './endpoints/compare';
+export { type Round2Input } from './endpoints/cross-examine';
 export { FEATURE_FLAGS } from './endpoints/flags';
 export { type SpeechInput } from './endpoints/speech';
 export {
@@ -74,9 +81,18 @@ export {
   type SelectionMode,
   VOTE_CHOICES,
   type VoteChoice,
+  type VoteReceipt,
   type VoteResult,
 } from './schemas/arena';
 export type { MutationResult, Usage } from './schemas/common';
+export type { CompareResult, CompareShareState, CompareSide } from './schemas/compare';
+export type {
+  CritiqueResult,
+  CrossExamineStats,
+  Rebuttal,
+  Round2Result,
+} from './schemas/cross-examine';
+export type { CrowdCategory, CrowdStat } from './schemas/crowd';
 export type { FeatureFlag } from './schemas/flags';
 export type { Health } from './schemas/health';
 export type { LeaderboardData, ModelStat } from './schemas/leaderboard';
@@ -90,6 +106,7 @@ export {
   type Visibility,
   type VisibilityResult,
 } from './schemas/threads';
+export type { AnswerKey, AnswerKeySide } from './schemas/truth';
 export type { UserProfile } from './schemas/users';
 
 // Streaming
@@ -126,8 +143,11 @@ export {
   voteMutation,
 } from './query/mutations';
 export {
+  boardQuery,
+  crowdCategoriesQuery,
   featureFlagQuery,
   healthQuery,
+  leaderboardMethodologyQuery,
   leaderboardQuery,
   meQuery,
   modelQuery,

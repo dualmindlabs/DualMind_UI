@@ -230,11 +230,24 @@ describe('response side', () => {
 
   it('model calls get a longer timeout than other calls', () => {
     expect(upstreamTimeoutFor('/api/arena/dualchat')).toBe(MODEL_CALL_TIMEOUT_MS);
+    expect(upstreamTimeoutFor('/api/compare')).toBe(MODEL_CALL_TIMEOUT_MS);
+    expect(upstreamTimeoutFor('/api/compare/AbCdEfGhIjKlMnOpQrSt12')).toBe(UPSTREAM_TIMEOUT_MS);
     expect(upstreamTimeoutFor('/api/arena/chat')).toBe(MODEL_CALL_TIMEOUT_MS);
     expect(upstreamTimeoutFor('/api/arena/chat/stream')).toBe(UPSTREAM_TIMEOUT_MS);
     expect(upstreamTimeoutFor('/api/threads')).toBe(UPSTREAM_TIMEOUT_MS);
     expect(upstreamTimeoutFor('/api/health')).toBe(UPSTREAM_TIMEOUT_MS);
     expect(MODEL_CALL_TIMEOUT_MS).toBeGreaterThan(60_000);
+  });
+
+  it('the critique route gets the model-call timeout, other comparison routes do not', () => {
+    const id = '3f2b8c1e-9d4a-4e7b-8a61-0c5d2e9f7a10';
+    expect(upstreamTimeoutFor(`/api/arena/comparisons/${id}/critique`)).toBe(MODEL_CALL_TIMEOUT_MS);
+    expect(upstreamTimeoutFor(`/api/arena/comparisons/${id}/vote`)).toBe(UPSTREAM_TIMEOUT_MS);
+    expect(upstreamTimeoutFor(`/api/arena/comparisons/${id}`)).toBe(UPSTREAM_TIMEOUT_MS);
+    expect(upstreamTimeoutFor('/api/arena/comparisons//critique')).toBe(UPSTREAM_TIMEOUT_MS);
+    expect(upstreamTimeoutFor(`/api/arena/comparisons/${id}/critique/extra`)).toBe(
+      UPSTREAM_TIMEOUT_MS,
+    );
   });
 
   it('no answer within the timeout: 504', async () => {

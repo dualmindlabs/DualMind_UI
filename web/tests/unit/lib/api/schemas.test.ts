@@ -229,6 +229,8 @@ describe('arena', () => {
       finishReason: null,
       responseTimeMs: 1834,
       timestamp: '2026-10-20T20:41:38.000Z',
+      // The prompt the models were really asked (Truth vs Taste echoes the question it chose).
+      prompt: (dualchat.agent1 as { prompt?: string }).prompt ?? null,
     });
     // agent2 sends snake_case usage and a numeric string time, and no output.content.
     expect(battle.agent2).toMatchObject({

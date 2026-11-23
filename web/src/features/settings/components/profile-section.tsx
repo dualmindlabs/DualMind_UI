@@ -48,15 +48,15 @@ function IdentityCard({ user, name }: { user: User; name: string }) {
   const provider = providerOf(user);
   const since = memberSince(user.created_at);
   return (
-    <div className="flex flex-wrap items-center gap-4 rounded-xl border border-line bg-surface p-5 shadow-raise sm:p-6">
+    <div className="surface-duel flex flex-wrap items-center gap-5 p-5 sm:p-7">
       <span
         aria-hidden="true"
-        className="grid size-14 shrink-0 place-items-center rounded-full border border-human/50 bg-human-tint text-h3 font-medium text-human"
+        className="grid size-16 shrink-0 place-items-center rounded-full border border-human/50 bg-human-tint text-h2 text-human shadow-[0_0_0_6px_color-mix(in_oklab,var(--human)_10%,transparent)]"
       >
         {initialOf(name, user.email)}
       </span>
       <div className="grid min-w-0 flex-1 gap-1">
-        <p className="truncate text-ui font-medium text-fg" data-testid="settings-identity-name">
+        <p className="truncate text-h3 text-fg" data-testid="settings-identity-name">
           {name || user.email || 'Your account'}
         </p>
         {user.email ? <p className="truncate text-ui-sm text-fg-soft">{user.email}</p> : null}

@@ -3,13 +3,14 @@ import { z } from 'zod';
 import {
   flag,
   isRecord,
-  mutationResultSchema,
+  numeric,
   optionalNumber,
   optionalString,
   type Usage,
   usageSchema,
   withAliases,
 } from './common';
+import { answerKeySchema } from './truth';
 
 export const VOTE_CHOICES = ['left', 'right', 'tie', 'both-bad'] as const;
 export type VoteChoice = (typeof VOTE_CHOICES)[number];
@@ -82,6 +83,11 @@ export const answerSchema = z.preprocess(
       servedBy: optionalString.catch(null).optional(),
       /** A backup model answered in place of the one asked for. */
       fallbackUsed: flag(false).catch(false).optional(),
+      /**
+       * The prompt the models were really asked. It differs from the one typed when the backend
+       * ran a Truth vs Taste question in its place (backend PR 70).
+       */
+      prompt: optionalString.catch(null).optional(),
     }),
   ),
 );
@@ -139,7 +145,37 @@ export const battleSchema = withAliases(
 export type Battle = z.output<typeof battleSchema>;
 
 /** `POST /api/arena/model-vote`: `{ success, message }`. It does not return new ratings (B-2). */
-export const voteResultSchema = mutationResultSchema;
+/**
+ * The receipt a vote returns while the backend's receipts flag is on (`receipt` is absent when it
+ * is off): a handle plus the two hashes that place the vote in the public, hash-chained log.
+ * Anything malformed is dropped (`catch(null)`): a receipt problem must never fail a vote.
+ */
+export const voteReceiptSchema = withAliases(
+  z.object({
+    receiptId: z.string().min(1),
+    seq: numeric,
+    entryHash: z.string().regex(/^[0-9a-f]{64}$/i),
+    prevHash: z.string().regex(/^[0-9a-f]{64}$/i),
+  }),
+);
+export type VoteReceipt = z.output<typeof voteReceiptSchema>;
+
+export const voteResultSchema = z
+  .preprocess(
+    (input: unknown) => (input === null || input === undefined || input === '' ? {} : input),
+    z.object({
+      success: flag(true),
+      message: optionalString,
+      receipt: voteReceiptSchema.nullish().catch(null),
+      /** Truth vs Taste: present only for an eval battle, after the vote (backend PR 70). */
+      answerKey: answerKeySchema.nullish().catch(null),
+    }),
+  )
+  .transform(({ receipt, answerKey, ...result }) => ({
+    ...result,
+    ...(receipt ? { receipt } : {}),
+    ...(answerKey ? { answerKey } : {}),
+  }));
 export type VoteResult = z.output<typeof voteResultSchema>;
 
 // --- Streaming (`POST /api/arena/chat/stream`) ------------------------------------------------

@@ -62,7 +62,7 @@ npm run deploy
 - `npm run test` fails because `@playwright/test` is not a dev dependency.
 - `npm run validate` depends on both and therefore fails.
 
-### Auth is broken in `login/auth-complete.js`
+### Auth is broken in `legacy/pages/login/auth-complete.js` (retired)
 
 The file references undefined variables: `emailInput`, `setLoading`, `supabaseClient`, `SITE_URL`. This will crash the email/phone OTP flow. Any auth-related task must start here.
 

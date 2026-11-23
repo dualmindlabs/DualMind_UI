@@ -1,9 +1,10 @@
 /**
  * Button on the Base UI button primitive.
  * Source: shadcn/ui `button` (base-vega), MIT, see ./LICENSE.md.
- * Changes: our tokens and variants (primary, human, secondary, ghost, outline, destructive, link),
- * the S1 sizes (md is the 44px default), a loading state that keeps focus and width, the global
- * focus ring instead of shadcn's ring utilities, and 24px / 44px (touch) pointer targets.
+ * Changes: our tokens and variants (primary, mind-b, human, secondary, ghost, outline,
+ * destructive, link), the S1 sizes (md is the 44px default), filled variants with a lit top edge
+ * and a lift shadow (the Instrument depth), a loading state that keeps focus and width, the
+ * global focus ring instead of shadcn's ring utilities, and 24px / 44px (touch) pointer targets.
  */
 import { Button as ButtonPrimitive } from '@base-ui/react/button';
 import { cva, type VariantProps } from 'class-variance-authority';
@@ -15,28 +16,32 @@ import { cn } from '@/lib/utils/cn';
 const buttonCva = cva(
   [
     'group/button relative inline-flex shrink-0 cursor-pointer items-center justify-center rounded-md border border-transparent font-medium whitespace-nowrap select-none hit-area',
-    'transition-[background-color,border-color,color,box-shadow,scale] duration-(--dur-fast) ease-out-expo motion-safe:active:not-data-loading:scale-[0.97]',
-    'data-disabled:not-data-loading:pointer-events-none data-disabled:not-data-loading:border-line data-disabled:not-data-loading:bg-surface-2 data-disabled:not-data-loading:text-muted data-disabled:not-data-loading:shadow-none',
+    'transition-[background-color,border-color,color,box-shadow,scale] duration-(--dur-fast) ease-snap motion-safe:active:not-data-loading:scale-[0.97]',
+    'data-disabled:not-data-loading:pointer-events-none data-disabled:not-data-loading:border-line data-disabled:not-data-loading:bg-surface-2 data-disabled:not-data-loading:bg-none data-disabled:not-data-loading:text-muted data-disabled:not-data-loading:shadow-none',
     'data-loading:cursor-progress',
     "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   ],
   {
     variants: {
       variant: {
-        // Ink on cyan in dark mode (11.6:1), white on deep cyan in light mode (5.4:1).
+        // Ink on cyan in dark mode (7.4:1), white on deep teal in light mode (5.9:1). The gloss is a
+        // white fade from the top edge (a token: strong in dark, faint in light so text keeps its contrast).
         primary:
-          'bg-mind-a text-on-accent shadow-raise hover:bg-[color-mix(in_oklab,var(--mind-a)_86%,var(--fg))]',
-        // The human accent: ink on terra (7.4:1) in dark mode, white on burnt terra (5.7:1) in light.
+          'bg-mind-a bg-[linear-gradient(180deg,var(--gloss),transparent_58%)] text-on-accent shadow-lift hover:bg-[color-mix(in_oklab,var(--mind-a)_86%,var(--fg))]',
+        // Mind B: ink on terracotta in dark mode (8.3:1), white on burnt terracotta in light (5.0:1).
+        'mind-b':
+          'bg-mind-b bg-[linear-gradient(180deg,var(--gloss),transparent_58%)] text-on-accent shadow-lift hover:bg-[color-mix(in_oklab,var(--mind-b)_86%,var(--fg))]',
+        // The human accent: ink on champagne (12.9:1) in dark mode, white on bronze (6.4:1) in light.
         human:
-          'bg-human text-on-accent shadow-raise hover:bg-[color-mix(in_oklab,var(--human)_86%,var(--fg))]',
+          'bg-human bg-[linear-gradient(180deg,var(--gloss),transparent_58%)] text-on-accent shadow-lift hover:bg-[color-mix(in_oklab,var(--human)_86%,var(--fg))]',
         secondary:
-          'border-line bg-surface-2 text-fg shadow-raise hover:border-line-strong hover:bg-surface-3 aria-expanded:bg-surface-3',
+          'border-line bg-surface-2 text-fg shadow-raise hover:border-line-strong hover:bg-surface-3 hover:shadow-lift aria-expanded:bg-surface-3',
         ghost:
           'text-fg-soft hover:bg-hover hover:text-fg aria-expanded:bg-hover aria-expanded:text-fg',
         outline:
           'border-line-strong text-fg hover:border-fg-soft hover:bg-hover aria-expanded:border-fg-soft aria-expanded:bg-hover',
         destructive:
-          'bg-bad text-on-accent shadow-raise hover:bg-[color-mix(in_oklab,var(--bad)_86%,var(--fg))]',
+          'bg-bad bg-[linear-gradient(180deg,var(--gloss),transparent_58%)] text-on-accent shadow-lift hover:bg-[color-mix(in_oklab,var(--bad)_86%,var(--fg))]',
         link: 'text-mind-a underline decoration-mind-a/40 underline-offset-4 hover:decoration-current',
       },
       size: {

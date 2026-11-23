@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { ModelMark } from '@/components/ui/model-mark';
 import { type LogoItem, LogoLoop } from '@/components/vendor/reactbits/logo-loop';
 import { modelMaker, resolveDisplayName } from '@/lib/models/display-name';
 
@@ -31,18 +32,19 @@ export function ModelStrip({ stats }: { stats: LiveStatsState }) {
   const logos: LogoItem[] = models.map(model => ({
     label: `${model.name}, ${model.maker}`,
     node: (
-      <span className="inline-flex items-baseline gap-2.5 whitespace-nowrap">
-        <span className="font-mono text-ui-sm text-fg-soft">{model.name}</span>
+      <span className="inline-flex items-center gap-3 whitespace-nowrap">
+        <ModelMark name={model.name} size="sm" />
+        <span className="text-ui font-medium text-fg">{model.name}</span>
         <span className="eyebrow text-muted">{model.maker}</span>
       </span>
     ),
   }));
 
   return (
-    <section aria-labelledby="models-title" className="border-b border-line bg-bg">
+    <section aria-labelledby="models-title" className="border-y border-line bg-bg">
       <div className="mx-auto flex max-w-page flex-col gap-3 px-4 py-5 sm:px-6 md:flex-row md:items-center md:gap-8">
         <div className="flex shrink-0 items-center justify-between gap-4 md:w-52 md:flex-col md:items-start md:gap-1.5">
-          <h2 id="models-title" className="eyebrow text-fg-soft">
+          <h2 id="models-title" className="text-ui font-semibold text-fg">
             In the arena now
           </h2>
           <p className="font-mono text-caption text-muted" data-testid="model-strip-source">

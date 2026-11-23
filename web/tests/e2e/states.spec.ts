@@ -377,7 +377,7 @@ const authScenarios: Scenario[] = [
 // --- Arena ----------------------------------------------------------------------------------
 
 async function sendPrompt(page: Page) {
-  await page.goto('/?arena=new');
+  await page.goto('/');
   await expect(page.getByTestId('arena')).toBeVisible();
   await page.getByRole('textbox', { name: 'Your prompt' }).fill('Which is bigger, 9.11 or 9.9?');
   await page.keyboard.press('Enter');

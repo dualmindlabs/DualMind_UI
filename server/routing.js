@@ -17,7 +17,8 @@ export function isHashedAsset(pathname) {
 /**
  * Client-only routes of the web app, answered with React Router's SPA fallback page
  * (dist/__spa-fallback.html, written by build.js) and status 200. Each entry is an exact path,
- * or a prefix ending in `*` (`/share/*`).
+ * or a prefix ending in `*` (`/share/*`) that stands for ONE more path segment (`/share/<id>`,
+ * with or without a trailing slash): `/share/x/y/z` is not a page, so it gets the 404 page.
  * @type {readonly string[]}
  */
 export const SPA_FALLBACK_ROUTES = [
@@ -33,10 +34,24 @@ export const SPA_FALLBACK_ROUTES = [
   // Never indexed (isNoindexPath).
   '/settings',
   '/settings/',
+  // Compare mode (backend flag be9_compare_mode): /compare/ to run one and /compare/<shareId> to
+  // read a stored result. Signed-in work, or a link to a shared result: never indexed.
+  '/compare',
+  '/compare/*',
 ];
 
 /** Where the fallback is served from. Workers assets serve dist/__spa-fallback.html here. */
 export const SPA_FALLBACK_PATH = '/__spa-fallback';
+
+/**
+ * True when `pathname` is `prefix` plus exactly one more segment (a trailing slash is allowed).
+ * @param {string} pathname
+ * @param {string} prefix ends with `/`
+ */
+export function matchesOneSegment(pathname, prefix) {
+  if (!pathname.startsWith(prefix)) return false;
+  return !pathname.slice(prefix.length).replace(/\/$/, '').includes('/');
+}
 
 /**
  * @param {string} pathname
@@ -44,7 +59,7 @@ export const SPA_FALLBACK_PATH = '/__spa-fallback';
  */
 export function isSpaFallbackRoute(pathname, routes = SPA_FALLBACK_ROUTES) {
   return routes.some(route =>
-    route.endsWith('*') ? pathname.startsWith(route.slice(0, -1)) : pathname === route,
+    route.endsWith('*') ? matchesOneSegment(pathname, route.slice(0, -1)) : pathname === route,
   );
 }
 
@@ -84,6 +99,8 @@ export function isNoindexPath(pathname) {
     pathname.startsWith('/design/') ||
     pathname === '/settings' ||
     pathname === '/settings/' ||
+    pathname === '/compare' ||
+    pathname.startsWith('/compare/') ||
     pathname === SPA_FALLBACK_PATH ||
     pathname === `${SPA_FALLBACK_PATH}.html`
   );

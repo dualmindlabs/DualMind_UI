@@ -10,7 +10,7 @@ export function KitButtons() {
     <KitCard
       title="Buttons"
       source="@/components/ui/button"
-      description="Primary for the main action, human (terra) for your own action, then secondary, outline, ghost, destructive and link. Loading keeps focus and width."
+      description="Primary (Mind A cyan) for the main action, Mind B (terracotta) for the other corner, human (champagne) for your own action, then secondary, outline, ghost, destructive and link. Filled buttons carry a lit top edge. Loading keeps focus and width."
       className="lg:col-span-2"
     >
       <KitState label="Variants">
@@ -18,6 +18,7 @@ export function KitButtons() {
           Start a battle
           <ArrowRight aria-hidden="true" />
         </Button>
+        <Button variant="mind-b">Pick Model B</Button>
         <Button variant="human">
           <Check aria-hidden="true" />
           Cast your vote

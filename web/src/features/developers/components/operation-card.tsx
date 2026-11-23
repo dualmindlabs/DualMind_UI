@@ -1,11 +1,28 @@
+import { Globe, LockKeyhole } from 'lucide-react';
 import { Fragment } from 'react';
 
-import { Badge } from '@/components/ui/badge';
+import { Badge, type BadgeVariant } from '@/components/ui/badge';
 
 import type { ReferenceOperation } from '../lib/reference';
 import { CodeBlock } from './code-block';
 import { Inline } from './inline';
 import { ScrollTable } from './scroll-table';
+
+const methodVariant: Record<string, BadgeVariant> = {
+  GET: 'mind-a',
+  HEAD: 'mind-a',
+  POST: 'mind-b',
+  PUT: 'human',
+  PATCH: 'human',
+  DELETE: 'bad',
+};
+
+/** The status as a badge: the dot carries the class (2xx ok, 3xx and 4xx warn, 5xx bad). */
+function statusVariant(status: string): BadgeVariant {
+  if (status.startsWith('2')) return 'ok';
+  if (status.startsWith('5')) return 'bad';
+  return 'warn';
+}
 
 /** One operation of the OpenAPI document: what it does, its parameters, and every response. */
 export function OperationCard({ operation }: { operation: ReferenceOperation }) {
@@ -14,31 +31,42 @@ export function OperationCard({ operation }: { operation: ReferenceOperation }) 
     <section
       id={operation.id}
       aria-labelledby={headingId}
-      className="scroll-mt-24 border-t border-line pt-8"
+      className="not-prose surface-duel scroll-mt-28 p-5 sm:p-7"
     >
       <h3 id={headingId} className="flex flex-wrap items-center gap-x-3 gap-y-2">
-        <Badge variant="mind-a">{operation.method}</Badge>
-        <code className="break-all">{operation.path}</code>
+        <Badge variant={methodVariant[operation.method.toUpperCase()] ?? 'neutral'}>
+          {operation.method}
+        </Badge>
+        <code className="font-mono text-ui font-medium break-all text-fg">{operation.path}</code>
       </h3>
-      {operation.summary ? <p className="lead">{operation.summary}</p> : null}
+      {operation.summary ? (
+        <p className="mt-4 text-lead [text-wrap:pretty] text-fg">{operation.summary}</p>
+      ) : null}
       {operation.description ? (
-        <p>
+        <p className="mt-3 max-w-reading text-body leading-relaxed text-fg-soft [&_code]:rounded-sm [&_code]:bg-surface-2 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-[0.92em] [&_code]:text-fg">
           <Inline text={operation.description} />
         </p>
       ) : null}
-      <p>
+      <p className="mt-5 flex w-fit items-center gap-2.5 rounded-md border border-line bg-surface-2 px-3 py-2 text-ui-sm text-fg-soft">
         {operation.requiresAuth ? (
           <>
-            Needs <code>Authorization: Bearer &lt;access token&gt;</code>.
+            <LockKeyhole aria-hidden="true" strokeWidth={1.75} className="size-4 text-human" />
+            <span>
+              Needs{' '}
+              <code className="font-mono text-fg">Authorization: Bearer &lt;access token&gt;</code>.
+            </span>
           </>
         ) : (
-          <>Public: no sign-in and no key.</>
+          <>
+            <Globe aria-hidden="true" strokeWidth={1.75} className="size-4 text-mind-a" />
+            Public: no sign-in and no key.
+          </>
         )}
       </p>
 
       {operation.parameters.length > 0 ? (
         <>
-          <h4>Parameters</h4>
+          <h4 className="mt-8 mb-3 eyebrow text-muted">Parameters</h4>
           <ScrollTable label={`Parameters of ${operation.method} ${operation.path}`}>
             <thead>
               <tr>
@@ -65,7 +93,7 @@ export function OperationCard({ operation }: { operation: ReferenceOperation }) 
         </>
       ) : null}
 
-      <h4>Responses</h4>
+      <h4 className="mt-8 mb-3 eyebrow text-muted">Responses</h4>
       <ScrollTable label={`Responses of ${operation.method} ${operation.path}`}>
         <thead>
           <tr>
@@ -78,7 +106,11 @@ export function OperationCard({ operation }: { operation: ReferenceOperation }) 
           {operation.responses.map(response => (
             <tr key={response.status}>
               <td>
-                <code>{response.status}</code>
+                <Badge variant={statusVariant(response.status)}>
+                  <code className="bg-transparent! p-0! font-mono text-inherit!">
+                    {response.status}
+                  </code>
+                </Badge>
               </td>
               <td>
                 {response.description}
@@ -118,12 +150,14 @@ export function OperationCard({ operation }: { operation: ReferenceOperation }) 
       {operation.responses
         .filter(response => response.example !== null)
         .map(response => (
-          <div key={response.status} className="mt-4">
-            <p className="font-mono text-label tracking-[0.16em] text-muted uppercase">
-              Example {response.status}
+          <div key={response.status} className="mt-6">
+            <p className="mb-3 flex items-center gap-2 eyebrow text-muted">
+              Example <span className="numeric text-fg-soft">{response.status}</span>
             </p>
             <CodeBlock
               code={response.example ?? ''}
+              language="json"
+              title={`${response.status} response`}
               label={`Example ${response.status} response of ${operation.method} ${operation.path}`}
             />
           </div>

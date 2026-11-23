@@ -1,0 +1,30 @@
+{
+ "success": true,
+ "items": [
+  {
+   "id": "code",
+   "label": "Code",
+   "description": "Programming, debugging and technical scripting prompts."
+  },
+  {
+   "id": "math",
+   "label": "Math",
+   "description": "Calculation, equations, proofs and quantitative reasoning."
+  },
+  {
+   "id": "writing",
+   "label": "Writing",
+   "description": "Creative and professional writing, editing and rewriting."
+  },
+  {
+   "id": "long-context",
+   "label": "Long context",
+   "description": "Prompts of 4,000 characters or more, whatever the topic."
+  },
+  {
+   "id": "other",
+   "label": "Other",
+   "description": "Everything else."
+  }
+ ]
+}

@@ -40,6 +40,12 @@ export interface BattleInput {
    * printable ASCII characters, such as a UUID.
    */
   idempotencyKey?: string | undefined;
+  /**
+   * Opt in to Truth vs Taste (backend PR 70): about one blind battle in eight may run a question
+   * with a known answer in place of `prompt`, and the vote response then carries the answer key.
+   * Ignored by the API while its flag is off and for battles with named models.
+   */
+  allowEvalItem?: boolean | undefined;
 }
 
 export interface ChatInput {
@@ -195,6 +201,7 @@ export function createArenaEndpoints(transport: Transport): ArenaEndpoints {
             model2: input.model2 || undefined,
             system: input.system,
             threadId: input.threadId,
+            allowEvalItem: input.allowEvalItem === true ? true : undefined,
           }),
           schema: battleSchema,
         },

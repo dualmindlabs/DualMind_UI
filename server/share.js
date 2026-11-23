@@ -16,7 +16,7 @@
 
 import { DEFAULT_BACKEND_URL } from './api-proxy.js';
 import { SHARE_NO_STORE } from './caching.js';
-import { serveSpaFallback } from './routing.js';
+import { matchesOneSegment, serveSpaFallback } from './routing.js';
 
 /** Thread ids: the API's UUIDs, kept loose (letters, digits, - and _) for other id formats. */
 export const SHARE_ID_RE = /^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/;
@@ -41,7 +41,7 @@ export const SHARE_IMAGE = Object.freeze({
 
 /** @param {string} pathname */
 export function isShareRoute(pathname) {
-  return pathname === '/share' || pathname.startsWith('/share/');
+  return pathname === '/share' || matchesOneSegment(pathname, '/share/');
 }
 
 /** @param {unknown} value */
