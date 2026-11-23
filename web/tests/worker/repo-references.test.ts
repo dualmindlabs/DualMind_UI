@@ -28,16 +28,19 @@ describe('repo references after the legacy move', () => {
     expect(existsSync(resolve(root, dir!, 'auth-flow-redesign.spec.js'))).toBe(true);
   });
 
-  it.each(['AGENTS.md', 'CLAUDE.md', '.cursorrules'])('%s names moved files only under legacy/', file => {
-    const text = read(file);
-    expect(text).not.toMatch(
-      /share\/index\.html\s+\(SPA route\)|\/share\/\*\s+→\s+share\/index\.html/,
-    );
-    for (const name of ['login-modern.html', 'performance-monitor.js', 'auth-complete.js']) {
-      for (const line of text.split('\n').filter(l => l.includes(name))) {
-        expect(line, `${file}: ${name}`).toMatch(/legacy|retired/);
+  it.each(['AGENTS.md', 'CLAUDE.md', '.cursorrules'])(
+    '%s names moved files only under legacy/',
+    file => {
+      const text = read(file);
+      expect(text).not.toMatch(
+        /share\/index\.html\s+\(SPA route\)|\/share\/\*\s+→\s+share\/index\.html/,
+      );
+      for (const name of ['login-modern.html', 'performance-monitor.js', 'auth-complete.js']) {
+        for (const line of text.split('\n').filter(l => l.includes(name))) {
+          expect(line, `${file}: ${name}`).toMatch(/legacy|retired/);
+        }
       }
-    }
-    expect(text).not.toContain('node build-deploy.js');
-  });
+      expect(text).not.toContain('node build-deploy.js');
+    },
+  );
 });
