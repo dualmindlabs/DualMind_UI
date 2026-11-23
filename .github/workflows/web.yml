@@ -269,6 +269,12 @@ jobs:
               echo "| \`${f#dist/assets/}\` | $(gz "$f") |${libs:- (app code)} |"
             done
           } >> "$GITHUB_STEP_SUMMARY"
+          # The landing page must not preload the signed-in arena's code: web/package.json marks the
+          # sources side-effect free so the `@/features/arena` barrel does not drag it in.
+          if echo "$landing" | grep -qE '/assets/arena(-app)?-[A-Za-z0-9_-]{8}\.js$'; then
+            echo "::error::dist/index.html loads the arena chunk up front; the landing page must not preload the signed-in arena"
+            exit 1
+          fi
           for f in "${lazy[@]}"; do
             if echo "$eager" | grep -qx "$f" || echo "$landing" | grep -qx "$f"; then
               echo "::error::${f} is loaded up front by a prerendered page; it must stay lazy"
