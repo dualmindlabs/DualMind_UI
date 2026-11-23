@@ -28,12 +28,13 @@ export interface CompareSharingProps {
 export function CompareSharing({ result, owner, onDeleted }: CompareSharingProps) {
   const api = useApiClient();
   const shareId = result.shareId;
-  const [shared, setShared] = useState(result.shared);
+  // The owner's last change, until the result itself says otherwise.
+  const [changed, setChanged] = useState<boolean | null>(null);
+  const shared = changed ?? result.shared;
   const [message, setMessage] = useState('');
   const [copied, setCopied] = useState(false);
   const [confirming, setConfirming] = useState(false);
 
-  useEffect(() => setShared(result.shared), [result.shared]);
   useEffect(() => {
     if (!copied) return;
     const timer = setTimeout(() => setCopied(false), 2000);
@@ -46,7 +47,7 @@ export function CompareSharing({ result, owner, onDeleted }: CompareSharingProps
       return api.setCompareShared(shareId, next);
     },
     onSuccess: state => {
-      setShared(state.shared);
+      setChanged(state.shared);
       setMessage(
         state.shared
           ? 'Sharing is on. Anyone with the link can read this result.'
