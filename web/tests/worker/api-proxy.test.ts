@@ -239,7 +239,7 @@ describe('response side', () => {
     expect(MODEL_CALL_TIMEOUT_MS).toBeGreaterThan(60_000);
   });
 
-  it('the cross-examine critique route gets the model-call timeout, other comparison routes do not', () => {
+  it('the critique route gets the model-call timeout, other comparison routes do not', () => {
     const id = '3f2b8c1e-9d4a-4e7b-8a61-0c5d2e9f7a10';
     expect(upstreamTimeoutFor(`/api/arena/comparisons/${id}/critique`)).toBe(MODEL_CALL_TIMEOUT_MS);
     expect(upstreamTimeoutFor(`/api/arena/comparisons/${id}/vote`)).toBe(UPSTREAM_TIMEOUT_MS);
