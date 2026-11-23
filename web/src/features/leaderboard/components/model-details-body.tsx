@@ -4,7 +4,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { lazyWithRetry } from '@/lib/lazy-with-retry';
 import { cn } from '@/lib/utils/cn';
 
-import { rangeDomain, ratingRange } from '../lib/confidence';
+import { isSeeded, rangeDomain, ratingRange } from '../lib/confidence';
 import { PROVISIONAL_BATTLES } from '../lib/constants';
 import {
   formatCount,
@@ -76,7 +76,9 @@ export function ModelDetailsBody({ entry, board, movement }: ModelDetailsBodyPro
   const winRateRank = 1 + entries.filter(other => other.winRate > entry.winRate).length;
   const recorded = entry.wins + entry.losses + entry.ties;
   const range = ratingRange(entry);
-  const domain = rangeDomain(entry.rank === null ? [entry, ...rated] : rated);
+  const seeded = isSeeded(entry);
+  const crowd = board.source === 'crowd';
+  const domain = rangeDomain(entry.rank === null && !seeded ? [entry, ...rated] : rated);
   const rivals = neighbours(entry, board);
   const isLeader = leader !== undefined && leader.id === entry.id;
 
@@ -85,37 +87,49 @@ export function ModelDetailsBody({ entry, board, movement }: ModelDetailsBodyPro
       <div className={cn('grid gap-5 p-5', entry.rank === 1 ? 'surface-a glow-a' : 'surface-duel')}>
         <div className="flex items-end justify-between gap-4">
           <div className="grid gap-2">
-            <span className="eyebrow text-muted">Elo</span>
+            <span className="eyebrow text-muted">{seeded ? 'Elo, seeded' : 'Elo'}</span>
             <span className="numeric text-stat leading-none text-fg">{formatElo(entry.elo)}</span>
           </div>
-          <p className="pb-1 numeric text-ui text-fg-soft" title={range.title}>
-            <span aria-hidden="true">±{formatElo(range.margin)}</span>
-            <span className="sr-only">
-              {range.noun} range {formatElo(range.low)} to {formatElo(range.high)}
-            </span>
-          </p>
+          {seeded ? null : (
+            <p className="pb-1 numeric text-ui text-fg-soft" title={range.title}>
+              <span aria-hidden="true">
+                {formatElo(range.low)}–{formatElo(range.high)}
+              </span>
+              <span className="sr-only">
+                {range.noun} range {formatElo(range.low)} to {formatElo(range.high)}
+              </span>
+            </p>
+          )}
         </div>
-        <RangeBar
-          elo={range.elo}
-          low={range.low}
-          high={range.high}
-          domain={domain}
-          tone={entry.rank === 1 ? 'lead' : 'default'}
-          size="md"
-          measured={range.measured}
-        />
+        {seeded ? null : (
+          <RangeBar
+            elo={range.elo}
+            low={range.low}
+            high={range.high}
+            domain={domain}
+            tone={entry.rank === 1 ? 'lead' : 'default'}
+            size="md"
+            measured={range.measured}
+          />
+        )}
         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-caption text-muted">
           <span>
-            {entry.provisional
-              ? 'Can still move a lot'
-              : leader === undefined || isLeader || gap === 0
-                ? 'Top of the board'
-                : `${formatEloDelta(gap)} on the leader`}
+            {seeded
+              ? 'Starting value, not a fitted rating'
+              : entry.provisional
+                ? 'Can still move a lot'
+                : leader === undefined || isLeader || gap === 0
+                  ? 'Top of the board'
+                  : `${formatEloDelta(gap)} on the leader`}
           </span>
-          <span className="numeric">
-            Range {formatElo(range.low)} to {formatElo(range.high)},{' '}
-            {range.measured ? 'measured' : 'estimated'}
-          </span>
+          {seeded ? (
+            <span>No range until it has enough votes</span>
+          ) : (
+            <span className="numeric">
+              Range {formatElo(range.low)} to {formatElo(range.high)},{' '}
+              {range.measured ? 'measured' : 'estimated'}
+            </span>
+          )}
         </div>
       </div>
 
@@ -123,16 +137,22 @@ export function ModelDetailsBody({ entry, board, movement }: ModelDetailsBodyPro
         <Stat
           label="Rank"
           value={
-            entry.rank === null
+            entry.provisional
               ? 'Not yet rated'
-              : `${formatCount(entry.rank)} of ${formatCount(summary.rated)}`
+              : entry.rank === null
+                ? 'No rank yet'
+                : `${formatCount(entry.rank)} of ${formatCount(summary.ranked)}`
           }
           hint={
-            entry.rank === null
-              ? `From ${formatCount(PROVISIONAL_BATTLES)} battles`
-              : sharing > 0
-                ? `Shared with ${pluralize(sharing, 'other model')}`
-                : 'Among rated models'
+            entry.provisional
+              ? crowd
+                ? 'Needs more votes'
+                : `From ${formatCount(PROVISIONAL_BATTLES)} battles`
+              : entry.rank === null
+                ? 'Too few votes or a wide interval'
+                : sharing > 0
+                  ? `Shared with ${pluralize(sharing, 'other model')}`
+                  : 'Among rated models'
           }
         />
         <Stat
@@ -144,9 +164,13 @@ export function ModelDetailsBody({ entry, board, movement }: ModelDetailsBodyPro
           label="Battles"
           value={formatCount(entry.battles)}
           hint={
-            entry.provisional
-              ? `${formatCount(Math.max(0, PROVISIONAL_BATTLES - entry.battles))} more to be rated`
-              : `Past the ${formatCount(PROVISIONAL_BATTLES)}-battle mark`
+            crowd
+              ? entry.provisional
+                ? 'Not enough votes yet'
+                : 'Rated from votes'
+              : entry.provisional
+                ? `${formatCount(Math.max(0, PROVISIONAL_BATTLES - entry.battles))} more to be rated`
+                : `Past the ${formatCount(PROVISIONAL_BATTLES)}-battle mark`
           }
         />
       </dl>
@@ -160,9 +184,19 @@ export function ModelDetailsBody({ entry, board, movement }: ModelDetailsBodyPro
 
       {entry.provisional ? (
         <p className="surface-duel border-warn/50 px-3.5 py-3 text-ui-sm text-fg-soft">
-          <span className="font-medium text-fg">Not yet rated.</span> With{' '}
-          {pluralize(entry.battles, 'battle')}, a few votes can still move this rating a long way.
-          The board gives a model a rank once it has {formatCount(PROVISIONAL_BATTLES)} battles.
+          <span className="font-medium text-fg">Not yet rated.</span>{' '}
+          {crowd ? (
+            <>
+              Too few votes for a fitted rating: the number above is a starting value. A model gets
+              a rating once enough votes are in, and a rank once its interval is narrow enough too.
+            </>
+          ) : (
+            <>
+              With {pluralize(entry.battles, 'battle')}, a few votes can still move this rating a
+              long way. The board gives a model a rank once it has{' '}
+              {formatCount(PROVISIONAL_BATTLES)} battles.
+            </>
+          )}
         </p>
       ) : null}
 

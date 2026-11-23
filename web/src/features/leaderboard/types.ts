@@ -19,8 +19,9 @@ export interface LeaderboardEntry {
   /** "via Cloudflare Workers AI", or null when the maker serves its own model. */
   servedBy: string | null;
   /**
-   * Rank among the rated models (ties share a rank), or null while the model is not yet rated
-   * (`provisional`). Recomputed here: the API ranks every model, rated or not.
+   * Rank among the rated models (ties share a rank), or null: not yet rated (`provisional`), or,
+   * on the crowd board, rated but without a rank claim (too few votes, interval too wide).
+   * Classic board: recomputed here, the API ranks every model, rated or not. Crowd board: as sent.
    */
   rank: number | null;
   elo: number;
@@ -58,8 +59,10 @@ export interface ProviderOption {
 export interface LeaderboardSummary {
   /** Every model on the board, rated or not. */
   models: number;
-  /** Models with enough battles to be ranked. */
+  /** Models that are rated: not provisional (a fitted rating on the crowd board). */
   rated: number;
+  /** Rated models that carry a rank number (on the crowd board, fewer than `rated` can). */
+  ranked: number;
   /** Half the sum of every model's battles: each battle puts two models side by side. */
   battles: number;
   /** Distinct model makers. */
@@ -73,11 +76,11 @@ export interface LeaderboardSummary {
 }
 
 export interface Leaderboard {
-  /** Rated models in rank order, then the models not yet rated, best rating first. */
+  /** Ranked models in rank order, then rated ones without a rank claim, then those not yet rated. */
   entries: LeaderboardEntry[];
-  /** The rated models, in rank order: the podium, the ranking and the landing top five. */
+  /** The ranked models, in rank order: the podium, the ranking and the landing top five. */
   rated: RatedEntry[];
-  /** The models not yet rated, best rating first. They have no rank. */
+  /** The models not yet rated (provisional), best rating first. They have no rank. */
   unrated: LeaderboardEntry[];
   summary: LeaderboardSummary;
   providers: ProviderOption[];
@@ -85,6 +88,10 @@ export interface Leaderboard {
   source: LeaderboardData['source'];
   /** Crowd board only: method id, votes the fit used, and whether it is a stale copy. */
   crowd: LeaderboardData['crowd'] | null;
+  /** The category this board belongs to; null for the overall board, or when it fell back to it. */
+  category: string | null;
+  /** The crowd board is down or failed and the classic board is shown instead; null otherwise. */
+  fallback: LeaderboardData['fallback'] | null;
 }
 
 export type SortKey = 'rank' | 'name' | 'provider' | 'elo' | 'winRate' | 'battles';

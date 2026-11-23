@@ -38,7 +38,7 @@ function LiveMethodology({ text }: { text: string }) {
           <span className="rounded-sm border border-line-strong bg-surface-2 px-2 py-0.5 font-mono text-fg-soft">
             {methodId}
           </span>
-          <span>as served by the API, word for word</span>
+          <span>as published by the API</span>
         </p>
       ) : null}
       {blocks.map((block, index) =>

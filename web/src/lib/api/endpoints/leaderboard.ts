@@ -22,8 +22,12 @@ export interface LeaderboardEndpoints {
   /**
    * The best board available: the crowd board when the backend has it on, else the classic board
    * above. This is what the leaderboard page reads; every other caller keeps `getLeaderboard`.
+   * With a `category`, that category's crowd board (its `category` field is set), else the overall
+   * board (no `category` field). When the crowd board fails (5xx, network, timeout, unknown
+   * category) or is down (503) the classic board is returned with `fallback` set, and the failure
+   * is not remembered; only a classic failure rejects.
    */
-  getBoard: (options?: CallOptions) => Promise<LeaderboardData>;
+  getBoard: (options?: CallOptions, category?: string) => Promise<LeaderboardData>;
   /**
    * `GET /api/leaderboard` (or `/api/leaderboard/categories/{category}`): the crowd board with
    * fitted ratings, 95% intervals, rank ranges and vote counts. Feature-detected: the backend
@@ -40,6 +44,8 @@ export interface LeaderboardEndpoints {
 
 /** How long "this route is off" is remembered. */
 const OFF_MEMORY_MS = 5 * 60_000;
+/** A body that does not match its schema may be a deploy in flight: ask again soon. */
+const BAD_RESPONSE_MEMORY_MS = 30_000;
 /** Statuses that mean "the crowd board is not available (yet)", not "something broke". */
 const CROWD_OFF = new Set([404, 501, 503]);
 /** The backend's categories; anything else would be a 400 there. */
@@ -82,28 +88,78 @@ export function createLeaderboardEndpoints(transport: Transport): LeaderboardEnd
   };
 
   const offUntil = new Map<string, number>();
-  /** Runs `call`; null when the route is off (and remembers that), rethrows real failures. */
-  async function detect<T>(key: string, call: () => Promise<T>): Promise<T | null> {
-    if ((offUntil.get(key) ?? 0) > Date.now()) return null;
+  const warned = new Set<string>();
+  type Probe<T> =
+    | { kind: 'ok'; value: T }
+    | { kind: 'off' }
+    | { kind: 'unavailable' }
+    | { kind: 'failed'; error: unknown };
+
+  /**
+   * Runs `call` and says what happened. `off` (404, 501, or a bad body) is remembered for a while;
+   * `unavailable` (503) is not; anything else is `failed`, never remembered. An abort is rethrown.
+   */
+  async function probe<T>(key: string, call: () => Promise<T>): Promise<Probe<T>> {
+    if ((offUntil.get(key) ?? 0) > Date.now()) return { kind: 'off' };
     try {
-      return await call();
+      return { kind: 'ok', value: await call() };
     } catch (error) {
-      if (isApiError(error) && (CROWD_OFF.has(error.status) || error.kind === 'bad_response')) {
-        // 503 is the backend failing to build the board right now: fall back, but ask again soon.
-        if (error.status !== 503) offUntil.set(key, Date.now() + OFF_MEMORY_MS);
-        return null;
+      if (isApiError(error)) {
+        if (error.kind === 'aborted') throw error;
+        if (error.kind === 'bad_response') {
+          // Not "off": the route answered with something we cannot read. Say so once, retry soon.
+          if (!warned.has(key)) {
+            warned.add(key);
+            console.warn(
+              `[leaderboard] ${key} answered with an unreadable body; using the classic board`,
+            );
+          }
+          offUntil.set(key, Date.now() + BAD_RESPONSE_MEMORY_MS);
+          return { kind: 'off' };
+        }
+        if (error.status === 503) return { kind: 'unavailable' };
+        if (CROWD_OFF.has(error.status)) {
+          offUntil.set(key, Date.now() + OFF_MEMORY_MS);
+          return { kind: 'off' };
+        }
       }
-      throw error;
+      return { kind: 'failed', error };
     }
+  }
+  /** Runs `call`; null when the route is off or down, rethrows real failures. */
+  async function detect<T>(key: string, call: () => Promise<T>): Promise<T | null> {
+    const result = await probe(key, call);
+    if (result.kind === 'ok') return result.value;
+    if (result.kind === 'failed') throw result.error;
+    return null;
+  }
+
+  const crowdPath = (category?: string) =>
+    category === undefined ? '/api/leaderboard' : `/api/leaderboard/categories/${category}`;
+  const callCrowd = (path: string, options?: CallOptions) =>
+    transport.json({ method: 'GET', path, auth: 'none', schema: crowdBoardSchema }, options);
+
+  /** The best board for `category` (overall when undefined); see `getBoard` on the interface. */
+  async function readBoard(options?: CallOptions, category?: string): Promise<LeaderboardData> {
+    if (category !== undefined) {
+      if (CATEGORY_ID.test(category)) {
+        const own = await probe(crowdPath(category), () => callCrowd(crowdPath(category), options));
+        if (own.kind === 'ok') return { ...own.value, category };
+      }
+      // Off, down, failed or an unknown category: the overall board, without the category label.
+      return readBoard(options);
+    }
+    const overall = await probe(crowdPath(), () => callCrowd(crowdPath(), options));
+    if (overall.kind === 'ok') return overall.value;
+    const classic = await getClassic(options);
+    if (overall.kind === 'off') return classic;
+    return { ...classic, fallback: overall.kind };
   }
 
   const getCrowdBoard = (category?: string, options?: CallOptions) => {
     if (category !== undefined && !CATEGORY_ID.test(category)) return Promise.resolve(null);
-    const path =
-      category === undefined ? '/api/leaderboard' : `/api/leaderboard/categories/${category}`;
-    return detect(path, () =>
-      transport.json({ method: 'GET', path, auth: 'none', schema: crowdBoardSchema }, options),
-    );
+    const path = crowdPath(category);
+    return detect(path, () => callCrowd(path, options));
   };
 
   return {
@@ -135,10 +191,7 @@ export function createLeaderboardEndpoints(transport: Transport): LeaderboardEnd
         const text = await blob.text();
         return text.trim() === '' ? null : text;
       }),
-    getBoard: async options => {
-      const crowd = await getCrowdBoard(undefined, options);
-      return crowd ?? getClassic(options);
-    },
+    getBoard: readBoard,
     getLeaderboard: options => getClassic(options),
   };
 }

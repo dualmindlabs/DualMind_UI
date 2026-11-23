@@ -154,7 +154,9 @@ export function PodiumCard({ entry, place, eloStart, domain, movement, onOpen }:
                     </span>
                   </p>
                   <p className="pb-1 numeric text-caption text-muted" title={range.title}>
-                    <span aria-hidden="true">±{formatElo(range.margin)}</span>
+                    <span aria-hidden="true">
+                      {formatElo(range.low)}–{formatElo(range.high)}
+                    </span>
                     <span className="sr-only">
                       {range.noun} range {formatElo(range.low)} to {formatElo(range.high)}
                     </span>

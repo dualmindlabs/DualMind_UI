@@ -49,8 +49,8 @@ export function leaderboardQuery(api: ApiClient) {
 
 /**
  * The leaderboard page's board: the crowd board when the backend has it on, else the classic one;
- * with a `category`, that category's crowd board (the overall board if the backend answers "off"
- * for it, so a category tab never leaves the page empty). Its own keys, so it never mixes with
+ * with a `category`, that category's crowd board (the overall board, without a `category` field,
+ * if the backend cannot serve it, so a category tab never leaves the page empty or mislabelled). Its own keys, so it never mixes with
  * `leaderboardQuery` (the classic board, used by the landing page, the models directory and the
  * share page).
  */
@@ -61,10 +61,7 @@ export function boardQuery(api: ApiClient, category?: string) {
         ? apiKeys.leaderboard.board()
         : apiKeys.leaderboard.category(category)),
     ] as readonly string[],
-    queryFn: async ({ signal }) =>
-      category === undefined
-        ? api.getBoard(viaQuery(signal))
-        : ((await api.getCrowdBoard(category, viaQuery(signal))) ?? api.getBoard(viaQuery(signal))),
+    queryFn: ({ signal }) => api.getBoard(viaQuery(signal), category),
     staleTime: STALE_TIMES.leaderboard,
   });
 }
