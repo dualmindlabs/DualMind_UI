@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { LiveTurnView } from '@/features/arena/components/live-turn-view';
 import { RevealPanel } from '@/features/arena/components/reveal-panel';
 import type { ArenaState } from '@/features/arena/hooks/use-arena';
-import type { LiveTurn } from '@/features/arena/lib/battle-machine';
+import { type LiveTurn, NO_CROSS_EXAMINE } from '@/features/arena/lib/battle-machine';
 
 import { FakeArena, fakeBattle } from './arena-context';
 
@@ -40,6 +40,10 @@ const revealed = (overrides: Partial<LiveTurn> = {}): LiveTurn => ({
   unrated: null,
   vote: 'left',
   votePending: false,
+  receipt: null,
+  answerKey: null,
+  evalQuestion: false,
+  crossExamine: NO_CROSS_EXAMINE,
   error: null,
   errorKind: null,
   sentAt: 1_000,
@@ -167,5 +171,49 @@ describe('LiveTurnView after the vote', () => {
     expect(screen.queryByRole('region', { name: /Answer A/ })).toBeNull();
     expect(screen.queryByRole('button', { name: /^Copy/ })).toBeNull();
     expect(screen.getByRole('alert')).toHaveTextContent('The answers did not arrive. Boom.');
+  });
+
+  describe('receipt', () => {
+    const hash = '7f3a9c21d4e85b60aa17c2e9b3f4081d5c6e7a8b9c0d1e2f3a4b5c6d7e8f90e4';
+    const receipt = {
+      receiptId: 'c0ffee00-0000-4000-8000-000000000001',
+      seq: 42,
+      entryHash: hash,
+      prevHash: hash.split('').reverse().join(''),
+    };
+
+    it('shows the receipt hash in mono as a copy button when the API sent one', async () => {
+      const writeText = vi.fn().mockResolvedValue(undefined);
+      Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+      panel(revealed({ receipt }));
+      const chip = screen.getByTestId('receipt-chip');
+      expect(within(chip).getByTestId('receipt-hash')).toHaveTextContent('7f3a9c21…90e4');
+      const button = within(chip).getByRole('button', { name: /Vote receipt, entry 42/ });
+      // The label gives the first 8 characters, not all 64 for a screen reader to spell out.
+      expect(button).toHaveAccessibleName(expect.stringContaining('hash 7f3a9c21.'));
+      expect(button).not.toHaveAccessibleName(expect.stringContaining(hash));
+      await userEvent.click(button);
+      expect(writeText).toHaveBeenCalledWith(hash);
+      expect(within(chip).getByRole('link', { name: 'How to verify' })).toHaveAttribute(
+        'href',
+        '/methodology/#receipts',
+      );
+    });
+
+    it('says so when the clipboard is blocked', async () => {
+      const writeText = vi.fn().mockRejectedValue(new Error('denied'));
+      Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+      panel(revealed({ receipt }));
+      const chip = screen.getByTestId('receipt-chip');
+      await userEvent.click(within(chip).getByRole('button', { name: /Vote receipt/ }));
+      expect(await within(chip).findByTestId('receipt-copy-status')).toHaveTextContent(
+        'Could not copy',
+      );
+    });
+
+    it('shows nothing without a receipt (flag off)', () => {
+      panel(revealed());
+      expect(screen.queryByTestId('receipt-chip')).toBeNull();
+    });
   });
 });

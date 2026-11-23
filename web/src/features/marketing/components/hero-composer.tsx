@@ -47,20 +47,22 @@ export function HeroComposer({ onAsk, className }: HeroComposerProps) {
   };
 
   return (
-    <div className={cn('flex w-full flex-col items-center', className)}>
-      <PlaceholdersAndVanishInput
-        label={HERO.composerLabel}
-        hideLabel
-        size="lg"
-        placeholders={narrow ? NARROW_PROMPTS : EXAMPLE_PROMPTS}
-        value={prompt}
-        onValueChange={setPrompt}
-        onSubmit={signInWith}
-        name="prompt"
-        submitLabel={HERO.composerSubmit}
-        className="max-w-2xl"
-      />
-      <div className="mt-5 flex max-w-5xl flex-wrap items-center justify-center gap-2">
+    <div className={cn('flex w-full flex-col items-start', className)}>
+      <div className="w-full max-w-xl rounded-full bg-linear-to-r from-mind-a/70 via-line-strong/60 to-mind-b/70 p-px shadow-float">
+        <PlaceholdersAndVanishInput
+          label={HERO.composerLabel}
+          hideLabel
+          size="lg"
+          placeholders={narrow ? NARROW_PROMPTS : EXAMPLE_PROMPTS}
+          value={prompt}
+          onValueChange={setPrompt}
+          onSubmit={signInWith}
+          name="prompt"
+          submitLabel={HERO.composerSubmit}
+          className="max-w-none"
+        />
+      </div>
+      <div className="mt-5 flex max-w-xl flex-wrap items-center justify-start gap-2">
         <span className="mr-1 eyebrow text-muted">Or watch</span>
         {DEMO_BATTLES.map((battle, index) => (
           <button

@@ -7,7 +7,7 @@ import { RichText } from './rich-text';
 
 const tones = {
   summary: {
-    box: 'border-human/45 bg-human-tint',
+    box: 'border-human/45 bg-human-tint shadow-raise',
     icon: 'text-human',
     label: 'Summary',
     Icon: ShieldCheck,
@@ -33,17 +33,18 @@ export function Callout({ block, className }: { block: CalloutBlock; className?:
       data-tone={block.tone}
       aria-label={block.title ?? tone.label}
       className={cn(
-        'not-prose rounded-lg border p-5 wrap-break-word text-fg sm:p-6 print:break-inside-avoid',
+        'not-prose rounded-xl border p-5 wrap-break-word text-fg sm:p-6 print:break-inside-avoid',
         tone.box,
         className,
       )}
     >
-      <p className="flex items-center gap-2.5 text-ui font-semibold text-fg">
-        <tone.Icon
+      <p className="flex items-center gap-3 text-ui font-semibold text-fg">
+        <span
           aria-hidden="true"
-          strokeWidth={1.75}
-          className={cn('size-5 shrink-0', tone.icon)}
-        />
+          className="grid size-9 shrink-0 place-items-center rounded-md border border-line-strong bg-surface shadow-raise"
+        >
+          <tone.Icon strokeWidth={1.75} className={cn('size-5', tone.icon)} />
+        </span>
         {block.title ?? tone.label}
       </p>
       <p className="mt-3 text-body leading-relaxed [text-wrap:pretty] text-fg-soft">

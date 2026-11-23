@@ -26,26 +26,26 @@ export interface ColorToken {
   against?: `--${string}`[];
 }
 
-export const backgrounds: Record<ThemeName, string> = { dark: '#0F1115', light: '#FFFFFF' };
+export const backgrounds: Record<ThemeName, string> = { dark: '#08090B', light: '#F7F8FA' };
 
 export const colorTokens: ColorToken[] = [
   {
     name: '--bg',
     label: 'Background',
-    use: 'Page background, graphite ink in dark mode',
+    use: 'Page background: Midnight, or Paper',
     kind: 'surface',
     group: 'Surfaces',
-    dark: '#0F1115',
-    light: '#FFFFFF',
+    dark: '#08090B',
+    light: '#F7F8FA',
   },
   {
     name: '--bg-deep',
     label: 'Deep background',
-    use: 'Hero, footer and sections',
+    use: 'Hero, footer and recessed sections',
     kind: 'surface',
     group: 'Surfaces',
-    dark: '#0A0B0E',
-    light: '#F7F7F5',
+    dark: '#050608',
+    light: '#EEF0F3',
   },
   {
     name: '--surface',
@@ -53,16 +53,16 @@ export const colorTokens: ColorToken[] = [
     use: 'Cards, panes, sidebar',
     kind: 'surface',
     group: 'Surfaces',
-    dark: '#13161C',
-    light: '#FAFAF8',
+    dark: '#0E1014',
+    light: '#FFFFFF',
   },
   {
     name: '--surface-2',
     label: 'Raised surface',
-    use: 'Menus, popovers, composer',
+    use: 'Menus, popovers, composer, docks',
     kind: 'surface',
     group: 'Surfaces',
-    dark: '#1A1E25',
+    dark: '#14171C',
     light: '#FFFFFF',
   },
   {
@@ -71,8 +71,8 @@ export const colorTokens: ColorToken[] = [
     use: 'Dividers, used as --line',
     kind: 'decorative',
     group: 'Lines',
-    dark: '#2A3038',
-    light: '#E4E4E0',
+    dark: '#1F232B',
+    light: '#E3E6EB',
   },
   {
     name: '--line-strong',
@@ -80,17 +80,17 @@ export const colorTokens: ColorToken[] = [
     use: 'Inputs and control borders',
     kind: 'control',
     group: 'Lines',
-    dark: '#636B78',
-    light: '#7D838E',
+    dark: '#5E6674',
+    light: '#858C99',
   },
   {
     name: '--fg',
     label: 'Foreground',
-    use: 'Body text',
+    use: 'Body text: near-white on Midnight, ink on Paper',
     kind: 'text',
     group: 'Text',
-    dark: '#E6E8EB',
-    light: '#14161B',
+    dark: '#ECEEF2',
+    light: '#0E1014',
   },
   {
     name: '--fg-soft',
@@ -98,8 +98,8 @@ export const colorTokens: ColorToken[] = [
     use: 'Secondary text',
     kind: 'text',
     group: 'Text',
-    dark: '#B8BCC4',
-    light: '#3D424B',
+    dark: '#B6BBC6',
+    light: '#3A404B',
   },
   {
     name: '--muted',
@@ -107,26 +107,26 @@ export const colorTokens: ColorToken[] = [
     use: 'Captions and metadata',
     kind: 'text',
     group: 'Text',
-    dark: '#8C919A',
-    light: '#5F6571',
+    dark: '#8A91A0',
+    light: '#5B6270',
   },
   {
     name: '--mind-a',
     label: 'Mind A',
-    use: 'The first model: accents, text, badges',
+    use: 'The first model: cyan accents, text, badges',
     kind: 'text',
     group: 'Roles',
-    dark: '#00D9FF',
-    light: '#09738F',
+    dark: '#4AABC2',
+    light: '#17728A',
   },
   {
     name: '--mind-b',
     label: 'Mind B',
-    use: 'The second model: fills and borders',
+    use: 'The second model: terracotta fills and borders',
     kind: 'fill',
     group: 'Roles',
-    dark: '#8B5CF6',
-    light: '#6D28D9',
+    dark: '#E0A07C',
+    light: '#B25F37',
   },
   {
     name: '--mind-b-text',
@@ -134,17 +134,17 @@ export const colorTokens: ColorToken[] = [
     use: 'The second model: text',
     kind: 'text',
     group: 'Roles',
-    dark: '#A78BFA',
-    light: '#6D28D9',
+    dark: '#E8AF8E',
+    light: '#9E4D25',
   },
   {
     name: '--human',
     label: 'Human',
-    use: 'Your prompt, your vote, your winner',
+    use: 'Your prompt, your vote, your winner: champagne gold',
     kind: 'text',
     group: 'Roles',
-    dark: '#CB9275',
-    light: '#9A5434',
+    dark: '#7BE0B0',
+    light: '#16794F',
   },
   {
     name: '--ok',
@@ -152,8 +152,8 @@ export const colorTokens: ColorToken[] = [
     use: 'Success and online states',
     kind: 'text',
     group: 'Status',
-    dark: '#34D399',
-    light: '#047857',
+    dark: '#6FD9A0',
+    light: '#1B7A4E',
   },
   {
     name: '--warn',
@@ -161,8 +161,8 @@ export const colorTokens: ColorToken[] = [
     use: 'Provisional and degraded states',
     kind: 'text',
     group: 'Status',
-    dark: '#FBBF24',
-    light: '#A16207',
+    dark: '#F0C060',
+    light: '#855400',
   },
   {
     name: '--bad',
@@ -170,8 +170,8 @@ export const colorTokens: ColorToken[] = [
     use: 'Errors and destructive actions',
     kind: 'text',
     group: 'Status',
-    dark: '#F87171',
-    light: '#B91C1C',
+    dark: '#EE8E8E',
+    light: '#B3261E',
   },
   {
     name: '--focus',
@@ -179,18 +179,18 @@ export const colorTokens: ColorToken[] = [
     use: '2px ring, 3px offset',
     kind: 'control',
     group: 'Focus and accents',
-    dark: '#00D9FF',
-    light: '#09738F',
+    dark: '#6CC4DB',
+    light: '#17728A',
   },
   {
     name: '--on-accent',
     label: 'On accent',
-    use: 'Text on Mind A and Human buttons',
+    use: 'Text on Mind A, Mind B, Human and error fills',
     kind: 'text',
     group: 'Focus and accents',
-    dark: '#0A0B0E',
+    dark: '#08090B',
     light: '#FFFFFF',
-    against: ['--mind-a', '--human'],
+    against: ['--mind-a', '--mind-b', '--human', '--bad'],
   },
 ];
 
@@ -212,9 +212,9 @@ export interface MotionToken {
 export const durations: MotionToken[] = [
   { name: '--dur-instant', ms: 90, use: 'Press states, toggles' },
   { name: '--dur-fast', ms: 160, use: 'Hovers, menus, tooltips' },
-  { name: '--dur-base', ms: 240, use: 'Panels, tabs, list changes' },
-  { name: '--dur-slow', ms: 420, use: 'Page transitions, drawers' },
-  { name: '--dur-cinematic', ms: 900, use: 'Hero entrance and the reveal only' },
+  { name: '--dur-base', ms: 280, use: 'Panels, tabs, list changes' },
+  { name: '--dur-slow', ms: 440, use: 'Page transitions, drawers, theme reveal' },
+  { name: '--dur-cinematic', ms: 700, use: 'Hero entrance and the reveal only' },
 ];
 
 export interface EasingToken {
@@ -224,8 +224,24 @@ export interface EasingToken {
 }
 
 export const easings: EasingToken[] = [
-  { name: '--ease-out-expo', points: [0.22, 1, 0.36, 1], use: 'Default for entrances' },
-  { name: '--ease-in-out', points: [0.65, 0, 0.35, 1], use: 'Moves and morphs' },
+  { name: '--ease-out-expo', points: [0.16, 1, 0.3, 1], use: 'Default for entrances' },
+  { name: '--ease-in-out', points: [0.65, 0, 0.35, 1], use: 'Moves, swaps and morphs' },
+  { name: '--ease-snap', points: [0.2, 0.8, 0.2, 1], use: 'Hovers and presses' },
+];
+
+export interface DepthToken {
+  name: `--${string}`;
+  utility: string;
+  use: string;
+}
+
+/** Elevation, lowest to highest. The values are in tokens.css (they differ per theme). */
+export const depths: DepthToken[] = [
+  { name: '--raise', utility: 'shadow-raise', use: 'Cards and controls at rest' },
+  { name: '--lift', utility: 'shadow-lift', use: 'Panes, hovered cards, the composer' },
+  { name: '--float', utility: 'shadow-float', use: 'Menus, vote dock, dialogs' },
+  { name: '--glow-a', utility: 'shadow-glow-a', use: 'Mind A won, or is selected' },
+  { name: '--glow-b', utility: 'shadow-glow-b', use: 'Mind B won, or is selected' },
 ];
 
 /** Spring for layout changes (Motion `layout`) and the mode switch indicator. */

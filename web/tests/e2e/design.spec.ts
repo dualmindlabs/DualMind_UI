@@ -50,7 +50,7 @@ test('a stored theme applies before any app JavaScript runs (no flash)', async (
   await page.goto('/design/');
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
   expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe(
-    'rgb(255, 255, 255)',
+    'rgb(247, 248, 250)',
   );
 });
 
@@ -58,11 +58,11 @@ test('"system" follows prefers-color-scheme', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'light' });
   await page.goto('/design/');
   expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe(
-    'rgb(255, 255, 255)',
+    'rgb(247, 248, 250)',
   );
   await page.emulateMedia({ colorScheme: 'dark' });
   expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe(
-    'rgb(15, 17, 21)',
+    'rgb(8, 9, 11)',
   );
 });
 
@@ -81,24 +81,6 @@ test('the enforced CSP blocks an injected inline script on /design/', async ({ p
   });
   expect(ran).toBe(false);
   expect(violations.some(text => text.includes('Content Security Policy'))).toBe(true);
-});
-
-test('legacy pages raise no CSP report-only violations', async ({ page }) => {
-  const violations: string[] = [];
-  await page.exposeFunction('reportCspViolation', (text: string) => violations.push(text));
-  await page.addInitScript(() => {
-    document.addEventListener('securitypolicyviolation', event => {
-      const report = (window as unknown as { reportCspViolation: (text: string) => void })
-        .reportCspViolation;
-      report(`${location.pathname}: ${event.violatedDirective} ${event.blockedURI}`);
-    });
-  });
-  for (const path of ['/legacy-app.html']) {
-    await page.goto(path);
-    await page.waitForLoadState('load');
-    await page.waitForTimeout(1500);
-  }
-  expect(violations).toEqual([]);
 });
 
 test('keyboard: the skip link comes first and moves focus to the content', async ({ page }) => {

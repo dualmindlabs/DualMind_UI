@@ -1,6 +1,6 @@
 import type { ApiError } from '../errors';
 
-export type HttpMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE';
+export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 /**
  * - `required`: the call needs a signed-in user. Without a token it fails locally with an `auth`

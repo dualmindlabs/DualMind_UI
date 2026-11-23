@@ -1,7 +1,8 @@
 /**
  * Loading placeholder.
  * Source: shadcn/ui `skeleton` (base-vega), MIT, see ./LICENSE.md.
- * Changes: our surface token; the pulse is an opacity animation, which stops under reduced motion.
+ * Changes: our surface token; a band of light crosses it (transform only, so it is cheap), and
+ * it stands still under reduced motion.
  */
 import type { ComponentProps } from 'react';
 
@@ -13,7 +14,11 @@ export function Skeleton({ className, ...props }: ComponentProps<'div'>) {
     <div
       aria-hidden="true"
       data-slot="skeleton"
-      className={cn('animate-pulse rounded-md bg-surface-3', className)}
+      className={cn(
+        'relative overflow-hidden rounded-md bg-surface-3',
+        'after:absolute after:inset-0 after:-translate-x-full after:bg-[linear-gradient(90deg,transparent,color-mix(in_oklab,var(--fg)_9%,transparent),transparent)] motion-safe:after:animate-skeleton',
+        className,
+      )}
       {...props}
     />
   );

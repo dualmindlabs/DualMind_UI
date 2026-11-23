@@ -18,7 +18,7 @@ export function SignedInNotice({ user, target }: { user: User; target: string })
   const { signOut } = useAuth();
   const [pending, setPending] = useState(false);
   return (
-    <section className="grid gap-4 rounded-lg border border-line bg-surface p-5 shadow-raise">
+    <section className="grid gap-4 surface-inset p-5">
       <div className="flex items-start gap-3">
         <span
           aria-hidden="true"

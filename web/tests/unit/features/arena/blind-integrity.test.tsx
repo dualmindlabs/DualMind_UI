@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import { LiveTurnView } from '@/features/arena/components/live-turn-view';
-import type { LiveTurn } from '@/features/arena/lib/battle-machine';
+import { type LiveTurn, NO_CROSS_EXAMINE } from '@/features/arena/lib/battle-machine';
 
 import { FakeArena, fakeBattle } from './arena-context';
 
@@ -36,6 +36,10 @@ const turn = (overrides: Partial<LiveTurn> = {}): LiveTurn => ({
   unrated: null,
   vote: null,
   votePending: false,
+  receipt: null,
+  answerKey: null,
+  evalQuestion: false,
+  crossExamine: NO_CROSS_EXAMINE,
   error: null,
   errorKind: null,
   sentAt: 1_000,

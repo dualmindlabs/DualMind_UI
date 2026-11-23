@@ -25,7 +25,12 @@ import {
   isBusy,
   type LiveTurn,
 } from '../lib/battle-machine';
-import { FORBIDDEN_THREAD_MESSAGE, UNRATED_NOTES, voteFailure } from '../lib/battle-notes';
+import {
+  crossExamineMessage,
+  FORBIDDEN_THREAD_MESSAGE,
+  UNRATED_NOTES,
+  voteFailure,
+} from '../lib/battle-notes';
 import { type ArenaMode, MODE_DETAILS } from '../lib/modes';
 
 /** How long the progressive reveal of a finished answer takes (both panes in parallel). */
@@ -44,6 +49,10 @@ export interface BattleApi {
   busy: boolean;
   send: (prompt: string, options: SendOptions) => void;
   vote: (turnId: string, choice: VoteChoice) => void;
+  /** Cross-examine (backend PR 71): asks both models to rebut the other, after the first vote. */
+  critique: (turnId: string) => void;
+  /** The optional second vote of a cross-examine. Stored apart; never counts toward the board. */
+  secondVote: (turnId: string, choice: VoteChoice) => void;
   /** Stops the turn in flight: aborts the request, or shows a battle's text at once. */
   stop: () => void;
   /** Shows the progressive reveal's text at once ("Show all"). */
@@ -186,9 +195,15 @@ export function useBattle({
               model1: options.pair?.a ?? undefined,
               model2: options.pair?.b ?? undefined,
             };
+            // Truth vs Taste is for blind battles only (the API ignores it for a named pair).
+            const blind = options.mode === 'battle' && !request.model1 && !request.model2;
             const battle = await api
               .startBattle(
-                { ...request, idempotencyKey: attempts.keyFor(request) },
+                {
+                  ...request,
+                  idempotencyKey: attempts.keyFor(request),
+                  ...(blind ? { allowEvalItem: true } : {}),
+                },
                 { signal: abort.signal },
               )
               .catch((error: unknown) => {
@@ -205,6 +220,7 @@ export function useBattle({
               id,
               comparisonId: battle.comparisonId,
               fallbackUsed: battle.fallbackUsed,
+              askedPrompt: battle.agent1.prompt ?? battle.agent2.prompt,
               a: battle.agent1,
               b: battle.agent2,
               at: Date.now(),
@@ -252,7 +268,13 @@ export function useBattle({
       queue
         .submit({ comparisonId: turn.comparisonId, voteChoice: choice, voteDurationMs })
         .then(result => {
-          dispatch({ type: 'voted', id: turnId, queued: result.status === 'queued' });
+          dispatch({
+            type: 'voted',
+            id: turnId,
+            queued: result.status === 'queued',
+            receipt: result.status === 'sent' ? (result.receipt ?? null) : null,
+            answerKey: result.status === 'sent' ? (result.answerKey ?? null) : null,
+          });
           announce(revealMessage(turn, choice, result.status === 'queued'));
         })
         .catch((error: unknown) => {
@@ -267,6 +289,53 @@ export function useBattle({
         });
     },
     [queue, announce],
+  );
+
+  const critique = useCallback(
+    (turnId: string) => {
+      const turn = stateRef.current.turns.find(item => item.id === turnId);
+      if (!turn || turn.phase !== 'revealed' || turn.comparisonId === null || turn.votePending) {
+        return;
+      }
+      dispatch({ type: 'critique-start', id: turnId });
+      announce('Asking both models to answer each other.');
+      api
+        .requestCritique(turn.comparisonId)
+        .then(result => {
+          dispatch({ type: 'critique-done', id: turnId, rebuttals: result.critiques });
+          announce('Both rebuttals are in, under the answers.');
+        })
+        .catch((error: unknown) => {
+          const message = crossExamineMessage(error);
+          dispatch({ type: 'critique-failed', id: turnId, message });
+          announce(message);
+        });
+    },
+    [api, announce],
+  );
+
+  const secondVote = useCallback(
+    (turnId: string, choice: VoteChoice) => {
+      const turn = stateRef.current.turns.find(item => item.id === turnId);
+      if (!turn || turn.comparisonId === null || turn.crossExamine.critique !== 'ready') return;
+      dispatch({ type: 'round2-start', id: turnId, choice });
+      api
+        .submitRound2Vote({ comparisonId: turn.comparisonId, voteChoice: choice })
+        .then(result => {
+          dispatch({ type: 'round2-done', id: turnId, flipped: result.flipped });
+          announce(
+            result.flipped
+              ? 'Second vote saved. You changed your mind.'
+              : 'Second vote saved. You kept your first vote.',
+          );
+        })
+        .catch((error: unknown) => {
+          const message = crossExamineMessage(error);
+          dispatch({ type: 'round2-failed', id: turnId, message });
+          announce(`The second vote was not saved. ${message}`);
+        });
+    },
+    [api, announce],
   );
 
   const reset = useCallback(
@@ -285,8 +354,19 @@ export function useBattle({
 
   const busy = isBusy(state);
   return useMemo(
-    () => ({ state, busy, send, vote, stop, showAll, reset, pendingVotes: pending.length }),
-    [state, busy, send, vote, stop, showAll, reset, pending.length],
+    () => ({
+      state,
+      busy,
+      send,
+      vote,
+      critique,
+      secondVote,
+      stop,
+      showAll,
+      reset,
+      pendingVotes: pending.length,
+    }),
+    [state, busy, send, vote, critique, secondVote, stop, showAll, reset, pending.length],
   );
 }
 

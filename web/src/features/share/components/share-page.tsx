@@ -21,6 +21,7 @@ import { cn } from '@/lib/utils/cn';
 import { useSharedThread } from '../hooks/use-shared-thread';
 import { formatShareDate, shareDocumentTitle, shareSummary } from '../lib/summary';
 import { RUN_YOUR_OWN_HREF, ShareError, ShareSkeleton, ShareUnavailable } from './share-states';
+import { VerdictCard } from './verdict-card';
 
 function useModelNames(): ReadonlyMap<string, string> {
   const api = useApiClient();
@@ -98,6 +99,7 @@ function SharedView({ threadId, shared }: { threadId: string; shared: SharedThre
   const summary = useMemo(() => shareSummary(shared), [shared]);
   const { thread, messages } = shared;
   const wide = thread.mode !== 'direct';
+  const verdictShown = wide && messages.some(message => message.model2Response !== '');
   const details = [
     `${summary.turns} ${summary.turns === 1 ? 'turn' : 'turns'}`,
     summary.date ? formatShareDate(summary.date) : null,
@@ -107,42 +109,43 @@ function SharedView({ threadId, shared }: { threadId: string; shared: SharedThre
     <>
       <section
         aria-labelledby="share-title"
-        className="relative isolate overflow-hidden border-b border-line"
+        className="relative isolate overflow-hidden border-b border-line mesh-duel"
       >
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 -z-10 dot-grid [mask-image:radial-gradient(ellipse_60%_80%_at_20%_0%,black,transparent)] opacity-60"
+          className="pointer-events-none absolute inset-0 -z-10 bg-grid opacity-70"
         />
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -top-40 left-1/2 -z-10 h-80 w-[min(70rem,140%)] -translate-x-1/2 bg-[radial-gradient(closest-side,color-mix(in_oklab,var(--mind-a)_16%,transparent),transparent),radial-gradient(closest-side,color-mix(in_oklab,var(--mind-b)_14%,transparent),transparent)] bg-[length:55%_100%,55%_100%] bg-[position:0_0,100%_0] bg-no-repeat blur-2xl"
-        />
-        <PageContainer className="grid gap-5 pt-10 pb-10 md:pt-16 md:pb-12">
-          <p className="flex flex-wrap items-center gap-x-2 gap-y-1 eyebrow text-muted">
-            <Link2 aria-hidden="true" className="size-3.5 text-mind-a" strokeWidth={2} />
-            <span className="text-fg-soft">{summary.eyebrow}</span>
-            {/* Phones: the details get their own line, so no line starts with a separator. */}
-            <span className="basis-full sm:basis-auto sm:before:mr-2 sm:before:content-['·']">
-              {details.join(' · ')}
-            </span>
-          </p>
-          <h1
-            id="share-title"
-            className="max-w-[30ch] text-h1 font-medium text-balance break-words text-fg"
-          >
-            {thread.title}
-          </h1>
-          <p className="max-w-reading text-body text-fg-soft" data-testid="share-lead">
-            {summary.lead}
-          </p>
-          <ShareActions threadId={threadId} title={thread.title} />
-          {/* On paper the buttons are gone; the address stays, so the printout leads back. */}
-          <p
-            className="hidden text-ui-sm break-all text-muted print:block"
-            data-testid="share-print-url"
-          >
-            {shareUrl(threadId)}
-          </p>
+        <PageContainer
+          className={cn(
+            'grid items-center gap-10 pt-10 pb-12 md:pt-16 md:pb-16',
+            verdictShown && 'lg:grid-cols-[minmax(0,1fr)_minmax(0,29rem)] lg:gap-14',
+          )}
+        >
+          <div className="grid content-center gap-6">
+            <p className="flex flex-wrap items-center gap-x-2 gap-y-1 eyebrow text-muted">
+              <Link2 aria-hidden="true" className="size-3.5 text-mind-a" strokeWidth={2} />
+              <span className="text-fg-soft">{summary.eyebrow}</span>
+              {/* Phones: the details get their own line, so no line starts with a separator. */}
+              <span className="basis-full sm:basis-auto sm:before:mr-2 sm:before:content-['·']">
+                {details.join(' · ')}
+              </span>
+            </p>
+            <h1 id="share-title" className="max-w-[24ch] text-h1 text-balance break-words text-fg">
+              {thread.title}
+            </h1>
+            <p className="max-w-reading text-lead text-fg-soft" data-testid="share-lead">
+              {summary.lead}
+            </p>
+            <ShareActions threadId={threadId} title={thread.title} />
+            {/* On paper the buttons are gone; the address stays, so the printout leads back. */}
+            <p
+              className="hidden text-ui-sm break-all text-muted print:block"
+              data-testid="share-print-url"
+            >
+              {shareUrl(threadId)}
+            </p>
+          </div>
+          <VerdictCard shared={shared} names={names} />
         </PageContainer>
       </section>
 
@@ -155,25 +158,35 @@ function SharedView({ threadId, shared }: { threadId: string; shared: SharedThre
         )}
       </PageContainer>
 
-      <section aria-labelledby="share-cta" className="border-t border-line bg-surface print:hidden">
-        <PageContainer className="grid gap-6 py-14 md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:py-20">
-          <div className="grid gap-3">
-            <h2 id="share-cta" className="text-h2 font-medium text-balance text-fg">
+      <section
+        aria-labelledby="share-cta"
+        className="relative isolate overflow-hidden border-t border-line mesh-duel print:hidden"
+      >
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 -z-10 bg-grid opacity-60"
+        />
+        <PageContainer className="grid gap-8 py-16 md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:py-24">
+          <div className="grid gap-4">
+            <h2 id="share-cta" className="max-w-[18ch] text-h1 text-balance text-fg">
               Your prompt. <span className="human-voice text-human">Your verdict.</span>
             </h2>
-            <p className="max-w-reading text-ui text-fg-soft">
+            <p className="max-w-reading text-lead text-fg-soft">
               Ask anything. Two anonymous models answer side by side, you pick the better one, and
               only then do you see who they were. Every vote moves the public leaderboard.
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-3">
             <a
               href={RUN_YOUR_OWN_HREF}
               className={buttonVariants({ variant: 'primary', size: 'lg' })}
             >
               Run your own battle
             </a>
-            <a href="/leaderboard/" className={buttonVariants({ variant: 'ghost', size: 'lg' })}>
+            <a
+              href="/leaderboard/"
+              className={buttonVariants({ variant: 'secondary', size: 'lg' })}
+            >
               See the leaderboard
             </a>
           </div>

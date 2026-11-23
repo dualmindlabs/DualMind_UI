@@ -14,12 +14,7 @@ interface KitCardProps {
 /** A specimen of the UI kit: what it is, where it lives, and the component in its states. */
 export function KitCard({ title, description, source, className, children }: KitCardProps) {
   return (
-    <article
-      className={cn(
-        'flex min-w-0 flex-col rounded-lg border border-line bg-surface shadow-raise',
-        className,
-      )}
-    >
+    <article className={cn('surface-duel flex min-w-0 flex-col', className)}>
       <div className="grid gap-1 px-4 pt-5 sm:px-6 sm:pt-6">
         <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
           <h3 className="text-h3 font-semibold text-fg">{title}</h3>

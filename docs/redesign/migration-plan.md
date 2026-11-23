@@ -127,7 +127,7 @@ If Harsh prefers strictly identical paths (no clean aliases at all), the same ro
 - has a tiny inline script in `<head>` that checks for a Supabase session key in `localStorage` and sets `data-session="1"` on `<html>` before the first paint, so a signed-in visitor sees the arena skeleton instead of a flash of marketing;
 - after hydration, `AuthProvider` confirms the session and renders the arena shell. The hero composer and the arena's empty-state composer are the same component in the same place, so the switch is seamless.
 
-**During the migration** (before the arena slices land), signed-in visitors at `/` are sent to the legacy app, served from the same `dist/` as `/legacy/app.html` (a copy of today's `index.html`; its relative script paths still resolve). That lets the landing ship early without freezing the old arena. The legacy entry is removed at cutover.
+**During the migration** (before the arena slices land), signed-in visitors at `/` are sent to the legacy app, served from the same `dist/` as `/legacy/app.html` (a copy of today's `index.html`; its relative script paths still resolve). That lets the landing ship early without freezing the old arena. The legacy entry was removed at the cutover (S13a, 22 Oct 2026).
 
 ### 3.4 Thread URLs (new)
 

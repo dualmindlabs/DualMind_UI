@@ -4,7 +4,7 @@ import { type ReactNode, type RefObject, useRef } from 'react';
 import { AnimatedBeam } from '@/components/vendor/magicui/animated-beam';
 
 const circle =
-  'relative z-10 grid size-12 place-items-center rounded-full border bg-surface-2 shadow-raise sm:size-14';
+  'relative z-10 grid size-12 place-items-center rounded-full border bg-surface-2 shadow-(--lift) sm:size-14';
 
 function Node({
   nodeRef,
@@ -22,7 +22,7 @@ function Node({
       <div ref={nodeRef} className={`${circle} ${className}`}>
         {children}
       </div>
-      <p className="text-caption font-medium text-fg-soft">{label}</p>
+      <p className="text-caption font-medium text-fg">{label}</p>
     </div>
   );
 }
@@ -42,10 +42,10 @@ export function BattleDiagram() {
   const icon = 'size-5 sm:size-6';
 
   return (
-    <figure className="mx-auto max-w-page px-4 pb-4 sm:px-6">
+    <figure className="mx-auto max-w-page px-4 pt-14 pb-4 sm:px-6 md:pt-20">
       <div
         ref={containerRef}
-        className="relative mx-auto flex w-full max-w-3xl items-center justify-between rounded-xl border border-line bg-surface px-4 py-10 sm:px-10"
+        className="relative mx-auto flex w-full max-w-4xl items-center justify-between surface-float px-4 py-12 sm:px-12"
       >
         <Node nodeRef={promptRef} label="Your prompt" className="border-human/60">
           <MessageSquareText
@@ -117,7 +117,7 @@ export function BattleDiagram() {
           gradientStopColor="--mind-a"
         />
       </div>
-      <figcaption className="mx-auto mt-4 max-w-3xl text-center text-caption text-muted">
+      <figcaption className="mx-auto mt-5 max-w-3xl text-center text-ui-sm text-fg-soft">
         Your prompt goes to two anonymous models at once. You vote. The vote moves both ratings.
       </figcaption>
     </figure>

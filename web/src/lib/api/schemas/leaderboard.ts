@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { resolveDisplayName } from '@/lib/models/display-name';
 
 import { count, listOf, numeric, optionalString, withAliases } from './common';
+import type { CrowdStat } from './crowd';
 
 /**
  * One row of `GET /api/arena/model-stats`. The live API sends every field twice (camelCase and
@@ -51,7 +52,10 @@ export const modelStatSchema = withAliases(
 /** `{ success, items }` from v1; ranked by the API (ties share a rank). */
 export const leaderboardSchema = listOf(modelStatSchema);
 
-export type ModelStat = z.output<typeof modelStatSchema>;
+export type ModelStat = z.output<typeof modelStatSchema> & {
+  /** Only on the crowd board (`source: 'crowd'`): rating interval, rank range, vote count. */
+  crowd?: CrowdStat | undefined;
+};
 
 /** What `getLeaderboard()` returns, whichever route answered. */
 export interface LeaderboardData {
@@ -60,8 +64,30 @@ export interface LeaderboardData {
   provisionalBelow: number;
   /** When the data last changed (v2 `meta.generatedAt`); null from the v1 fallback. */
   generatedAt: string | null;
-  /** Which route answered. */
-  source: 'v2' | 'v1';
+  /** Which route answered. `crowd` is the backend's leaderboard v2 (feature-detected). */
+  source: 'crowd' | 'v2' | 'v1';
+  /**
+   * The category this board is for, set only when that category's own board answered. Absent on
+   * the overall board and when a category fell back to the overall one: never label a board with
+   * a category it does not belong to.
+   */
+  category?: string;
+  /**
+   * Set when the crowd board was asked for and the classic board is shown instead because the
+   * crowd board is temporarily down (`unavailable`: 503) or failed (`failed`: 5xx, network,
+   * unknown category). Absent when the crowd board is simply off, which is not worth a notice.
+   */
+  fallback?: 'unavailable' | 'failed';
+  /** Board-level facts, crowd board only. */
+  crowd?: {
+    /** Method id, for example `bt-v1`. */
+    methodology: string | null;
+    /** Votes the fit used; null when the API did not say (never shown as 0). */
+    voteCount: number | null;
+    /** A stale copy, or a seeded board built without votes. */
+    degraded: boolean;
+    warnings: string[];
+  };
 }
 
 /** `GET /api/v2/leaderboard`: the shared contract schema, mapped to the app's shape. */

@@ -24,7 +24,7 @@ const roleStyles: Record<
     letter: 'B',
     name: 'Mind B',
     badge: 'border-mind-b/55 bg-mind-b-tint',
-    // The text violet as the fill: ink on #A78BFA is 7.3:1, ink on the fill violet would be 4.3:1.
+    // The text terracotta as the fill: ink on it is 8:1 in dark mode, white on it 6.9:1 in light.
     chip: 'bg-mind-b-text text-on-accent',
     text: 'text-mind-b-text',
   },

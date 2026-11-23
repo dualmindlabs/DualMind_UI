@@ -268,7 +268,7 @@ test.describe('forced colors', () => {
       await storeTheme(page, theme);
       await page.emulateMedia({ forcedColors: 'active', reducedMotion: 'reduce' });
       await mockArena(page);
-      await page.goto('/?arena=new');
+      await page.goto('/');
       await expect(page.getByTestId('arena')).toBeVisible();
       await page.getByRole('textbox', { name: 'Your prompt' }).fill('Explain recursion');
       await page.keyboard.press('Enter');

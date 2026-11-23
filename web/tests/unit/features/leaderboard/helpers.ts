@@ -31,6 +31,7 @@ export function entry(overrides: Partial<LeaderboardEntry> = {}): LeaderboardEnt
     winRate: 0,
     provisional: true,
     eloShare: 1,
+    crowd: null,
     ...overrides,
   };
 }

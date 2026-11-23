@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
 import { LiveTurnView } from '@/features/arena/components/live-turn-view';
-import type { LiveTurn } from '@/features/arena/lib/battle-machine';
+import { type LiveTurn, NO_CROSS_EXAMINE } from '@/features/arena/lib/battle-machine';
 import { UNRATED_NOTES, voteFailure } from '@/features/arena/lib/battle-notes';
 import { ApiError } from '@/lib/api';
 
@@ -32,6 +32,10 @@ const turn = (overrides: Partial<LiveTurn> = {}): LiveTurn => ({
   unrated: 'fallback',
   vote: null,
   votePending: false,
+  receipt: null,
+  answerKey: null,
+  evalQuestion: false,
+  crossExamine: NO_CROSS_EXAMINE,
   error: null,
   errorKind: null,
   sentAt: 1_000,

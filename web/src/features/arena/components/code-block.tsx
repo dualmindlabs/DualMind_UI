@@ -51,7 +51,7 @@ function usableResult(code: string, result: HighlightedCode | null): Highlighted
 
 /**
  * A fenced code block in an answer: the language in the label voice, a copy button, and the
- * code in JetBrains Mono, scrolling sideways inside the pane (focusable, so keyboards can scroll
+ * code in the code face (Geist Mono), scrolling sideways inside the pane (focusable, so keyboards can scroll
  * it too). Known languages get Shiki colours once their grammar has loaded (lib/highlight.ts);
  * until then, and for every other language, the same code shows plain in the same metrics, so
  * the block never changes size when the colours arrive.
@@ -65,11 +65,13 @@ export function CodeBlock({ code, language }: CodeBlockProps) {
     <figure
       data-answer-block=""
       // The figure clips its rounded corners, so it draws the ring of the focused code itself.
-      className="overflow-hidden rounded-md border border-line bg-surface has-[>pre:focus-visible]:outline-(length:--focus-width) has-[>pre:focus-visible]:outline-offset-2 has-[>pre:focus-visible]:outline-focus has-[>pre:focus-visible]:outline-solid"
+      className="overflow-hidden rounded-md border border-line bg-surface shadow-raise has-[>pre:focus-visible]:outline-(length:--focus-width) has-[>pre:focus-visible]:outline-offset-2 has-[>pre:focus-visible]:outline-focus has-[>pre:focus-visible]:outline-solid"
       aria-label={language ? `Code, ${name}` : 'Code'}
     >
-      <figcaption className="flex h-9 items-center justify-between gap-2 border-b border-line pr-1.5 pl-3">
-        <span className="eyebrow text-muted">{name}</span>
+      <figcaption className="flex h-10 items-center justify-between gap-2 border-b border-line bg-surface/60 pr-1.5 pl-3">
+        <span className="rounded-sm border border-line bg-surface-2 px-1.5 py-0.5 font-mono text-caption font-medium text-fg-soft">
+          {name}
+        </span>
         <CopyButton text={code} label={`Copy the ${name} code`} showLabel />
       </figcaption>
       <pre
@@ -79,7 +81,7 @@ export function CodeBlock({ code, language }: CodeBlockProps) {
         data-highlighted={
           highlighted === null ? undefined : highlighted.code === code ? 'true' : 'partial'
         }
-        className="m-0 overflow-x-auto px-3.5 py-3 font-code text-caption leading-[1.6] text-fg focus-visible:outline-none"
+        className="m-0 overflow-x-auto px-3.5 py-3 font-code text-[0.8125rem] leading-[1.65] text-fg focus-visible:outline-none"
       >
         <code>
           {highlighted === null ? (

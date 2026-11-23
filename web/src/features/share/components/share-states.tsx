@@ -3,11 +3,45 @@ import type { ReactNode } from 'react';
 
 import { PageContainer } from '@/components/layout/page-container';
 import { Button, buttonVariants } from '@/components/ui/button';
+import { ModelMark } from '@/components/ui/model-mark';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getUserMessage, isApiError } from '@/lib/api';
 import { cn } from '@/lib/utils/cn';
 
 export const RUN_YOUR_OWN_HREF = '/';
+
+/**
+ * The picture beside a dead end: two empty panes (Mind A and Mind B) with a mark between them,
+ * dashed like a table with nobody at it. Decorative.
+ */
+function GhostDuel({ icon, tone }: { icon: ReactNode; tone: 'default' | 'error' }) {
+  return (
+    <div aria-hidden="true" className="relative grid grid-cols-2 gap-3 select-none">
+      {(['a', 'b'] as const).map(side => (
+        <div
+          key={side}
+          className={cn(
+            'grid h-32 content-start gap-2.5 rounded-lg border border-dashed bg-surface/60 p-3.5 sm:h-40',
+            side === 'a' ? 'border-mind-a-edge' : 'border-mind-b-edge',
+          )}
+        >
+          <ModelMark name={side.toUpperCase()} who={side} size="sm" className="opacity-70" />
+          <span className="mt-1 block h-1.5 w-4/5 rounded-full bg-fg/10" />
+          <span className="block h-1.5 w-3/5 rounded-full bg-fg/10" />
+          <span className="block h-1.5 w-2/3 rounded-full bg-fg/10" />
+        </div>
+      ))}
+      <span
+        className={cn(
+          'absolute top-1/2 left-1/2 grid size-12 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border bg-surface-2 shadow-lift',
+          tone === 'error' ? 'border-bad/50 text-bad' : 'border-line-strong text-fg-soft',
+        )}
+      >
+        {icon}
+      </span>
+    </div>
+  );
+}
 
 function StateCard({
   icon,
@@ -25,35 +59,33 @@ function StateCard({
   testId: string;
 }) {
   return (
-    <PageContainer width="reading" className="py-16 md:py-24">
+    <div className="relative isolate overflow-hidden mesh-duel">
       <div
-        data-testid={testId}
-        role={tone === 'error' ? 'alert' : undefined}
-        className={cn(
-          'relative grid justify-items-start gap-5 overflow-hidden rounded-xl border bg-surface px-6 py-9 shadow-raise sm:px-10',
-          tone === 'error' ? 'border-bad/40' : 'border-line',
-        )}
-      >
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 -z-10 bg-grid opacity-60"
+      />
+      <PageContainer className="py-14 md:py-24">
         <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 dot-grid [mask-image:radial-gradient(ellipse_70%_60%_at_100%_0%,black,transparent)] opacity-60"
-        />
-        <span
-          aria-hidden="true"
+          data-testid={testId}
+          role={tone === 'error' ? 'alert' : undefined}
           className={cn(
-            'relative grid size-11 place-items-center rounded-lg border bg-surface-2',
-            tone === 'error' ? 'border-bad/40 text-bad' : 'border-line text-fg-soft',
+            'grid items-center gap-10 p-6 sm:p-10 md:grid-cols-[minmax(0,1fr)_minmax(0,19rem)]',
+            tone === 'error'
+              ? 'rounded-lg border border-bad/40 bg-surface shadow-float'
+              : 'surface-float',
           )}
         >
-          {icon}
-        </span>
-        <div className="relative grid gap-2">
-          <h1 className="text-h2 font-medium text-balance text-fg">{title}</h1>
-          <div className="grid gap-2 text-ui text-fg-soft">{children}</div>
+          <div className="grid content-start justify-items-start gap-6">
+            <div className="grid gap-3">
+              <h1 className="text-h2 text-balance text-fg">{title}</h1>
+              <div className="grid gap-2 text-ui text-fg-soft">{children}</div>
+            </div>
+            <div className="flex flex-wrap gap-2">{actions}</div>
+          </div>
+          <GhostDuel icon={icon} tone={tone} />
         </div>
-        <div className="relative flex flex-wrap gap-2">{actions}</div>
-      </div>
-    </PageContainer>
+      </PageContainer>
+    </div>
   );
 }
 
@@ -68,12 +100,12 @@ export function ShareUnavailable({ ownerHref }: { ownerHref: string | null }) {
         <>
           <a
             href={RUN_YOUR_OWN_HREF}
-            className={buttonVariants({ variant: 'primary', size: 'sm' })}
+            className={buttonVariants({ variant: 'primary', size: 'md' })}
           >
             Run your own battle
           </a>
           {ownerHref ? (
-            <a href={ownerHref} className={buttonVariants({ variant: 'secondary', size: 'sm' })}>
+            <a href={ownerHref} className={buttonVariants({ variant: 'secondary', size: 'md' })}>
               Open it in your arena
             </a>
           ) : null}
@@ -107,13 +139,13 @@ export function ShareError({
       title="This shared page did not load."
       actions={
         <>
-          <Button variant="primary" size="sm" onClick={onRetry} loading={retrying}>
+          <Button variant="primary" size="md" onClick={onRetry} loading={retrying}>
             <RotateCw aria-hidden="true" strokeWidth={1.75} />
             Try again
           </Button>
           <a
             href={RUN_YOUR_OWN_HREF}
-            className={buttonVariants({ variant: 'secondary', size: 'sm' })}
+            className={buttonVariants({ variant: 'secondary', size: 'md' })}
           >
             Start a battle
           </a>

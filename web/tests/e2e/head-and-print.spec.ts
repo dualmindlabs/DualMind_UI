@@ -149,8 +149,8 @@ test.describe('icons and the web app manifest', () => {
     expect(manifest.description).toBe('Blind battles between AI models, ranked by votes.');
     expect(manifest.start_url).toBe('/');
     expect(manifest.display).toBe('standalone');
-    expect(manifest.background_color).toBe('#0F1115');
-    expect(manifest.theme_color).toBe('#0F1115');
+    expect(manifest.background_color).toBe('#08090B');
+    expect(manifest.theme_color).toBe('#08090B');
 
     const purposes = manifest.icons.map(icon => `${icon.sizes} ${icon.purpose}`);
     expect(purposes).toEqual(
@@ -222,9 +222,15 @@ async function expectNoSiteChrome(page: Page) {
   await expect(page.getByRole('contentinfo')).toBeHidden();
   await expect(page.locator('[data-slot="site-header"]:visible')).toHaveCount(0);
   await expect(page.locator('[data-slot="site-footer"]:visible')).toHaveCount(0);
-  expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe(
-    'rgb(255, 255, 255)',
-  );
+  // Polled: the computed colour is read as the print rules take over from the screen ones.
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const style = getComputedStyle(document.body);
+        return `${style.backgroundColor} (transition: ${style.transitionProperty} ${style.transitionDuration})`;
+      }),
+    )
+    .toMatch(/^rgb\(255, 255, 255\)/);
 }
 
 test.describe('print', () => {
@@ -258,7 +264,7 @@ test.describe('print', () => {
           style.getPropertyValue(name).trim().toLowerCase(),
         );
       });
-      expect(inks).toEqual(['#6d28d9', '#047857', '#a16207', '#b91c1c']);
+      expect(inks).toEqual(['#9e4d25', '#1b7a4e', '#855400', '#b3261e']);
       await page.screenshot({ path: shotPath(`print-share-from-${theme}`), fullPage: true });
     });
   }

@@ -7,8 +7,10 @@ import { passGate, settle, shotPath, storeTheme } from './helpers';
 // The signed-in arena flow on desktop (docs/redesign/status.md, resume plan step 7): a long
 // answer under a long model name, the vote bar that stays on screen, code and tables that scroll
 // inside their pane, the reveal header that stays one row at 1440, 1280 and 1024 px, focus and
-// the next steps after the vote, the keys, reduced motion, errors and both themes. Supabase and
-// the API are answered by Playwright routes (arena-mocks.ts).
+// the next steps after the vote, the keys, reduced motion, errors and both themes. The vote dock
+// (Stage): the pill in key order, the key hint on desktop only, the prompt box aside while the
+// verdict is open, and the pill on phones at 360 and 390 px. Supabase and the API are answered by
+// Playwright routes (arena-mocks.ts).
 
 test.beforeEach(async ({ context, baseURL }) => {
   await passGate(context, baseURL ?? 'http://127.0.0.1:8787');
@@ -91,7 +93,7 @@ const LONG_B = [
   'Move to a shared cache only when several instances miss on the same keys.',
 ].join('\n\n');
 
-async function openArena(page: Page, path = '/?arena=new') {
+async function openArena(page: Page, path = '/') {
   await page.goto(path);
   await expect(page.getByTestId('arena')).toBeVisible();
 }
@@ -196,7 +198,9 @@ function expectStableHeaders(headers: HeaderGeometry[], label: string) {
   expect(a.spread, `${label}: A on one row`).toBeLessThan(8);
   expect(b.spread, `${label}: B on one row`).toBeLessThan(8);
   expect(Math.abs(a.height - b.height), `${label}: equal heights`).toBeLessThan(1);
-  expect(a.height, `${label}: header height`).toBeLessThan(56);
+  // The Stage card header is roomy (28 px above a 56 px row with the large name and its mark):
+  // 88 px on one row. A second row (a wrapped name or pick mark) would push it past 96.
+  expect(a.height, `${label}: header height`).toBeLessThan(96);
   for (const header of headers) {
     expect(header.metaInHeader, `${label} ${header.side}: timing in the footer`).toBe(false);
     if (header.pickLeft !== null && header.nameRight !== null) {
@@ -318,6 +322,149 @@ test.describe('the reveal header', () => {
       });
     }
   }
+});
+
+type Box = { x: number; y: number; width: number; height: number };
+
+async function box(locator: Locator): Promise<Box> {
+  const found = await locator.boundingBox();
+  if (!found) throw new Error('no bounding box');
+  return found;
+}
+
+const overlaps = (a: Box, b: Box) =>
+  a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+
+const VOTE_ORDER = ['A is better', 'B is better', 'Tie', 'Both are bad'] as const;
+
+const AXE_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'];
+
+/** Serious and critical axe findings on the whole page, one line each. */
+async function blockingAxe(page: Page) {
+  const results = await new AxeBuilder({ page }).withTags(AXE_TAGS).analyze();
+  return results.violations
+    .filter(violation => violation.impact === 'serious' || violation.impact === 'critical')
+    .map(
+      violation =>
+        `${violation.id}: ${violation.nodes
+          .map(node => node.target.join(' '))
+          .slice(0, 3)
+          .join(', ')}`,
+    );
+}
+
+test.describe('the vote dock', () => {
+  for (const theme of ['dark', 'light'] as const) {
+    test(`desktop ${theme}: the pill in order, the keys under it, the prompt box aside, axe`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 1280, height: 800 });
+      await storeTheme(page, theme);
+      await mockArena(page, { answers: { a: LONG_A, b: LONG_B } });
+      await openArena(page);
+      const turn = await sendBattle(page);
+      const buttons = turn.getByRole('group', { name: 'Your verdict' }).getByRole('button');
+      await expect(buttons).toHaveCount(4);
+      for (const [index, label] of VOTE_ORDER.entries()) {
+        await expect(buttons.nth(index)).toContainText(label);
+        await expect(buttons.nth(index)).toHaveAttribute('aria-keyshortcuts', String(index + 1));
+      }
+      // A quiet line for keyboard users, under the pills; screen readers get aria-keyshortcuts.
+      const keys = turn.getByTestId('vote-keys');
+      await expect(keys).toBeVisible();
+      await expect(keys).toHaveText(/1\s*to\s*4\s*to vote/);
+      await expect(keys).toHaveAttribute('aria-hidden', 'true');
+      const medallion = await box(turn.getByTestId('vote-vs'));
+      expect((await box(keys)).y, 'the hint sits under the pill').toBeGreaterThan(medallion.y);
+      // While a battle waits for its verdict the prompt box steps aside.
+      await expect(page.getByRole('textbox', { name: 'Your prompt' })).toBeHidden();
+      // The vote bar's entrance has finished (opacity 1) before axe measures contrast.
+      await settle(page, 1200);
+      expect(await blockingAxe(page)).toEqual([]);
+      await turn.getByTestId('vote-bar').screenshot({ path: shotPath(`arena-vote-dock-${theme}`) });
+
+      // The prompt box comes back with the reveal, for the follow-up.
+      await voteWithKey(page, turn, '2');
+      await expect(page.getByRole('textbox', { name: 'Your prompt' })).toBeVisible();
+    });
+  }
+
+  test('with the single-key shortcuts off: no key hint, no keys on the pills', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.addInitScript(() => window.localStorage.setItem('dm.arena.shortcuts', 'off'));
+    await mockArena(page);
+    await openArena(page);
+    const turn = await sendBattle(page, 'Explain recursion to a ten-year-old');
+    await expect(turn.getByTestId('vote-bar')).toBeVisible();
+    await expect(turn.getByTestId('vote-keys')).toHaveCount(0);
+    await expect(turn.getByTestId('vote-bar').locator('kbd')).toHaveCount(0);
+    const buttons = turn.getByRole('group', { name: 'Your verdict' }).getByRole('button');
+    for (let index = 0; index < 4; index += 1) {
+      await expect(buttons.nth(index)).not.toHaveAttribute('aria-keyshortcuts', /.*/);
+    }
+    // The keys do nothing; a click still votes.
+    await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+    await page.keyboard.press('1');
+    await expect(turn).toHaveAttribute('data-phase', 'awaiting_vote');
+    await buttons.first().click();
+    await expect(turn).toHaveAttribute('data-phase', 'revealed');
+  });
+
+  test.describe('on phones', () => {
+    test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+
+    for (const width of [360, 390] as const) {
+      for (const theme of width === 360 ? (['dark', 'light'] as const) : (['dark'] as const)) {
+        test(`${width} px ${theme}: the pill fits, the VS medallion clears both sides`, async ({
+          page,
+        }) => {
+          await page.setViewportSize({ width, height: width === 360 ? 740 : 844 });
+          await storeTheme(page, theme);
+          await mockArena(page);
+          await openArena(page);
+          await page.getByRole('textbox', { name: 'Your prompt' }).fill(PROMPT);
+          await page.getByRole('button', { name: 'Send' }).click();
+          const turn = page.getByTestId('live-turn').first();
+          await expect(turn).toHaveAttribute('data-phase', 'awaiting_vote', { timeout: 15_000 });
+          await settle(page, 1000);
+
+          const vs = await box(turn.getByTestId('vote-vs'));
+          for (const side of ['a', 'b'] as const) {
+            const button = turn.locator(`button[data-side="${side}"]`);
+            const half = await box(button);
+            const label = button.getByTestId('vote-label');
+            const parts = {
+              label: await box(label),
+              badge: await box(button.locator('[data-slot="role-badge"]')),
+            };
+            for (const [part, partBox] of Object.entries(parts)) {
+              expect(overlaps(partBox, vs), `${side} ${part} under the medallion`).toBe(false);
+              expect(partBox.x, `${side} ${part} inside its half`).toBeGreaterThanOrEqual(
+                half.x - 0.5,
+              );
+              expect(
+                partBox.x + partBox.width,
+                `${side} ${part} inside its half`,
+              ).toBeLessThanOrEqual(half.x + half.width + 0.5);
+            }
+            // The whole label, no ellipsis.
+            expect(
+              await label.evaluate(element => element.scrollWidth <= element.clientWidth + 1),
+              `${side} label in full`,
+            ).toBe(true);
+            // 44 px targets at least (the pill is 96 px tall under a coarse pointer).
+            expect(half.height).toBeGreaterThanOrEqual(44);
+          }
+          // Phones have no keys to learn: no hint, no key caps.
+          await expect(turn.getByTestId('vote-keys')).toBeHidden();
+          expect(await overflowing(page)).toEqual([]);
+          await turn
+            .getByTestId('vote-bar')
+            .screenshot({ path: shotPath(`arena-vote-pill-${width}-${theme}`) });
+        });
+      }
+    }
+  });
 });
 
 test.describe('after the vote', () => {
@@ -454,19 +601,7 @@ test.describe('after the vote', () => {
       const turn = await sendBattle(page);
       await voteWithKey(page, turn, '1');
       await settle(page, 2600);
-      const results = await new AxeBuilder({ page })
-        .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'])
-        .analyze();
-      const blocking = results.violations
-        .filter(violation => violation.impact === 'serious' || violation.impact === 'critical')
-        .map(
-          violation =>
-            `${violation.id}: ${violation.nodes
-              .map(node => node.target.join(' '))
-              .slice(0, 3)
-              .join(', ')}`,
-        );
-      expect(blocking).toEqual([]);
+      expect(await blockingAxe(page)).toEqual([]);
     });
   }
 });

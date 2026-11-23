@@ -40,7 +40,7 @@ export function ThreadPanel() {
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="grid gap-2 px-3 pt-3 pb-2">
-        <Button variant="secondary" size="sm" onClick={newBattle} className="justify-between">
+        <Button variant="primary" size="sm" onClick={newBattle} className="justify-between">
           <span className="flex items-center gap-2">
             <Plus aria-hidden="true" strokeWidth={1.75} />
             New battle
@@ -59,7 +59,7 @@ export function ThreadPanel() {
             value={query}
             onChange={event => setQuery(event.target.value)}
             placeholder="Search threads"
-            className="h-9 w-full rounded-md border border-line bg-surface pr-3 pl-9 text-ui-sm text-fg placeholder:text-muted hover:border-line-strong pointer-coarse:h-11"
+            className="h-9 w-full rounded-md border border-line bg-bg-deep pr-3 pl-9 text-ui-sm text-fg placeholder:text-muted hover:border-line-strong pointer-coarse:h-11"
           />
         </label>
       </div>

@@ -33,14 +33,20 @@ export function FaqList({ items }: { items: readonly FaqItemBlock[] }) {
       hiddenUntilFound
       value={open}
       onValueChange={(value: unknown[]) => setOpen(value.map(String))}
-      className="border-t border-line"
+      className="gap-3"
     >
       {items.map(item => {
         const id = faqId(item.question);
         return (
-          <div key={id} id={id} className="scroll-mt-24">
-            <AccordionItem value={id}>
-              <AccordionTrigger className="py-4 text-body">{item.question}</AccordionTrigger>
+          <div
+            key={id}
+            id={id}
+            className="surface-duel scroll-mt-24 has-[[data-panel-open]]:shadow-(--float)"
+          >
+            <AccordionItem value={id} className="border-b-0 px-5">
+              <AccordionTrigger className="min-h-14 py-4 text-body font-medium">
+                {item.question}
+              </AccordionTrigger>
               <AccordionContent className="grid gap-3 text-body leading-relaxed [text-wrap:pretty]">
                 {item.answer.map(paragraph => (
                   <p key={paragraph}>

@@ -22,9 +22,11 @@ export interface StatsStripProps {
 
 function Cell({ label, children, hint }: { label: string; children: ReactNode; hint?: ReactNode }) {
   return (
-    <div className="grid content-start gap-2 bg-surface px-4 py-4 sm:px-6 sm:py-5">
+    <div className="relative grid content-start gap-2.5 bg-[linear-gradient(180deg,var(--surface-2),var(--surface))] px-4 py-4 sm:px-6 sm:py-5">
       <dt className="eyebrow text-muted">{label}</dt>
-      <dd className="text-h2 leading-none font-light text-fg tabular-nums">{children}</dd>
+      <dd className="numeric text-[clamp(1.75rem,1.4rem+1.4vw,2.5rem)] leading-none text-fg">
+        {children}
+      </dd>
       {hint ? <dd className="text-caption text-muted">{hint}</dd> : null}
     </div>
   );
@@ -48,7 +50,7 @@ export function StatsStrip({
     <dl
       aria-busy={summary === undefined}
       className={cn(
-        'grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-line bg-line shadow-raise sm:grid-cols-4 lg:grid-cols-2',
+        'grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-line bg-line shadow-lift sm:grid-cols-4 lg:grid-cols-2',
         className,
       )}
     >

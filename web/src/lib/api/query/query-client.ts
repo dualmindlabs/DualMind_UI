@@ -10,6 +10,7 @@ export const STALE_TIMES = Object.freeze({
   health: 15_000,
   models: 5 * 60_000,
   leaderboard: 60_000,
+  methodology: 5 * 60_000,
   threads: 30_000,
   threadMessages: 30_000,
   sharedThread: 60_000,

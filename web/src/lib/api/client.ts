@@ -1,6 +1,8 @@
 import { apiConfig } from '@/config/api';
 
 import { type ArenaEndpoints, createArenaEndpoints } from './endpoints/arena';
+import { type CompareEndpoints, createCompareEndpoints } from './endpoints/compare';
+import { createCrossExamineEndpoints, type CrossExamineEndpoints } from './endpoints/cross-examine';
 import { createFlagEndpoints, type FlagEndpoints } from './endpoints/flags';
 import { createHealthEndpoints, type HealthEndpoints } from './endpoints/health';
 import { createLeaderboardEndpoints, type LeaderboardEndpoints } from './endpoints/leaderboard';
@@ -29,6 +31,8 @@ export interface ApiClient
     ModelEndpoints,
     ArenaEndpoints,
     LeaderboardEndpoints,
+    CompareEndpoints,
+    CrossExamineEndpoints,
     ThreadEndpoints,
     UserEndpoints,
     SpeechEndpoints,
@@ -70,6 +74,8 @@ export function createApiClient(options: ApiClientOptions = {}): ApiClient {
     ...createModelEndpoints(transport),
     ...createArenaEndpoints(transport),
     ...createLeaderboardEndpoints(transport),
+    ...createCompareEndpoints(transport),
+    ...createCrossExamineEndpoints(transport),
     ...createThreadEndpoints(transport),
     ...createUserEndpoints(transport),
     ...createSpeechEndpoints(transport),

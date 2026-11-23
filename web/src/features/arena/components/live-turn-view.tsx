@@ -1,8 +1,8 @@
-import { CloudOff, FastForward, Plus, RotateCw, Scale } from 'lucide-react';
+import { CloudOff, FastForward, Scale } from 'lucide-react';
 import { useId } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { TextShimmer } from '@/components/vendor/motion-primitives/text-shimmer';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useShouldReduceMotion } from '@/hooks/use-should-reduce-motion';
 import { resolveDisplayName } from '@/lib/models/display-name';
 
@@ -15,8 +15,10 @@ import { AnswerPane } from './answer-pane';
 import { PaneMetrics } from './pane-metrics';
 import { PanePair } from './pane-pair';
 import { PromptCard } from './prompt-card';
+import { RebuttalNote, RebuttalPending } from './rebuttal-note';
 import { RevealPanel } from './reveal-panel';
-import { VoteBar } from './vote-bar';
+import { TurnError, UnratedNotice } from './turn-notice';
+import { VoteBar, VoteBarLocked } from './vote-bar';
 
 function modelLabel(answer: LiveAnswer | null): string | null {
   const model = answer?.model;
@@ -24,15 +26,28 @@ function modelLabel(answer: LiveAnswer | null): string | null {
   return resolveDisplayName(model.name, model.displayName);
 }
 
+/**
+ * The vote's dock: pinned to the foot of the stage, so the verdict is always in reach. The answers
+ * fade out over its top padding only; from the question down it is solid, so the question and
+ * the pills never sit on top of the text scrolling under them.
+ */
+const DOCK =
+  'sticky bottom-0 z-10 -mx-4 bg-[linear-gradient(to_top,var(--bg-deep)_calc(100%_-_2.5rem),transparent)] px-4 pt-10 pb-4 sm:-mx-6 sm:px-6';
+
+const WAITING_LINES = ['w-11/12', 'w-full', 'w-4/5', 'w-10/12', 'w-2/3'] as const;
+
+/** Before the first words: staggered skeleton lines (80 ms apart) under a quiet status. */
 function Waiting({ mode }: { mode: LiveTurn['mode'] }) {
   return (
-    <div className="grid gap-2.5 py-1" aria-hidden="true">
-      <TextShimmer className="text-ui-sm" duration={1.6}>
-        {mode === 'direct' ? 'Writing' : 'Generating'}
-      </TextShimmer>
-      <div className="h-3 w-11/12 rounded-sm bg-surface-3" />
-      <div className="h-3 w-4/5 rounded-sm bg-surface-3" />
-      <div className="h-3 w-2/3 rounded-sm bg-surface-3" />
+    <div className="grid gap-3 py-1" aria-hidden="true">
+      <p className="text-ui-sm text-muted">{mode === 'direct' ? 'Writing' : 'Generating'}</p>
+      {WAITING_LINES.map((width, index) => (
+        <Skeleton
+          key={width + index}
+          className={`h-3.5 ${width} motion-safe:animate-fade-in`}
+          style={{ animationDelay: `${index * 80}ms` }}
+        />
+      ))}
     </div>
   );
 }
@@ -43,6 +58,23 @@ interface PaneProps {
   answer: LiveAnswer | null;
 }
 
+/**
+ * The cross-examine reply under an answer: the OTHER model's rebuttal (slot 2 wrote the one under
+ * answer A, slot 1 the one under answer B), or a placeholder while both are being written.
+ */
+function rebuttalFor(turn: LiveTurn, side: PaneProps['side']) {
+  if (side === 'solo' || turn.phase !== 'revealed') return null;
+  const { critique, rebuttals } = turn.crossExamine;
+  if (critique === 'loading') return <RebuttalPending />;
+  if (critique !== 'ready') return null;
+  const slot = side === 'a' ? 2 : 1;
+  const rebuttal = rebuttals[slot];
+  if (rebuttal === undefined) return null;
+  const critic =
+    rebuttal.displayName ?? modelLabel(side === 'a' ? turn.b : turn.a) ?? 'The other model';
+  return <RebuttalNote rebuttal={rebuttal} critic={critic} />;
+}
+
 function LivePane({ turn, side, answer }: PaneProps) {
   const reduce = useShouldReduceMotion();
   const revealing = turn.phase === 'answering' && turn.mode !== 'direct' && !reduce;
@@ -51,7 +83,14 @@ function LivePane({ turn, side, answer }: PaneProps) {
   const choice = side === 'a' ? 'left' : side === 'b' ? 'right' : null;
   const chosen = choice !== null && turn.vote === choice && turn.phase !== 'voting';
   const generating = turn.phase === 'submitting' || turn.phase === 'answering';
+  // A verdict is in: the winner glows (answer-pane), the loser steps back, a tie keeps both.
+  const dimmed =
+    choice !== null &&
+    turn.vote !== null &&
+    turn.phase !== 'voting' &&
+    (turn.vote === 'both-bad' || (turn.vote !== choice && turn.vote !== 'tie'));
   const revealedNow = turn.mode === 'battle' && turn.phase === 'revealed';
+  const rebuttal = rebuttalFor(turn, side);
 
   return (
     <AnswerPane
@@ -60,21 +99,27 @@ function LivePane({ turn, side, answer }: PaneProps) {
       modelLabel={shown ? modelLabel(answer) : null}
       {...(turn.unrated === null ? { hiddenNote: 'Hidden until you vote' } : {})}
       chosen={chosen}
+      dimmed={dimmed}
       streaming={generating && answer !== null}
       generating={generating}
       revealing={revealedNow}
       footer={
-        // Blind integrity: timing, length and tokens hint at the model, so they wait for the
-        // reveal (and for the whole text).
-        answer && shown && !generating ? (
-          <PaneMetrics
-            items={paneMetrics({
-              text: answer.text,
-              timeMs: answer.responseTimeMs,
-              tokens: answer.usage?.completionTokens,
-            })}
-          />
-        ) : null
+        <>
+          {rebuttal}
+          {
+            // Blind integrity: timing, length and tokens hint at the model, so they wait for the
+            // reveal (and for the whole text).
+            answer && shown && !generating ? (
+              <PaneMetrics
+                items={paneMetrics({
+                  text: answer.text,
+                  timeMs: answer.responseTimeMs,
+                  tokens: answer.usage?.completionTokens,
+                })}
+              />
+            ) : null
+          }
+        </>
       }
     >
       {turn.phase === 'submitting' || (generating && answer === null) ? (
@@ -101,7 +146,7 @@ export function LiveTurnView({
   latest?: boolean;
 }) {
   const promptId = useId();
-  const { battle, newBattle } = useArena();
+  const { battle, newBattle, shortcutsEnabled } = useArena();
   const optional = turn.mode === 'side';
   const showVote =
     turn.mode !== 'direct' && (turn.phase === 'awaiting_vote' || turn.phase === 'voting');
@@ -111,16 +156,26 @@ export function LiveTurnView({
   return (
     <article
       aria-labelledby={promptId}
-      className="grid gap-4"
+      className="grid grid-cols-[minmax(0,1fr)] gap-6 sm:gap-8"
       data-testid="live-turn"
       data-phase={turn.phase}
     >
       <PromptCard id={promptId} number={number} prompt={turn.prompt} />
+      {turn.evalQuestion ? (
+        <p data-testid="eval-question-note" className="text-ui-sm text-fg-soft">
+          This round used a question with a known answer in place of yours. The answer key comes
+          after you vote.
+        </p>
+      ) : null}
       {noAnswers ? null : turn.mode === 'direct' ? (
         <LivePane turn={turn} side="solo" answer={turn.a} />
       ) : (
         <PanePair
           label={`Answers to prompt ${number}`}
+          writing={{
+            a: turn.phase === 'submitting' || turn.phase === 'answering',
+            b: turn.phase === 'submitting' || turn.phase === 'answering',
+          }}
           a={<LivePane turn={turn} side="a" answer={turn.a} />}
           b={<LivePane turn={turn} side="b" answer={turn.b} />}
         />
@@ -137,18 +192,23 @@ export function LiveTurnView({
         </Button>
       ) : null}
       {turn.unrated !== null && turn.mode !== 'direct' ? (
-        <p className="text-ui-sm text-fg-soft" data-testid="unrated-note">
-          {UNRATED_NOTES[turn.unrated]}
-        </p>
+        <UnratedNotice>{UNRATED_NOTES[turn.unrated]}</UnratedNotice>
+      ) : null}
+      {turn.mode === 'battle' && (turn.phase === 'submitting' || turn.phase === 'answering') ? (
+        <div className={DOCK}>
+          <VoteBarLocked />
+        </div>
       ) : null}
       {showVote ? (
-        <VoteBar
-          className="sticky bottom-2 z-10"
-          optional={optional}
-          chosen={turn.phase === 'voting' ? turn.vote : null}
-          error={turn.error}
-          onVote={choice => battle.vote(turn.id, choice)}
-        />
+        <div className={DOCK}>
+          <VoteBar
+            optional={optional}
+            chosen={turn.phase === 'voting' ? turn.vote : null}
+            error={turn.error}
+            keys={shortcutsEnabled}
+            onVote={choice => battle.vote(turn.id, choice)}
+          />
+        </div>
       ) : null}
       {turn.phase === 'revealed' && turn.vote && latest ? <RevealPanel turn={turn} /> : null}
       {turn.phase === 'revealed' && turn.vote && !latest ? (
@@ -170,32 +230,12 @@ export function LiveTurnView({
         </p>
       ) : null}
       {turn.phase === 'error' ? (
-        <div
-          role="alert"
-          className="grid justify-items-start gap-2 rounded-lg border border-bad/50 bg-surface px-4 py-3"
-        >
-          {turn.errorKind === 'forbidden' ? (
-            <>
-              <p className="text-ui-sm text-fg">{turn.error}</p>
-              <Button variant="secondary" size="xs" onClick={newBattle}>
-                <Plus aria-hidden="true" strokeWidth={1.75} />
-                New battle
-              </Button>
-            </>
-          ) : (
-            <>
-              <p className="text-ui-sm text-fg">The answers did not arrive. {turn.error}</p>
-              <Button
-                variant="secondary"
-                size="xs"
-                onClick={() => battle.send(turn.prompt, { mode: turn.mode, pair: null })}
-              >
-                <RotateCw aria-hidden="true" strokeWidth={1.75} />
-                Try again
-              </Button>
-            </>
-          )}
-        </div>
+        <TurnError
+          kind={turn.errorKind}
+          message={turn.error}
+          onNewBattle={newBattle}
+          onRetry={() => battle.send(turn.prompt, { mode: turn.mode, pair: null })}
+        />
       ) : null}
       {turn.phase === 'stopped' ? <p className="text-ui-sm text-muted">Stopped.</p> : null}
     </article>

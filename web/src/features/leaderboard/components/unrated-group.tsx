@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 
+import type { RangeDomain } from '../lib/confidence';
 import { PROVISIONAL_BATTLES } from '../lib/constants';
 import { formatCount, pluralize } from '../lib/format';
 import type { LeaderboardEntry, SortKey, SortState } from '../types';
@@ -17,6 +18,10 @@ export interface UnratedGroupProps {
   sort: SortState;
   onSort: (column: SortKey) => void;
   onOpen: (id: string, trigger: HTMLElement | null) => void;
+  /** The scale the range bars share. */
+  domain?: RangeDomain | undefined;
+  /** Crowd board: "not yet rated" means too few votes, not fewer than N battles. */
+  crowd?: boolean | undefined;
 }
 
 /**
@@ -31,21 +36,33 @@ export function UnratedGroup({
   sort,
   onSort,
   onOpen,
+  domain,
+  crowd = false,
 }: UnratedGroupProps) {
   const [open, setOpen] = useState(false);
   const expanded = open || forceOpen;
   const caption = 'Models not yet rated, without a rank. Column buttons sort the table.';
 
   return (
-    <section aria-labelledby="unrated-title" className="grid gap-4 pt-4">
+    <section aria-labelledby="unrated-title" className="grid gap-5 border-t border-line pt-10">
       <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
         <div className="grid gap-1.5">
-          <h3 id="unrated-title" className="text-h3 font-medium text-fg">
+          <h3 id="unrated-title" className="text-h3 font-semibold text-fg">
             Not yet rated
           </h3>
           <p className="max-w-reading text-ui-sm text-fg-soft">
-            {pluralize(entries.length, 'model')} with fewer than {formatCount(PROVISIONAL_BATTLES)}{' '}
-            battles. They have no rank yet: a few votes can still move their Elo a long way.
+            {crowd ? (
+              <>
+                {pluralize(entries.length, 'model')} with too few votes for a fitted rating. They
+                show a seeded starting value and have no rank yet.
+              </>
+            ) : (
+              <>
+                {pluralize(entries.length, 'model')} with fewer than{' '}
+                {formatCount(PROVISIONAL_BATTLES)} battles. They have no rank yet: a few votes can
+                still move their Elo a long way.
+              </>
+            )}
           </p>
         </div>
         {forceOpen ? null : (
@@ -69,6 +86,7 @@ export function UnratedGroup({
               onSort={onSort}
               onOpen={onOpen}
               showRank={false}
+              domain={domain}
               caption={caption}
             />
           ) : (
@@ -76,6 +94,7 @@ export function UnratedGroup({
               entries={entries}
               onOpen={onOpen}
               showRank={false}
+              domain={domain}
               label="Models not yet rated"
             />
           )}
