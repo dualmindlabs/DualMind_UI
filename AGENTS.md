@@ -19,7 +19,6 @@ npm run validate         # lint + test — BROKEN for both reasons above
 npm run build            # node build.js: builds web/ (npm ci + react-router build), then composes ./dist
 cd web && npm run check  # New React app: typecheck, lint, Prettier, Vitest (see web/README.md)
 npm run deploy           # build + npx wrangler deploy (uses wrangler.jsonc)
-node build-deploy.js     # Alternative build script with a different file set
 ```
 
 **Tooling fixes that must be done first:**
@@ -35,7 +34,7 @@ Cloudflare Workers via `wrangler.jsonc`. The Worker (`worker.js`) proxies `/api/
 
 **Inconsistent build/deploy files to be aware of:**
 - `build.js` copies a curated set of files to `dist/`.
-- `build-deploy.js` copies a different set (including admin-email-system) and prints `wrangler deploy --config wrangler-dist.toml`.
+- `build-deploy.js` was deleted (see `legacy/README.md`); only `build.js` builds `dist/`.
 - `package.json` deploy uses `wrangler.jsonc`.
 - `wrangler-dist.toml` exists but is separate from `wrangler.jsonc`.
 
@@ -59,7 +58,7 @@ The repo also contains several prototype fragments that are **not wired to produ
 ```
 Browser → Cloudflare Worker (worker.js)
             ├── /api/*    → Azure backend (api.dualmindlab.tech or BACKEND_URL env)
-            ├── /share/*  → share/index.html  (SPA route)
+            ├── /share/*  → web app share page (server/share.js)
             └── /*        → static assets (Cloudflare ASSETS binding / dist/)
 ```
 
@@ -116,12 +115,12 @@ Mode changes are dispatched as `mode-change` CustomEvent and handled surgically 
 | `js/auth/supabase-auth.js` | `SupabaseAuthService` class. Full auth lifecycle: signUp, signIn, signOut, OTP, social providers, password reset/update, session management. |
 | `js/auth/supabase-init.js` | Instantiates `SupabaseAuthService` from `window.DUALMIND_CONFIG.supabase`, attaches to `window.DualMindAuth`. Dispatches `user-logged-in` / `user-logged-out`. |
 | `js/auth-modern.js` | Handles auth callbacks (social login redirects), phone binding enforcement for new users. |
-| `login/auth-complete.js` | Additional email/phone/OTP logic used by `login-modern.html`. **BROKEN:** references undefined `emailInput`, `setLoading`, `supabaseClient`, `SITE_URL`. |
+| `legacy/pages/login/auth-complete.js` | Additional email/phone/OTP logic used by the retired `legacy/pages/login-modern.html`. **BROKEN:** references undefined `emailInput`, `setLoading`, `supabaseClient`, `SITE_URL`. |
 | `js/auth-examples.js` | **Dev-only** usage examples for auth — not imported in production.
 | `js/api/examples.js` | **Dev-only** API usage examples — not imported in production. |
 | `js/feature-flags.js` | Role-based UI gating (tester badge/credits) via MutationObserver. |
 | `theme.js` | Theme toggle (dark/light) using `localStorage`. |
-| `performance-monitor.js` | Runtime FPS/network performance monitor. |
+| `legacy/tools/performance-monitor.js` | Runtime FPS/network performance monitor. |
 
 ### Components
 
@@ -138,14 +137,14 @@ Mode changes are dispatched as `mode-change` CustomEvent and handled surgically 
 
 ### Auth pages
 
-- `login-modern.html`, `signup-modern.html`, `forgot-password.html`, `update-password.html`, `auth-callback.html`, `auth-verify.html`, `verify.html`
-- They load `config.js` + `js/auth/supabase-init.js` + specific JS (`login/auth-complete.js`, `js/auth-modern.js`, etc.).
+- Classic pages now live in `legacy/pages/` (`login-modern.html`, `signup-modern.html`, `forgot-password.html`, `update-password.html`, `auth-callback.html`, `verify.html`); only `auth-verify.html` is still at the root. The web app (`web/`) serves sign-in now.
+- They loaded `config.js` + `js/auth/supabase-init.js` + specific JS (`legacy/pages/login/auth-complete.js`, `js/auth-modern.js`, etc.).
 - They do **not** load `js/ui/app.js`.
 
 ### Standalone pages
 
 - `leaderboard/index.html` + `js/leaderboardPage.js`
-- `share/index.html` + `components/SharedThreadView.js`
+- Share page: the web app's `/share/<id>` route (the classic `share/index.html` moved to `legacy/pages/share/`)
 - `about/`, `faq/`, `how-it-works/`, `models/`, `privacy/`, `terms/`, `cookies/` — static info pages.
 
 ### Waitlist sub-project
@@ -167,7 +166,7 @@ Page load
   → config.js                       sets window.DUALMIND_CONFIG
   → js/auth/supabase-init.js      restores session, sets window.DualMindAuth
   → js/ui/app.js                  waits for window.DualMindAuthReady
-       ├── NOT logged in → redirect to login-modern.html
+       ├── NOT logged in → redirect to the web app sign-in
        └── logged in    → syncUserWithBackend() → setup() → render app
 ```
 
@@ -387,7 +386,7 @@ Cached models are stored in `window._DUALMIND_MODELS` after first fetch.
 - `DOMPurify` is used for AI markdown rendering in most places.
 - `escapeHtml()` / `sanitizeHTML()` sanitize thread titles and some text.
 - Known risks that still need fixing:
-  - `login/auth-complete.js` uses `innerHTML` for button labels (safe content but inconsistent).
+  - `legacy/pages/login/auth-complete.js` uses `innerHTML` for button labels (safe content but inconsistent).
   - `components/CustomModal.js`, `components/ShareModal.js`, and several others use `innerHTML` with own template strings.
   - Auth tokens are stored in Supabase's `localStorage` session. XSS would expose them.
   - Worker CORS is `Access-Control-Allow-Origin: *` for all `/api/*` routes.
@@ -408,7 +407,7 @@ The redesign moves pages from the legacy files to a React app in `web/` (React 1
 
 ## Tests
 
-Playwright config exists at `playwright.config.js`, test file at `tests/auth-flow-redesign.spec.js`.
+Playwright config exists at `playwright.config.js`, test file at `legacy/tests/auth-flow-redesign.spec.js` (legacy: it targets the retired `signup-modern.html`). The Worker tests are `npm run api:test`; the web app's are in `web/tests`.
 
 **Currently broken:** `@playwright/test` is not in `package.json` devDependencies, so `npm run test` fails.
 
@@ -427,7 +426,7 @@ Then `npm run test` will spin up `npx serve . -p 8000` automatically.
 
 | Priority | Issue | Files | Notes |
 |----------|-------|-------|-------|
-| P0 | Login auth crash | `login/auth-complete.js` | `emailInput`, `setLoading`, `supabaseClient`, `SITE_URL` undefined |
+| P0 | Login auth crash | `legacy/pages/login/auth-complete.js` | `emailInput`, `setLoading`, `supabaseClient`, `SITE_URL` undefined |
 | P0 | Lint script broken | `package.json` line 9 | Unquoted glob `admin-email-system/**` |
 | P0 | Tests cannot run | `package.json` | `@playwright/test` missing |
 | P1 | Outdated AGENTS paths | `AGENTS.md` | This file was just updated; keep it synced |
@@ -438,7 +437,7 @@ Then `npm run test` will spin up `npx serve . -p 8000` automatically.
 | P2 | Duplicate CSS classes | multiple files | Consolidate or canonicalize |
 | P2 | Many window globals | all | Reduce surface, inject via constructor |
 | P2 | No unit tests | — | Add Jest/Vitest for API client and authProvider |
-| P2 | Build scripts diverge | `build.js`, `build-deploy.js`, `wrangler-dist.toml`, `wrangler.jsonc` | Unify |
+| P2 | Build scripts diverge | `build.js`, `wrangler-dist.toml`, `wrangler.jsonc` | Unify |
 
 ---
 

@@ -1,23 +1,26 @@
 # Known issues: DualMind Arena (frontend)
 
-This file lists verified bugs in the Arena frontend (this repo) and its hosting: the `dualmind-arena` Cloudflare Worker and an old Vercel project. Each item was checked against `master` (`75eed48`) and the live site at `https://arena.dualmindlab.tech`. API, data and backend CI issues are tracked in the backend repo (see the last section).
+This file lists verified bugs in the Arena frontend (this repo) and its hosting: the `dualmind-arena` Cloudflare Worker and an old Vercel project. The statuses were refreshed on 2026-11-23 against `master` (`4fb584a`) and the live site at `https://arena.dualmindlab.tech`. The detail sections below keep the evidence from 2026-10-18 and are marked where it is out of date. API, data and backend CI issues are tracked in the backend repo (see the last section).
 
 Found a security problem? Please report it privately to the maintainers instead of opening a public issue.
 
-Last updated: 2026-10-21
+Last updated: 2026-11-23
 
 **Status:** Confirmed = reproduced in code and/or live. Likely = strong evidence, not reproduced end to end. Not reproduced = could not confirm.
-**Numbering:** `#1`–`#11` are the Arena bugs reported on 2026-10-17. The backend file uses the same numbers. `N7` was found while verifying them on 2026-10-18.
+**Numbering:** `#1`–`#11` are the Arena bugs reported on 2026-10-17. The backend file uses the same numbers. `N7` was found while verifying them on 2026-10-18. `N8`-`N10` are new on 2026-11-23.
 
 ## Summary
 
 | # | Issue | Severity | Status |
 |---|---|---|---|
 | 3 | `/share/<id>` links are broken: the id is dropped by a redirect | Medium | Fixed by PR #58 (share page, slice S11) |
-| 10 | Last Cloudflare build of `master` failed; the live site runs an older Worker than `master` | Medium | Confirmed |
+| 10 | Last Cloudflare build of `master` failed; the live site runs an older Worker than `master` | Medium | Build fixed (the `master` build passes); live behaviour is the pre-launch gate, see N8 |
 | 7 | Text-to-speech calls `/api/audio/tts`, which the API doesn't have (`/api/speech/generate`) | Low | Fixed by PR #49 (Worker alias) |
 | 11 | Old Vercel integration (`v0-dual-mind-ui`) fails on every push | Low | Confirmed |
-| N7 | Unused API client methods call routes that don't exist | Low | Confirmed |
+| N7 | Unused API client methods call routes that don't exist | Low | Confirmed in code on 2026-10-18; not re-checked live |
+| N8 | The arena host redirects every request, `robots.txt` and `sitemap.xml` included, to the waitlist | Medium | By design until launch; confirmed live 2026-11-23 |
+| N9 | `master` still carries the classic arena; the release PR [#87](https://github.com/dualmindlabs/DualMind_UI/pull/87) is open | Medium | Open, waiting for a merge decision |
+| N10 | Dead scripts and retired pages sat in the repository root | Low | Fixed by this change: deleted or moved to `legacy/` |
 
 ---
 
@@ -39,7 +42,7 @@ Last updated: 2026-10-21
 
 ### 10 · Last Cloudflare build of `master` failed; the live site runs an older Worker than `master`
 
-- **Severity:** Medium · **Status:** Confirmed · **Found:** 2026-10-17 (verified 2026-10-18)
+- **Severity:** Medium · **Status:** Build fixed. On 2026-11-23 the "Workers Builds: dualmind-arena" check on `master` (`4fb584a`) is a success, so the failing build described below is gone. What the live Worker serves is covered by N8. Evidence below is from 2026-10-18. · **Found:** 2026-10-17 (verified 2026-10-18)
 - **Where:** Cloudflare Workers Builds for the `dualmind-arena` Worker (`wrangler.jsonc`, `worker.js`, `build.js`).
 - **How to reproduce:**
   - `gh api repos/dualmindlabs/DualMind_UI/commits/75eed48/check-runs` shows "Workers Builds: dualmind-arena" = **failure** (2026-08-26 23:53 UTC). The last successful `master` build was `ca59c8f`.
@@ -64,7 +67,7 @@ Last updated: 2026-10-21
 
 ### 11 · Old Vercel integration (`v0-dual-mind-ui`) fails on every push
 
-- **Severity:** Low · **Status:** Confirmed · **Found:** 2026-10-17 (verified 2026-10-18)
+- **Severity:** Low · **Status:** Still failing: on 2026-11-23 the combined status of `master` is `failure` because of "Vercel – v0-dual-mind-ui", while every GitHub Actions and Workers Builds check on that commit passes · **Found:** 2026-10-17 (verified 2026-10-18)
 - **Where:** the GitHub ↔ Vercel integration for the Vercel project `v0-dual-mind-ui`. Nothing in this repo configures it, and the site is served from Cloudflare.
 - **How to reproduce:** `gh api repos/dualmindlabs/DualMind_UI/commits/master/status` shows "Vercel – v0-dual-mind-ui" = failure. The last 35 Vercel deployments (every `master` push since 2026-02-07, plus the PR #5 preview) all failed. The last success was `18f420f` on 2026-02-07.
 - **Impact:** a red ✗ on every commit and PR, so the combined commit status is always "failure" and real CI failures are easy to miss.
@@ -83,12 +86,37 @@ Last updated: 2026-10-21
 
 ---
 
+## New on 2026-11-23
+
+### N8 · The arena host redirects every request to the waitlist
+
+- **Severity:** Medium · **Status:** By design until launch. Confirmed live on 2026-11-23.
+- **Where:** `worker.js` (`FORCE_WAITLIST = true`, the pre-launch gate). While it is true, every request, `/robots.txt` and `/sitemap.xml` included, gets a temporary 302 to `https://early.dualmindlab.tech/?ref=arena`, unless the visitor has the preview cookie (`?preview=dualmind-preview`).
+- **How to reproduce:** `curl -sI https://arena.dualmindlab.tech/robots.txt` and `/sitemap.xml` both answer `302` with `location: https://early.dualmindlab.tech/?ref=arena`.
+- **Impact:** search engines cannot read the arena's robots file or sitemap yet. That is intended before launch.
+- **What is already correct for launch:** `build.js` writes `dist/robots.txt` and `dist/sitemap.xml` on every build, from the pages in `dist/`, using `VITE_SITE_URL` (default `https://arena.dualmindlab.tech`, the same default as the web app's canonical URLs and the Worker route in `wrangler.jsonc`). The robots file disallows `/api/` and points at the sitemap on that host. There is deliberately no static copy in `web/public/`: the build overwrites it, so a second copy could only drift. The waitlist host has its own file, `waitlist-worker/public/robots.txt`.
+- **To open the arena:** set `FORCE_WAITLIST` to `false` (see the comment at the top of `worker.js`).
+
+### N9 · `master` still carries the classic arena
+
+- **Severity:** Medium · **Status:** Open, needs a decision.
+- **Where:** [#87](https://github.com/dualmindlabs/DualMind_UI/pull/87) (`feat/arena-cutover` into `master`) removes the classic arena (`index.html`, `js/`, `css/`, `components/`, the legacy `leaderboard/` and `models/` files) and brings the redesign. It is open and 74 commits ahead of `master`. Merge order and conflicts are in `docs/RELEASE-MERGE.md` on that branch. Until it merges, this file describes `master`, and some code paths named above (`js/api/...`, `components/ShareModal.js`) disappear with it.
+
+### N10 · Dead scripts and retired pages in the repository root
+
+- **Severity:** Low · **Status:** Fixed by the change that updated this file.
+- **Deleted** (no reference in code, workflows or `package.json`; only audit documents mention them): `start.bat`, `startup.bat`, `commit_and_push.sh`, `commit_and_push.ps1` (wrapped `git add .` and pushed without review), `test-everything.js` (a browser-console script for old ports), `test-supabase-auth.js` (a Node script that carried the public Supabase URL and anon key) and `build-deploy.js` (an older build script that copies files that no longer exist, such as `arena-core.js` and `admin-email-system/`; `npm run build` uses `build.js`).
+- **Moved to `legacy/`** (kept for reference, not served, not built): the retired sign-in pages and share page, a mock API server, the unused stylesheet and FPS monitor, and a Playwright spec for the old sign-up page. See `legacy/README.md`. The relative links inside the moved pages are not updated, so they will not render from there.
+- **Left in place on purpose:** `serve.json` (read by `npm run dev`), and `auth-verify.html`, `config.js`, `theme.js`, `manifest.json`, `.assetsignore` (listed in `build.js`).
+
+---
+
 ## Related issues in the other repo
 
 The backend issues are tracked in the private backend repo's [KNOWN_ISSUES.md](https://github.com/dualmindlabs/DualMind_Back/blob/master/KNOWN_ISSUES.md) (access required). They include:
 
 - **#4** Swagger page returns 404.
 - **#5** Telegram bot's "Create Account" link uses the wrong domain.
-- **#8** Backend CI doesn't run on pull requests to `master`.
-- **#9** Last backend deploy failed; the API still runs the 2026-09-15 build.
+- **#8** Backend CI doesn't run on pull requests to `master` (fixed on the backend's `master`).
+- **#9** Last backend deploy failed (the backend's latest `master` deploys succeeded on 2026-11-22; what production serves was not checked).
 - **#1, #2, #6 and N1–N6:** leaderboard data, API behaviour and configuration items that are kept out of this public file.

@@ -40,7 +40,7 @@ Browser
 
 Cloudflare Worker (worker.js)
   ├─ /api/*   → Azure backend
-  ├─ /share/* → share/index.html
+  ├─ /share/* → web app share page (server/share.js)
   └─ /*       → ASSETS binding (dist/)
 ```
 
@@ -53,6 +53,6 @@ Cloudflare Worker (worker.js)
 
 ## Known traps
 
-- `login/auth-complete.js` is currently broken (undefined `emailInput`, `setLoading`, `supabaseClient`, `SITE_URL`). Any auth change here must fix those references first.
+- `legacy/pages/login/auth-complete.js` (retired, not served) was broken (undefined `emailInput`, `setLoading`, `supabaseClient`, `SITE_URL`). Do not revive it: sign-in is the web app's (`web/`).
 - `process.env` in `config.js` does **not** work in the browser; config must come from build-time replacement or env injection.
 - The worker sets `Access-Control-Allow-Origin: *`; restrict it to real origins before production.
