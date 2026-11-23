@@ -13,15 +13,20 @@ export interface ParsedMethodology {
 /** A section heading is one short line without a closing full stop ("Scale", "Few votes"). */
 const HEADING_MAX_LENGTH = 40;
 
+function isHeading(line: string): boolean {
+  return line.length <= HEADING_MAX_LENGTH && !/[.:;]$/.test(line);
+}
+
 /**
- * Turns `GET /api/leaderboard/methodology` (plain text: a title line, then blank-line separated
- * blocks) into blocks to render. The first line is the title ("... methodology (bt-v1)"), kept
- * only for the method id; a block of one short line without a closing full stop is a heading; any
- * other block is a paragraph with its line breaks folded into spaces. Pure and tolerant: it never
- * throws and an empty text gives no blocks.
+ * Turns `GET /api/leaderboard/methodology` (plain text: a title line, then sections separated by
+ * blank lines, each a heading line followed by its text) into blocks to render. The first line is
+ * the title ("... methodology (bt-v1)"), kept only for the method id. In every block, a short first
+ * line without a closing full stop is a heading (alone, or above the lines that follow it); the
+ * remaining lines form one paragraph with their line breaks folded into spaces. Pure and tolerant:
+ * it never throws and an empty text gives no blocks.
  */
 export function parseMethodology(text: string): ParsedMethodology {
-  const blocks = text
+  const groups = text
     .replace(/\r\n?/g, '\n')
     .split(/\n{2,}/)
     .map(block =>
@@ -33,23 +38,21 @@ export function parseMethodology(text: string): ParsedMethodology {
     .filter(lines => lines.length > 0);
 
   let methodId: string | null = null;
-  const first = blocks[0];
+  const first = groups[0];
   if (first !== undefined && first.length === 1) {
     const title = first[0] ?? '';
-    const match = /\(([A-Za-z0-9._-]+)\)\s*$/.exec(title);
     if (/methodology/i.test(title)) {
-      methodId = match?.[1] ?? null;
-      blocks.shift();
+      methodId = /\(([A-Za-z0-9._-]+)\)\s*$/.exec(title)?.[1] ?? null;
+      groups.shift();
     }
   }
 
-  return {
-    methodId,
-    blocks: blocks.map(lines => {
-      const joined = lines.join(' ');
-      const heading =
-        lines.length === 1 && joined.length <= HEADING_MAX_LENGTH && !/[.:;]$/.test(joined);
-      return { kind: heading ? 'heading' : 'paragraph', text: joined };
-    }),
-  };
+  const blocks: MethodologyBlock[] = [];
+  for (const lines of groups) {
+    const head = lines[0] ?? '';
+    const rest = isHeading(head) ? lines.slice(1) : lines;
+    if (rest.length < lines.length) blocks.push({ kind: 'heading', text: head });
+    if (rest.length > 0) blocks.push({ kind: 'paragraph', text: rest.join(' ') });
+  }
+  return { methodId, blocks };
 }
