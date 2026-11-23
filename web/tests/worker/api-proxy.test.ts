@@ -245,7 +245,9 @@ describe('response side', () => {
     expect(upstreamTimeoutFor(`/api/arena/comparisons/${id}/vote`)).toBe(UPSTREAM_TIMEOUT_MS);
     expect(upstreamTimeoutFor(`/api/arena/comparisons/${id}`)).toBe(UPSTREAM_TIMEOUT_MS);
     expect(upstreamTimeoutFor('/api/arena/comparisons//critique')).toBe(UPSTREAM_TIMEOUT_MS);
-    expect(upstreamTimeoutFor(`/api/arena/comparisons/${id}/critique/extra`)).toBe(UPSTREAM_TIMEOUT_MS);
+    expect(upstreamTimeoutFor(`/api/arena/comparisons/${id}/critique/extra`)).toBe(
+      UPSTREAM_TIMEOUT_MS,
+    );
   });
 
   it('no answer within the timeout: 504', async () => {
