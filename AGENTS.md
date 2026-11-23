@@ -138,7 +138,7 @@ Mode changes are dispatched as `mode-change` CustomEvent and handled surgically 
 ### Auth pages
 
 - Classic pages now live in `legacy/pages/` (`login-modern.html`, `signup-modern.html`, `forgot-password.html`, `update-password.html`, `auth-callback.html`, `verify.html`); only `auth-verify.html` is still at the root. The web app (`web/`) serves sign-in now.
-- They load `config.js` + `js/auth/supabase-init.js` + specific JS (`login/auth-complete.js`, `js/auth-modern.js`, etc.).
+- They loaded `config.js` + `js/auth/supabase-init.js` + specific JS (`legacy/pages/login/auth-complete.js`, `js/auth-modern.js`, etc.).
 - They do **not** load `js/ui/app.js`.
 
 ### Standalone pages
@@ -386,7 +386,7 @@ Cached models are stored in `window._DUALMIND_MODELS` after first fetch.
 - `DOMPurify` is used for AI markdown rendering in most places.
 - `escapeHtml()` / `sanitizeHTML()` sanitize thread titles and some text.
 - Known risks that still need fixing:
-  - `login/auth-complete.js` uses `innerHTML` for button labels (safe content but inconsistent).
+  - `legacy/pages/login/auth-complete.js` uses `innerHTML` for button labels (safe content but inconsistent).
   - `components/CustomModal.js`, `components/ShareModal.js`, and several others use `innerHTML` with own template strings.
   - Auth tokens are stored in Supabase's `localStorage` session. XSS would expose them.
   - Worker CORS is `Access-Control-Allow-Origin: *` for all `/api/*` routes.

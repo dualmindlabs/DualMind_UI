@@ -28,7 +28,7 @@ describe('repo references after the legacy move', () => {
     expect(existsSync(resolve(root, dir!, 'auth-flow-redesign.spec.js'))).toBe(true);
   });
 
-  it.each(['AGENTS.md', '.cursorrules'])('%s names moved files only under legacy/', file => {
+  it.each(['AGENTS.md', 'CLAUDE.md', '.cursorrules'])('%s names moved files only under legacy/', file => {
     const text = read(file);
     expect(text).not.toMatch(
       /share\/index\.html\s+\(SPA route\)|\/share\/\*\s+→\s+share\/index\.html/,
