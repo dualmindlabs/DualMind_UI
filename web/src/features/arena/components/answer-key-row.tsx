@@ -26,7 +26,7 @@ export function AnswerKeyRow({ answerKey }: { answerKey: AnswerKey }) {
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <h3
           id={titleId}
-          className="inline-flex items-center gap-2 font-mono text-label tracking-[0.1em] text-muted uppercase"
+          className="inline-flex items-center gap-2 font-mono text-label tracking-[0.1em] text-fg-soft uppercase"
         >
           <KeyRound aria-hidden="true" strokeWidth={1.75} className="size-3.5" />
           Answer key
@@ -63,7 +63,7 @@ export function AnswerKeyRow({ answerKey }: { answerKey: AnswerKey }) {
                   Answer {letter}: {side.correct ? 'matched the key' : 'did not match the key'}
                 </span>
                 {side.extracted ? (
-                  <span className="min-w-0 font-mono text-caption [overflow-wrap:anywhere] text-muted">
+                  <span className="min-w-0 font-mono text-caption [overflow-wrap:anywhere] text-fg-soft">
                     read as {side.extracted}
                   </span>
                 ) : null}
@@ -73,7 +73,7 @@ export function AnswerKeyRow({ answerKey }: { answerKey: AnswerKey }) {
         })}
       </ul>
 
-      <p className="text-caption text-muted">
+      <p className="text-caption text-fg-soft">
         Model names stay hidden on a question with a known answer.
       </p>
     </section>

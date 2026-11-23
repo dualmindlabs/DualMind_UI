@@ -54,7 +54,7 @@ function CrossExamineStrip({ turn, stats }: { turn: LiveTurn; stats: CrossExamin
       <div className="grid gap-1">
         <h3
           id={titleId}
-          className="inline-flex items-center gap-2 font-mono text-label tracking-[0.1em] text-muted uppercase"
+          className="inline-flex items-center gap-2 font-mono text-label tracking-[0.1em] text-fg-soft uppercase"
         >
           <Swords aria-hidden="true" strokeWidth={1.75} className="size-3.5" />
           Cross-examine

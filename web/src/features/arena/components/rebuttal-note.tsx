@@ -30,7 +30,7 @@ export function RebuttalNote({
         {rebuttal.rebuttal}
       </p>
       {rebuttal.words ? (
-        <p className="font-mono text-label tracking-[0.06em] text-muted uppercase tabular-nums">
+        <p className="font-mono text-label tracking-[0.06em] text-fg-soft uppercase tabular-nums">
           {rebuttal.words} words
         </p>
       ) : null}
@@ -46,7 +46,7 @@ export function RebuttalPending() {
       data-testid="rebuttal-pending"
       className="relative mx-5 mb-5 grid gap-2 rounded-md border border-dashed border-line px-4 py-3 sm:mx-8"
     >
-      <p className="text-caption text-muted">Writing a reply to this answer</p>
+      <p className="text-caption text-fg-soft">Writing a reply to this answer</p>
       <Skeleton className="h-3 w-full" />
       <Skeleton className="h-3 w-11/12" />
       <Skeleton className="h-3 w-3/5" />

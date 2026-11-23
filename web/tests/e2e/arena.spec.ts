@@ -15,7 +15,12 @@ test.beforeEach(async ({ context, baseURL }) => {
 function collectProblems(page: Page) {
   const problems: string[] = [];
   page.on('console', message => {
-    if (message.type() === 'error') problems.push(`console: ${message.text()}`);
+    if (message.type() !== 'error') return;
+    // After a vote the reveal asks whether cross-examine is on (GET /api/arena/cross-examine/stats,
+    // 404 until the backend flag is on); the browser logs that expected 404 as a console error.
+    const url = message.location().url;
+    if (/\/api\/arena\/cross-examine\//.test(url) && /\b404\b/.test(message.text())) return;
+    problems.push(`console: ${message.text()}`);
   });
   page.on('pageerror', error => problems.push(`pageerror: ${error.message}`));
   return problems;
