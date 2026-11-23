@@ -51,6 +51,12 @@ export {
   type StreamChatOptions,
   type VoteInput,
 } from './endpoints/arena';
+export {
+  COMPARE_DEFAULT_MAX_TOKENS,
+  COMPARE_MAX_PROMPT_CHARS,
+  type CompareInput,
+  isCompareShareId,
+} from './endpoints/compare';
 export { FEATURE_FLAGS } from './endpoints/flags';
 export { type SpeechInput } from './endpoints/speech';
 export {
@@ -78,6 +84,7 @@ export {
   type VoteResult,
 } from './schemas/arena';
 export type { MutationResult, Usage } from './schemas/common';
+export type { CompareResult, CompareShareState, CompareSide } from './schemas/compare';
 export type { CrowdCategory, CrowdStat } from './schemas/crowd';
 export type { FeatureFlag } from './schemas/flags';
 export type { Health } from './schemas/health';

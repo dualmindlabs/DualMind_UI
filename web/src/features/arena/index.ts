@@ -19,3 +19,5 @@ export {
 export { ARENA_PREFERENCE_KEYS, type SendKey, sendKeyFrom } from './lib/preferences';
 export { SHORTCUT_GROUPS, type ShortcutEntry, type ShortcutGroup } from './lib/shortcuts';
 export { formatDuration, toTurns, type TurnData, VOTE_LABELS } from './lib/turns';
+export { type ModelOption, useModelOptions } from './hooks/use-model-options';
+export { AnswerPane } from './components/answer-pane';

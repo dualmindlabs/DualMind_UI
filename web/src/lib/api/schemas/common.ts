@@ -126,3 +126,18 @@ export const usageSchema = withAliases(
 );
 
 export type Usage = z.output<typeof usageSchema>;
+
+/**
+ * Reads a body whose keys may be PascalCase (`ShareId`) as camelCase (`shareId`), at every depth.
+ * Some backend routes return plain classes, which serialise with their C# property names; the
+ * documented shape is camelCase. Only the first letter of a key changes, so `modelId` stays as it is.
+ */
+export function camelizeKeys(input: unknown): unknown {
+  if (Array.isArray(input)) return input.map(camelizeKeys);
+  if (!isRecord(input)) return input;
+  const output: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(input)) {
+    output[key.charAt(0).toLowerCase() + key.slice(1)] = camelizeKeys(value);
+  }
+  return output;
+}
