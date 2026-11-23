@@ -429,8 +429,12 @@ jobs:
           retention-days: 14
           delete-merged: true
 
+      # Only feeds the file list in the summary below. The artifact service can lag behind the
+      # merge ("No artifacts found"), which failed the release run on master although every
+      # shard passed; the "Every shard passed" step is the real gate.
       - name: Download the merged screenshots
         if: steps.merge.outcome == 'success'
+        continue-on-error: true
         uses: actions/download-artifact@v8
         with:
           name: web-screenshots
