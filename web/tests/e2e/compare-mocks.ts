@@ -6,7 +6,7 @@ import { mockArena, MODELS } from './arena-mocks';
 // arena mocks. The answers are written for the tests and the screenshots; they say nothing about
 // real models.
 
-export const COMPARE_ID = 'cmpAbCdEfGhIjKlMnOp12';
+export const COMPARE_ID = 'cmpAbCdEfGhIjKlMnOpq12';
 
 const ANSWER_A = `The sky is blue because of **Rayleigh scattering**: air molecules scatter short (blue) wavelengths of sunlight far more than long (red) ones.
 
