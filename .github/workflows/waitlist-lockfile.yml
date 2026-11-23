@@ -1,0 +1,63 @@
+name: Waitlist lockfile and autofix
+
+# Helper for changing waitlist-worker/ without a local npm install (for example from a small VM): resolves
+# waitlist-worker/package-lock.json from waitlist-worker/package.json and uploads it as the
+# `waitlist-lockfile` artifact. It never pushes. To use the result:
+#   gh run download <run-id> -n waitlist-lockfile -D /tmp/waitlist-lockfile
+#   cp /tmp/waitlist-lockfile/package-lock.json waitlist-worker/
+# Runs on pull requests that change waitlist-worker/package.json, and by hand (Actions > Run workflow).
+
+on:
+  pull_request:
+    paths:
+      - 'waitlist-worker/package.json'
+      - '.github/workflows/waitlist-lockfile.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lockfile:
+    name: Resolve the lockfile and apply autofixes
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: waitlist-worker
+
+    steps:
+      - name: Checkout the branch
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+
+      - name: Resolve and install (npm install)
+        run: npm install --no-audit --no-fund
+
+      - name: Collect the lockfile and the patch
+        run: |
+          out="$RUNNER_TEMP/waitlist-lockfile"
+          mkdir -p "$out"
+          cp package-lock.json "$out/"
+          {
+            echo "### waitlist lockfile"
+            echo
+            if git ls-files --error-unmatch package-lock.json > /dev/null 2>&1; then
+              echo "- package-lock.json changed: $(git diff --quiet -- package-lock.json && echo no || echo yes)"
+            else
+              echo "- package-lock.json is new"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload
+        uses: actions/upload-artifact@v7
+        with:
+          name: waitlist-lockfile
+          path: ${{ runner.temp }}/waitlist-lockfile/
+          retention-days: 7

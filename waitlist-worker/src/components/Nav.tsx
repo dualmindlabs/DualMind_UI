@@ -6,8 +6,9 @@ export function Nav() {
   return (
     <header className="absolute inset-x-0 top-0 z-20">
       <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between px-4 sm:h-20 sm:px-8">
-        <a href="/" className="text-[19px] text-fg transition-colors hover:text-fg" aria-label="DualMind Arena waitlist">
+        <a href="/" className="text-[19px] text-fg transition-colors hover:text-fg">
           <Wordmark />
+          <span className="sr-only">waitlist</span>
         </a>
         <nav aria-label="Main" className="flex items-center gap-6 font-mono text-[11px] uppercase tracking-[0.22em] text-fg-soft">
           <a href="#how" className="link-sweep hidden md:inline">
