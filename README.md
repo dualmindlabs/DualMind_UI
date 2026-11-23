@@ -28,7 +28,7 @@
 
 This repository is the front-end of **DualMind Arena**, the model comparison app built by DualMind Labs. You type a prompt, two models answer it side by side without their names, and you vote for the better answer. Votes feed an Elo rating system that powers a public leaderboard.
 
-The app is a static, framework-free web app (HTML, CSS and ES modules). A Cloudflare Worker (`dualmind-arena`) serves it at [arena.dualmindlab.tech](https://arena.dualmindlab.tech). Users sign in with Supabase Auth, and all chat, vote, thread and leaderboard data comes from the DualMind API ([DualMind_Back](https://github.com/dualmindlabs/DualMind_Back)) at `api.dualmindlab.tech`.
+The app is a React 19 single-page app built with React Router in framework mode: every public page is prerendered to static HTML at build time and hydrates in the browser, so there is no server-side rendering at runtime. A Cloudflare Worker (`dualmind-arena`) serves the build at [arena.dualmindlab.tech](https://arena.dualmindlab.tech), proxies the API and sets the security headers. Users sign in with Supabase Auth, and all chat, vote, thread and leaderboard data comes from the DualMind API ([DualMind_Back](https://github.com/dualmindlabs/DualMind_Back)) at `api.dualmindlab.tech`.
 
 ## Screenshots
 
@@ -45,33 +45,30 @@ The images come from the Playwright run in CI (`web.yml`, artifact `web-screensh
 ## Features
 
 - **Battle mode**: two anonymous models answer the same prompt; you vote before their identities are revealed.
-- **Arena mode**: pick the model pair yourself and compare them with names visible.
+- **Side by side**: pick the two models yourself, or leave a side on random, and compare them by name.
 - **Direct mode**: one-on-one chat with a single model.
-- **Streaming responses** over Server-Sent Events, with Markdown rendering, syntax highlighting and DOMPurify sanitising.
-- **Elo leaderboard**: model rankings and stats, as a modal and as a standalone `/leaderboard/` page.
+- **Streaming responses** over Server-Sent Events, with Markdown rendering (Streamdown) and syntax-highlighted code blocks.
+- **Elo leaderboard** (`/leaderboard/`) and model directory (`/models/`), built from the public model-stats API, plus a page that explains the method (`/methodology/`).
 - **Conversation threads**: saved history in the sidebar, with rename and delete.
-- **Sharing**: make a thread public or link-only and open it in a read-only `/share/` view.
-- **Export**: download a conversation as Markdown, JSON, CSV, HTML or PDF.
+- **Sharing**: make a thread public or link-only and open it at `/share/<id>`, with link-preview tags written by the Worker.
+- **Export** from the settings page: download every conversation as Markdown, JSON, CSV, HTML or PDF (a print view), built in the browser.
 - **Read aloud**: text-to-speech for responses through the API.
-- **Chat input tools**: file attachments, plus code-mode and web-search toggles (today these tune the sampling temperature sent with the request).
 - **Accounts**: Supabase email and password, one-time codes, Google sign-in, password reset and email verification.
-- **Light and dark themes**, responsive layout, and an offline mock mode when the API is unreachable.
-- **Info pages**: about, how it works, models, FAQ, privacy, terms and cookies.
+- **Light and dark themes**, a command palette (Ctrl+K), keyboard shortcuts, reduced-motion support, and a mock mode that answers every API call from memory (`VITE_API_MOCK=1`).
+- **Info and legal pages**: about, how it works, FAQ, privacy, terms and cookies, and an API reference at `/developers/`. No analytics or tracking scripts.
 - **Pre-launch waitlist**: a separate worker (`waitlist-worker/`) serves the waitlist page at `early.dualmindlab.tech`.
 
 ## Tech stack
 
 | Layer | Technology |
 | --- | --- |
-| UI (legacy) | Vanilla JavaScript (ES modules), HTML, custom CSS design tokens (`css/tokens.css`), no framework and no bundler |
-| UI (new, `web/`) | React 19, React Router 8 (framework mode, pages prerendered at build time), Vite 8, TypeScript (strict), Tailwind CSS 4 with the tokens in `web/src/styles/tokens.css`; replacing the legacy pages slice by slice ([docs/architecture.md](./docs/architecture.md)) |
-| Rendering helpers | `marked`, `DOMPurify` and `highlight.js`, loaded from CDNs |
-| Auth | Supabase Auth (`@supabase/supabase-js` v2 from a CDN), session in the browser |
+| UI (`web/`) | React 19, React Router 8 (framework mode, pages prerendered at build time), Vite 8, TypeScript (strict), Tailwind CSS 4 with the design tokens in `web/src/styles/tokens.css`, shadcn-style primitives on Base UI, Motion, TanStack Query, Recharts ([docs/architecture.md](./docs/architecture.md)) |
+| Auth | Supabase Auth (`@supabase/supabase-js` v2), session in the browser |
 | Hosting | Cloudflare Workers with static assets (`wrangler.jsonc`, `worker.js`) |
 | Feature flags | Cloudflare Flagship binding (`FLAGS`) |
 | Backend | DualMind API (ASP.NET Core), see [DualMind_Back](https://github.com/dualmindlabs/DualMind_Back) |
-| Tooling | Node.js 22 (`.node-version`), pnpm 10 at the root and npm in `web/`, ESLint, Prettier, Vitest, Playwright, Wrangler |
-| CI | GitHub Actions: root lint and the composed build ([`ci.yml`](./.github/workflows/ci.yml)); the web app's checks, end-to-end tests and screenshots ([`web.yml`](./.github/workflows/web.yml)) |
+| Tooling | Node.js 22 (`.node-version`), npm in `web/` (pnpm 10 at the root), ESLint, Prettier, Vitest, Playwright with axe, Lighthouse CI, Wrangler |
+| CI | GitHub Actions: root lint and the composed build ([`ci.yml`](./.github/workflows/ci.yml)); the web app's checks, end-to-end tests, Lighthouse and screenshots ([`web.yml`](./.github/workflows/web.yml)); the Worker and API tests ([`api.yml`](./.github/workflows/api.yml)) |
 
 ## Architecture
 
@@ -92,100 +89,77 @@ flowchart LR
     browser -->|"sign-in, session"| supabase
 ```
 
-- **Boot order**: `config.js` loads first and sets `window.DUALMIND_CONFIG`. `js/auth/supabase-init.js` restores the Supabase session and exposes `window.DualMindAuth` and `window.DualMindAuthReady`. `js/ui/app.js` waits for auth, syncs the user with the API, then renders the app.
-- **API calls** go through the single client in `js/apiInstance.js` (`DualMindApi`), which adds the Supabase bearer token, retries with backoff, supports cancellation and parses SSE streams.
-- **Components** in `components/` talk to the app through `document` CustomEvents (`mode-change`, `chat-submit`, `vote-submit` and so on). The full event and globals reference is in [AGENTS.md](./AGENTS.md).
-- **The worker** serves the files in `dist/`, proxies `/api/*` to the API (and `/api/health` to `/health`), rewrites `/share/*` to the share page, and generates `robots.txt` and `sitemap.xml`. While the arena is in pre-launch, `FORCE_WAITLIST` in `worker.js` sends **every** request (all paths, `/api/*` included) to the waitlist at `early.dualmindlab.tech` with a temporary 302; `?preview=dualmind-preview` sets a 30-day cookie that bypasses it and `?preview=off` clears it. Set the constant to `false` to open the arena again.
+- **Pages**: `/` is the prerendered landing page; a signed-in visitor gets the arena at the same URL (a small inline script in the head decides before the first paint, and the arena's code is a lazy chunk the landing page never loads). Pages that need a session (`/settings/`, `/share/<id>`, the auth callbacks) are client-only and get the SPA fallback page.
+- **API calls** go through the typed client in `web/src/lib/api/`, same-origin to `/api/*`. It adds the Supabase bearer token and a request id, retries with backoff, supports cancellation, parses SSE streams and turns every failure into a typed error the UI shows as a state (empty, loading, offline, error).
+- **The Worker** serves the files in `dist/`, proxies `/api/*` to the API, serves the Worker's own `/api/v2` routes, rate limits, sets the security headers and an enforced Content-Security-Policy (inline-script hashes come from the build), serves a real 404 page, and generates `robots.txt` and `sitemap.xml`. While the arena is in pre-launch, `FORCE_WAITLIST` in `worker.js` sends **every** request (all paths, `/api/*` included) to the waitlist at `early.dualmindlab.tech` with a temporary 302; `?preview=dualmind-preview` sets a 30-day cookie that bypasses it and `?preview=off` clears it. Set the constant to `false` to open the arena again.
 
 ## Project structure
 
 ```text
 DualMind_UI/
-├── index.html              # Main app shell
-├── config.js               # Runtime config (window.DUALMIND_CONFIG), loaded first
-├── web/                    # The new React app (React Router, Vite, Tailwind); see web/README.md
+├── web/                    # The React app (React Router, Vite, Tailwind); see web/README.md
+│   ├── src/                # app/ (routes), features/, components/, lib/, styles/
+│   └── tests/              # unit (Vitest), worker (Vitest) and e2e (Playwright + axe)
 ├── worker.js               # Cloudflare Worker: waitlist gate, API proxy, routing, static assets
-├── server/                 # Worker modules: API proxy, caching and redirect tables, security headers and CSP
+├── server/                 # Worker modules: API proxy, v2 API, rate limits, caching, redirects, security headers and CSP
+├── contract/               # Shared zod schemas for the public API
 ├── wrangler.jsonc          # Worker config (dualmind-arena)
-├── build.js                # Composes dist/: legacy files + the web app's build
-├── components/             # Header, Sidebar, ChatInput, ChatView, modals, share view
-├── js/
-│   ├── ui/app.js           # Main App class: state, modes, streaming, voting, threads
-│   ├── apiInstance.js      # API client singleton
-│   ├── api/                # DualMindApi facade, HttpClient, services, error helpers
-│   ├── auth/               # Supabase auth service and init
-│   ├── chatExport.js       # MD / JSON / CSV / HTML / PDF export
-│   └── leaderboardPage.js  # Standalone leaderboard page
-├── css/                    # Design tokens and component styles
-├── login/, *.html          # Sign-in, sign-up, verification and password pages
-├── leaderboard/, share/    # Standalone leaderboard and shared-thread pages
-├── about/, faq/, models/…  # Static info and legal pages
+├── build.js                # Composes dist/ from the web build, a few static files and the generated sitemap
+├── config.js, auth-verify.html  # Still shipped until the config cleanup (KNOWN_ISSUES.md)
+├── assets/                 # Static images
+├── tests/api/              # Worker and API tests (Vitest)
+├── legacy/                 # Retired pages, tests and tools, kept for reference only
 ├── waitlist-worker/        # Pre-launch waitlist: Vite + React app and its worker
-├── tests/                  # Playwright end-to-end tests
-├── docs/                   # Architecture, ADRs, the redesign plan and codebase audits
-└── AGENTS.md               # Detailed architecture and contributor guide
+├── docs/                   # Architecture, ADRs, API reference, the redesign plan and audits
+└── AGENTS.md, CLAUDE.md    # Contributor and agent guides
 ```
 
 ## Getting started
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) 20 (the version CI uses)
-- [pnpm](https://pnpm.io/) 10 (CI installs with the committed `pnpm-lock.yaml`)
-- For the full app locally: the [DualMind API](https://github.com/dualmindlabs/DualMind_Back) running on `http://localhost:5079`
+- [Node.js](https://nodejs.org/) 22.22 or newer (`.node-version`; CI uses it)
+- For the full app locally: the [DualMind API](https://github.com/dualmindlabs/DualMind_Back) on `http://localhost:5079`, or no API at all with `VITE_API_MOCK=1`
 - For deploys: a Cloudflare account with access to the `dualmind-arena` worker
 
-### Install
+### Install and run
 
 ```bash
 git clone https://github.com/dualmindlabs/DualMind_UI.git
-cd DualMind_UI
-pnpm install
+cd DualMind_UI/web
+npm ci
+npm run dev     # http://localhost:5173
 ```
 
-### Run
+Local overrides go in `web/.env.local` (see `web/.env.example`). Without `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` the sign-in pages show a "sign-in unavailable" notice.
+
+### Check and test
 
 ```bash
-pnpm dev        # static server on http://localhost:8000
+npm run check       # typecheck, lint, format check and unit tests
+npm run test:e2e    # Playwright against the composed build; run `node build.js` at the repo root first
 ```
 
-When the app is served from `localhost`, `config.js` points the API client at the local API instead of production. If the API is unreachable, the arena falls back to its offline mock mode.
-
-### Lint
-
-```bash
-pnpm lint       # ESLint (eslint.config.mjs)
-pnpm lint:fix   # ESLint with --fix
-```
-
-### Test
-
-```bash
-pnpm exec playwright install chromium   # once, downloads the browser
-pnpm test                               # Playwright; starts its own server on port 8000
-```
+On a small machine, push the branch and let GitHub Actions run the heavy parts ([`web.yml`](./.github/workflows/web.yml)): the e2e shards, axe in both themes, Lighthouse and the screenshots.
 
 ### Build
 
 ```bash
-pnpm build      # node build.js: builds web/, copies the legacy files and composes dist/
+node build.js   # at the repo root: builds web/ and composes dist/
 ```
 
 `build.js` installs and builds the React app in `web/` itself (set `SKIP_WEB_BUILD=1` if it is built already), so the same command works locally, in CI and in Cloudflare Workers Builds. Working on the React app: see [`web/README.md`](./web/README.md).
 
 ## Configuration
 
-There is no `.env` file. The browser app reads its settings from `window.DUALMIND_CONFIG`, set in `config.js` (see `config.example.js` for the template). Values set on that object before `config.js` loads take precedence.
+The web app reads public build-time values from `VITE_` variables (`web/.env.example`, validated in `web/src/config/`). Never put a secret or a service-role key in them.
 
-| Setting | Description |
+| Variable | Description |
 | --- | --- |
-| `apiBaseUrl` / `backendUrl` | Base URL of the DualMind API. Switches to the local API automatically on `localhost`. |
-| `supabase.url` | Supabase project URL used for sign-in. |
-| `supabase.anonKey` | Supabase anon (public) key. Never put a service-role key here. |
-| `supabase.authEmailFunctionUrl` | Supabase Edge Function that sends auth emails. |
-| `supabase.storageBucket` | Supabase Storage bucket for user avatars. |
-| `auth.mode` | `supabase` (sign in directly with Supabase) or `backend`. |
-| `features.streaming`, `features.voting`, `features.threads`, `features.leaderboard` | Feature toggles; all on by default. |
+| `VITE_SITE_URL` | Public origin for canonical and Open Graph URLs (default `https://arena.dualmindlab.tech`). |
+| `VITE_API_BASE_URL` | API origin; empty means same-origin `/api/*`, which the Worker proxies. |
+| `VITE_API_MOCK` | `1` answers every API call from an in-memory mock (demo and offline mode, e2e tests). |
+| `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` | Public Supabase project values for sign-in. Production and previews read them from the Workers Builds build variables. |
 
 Cloudflare Worker settings:
 
@@ -209,7 +183,7 @@ The arena runs as the Cloudflare Worker **`dualmind-arena`** on the route `arena
 
 - **Waitlist worker** (`dualmind-waitlist`, served at `early.dualmindlab.tech`): a Vite + React app in `waitlist-worker/` whose worker also stores signups in the D1 database `dualmind-waitlist`. GitHub Actions ([`deploy-waitlist.yml`](./.github/workflows/deploy-waitlist.yml)) deploys it on every push to `master` that touches `waitlist-worker/`, or by hand with `gh workflow run deploy-waitlist.yml`; it needs the `CLOUDFLARE_API_TOKEN` repository secret. See [`waitlist-worker/README.md`](./waitlist-worker/README.md).
 
-GitHub Actions ([`ci.yml`](./.github/workflows/ci.yml)) runs lint and build on every push and pull request to `master` and uploads `dist/` as an artifact; [`web.yml`](./.github/workflows/web.yml) checks and tests the web app. Neither deploys the Arena.
+GitHub Actions ([`ci.yml`](./.github/workflows/ci.yml)) runs lint and build on every push and pull request to `master` and uploads `dist/` as an artifact; [`web.yml`](./.github/workflows/web.yml) checks and tests the web app; [`api.yml`](./.github/workflows/api.yml) tests the Worker's API. Neither deploys the Arena.
 
 ## API endpoints used
 
@@ -224,7 +198,7 @@ All requests go to the DualMind API with the user's Supabase access token as a b
 | `GET` | `/api/arena/model-stats` | Leaderboard and Elo stats |
 | `GET` | `/api/models`, `/api/models/{id}` | Model catalogue |
 | `GET` `POST` `PATCH` `DELETE` | `/api/threads`, `/api/threads/{id}`, `/api/threads/{id}/messages` | Conversation threads |
-| `POST` | `/api/audio/tts` | Text-to-speech |
+| `POST` | `/api/speech/generate` | Text-to-speech (the Worker also answers the old `/api/audio/tts` path) |
 | `POST` `GET` | `/api/users/sync`, `/api/users/me` | User profile sync |
 | `GET` | `/health` (via `/api/health`) | API health check |
 
@@ -250,5 +224,5 @@ Full API reference: [docs.dualmindlab.tech](https://docs.dualmindlab.tech). Cont
 - **Support**: see [SUPPORT.md](./SUPPORT.md).
 - **Changelog**: [CHANGELOG.md](./CHANGELOG.md).
 - **Further reading**: [docs/CODEBASE_AUDIT.md](./docs/CODEBASE_AUDIT.md), [docs/DEEP_AUDIT.md](./docs/DEEP_AUDIT.md) and [docs/UI_ROADMAP.md](./docs/UI_ROADMAP.md).
-- **Redesign plan** (proposal): the move to React + Vite + Tailwind is described in [docs/redesign/](./docs/redesign/): [design direction](./docs/redesign/design-direction.md), [screen inventory](./docs/redesign/screen-inventory.md), [migration plan](./docs/redesign/migration-plan.md) and [new features](./docs/redesign/new-features.md).
+- **Redesign plan**: the move to React + Vite + Tailwind (done at the cutover) is described in [docs/redesign/](./docs/redesign/): [design direction](./docs/redesign/design-direction.md), [screen inventory](./docs/redesign/screen-inventory.md), [migration plan](./docs/redesign/migration-plan.md) and [new features](./docs/redesign/new-features.md).
 - **License**: proprietary. Copyright (c) 2026 DualMind Labs. All rights reserved. See [LICENSE](./LICENSE).
