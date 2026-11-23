@@ -168,8 +168,24 @@ export function LeaderboardPage() {
       {board?.crowd ? (
         <CrowdNote
           crowd={board.crowd}
-          category={overall ? undefined : categories?.find(item => item.id === category)?.label}
+          category={
+            board.category === null
+              ? undefined
+              : (categories?.find(item => item.id === board.category)?.label ?? board.category)
+          }
         />
+      ) : null}
+      {board !== undefined && !overall && board.category === null ? (
+        <p role="status" data-testid="category-fallback" className="text-caption text-muted">
+          There is no separate board for this category yet. Showing all prompts.
+        </p>
+      ) : null}
+      {board?.fallback ? (
+        <p role="status" data-testid="board-fallback" className="text-caption text-warn">
+          {board.fallback === 'unavailable'
+            ? 'Live ratings are temporarily unavailable. Showing the classic board.'
+            : 'Live ratings could not be loaded. Showing the classic board.'}
+        </p>
       ) : null}
 
       {rankings()}

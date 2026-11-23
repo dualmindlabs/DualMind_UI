@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { toLeaderboard } from '@/features/leaderboard';
 import { createApiClient } from '@/lib/api';
@@ -46,16 +46,41 @@ describe('crowd board schema', () => {
       entry => entry.crowd?.rankLow != null && entry.crowd.rankLow !== entry.crowd.rankHigh,
     );
     expect(ranged.length).toBeGreaterThan(0);
-    const noClaim = result.rated.filter(entry => entry.crowd?.rank === null);
+    // A rated model without a rank claim keeps rank null: no number is invented for it.
+    const noClaim = result.entries.filter(entry => !entry.provisional && entry.rank === null);
     expect(noClaim.length).toBeGreaterThan(0);
-    // Still ordered and ranked by rating among the rated models.
-    expect(result.rated.map(entry => entry.rank)).toEqual(
-      [...result.rated.map(entry => entry.rank)].sort((a, b) => (a ?? 0) - (b ?? 0)),
+    expect(noClaim.every(entry => entry.crowd?.rank === null)).toBe(true);
+    expect(result.rated.every(entry => entry.rank === entry.crowd?.rank)).toBe(true);
+    // Ranked first, then the unranked by rating, then the models not yet rated.
+    const lastRanked = result.entries.map(entry => entry.rank !== null).lastIndexOf(true);
+    const firstUnranked = result.entries.findIndex(entry => entry.rank === null);
+    expect(lastRanked).toBeLessThan(firstUnranked);
+    const unranked = result.entries.filter(entry => entry.rank === null && !entry.provisional);
+    expect(unranked.map(entry => entry.elo)).toEqual(
+      [...unranked.map(entry => entry.elo)].sort((x, y) => y - x),
     );
+    expect(result.entries.slice(-result.unrated.length)).toEqual(result.unrated);
+    expect(result.summary.ranked).toBe(result.rated.length);
+    expect(result.summary.rated).toBe(result.rated.length + noClaim.length);
+    // The seeded scale never stretches the board's rating range.
+    expect(result.summary.bottomElo).toBe(Math.min(...result.entries.filter(e => !e.provisional).map(e => e.elo)));
+    expect(result.summary.topElo).toBe(1150);
   });
 
   it('rejects a row that breaks the contract', () => {
     expect(() => crowdBoardSchema.parse({ items: [{ modelId: 'x' }] })).toThrow();
+  });
+});
+
+describe('crowd board, missing numbers', () => {
+  it('reads a missing vote count as unknown, not as 0', () => {
+    const row: Record<string, unknown> = { ...board.items[0] };
+    delete row.votes;
+    const envelope: Record<string, unknown> = { ...board, items: [row] };
+    delete envelope.voteCount;
+    const data = crowdBoardSchema.parse(envelope);
+    expect(data.crowd?.voteCount).toBeNull();
+    expect(data.items[0]?.crowd?.votes).toBeNull();
   });
 });
 
@@ -114,6 +139,96 @@ describe('feature detection', () => {
     await expect(createApiClient({ fetch }).getBoard(NO_RETRY)).rejects.toMatchObject({
       kind: 'server',
     });
+  });
+
+  it('labels a category board with its category, and the overall fallback without one', async () => {
+    const { fetch } = scriptedFetch(call =>
+      pathOf(call.url) === '/api/leaderboard/categories/code' ? jsonResponse(board) : off(),
+    );
+    const api = createApiClient({ fetch });
+    expect((await api.getBoard(NO_RETRY, 'code')).category).toBe('code');
+    const { fetch: offFetch, calls } = scriptedFetch(call =>
+      pathOf(call.url) === '/api/leaderboard' ? jsonResponse(board) : off(),
+    );
+    const data = await createApiClient({ fetch: offFetch }).getBoard(NO_RETRY, 'math');
+    expect(data.category).toBeUndefined();
+    expect(data.source).toBe('crowd');
+    expect(calls.map(call => pathOf(call.url))).toEqual([
+      '/api/leaderboard/categories/math',
+      '/api/leaderboard',
+    ]);
+  });
+
+  it.each([500, 502])('falls back to the classic board on a %i, with a notice and no memory', async status => {
+    const { fetch, calls } = scriptedFetch(call =>
+      pathOf(call.url) === '/api/leaderboard'
+        ? jsonResponse({ error: 'boom' }, { status })
+        : jsonResponse(v2),
+    );
+    const api = createApiClient({ fetch });
+    const first = await api.getBoard(NO_RETRY);
+    expect(first).toMatchObject({ source: 'v2', fallback: 'failed' });
+    await api.getBoard(NO_RETRY);
+    expect(calls.filter(call => pathOf(call.url) === '/api/leaderboard')).toHaveLength(2);
+  });
+
+  it('falls back on a network failure, and says unavailable on a 503, but not when the flag is off', async () => {
+    const down = scriptedFetch(call => {
+      if (pathOf(call.url) === '/api/leaderboard') throw new TypeError('Failed to fetch');
+      return jsonResponse(v2);
+    });
+    expect(await createApiClient({ fetch: down.fetch }).getBoard(NO_RETRY)).toMatchObject({
+      source: 'v2',
+      fallback: 'failed',
+    });
+    const busy = scriptedFetch(call =>
+      pathOf(call.url) === '/api/leaderboard' ? off(503) : jsonResponse(v2),
+    );
+    expect(await createApiClient({ fetch: busy.fetch }).getBoard(NO_RETRY)).toMatchObject({
+      fallback: 'unavailable',
+    });
+    const disabled = scriptedFetch(call =>
+      pathOf(call.url) === '/api/leaderboard' ? off() : jsonResponse(v2),
+    );
+    expect((await createApiClient({ fetch: disabled.fetch }).getBoard(NO_RETRY)).fallback).toBeUndefined();
+  });
+
+  it('serves the overall board for an unknown category (400), and still fails when classic fails', async () => {
+    const bad = scriptedFetch(call =>
+      pathOf(call.url) === '/api/leaderboard/categories/code'
+        ? jsonResponse({ success: false, error: 'bad', code: 'INVALID_CATEGORY' }, { status: 400 })
+        : jsonResponse(board),
+    );
+    const data = await createApiClient({ fetch: bad.fetch }).getBoard(NO_RETRY, 'code');
+    expect(data.category).toBeUndefined();
+    expect(data.source).toBe('crowd');
+    const allDown = scriptedFetch(jsonResponse({ error: 'boom' }, { status: 500 }));
+    await expect(createApiClient({ fetch: allDown.fetch }).getBoard(NO_RETRY)).rejects.toMatchObject({
+      kind: 'server',
+    });
+  });
+
+  it('warns once about an unreadable body and asks again after 30 s, not 5 min', async () => {
+    vi.useFakeTimers();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const { fetch, calls } = scriptedFetch(call =>
+        pathOf(call.url) === '/api/leaderboard'
+          ? jsonResponse({ items: [{ nope: 1 }] })
+          : jsonResponse(v2),
+      );
+      const api = createApiClient({ fetch });
+      await api.getBoard(NO_RETRY);
+      await api.getBoard(NO_RETRY);
+      expect(calls.filter(call => pathOf(call.url) === '/api/leaderboard')).toHaveLength(1);
+      vi.setSystemTime(Date.now() + 31_000);
+      await api.getBoard(NO_RETRY);
+      expect(calls.filter(call => pathOf(call.url) === '/api/leaderboard')).toHaveLength(2);
+      expect(warn).toHaveBeenCalledTimes(1);
+    } finally {
+      warn.mockRestore();
+      vi.useRealTimers();
+    }
   });
 
   it('reads a category board, and never sends an unsafe category', async () => {

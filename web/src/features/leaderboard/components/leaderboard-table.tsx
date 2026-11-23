@@ -180,7 +180,7 @@ function Row({
       </td>
       <td className="py-3.5 pr-2 pl-3 text-right align-middle">
         <span className="numeric text-ui text-fg-soft">{formatCount(entry.battles)}</span>
-        {entry.crowd === null ? null : (
+        {entry.crowd === null || entry.crowd.votes === null ? null : (
           <span className="block numeric text-label text-muted" data-votes={entry.crowd.votes}>
             {formatCount(entry.crowd.votes)} {entry.crowd.votes === 1 ? 'vote' : 'votes'}
           </span>

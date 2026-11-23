@@ -138,7 +138,7 @@ export function providerOptions(entries: readonly LeaderboardEntry[]): ProviderO
 /** Everything the pages need from one `model-stats` response (TanStack Query's `select`). */
 export function toLeaderboard(
   stats: readonly ModelStat[],
-  meta: Pick<LeaderboardData, 'source' | 'crowd'> = { source: 'v2' },
+  meta: Pick<LeaderboardData, 'source' | 'crowd' | 'category' | 'fallback'> = { source: 'v2' },
 ): Leaderboard {
   const entries = toLeaderboardEntries(stats);
   return {
@@ -149,5 +149,7 @@ export function toLeaderboard(
     providers: providerOptions(entries),
     source: meta.source,
     crowd: meta.crowd ?? null,
+    category: meta.category ?? null,
+    fallback: meta.fallback ?? null,
   };
 }

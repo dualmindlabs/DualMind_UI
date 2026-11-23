@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { count, optionalNumber, optionalString, withAliases } from './common';
+import { optionalNumber, optionalString, withAliases } from './common';
 import { type LeaderboardData, modelStatSchema } from './leaderboard';
 
 /**
@@ -22,8 +22,8 @@ export interface CrowdStat {
   /** Best and worst rank the intervals still allow. */
   rankLow: number | null;
   rankHigh: number | null;
-  /** Countable votes (both-bad votes are not counted). */
-  votes: number;
+  /** Countable votes (both-bad votes are not counted); null when the API did not say. */
+  votes: number | null;
   provisional: boolean;
   /** `votes` for a fitted rating, `seeded` for the starting value. */
   ratingSource: string;
@@ -37,7 +37,7 @@ const crowdFieldsSchema = withAliases(
     rank: optionalNumber,
     rankLow: optionalNumber,
     rankHigh: optionalNumber,
-    votes: count,
+    votes: optionalNumber,
     provisional: z.boolean(),
     ratingSource: optionalString,
   }),
@@ -68,7 +68,7 @@ const crowdBoardEnvelope = z.object({
   items: z.array(crowdRowSchema),
   methodology: optionalString.optional(),
   generatedAt: optionalString.optional(),
-  voteCount: count,
+  voteCount: optionalNumber,
   degraded: z.boolean().optional(),
   warnings: z.array(z.string()).optional(),
 });

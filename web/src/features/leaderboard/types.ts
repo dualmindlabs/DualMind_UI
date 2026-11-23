@@ -88,6 +88,10 @@ export interface Leaderboard {
   source: LeaderboardData['source'];
   /** Crowd board only: method id, votes the fit used, and whether it is a stale copy. */
   crowd: LeaderboardData['crowd'] | null;
+  /** The category this board belongs to; null for the overall board, or when it fell back to it. */
+  category: string | null;
+  /** The crowd board is down or failed and the classic board is shown instead; null otherwise. */
+  fallback: LeaderboardData['fallback'] | null;
 }
 
 export type SortKey = 'rank' | 'name' | 'provider' | 'elo' | 'winRate' | 'battles';

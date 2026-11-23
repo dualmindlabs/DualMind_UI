@@ -126,7 +126,7 @@ function BoardCard({
               {entry.battles === 1 ? 'battle' : 'battles'}
             </span>
           </span>
-          {entry.crowd === null ? null : (
+          {entry.crowd === null || entry.crowd.votes === null ? null : (
             <span className="numeric" data-votes={entry.crowd.votes}>
               {formatCount(entry.crowd.votes)}
               <span className="font-sans font-normal text-muted">
