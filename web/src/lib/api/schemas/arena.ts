@@ -10,6 +10,7 @@ import {
   usageSchema,
   withAliases,
 } from './common';
+import { answerKeySchema } from './truth';
 
 export const VOTE_CHOICES = ['left', 'right', 'tie', 'both-bad'] as const;
 export type VoteChoice = (typeof VOTE_CHOICES)[number];
@@ -82,6 +83,11 @@ export const answerSchema = z.preprocess(
       servedBy: optionalString.catch(null).optional(),
       /** A backup model answered in place of the one asked for. */
       fallbackUsed: flag(false).catch(false).optional(),
+      /**
+       * The prompt the models were really asked. It differs from the one typed when the backend
+       * ran a Truth vs Taste question in its place (backend PR 70).
+       */
+      prompt: optionalString.catch(null).optional(),
     }),
   ),
 );
@@ -161,9 +167,15 @@ export const voteResultSchema = z
       success: flag(true),
       message: optionalString,
       receipt: voteReceiptSchema.nullish().catch(null),
+      /** Truth vs Taste: present only for an eval battle, after the vote (backend PR 70). */
+      answerKey: answerKeySchema.nullish().catch(null),
     }),
   )
-  .transform(({ receipt, ...result }) => (receipt ? { ...result, receipt } : result));
+  .transform(({ receipt, answerKey, ...result }) => ({
+    ...result,
+    ...(receipt ? { receipt } : {}),
+    ...(answerKey ? { answerKey } : {}),
+  }));
 export type VoteResult = z.output<typeof voteResultSchema>;
 
 // --- Streaming (`POST /api/arena/chat/stream`) ------------------------------------------------

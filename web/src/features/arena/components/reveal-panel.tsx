@@ -12,6 +12,8 @@ import { cn } from '@/lib/utils/cn';
 import { useArena } from '../hooks/use-arena';
 import type { LiveAnswer, LiveTurn } from '../lib/battle-machine';
 import { VOTE_LABELS } from '../lib/turns';
+import { AnswerKeyRow } from './answer-key-row';
+import { CrossExamineSlot } from './cross-examine-strip';
 import { ModelRating, RatingOdds } from './model-rating';
 import { ReceiptChip } from './receipt-chip';
 
@@ -132,7 +134,9 @@ export function RevealPanel({ turn }: { turn: LiveTurn }) {
           ))}
         </ul>
         <RatingOdds a={turn.a} b={turn.b} />
+        {turn.answerKey === null ? null : <AnswerKeyRow answerKey={turn.answerKey} />}
         {turn.receipt === null ? null : <ReceiptChip receipt={turn.receipt} />}
+        <CrossExamineSlot turn={turn} />
       </div>
 
       {/* The next steps: three quiet ones, then the one that matters. */}

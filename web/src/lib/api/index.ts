@@ -57,6 +57,7 @@ export {
   type CompareInput,
   isCompareShareId,
 } from './endpoints/compare';
+export { type Round2Input } from './endpoints/cross-examine';
 export { FEATURE_FLAGS } from './endpoints/flags';
 export { type SpeechInput } from './endpoints/speech';
 export {
@@ -85,6 +86,12 @@ export {
 } from './schemas/arena';
 export type { MutationResult, Usage } from './schemas/common';
 export type { CompareResult, CompareShareState, CompareSide } from './schemas/compare';
+export type {
+  CritiqueResult,
+  CrossExamineStats,
+  Rebuttal,
+  Round2Result,
+} from './schemas/cross-examine';
 export type { CrowdCategory, CrowdStat } from './schemas/crowd';
 export type { FeatureFlag } from './schemas/flags';
 export type { Health } from './schemas/health';
@@ -99,6 +106,7 @@ export {
   type Visibility,
   type VisibilityResult,
 } from './schemas/threads';
+export type { AnswerKey, AnswerKeySide } from './schemas/truth';
 export type { UserProfile } from './schemas/users';
 
 // Streaming

@@ -12,6 +12,8 @@ export function fakeBattle(turns: LiveTurn[] = []): BattleApi {
     busy: false,
     send: vi.fn(),
     vote: vi.fn(),
+    critique: vi.fn(),
+    secondVote: vi.fn(),
     stop: vi.fn(),
     showAll: vi.fn(),
     reset: vi.fn(),

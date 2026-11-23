@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { LiveTurnView } from '@/features/arena/components/live-turn-view';
 import { RevealPanel } from '@/features/arena/components/reveal-panel';
 import type { ArenaState } from '@/features/arena/hooks/use-arena';
-import type { LiveTurn } from '@/features/arena/lib/battle-machine';
+import { type LiveTurn, NO_CROSS_EXAMINE } from '@/features/arena/lib/battle-machine';
 
 import { FakeArena, fakeBattle } from './arena-context';
 
@@ -41,6 +41,9 @@ const revealed = (overrides: Partial<LiveTurn> = {}): LiveTurn => ({
   vote: 'left',
   votePending: false,
   receipt: null,
+  answerKey: null,
+  evalQuestion: false,
+  crossExamine: NO_CROSS_EXAMINE,
   error: null,
   errorKind: null,
   sentAt: 1_000,

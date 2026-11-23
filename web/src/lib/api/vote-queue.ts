@@ -21,6 +21,7 @@ import {
   toApiError,
 } from './errors';
 import { VOTE_CHOICES, type VoteReceipt } from './schemas/arena';
+import type { AnswerKey } from './schemas/truth';
 
 export const VOTE_QUEUE_STORAGE_KEY = 'dm.voteQueue.v1';
 
@@ -46,6 +47,8 @@ export type VoteSubmitResult =
   | {
       status: 'sent';
       /** Present when the API's receipts flag is on. */ receipt?: VoteReceipt | null;
+      /** Present for a Truth vs Taste battle (backend PR 70), after the vote. */
+      answerKey?: AnswerKey | null;
     }
   | { status: 'queued'; error: ApiError | null };
 
@@ -112,6 +115,13 @@ function receiptOf(result: unknown): VoteReceipt | null {
   if (typeof result !== 'object' || result === null || !('receipt' in result)) return null;
   const { receipt } = result;
   return typeof receipt === 'object' && receipt !== null ? (receipt as VoteReceipt) : null;
+}
+
+/** The answer key on a send result, when it has one (an eval battle's vote response). */
+function answerKeyOf(result: unknown): AnswerKey | null {
+  if (typeof result !== 'object' || result === null || !('answerKey' in result)) return null;
+  const { answerKey } = result;
+  return typeof answerKey === 'object' && answerKey !== null ? (answerKey as AnswerKey) : null;
 }
 
 function defaultStorage(): StorageLike | null {
@@ -311,7 +321,12 @@ export function createVoteQueue(options: VoteQueueOptions): VoteQueue {
     try {
       const result = await options.send(vote);
       const receipt = receiptOf(result);
-      return receipt === null ? { status: 'sent' } : { status: 'sent', receipt };
+      const answerKey = answerKeyOf(result);
+      return {
+        status: 'sent',
+        ...(receipt === null ? {} : { receipt }),
+        ...(answerKey === null ? {} : { answerKey }),
+      };
     } catch (error) {
       const apiError = toApiError(error);
       // 409: the API already counted a vote for this battle (a retry racing the first send).
