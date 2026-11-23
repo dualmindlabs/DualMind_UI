@@ -110,7 +110,7 @@ const storedQueueSchema = z.object({
 /** The receipt on a send result, when it has one (the real client returns a `VoteResult`). */
 function receiptOf(result: unknown): VoteReceipt | null {
   if (typeof result !== 'object' || result === null || !('receipt' in result)) return null;
-  const { receipt } = result as { receipt: unknown };
+  const { receipt } = result;
   return typeof receipt === 'object' && receipt !== null ? (receipt as VoteReceipt) : null;
 }
 

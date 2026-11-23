@@ -3,8 +3,8 @@ import { z } from 'zod';
 
 import { resolveDisplayName } from '@/lib/models/display-name';
 
-import type { CrowdStat } from './crowd';
 import { count, listOf, numeric, optionalString, withAliases } from './common';
+import type { CrowdStat } from './crowd';
 
 /**
  * One row of `GET /api/arena/model-stats`. The live API sends every field twice (camelCase and

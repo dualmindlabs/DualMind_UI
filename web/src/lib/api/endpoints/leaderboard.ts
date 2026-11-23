@@ -2,9 +2,9 @@ import { isApiError } from '../errors';
 import type { Transport } from '../http/transport';
 import type { CallOptions } from '../http/types';
 import {
-  type CrowdCategory,
   crowdBoardSchema,
   crowdCategoriesSchema,
+  type CrowdCategory,
   methodologyTextSchema,
 } from '../schemas/crowd';
 import {
