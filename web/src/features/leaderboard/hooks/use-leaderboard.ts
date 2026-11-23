@@ -1,12 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { useApiClient } from '@/hooks/use-api-client';
-import {
-  boardQuery,
-  categoryBoardQuery,
-  crowdCategoriesQuery,
-  type LeaderboardData,
-} from '@/lib/api';
+import { boardQuery, crowdCategoriesQuery, type LeaderboardData } from '@/lib/api';
 
 import { REFRESH_INTERVAL_MS } from '../lib/constants';
 import { toLeaderboard } from '../lib/entries';
@@ -26,7 +21,7 @@ const selectLeaderboard = (data: LeaderboardData) => toLeaderboard(data.items, d
 export function useLeaderboard(category?: string) {
   const api = useApiClient();
   return useQuery({
-    ...(category === undefined ? boardQuery(api) : categoryBoardQuery(api, category)),
+    ...boardQuery(api, category),
     select: selectLeaderboard,
     refetchInterval: REFRESH_INTERVAL_MS,
   });

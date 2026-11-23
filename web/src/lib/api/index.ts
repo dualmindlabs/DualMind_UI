@@ -129,7 +129,6 @@ export {
 } from './query/mutations';
 export {
   boardQuery,
-  categoryBoardQuery,
   crowdCategoriesQuery,
   featureFlagQuery,
   healthQuery,
