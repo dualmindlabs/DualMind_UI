@@ -44,6 +44,12 @@
     color: #000000;
   }
 
+  /* Paper does not animate: the screen's colours must not ease into the print ones. */
+  html,
+  body {
+    transition: none !important;
+  }
+
   /*
    * Site chrome, the command palette and toasts are never part of a printout: the site header
    * (also the arena's), the footer and the skip link on every page.

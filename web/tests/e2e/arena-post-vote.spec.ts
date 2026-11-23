@@ -180,7 +180,13 @@ for (const theme of ['dark', 'light'] as const) {
     await expect(page.getByTestId('rebuttal')).toHaveCount(2);
     const results = await new AxeBuilder({ page }).analyze();
     expect(
-      results.violations.map(violation => `${violation.id}: ${violation.nodes.length}`),
+      results.violations.map(
+        violation =>
+          `${violation.id}: ${violation.nodes.length} ` +
+          violation.nodes
+            .map(node => `${node.target.join(' ')} (${node.any[0]?.message ?? node.html})`)
+            .join('; '),
+      ),
     ).toEqual([]);
   });
 }

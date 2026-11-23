@@ -222,9 +222,15 @@ async function expectNoSiteChrome(page: Page) {
   await expect(page.getByRole('contentinfo')).toBeHidden();
   await expect(page.locator('[data-slot="site-header"]:visible')).toHaveCount(0);
   await expect(page.locator('[data-slot="site-footer"]:visible')).toHaveCount(0);
-  expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe(
-    'rgb(255, 255, 255)',
-  );
+  // Polled: the computed colour is read as the print rules take over from the screen ones.
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const style = getComputedStyle(document.body);
+        return `${style.backgroundColor} (transition: ${style.transitionProperty} ${style.transitionDuration})`;
+      }),
+    )
+    .toMatch(/^rgb\(255, 255, 255\)/);
 }
 
 test.describe('print', () => {
