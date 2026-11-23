@@ -269,10 +269,16 @@ jobs:
               echo "| \`${f#dist/assets/}\` | $(gz "$f") |${libs:- (app code)} |"
             done
           } >> "$GITHUB_STEP_SUMMARY"
-          # The landing page must not preload the signed-in arena's code: web/package.json marks the
-          # sources side-effect free so the `@/features/arena` barrel does not drag it in.
-          if echo "$landing" | grep -qE '/assets/arena(-app)?-[A-Za-z0-9_-]{8}\.js$'; then
-            echo "::error::dist/index.html loads the arena chunk up front; the landing page must not preload the signed-in arena"
+          # The landing page must not preload the signed-in arena's code (web/package.json marks the
+          # sources side-effect free so the `@/features/arena` barrel does not drag it in), and its
+          # JavaScript must not grow back: a hard ceiling at 400000 bytes gzipped (after that fix it
+          # is about 358000; the 180 KB budget below stays a warning until the shared shell shrinks).
+          if echo "$landing" | grep -qE '/assets/arena-app-[A-Za-z0-9_-]{8}\.js$'; then
+            echo "::error::dist/index.html loads the arena app chunk up front; the landing page must not preload the signed-in arena"
+            exit 1
+          fi
+          if [ "$landing_total" -gt 400000 ]; then
+            echo "::error::/ loads ${landing_total} bytes of gzipped JavaScript up front; the ceiling is 400000"
             exit 1
           fi
           for f in "${lazy[@]}"; do
