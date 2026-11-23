@@ -49,7 +49,9 @@ describe('the vote response and the answer key (Truth vs Taste)', () => {
   });
 
   it('passes the key through the vote queue', async () => {
-    const send = vi.fn(async () => voteResultSchema.parse({ success: true, answerKey: KEY }));
+    const send = vi.fn(() =>
+      Promise.resolve(voteResultSchema.parse({ success: true, answerKey: KEY })),
+    );
     const queue = createVoteQueue({ send, storage: null });
     const result = await queue.submit({ comparisonId: CMP, voteChoice: 'left' });
     expect(result).toMatchObject({ status: 'sent', answerKey: { answer: '391' } });
