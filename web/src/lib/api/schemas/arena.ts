@@ -3,7 +3,7 @@ import { z } from 'zod';
 import {
   flag,
   isRecord,
-  mutationResultSchema,
+  numeric,
   optionalNumber,
   optionalString,
   type Usage,
@@ -139,7 +139,31 @@ export const battleSchema = withAliases(
 export type Battle = z.output<typeof battleSchema>;
 
 /** `POST /api/arena/model-vote`: `{ success, message }`. It does not return new ratings (B-2). */
-export const voteResultSchema = mutationResultSchema;
+/**
+ * The receipt a vote returns while the backend's receipts flag is on (`receipt` is absent when it
+ * is off): a handle plus the two hashes that place the vote in the public, hash-chained log.
+ * Anything malformed is dropped (`catch(null)`): a receipt problem must never fail a vote.
+ */
+export const voteReceiptSchema = withAliases(
+  z.object({
+    receiptId: z.string().min(1),
+    seq: numeric,
+    entryHash: z.string().regex(/^[0-9a-f]{64}$/i),
+    prevHash: z.string().regex(/^[0-9a-f]{64}$/i),
+  }),
+);
+export type VoteReceipt = z.output<typeof voteReceiptSchema>;
+
+export const voteResultSchema = z
+  .preprocess(
+    (input: unknown) => (input === null || input === undefined || input === '' ? {} : input),
+    z.object({
+      success: flag(true),
+      message: optionalString,
+      receipt: voteReceiptSchema.nullish().catch(null),
+    }),
+  )
+  .transform(({ receipt, ...result }) => ({ ...result, receipt: receipt ?? null }));
 export type VoteResult = z.output<typeof voteResultSchema>;
 
 // --- Streaming (`POST /api/arena/chat/stream`) ------------------------------------------------

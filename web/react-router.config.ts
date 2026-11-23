@@ -25,6 +25,7 @@ export default {
     '/design',
     '/leaderboard',
     '/models',
+    '/methodology',
     '/about',
     '/credits',
     '/how-it-works',

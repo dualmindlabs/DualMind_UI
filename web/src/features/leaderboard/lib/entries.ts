@@ -1,4 +1,4 @@
-import type { ModelStat } from '@/lib/api';
+import type { LeaderboardData, ModelStat } from '@/lib/api';
 import { modelMaker, platformLabel, resolveDisplayName, servedBy } from '@/lib/models/display-name';
 
 import type {
@@ -55,6 +55,8 @@ export function toLeaderboardEntries(stats: readonly ModelStat[]): LeaderboardEn
   if (stats.length === 0) return [];
   const ratedStats = stats.filter(stat => !stat.provisional);
   const scale = (ratedStats.length > 0 ? ratedStats : stats).map(stat => stat.eloScore);
+  // A rated model on the crowd board may be without a rank claim (too few votes, interval too
+  // wide): it is still listed with the rated ones, in order of rating, and says so.
   const lowest = Math.min(...scale);
   const highest = Math.max(...scale);
   const ratedElos = ratedStats.map(stat => stat.eloScore);
@@ -73,7 +75,9 @@ export function toLeaderboardEntries(stats: readonly ModelStat[]): LeaderboardEn
         platform: stat.providerName.trim().toLowerCase(),
         platformLabel: platform,
         servedBy: servedBy(made, platform),
-        rank: provisional ? null : 1 + ratedElos.filter(elo => elo > stat.eloScore).length,
+        rank: provisional
+          ? null
+          : (stat.crowd?.rank ?? 1 + ratedElos.filter(elo => elo > stat.eloScore).length),
         elo: stat.eloScore,
         wins: stat.totalWins,
         losses: stat.totalLosses,
@@ -82,6 +86,7 @@ export function toLeaderboardEntries(stats: readonly ModelStat[]): LeaderboardEn
         winRate: stat.winRate,
         provisional,
         eloShare: eloShare(stat.eloScore, lowest, highest),
+        crowd: stat.crowd ?? null,
       };
     })
     .sort(byRank);
@@ -121,7 +126,10 @@ export function providerOptions(entries: readonly LeaderboardEntry[]): ProviderO
 }
 
 /** Everything the pages need from one `model-stats` response (TanStack Query's `select`). */
-export function toLeaderboard(stats: readonly ModelStat[]): Leaderboard {
+export function toLeaderboard(
+  stats: readonly ModelStat[],
+  meta: Pick<LeaderboardData, 'source' | 'crowd'> = { source: 'v2' },
+): Leaderboard {
   const entries = toLeaderboardEntries(stats);
   return {
     entries,
@@ -129,5 +137,7 @@ export function toLeaderboard(stats: readonly ModelStat[]): Leaderboard {
     unrated: entries.filter(entry => !isRated(entry)),
     summary: summarize(entries),
     providers: providerOptions(entries),
+    source: meta.source,
+    crowd: meta.crowd ?? null,
   };
 }

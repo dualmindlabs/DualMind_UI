@@ -13,9 +13,13 @@ import { jsonResponse, rejectionOf, scriptedFetch } from './helpers';
 const ENDPOINT_FUNCTIONS = [
   'createThread',
   'deleteThread',
+  'getBoard',
+  'getCrowdBoard',
+  'getCrowdCategories',
   'getFeatureFlag',
   'getHealth',
   'getLeaderboard',
+  'getLeaderboardMethodology',
   'getMe',
   'getModel',
   'getSharedThread',

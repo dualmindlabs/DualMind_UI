@@ -127,6 +127,8 @@ describe('toLeaderboardEntries (normalised model-stats to board entries)', () =>
         bottomElo: 0,
         averageWinRate: 0,
       },
+      source: 'v2',
+      crowd: null,
     });
   });
 });

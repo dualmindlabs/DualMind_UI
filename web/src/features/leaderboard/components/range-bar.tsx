@@ -12,6 +12,12 @@ export interface RangeBarProps {
   tone?: 'default' | 'lead';
   /** A taller bar for the podium and the details. */
   size?: 'sm' | 'md';
+  /**
+   * The range is measured (the crowd board's bootstrap interval), not estimated: it is drawn as a
+   * whisker, a line with an end cap at each side, so a measured interval reads differently from
+   * the estimated band.
+   */
+  measured?: boolean;
   className?: string;
 }
 
@@ -33,6 +39,7 @@ export function RangeBar({
   domain,
   tone = 'default',
   size = 'sm',
+  measured = false,
   className,
 }: RangeBarProps) {
   const left = position(low, domain);
@@ -48,13 +55,38 @@ export function RangeBar({
         className,
       )}
     >
-      <span
-        style={{ left: `${left.toFixed(2)}%`, width: `${Math.max(1, right - left).toFixed(2)}%` }}
-        className={cn(
-          'absolute inset-y-0 origin-left animate-grow rounded-full',
-          tone === 'lead' ? 'bg-mind-a/40' : 'bg-mind-a/25',
-        )}
-      />
+      {measured ? (
+        <span
+          data-whisker=""
+          style={{ left: `${left.toFixed(2)}%`, width: `${Math.max(1, right - left).toFixed(2)}%` }}
+          className="absolute inset-y-[-3px] origin-left animate-grow"
+        >
+          <span
+            className={cn(
+              'absolute inset-x-0 top-1/2 h-0.5 -translate-y-1/2 rounded-full',
+              tone === 'lead' ? 'bg-mind-a' : 'bg-fg-soft',
+            )}
+          />
+          {(['left-0', 'right-0'] as const).map(side => (
+            <span
+              key={side}
+              className={cn(
+                'absolute inset-y-0 w-0.5 rounded-full',
+                side,
+                tone === 'lead' ? 'bg-mind-a' : 'bg-fg-soft',
+              )}
+            />
+          ))}
+        </span>
+      ) : (
+        <span
+          style={{ left: `${left.toFixed(2)}%`, width: `${Math.max(1, right - left).toFixed(2)}%` }}
+          className={cn(
+            'absolute inset-y-0 origin-left animate-grow rounded-full',
+            tone === 'lead' ? 'bg-mind-a/40' : 'bg-mind-a/25',
+          )}
+        />
+      )}
       <span
         style={{ left: `${dot.toFixed(2)}%` }}
         className={cn(

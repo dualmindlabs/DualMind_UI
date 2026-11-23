@@ -1,3 +1,5 @@
+import type { CrowdStat, LeaderboardData } from '@/lib/api';
+
 /** One model on the board, normalised from a `model-stats` row (lib/entries.ts). */
 export interface LeaderboardEntry {
   /** `modelId` from the API. */
@@ -36,6 +38,11 @@ export interface LeaderboardEntry {
   provisional: boolean;
   /** Where the rating sits between the lowest and the highest on the board, 0 to 1. */
   eloShare: number;
+  /**
+   * The crowd board's facts for this model (measured 95% interval, rank range, countable votes),
+   * or null on the classic board, where the range is estimated from the record.
+   */
+  crowd: CrowdStat | null;
 }
 
 /** A model that has a rank: enough battles to be rated. */
@@ -74,6 +81,10 @@ export interface Leaderboard {
   unrated: LeaderboardEntry[];
   summary: LeaderboardSummary;
   providers: ProviderOption[];
+  /** Which route answered: `crowd` is the measured board, the others the classic one. */
+  source: LeaderboardData['source'];
+  /** Crowd board only: method id, votes the fit used, and whether it is a stale copy. */
+  crowd: LeaderboardData['crowd'] | null;
 }
 
 export type SortKey = 'rank' | 'name' | 'provider' | 'elo' | 'winRate' | 'battles';

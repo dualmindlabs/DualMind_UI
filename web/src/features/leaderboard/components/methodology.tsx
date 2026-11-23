@@ -24,12 +24,20 @@ const ITEMS = [
   },
 ] as const;
 
+/** What changes when the backend serves the crowd board (fitted ratings, measured intervals). */
+const CROWD_ITEMS = {
+  'Elo rating':
+    'Ratings are fitted from all blind votes together with a Bradley-Terry model, not updated vote by vote. A gap of 100 points means the higher model wins about 64% of decisive votes. Models with too few votes keep a seeded starting value and are marked not yet rated.',
+  'Rating range':
+    'The line on each bar is a 95% interval from the API: the votes are resampled 400 times and the model refitted each time. Next to the rank, a range such as 2–4 means the intervals still allow any of those ranks. A model gets a rank only with enough votes and a narrow enough interval.',
+} as const;
+
 /**
  * "How to read the board": the rules behind the numbers, in the prerendered HTML so they read
  * without JavaScript and search engines see them. Says what comes from the API and what is worked
  * out on the page (the rating range, the rank movement).
  */
-export function Methodology() {
+export function Methodology({ crowd = false }: { crowd?: boolean }) {
   return (
     <section
       id="methodology"
@@ -42,11 +50,16 @@ export function Methodology() {
           kicker="Methodology"
           title="How to read"
           accent="the board."
-          lead="Numbers come straight from the Arena's public model-stats API and refresh every minute while this page is open. Nothing is adjusted or hidden."
+          lead="Numbers come straight from the Arena's public API and refresh every minute while this page is open. Nothing is adjusted or hidden."
           className="mb-10 md:mb-14"
         />
         <dl className="grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
-          {ITEMS.map(item => (
+          {ITEMS.map(base => {
+            const crowdText = crowd
+              ? CROWD_ITEMS[base.term as keyof typeof CROWD_ITEMS]
+              : undefined;
+            return { term: base.term, text: crowdText ?? base.text };
+          }).map(item => (
             <div
               key={item.term}
               className="grid content-start gap-2 border-t border-line-strong pt-5"
@@ -61,6 +74,18 @@ export function Methodology() {
           add up to the same total. Battles in the header count each battle once, although two
           models take part in it. Rank movement compares with the ranks this browser showed at your
           last visit; it is kept on your device only and appears from your second visit.{' '}
+          {crowd ? (
+            <>
+              <a
+                href="/methodology/"
+                className="inline-flex items-center gap-1 rounded-sm text-mind-a underline decoration-mind-a/40 underline-offset-4 hover:decoration-current"
+              >
+                The full method, from the API
+                <ArrowRight aria-hidden="true" strokeWidth={1.75} className="size-3.5" />
+              </a>
+              {' · '}
+            </>
+          ) : null}
           <a
             href={RATINGS_HELP_HREF}
             className="inline-flex items-center gap-1 rounded-sm text-mind-a underline decoration-mind-a/40 underline-offset-4 hover:decoration-current"

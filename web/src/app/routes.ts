@@ -14,6 +14,8 @@ export default [
   // Live rankings and the model directory (slice S7), from the public model-stats API.
   route('leaderboard', 'routes/leaderboard.tsx'),
   route('models', 'routes/models.tsx'),
+  // How the crowd board is computed (renders GET /api/leaderboard/methodology, static fallback).
+  route('methodology', 'routes/methodology.tsx'),
 
   // Info and legal pages (slice S4).
   route('about', 'routes/about.tsx'),

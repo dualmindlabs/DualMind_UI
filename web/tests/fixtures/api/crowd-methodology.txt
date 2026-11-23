@@ -1,0 +1,44 @@
+DualMind Arena leaderboard methodology (bt-v1)
+
+What a rating is
+Every rating is fitted from real, blind votes with a Bradley-Terry model. A vote is one person picking
+the better of two anonymous answers. For models i and j the model says i wins a decisive vote with
+probability 1 / (1 + exp(-(s_i - s_j))). Ties count as half a win for each side. "Both bad" votes say
+nothing about which model is better and are not used. A battle of a model against itself is dropped.
+
+Scale
+rating = 1000 + (400 / ln 10) * s, centred so the average of every model that has votes is 1000 (models with
+few votes, and models since retired, are part of that average). A gap of 100 points means the
+higher model wins about 64% of decisive votes.
+
+Confidence intervals
+Each model has a 95% interval from a bootstrap: the votes are resampled with replacement 400 times and the
+model is refitted each time; ciLow and ciHigh are the 2.5th and 97.5th percentiles of the refitted ratings.
+A wide interval means the votes do not yet separate the model from its neighbours.
+
+Rank
+rank is 1 plus the number of rated models on this board with a higher rating. rankLow is 1 plus the number of
+rated models whose whole interval lies above this model's interval (the best rank still possible), and rankHigh is
+1 plus the number of rated models whose interval reaches above this model's lower end (the worst). All three count
+the same models, the rated ones listed here. A model gets rank, rankLow and rankHigh only with at least 30 countable
+votes and an interval no wider than 150 points; below that it is listed by rating without a rank.
+
+Which votes count
+Votes from battles where the user chose both models (manual mode) are left out, as are votes under an integrity
+flag that excludes them. When the votes exceed the read limit, the newest are used.
+
+Few votes
+A model with fewer than 5 countable votes is provisional. It keeps its seeded Elo (ratingSource "seeded"),
+has no interval, no rank and no rating field (rating is null; eloScore still carries the seeded value for old clients,
+on the seeded scale, which is not comparable with a fitted rating), and is listed after the rated models. As soon
+as it has enough votes its rating comes from the votes only; the seeded value is never blended in.
+
+Same input, same output
+The fit is deterministic: the same votes give the same ratings and intervals. The board is rebuilt at most
+every 5 minutes, so a new vote can take that long to show. While a rebuild runs, or the database is
+unreachable, the last good board is served; if there is none, the endpoint answers 503 rather than an empty list.
+
+Compatibility
+Every field of /api/arena/model-stats is still present on each item (eloScore now holds the published
+rating). The fields rating, ciLow, ciHigh, rank, rankLow, rankHigh, votes, provisional, ratingSource and degraded
+are additions.

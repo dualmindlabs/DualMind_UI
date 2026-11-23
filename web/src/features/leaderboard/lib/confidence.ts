@@ -41,10 +41,38 @@ export function eloMargin(entry: Pick<LeaderboardEntry, 'wins' | 'losses' | 'tie
   return Math.min(MAX_ELO_MARGIN, Math.max(4, margin));
 }
 
-/** The rating and its estimated range: `[low, high]` around `elo`. */
+export const ESTIMATED_RANGE_TITLE = "Estimated 95% range, from this model's record";
+export const MEASURED_RANGE_TITLE = 'Bootstrap 95% interval, fitted from the blind votes';
+
+/**
+ * The rating and its range: `[low, high]` around `elo`. On the crowd board the range is the API's
+ * measured 95% bootstrap interval (`measured`, possibly lopsided around the rating); on the
+ * classic board it is the estimate above. A seeded row has no interval, so it falls back to the
+ * estimate too.
+ */
 export function ratingRange(entry: LeaderboardEntry) {
+  const crowd = entry.crowd;
+  if (crowd !== null && crowd.ciLow !== null && crowd.ciHigh !== null) {
+    return {
+      elo: entry.elo,
+      margin: (crowd.ciHigh - crowd.ciLow) / 2,
+      low: crowd.ciLow,
+      high: crowd.ciHigh,
+      measured: true,
+      title: MEASURED_RANGE_TITLE,
+      noun: 'Measured',
+    };
+  }
   const margin = eloMargin(entry);
-  return { elo: entry.elo, margin, low: entry.elo - margin, high: entry.elo + margin };
+  return {
+    elo: entry.elo,
+    margin,
+    low: entry.elo - margin,
+    high: entry.elo + margin,
+    measured: false,
+    title: ESTIMATED_RANGE_TITLE,
+    noun: 'Estimated',
+  };
 }
 
 export interface RangeDomain {

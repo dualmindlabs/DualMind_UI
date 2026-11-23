@@ -3,6 +3,7 @@ import { z } from 'zod';
 
 import { resolveDisplayName } from '@/lib/models/display-name';
 
+import type { CrowdStat } from './crowd';
 import { count, listOf, numeric, optionalString, withAliases } from './common';
 
 /**
@@ -51,7 +52,10 @@ export const modelStatSchema = withAliases(
 /** `{ success, items }` from v1; ranked by the API (ties share a rank). */
 export const leaderboardSchema = listOf(modelStatSchema);
 
-export type ModelStat = z.output<typeof modelStatSchema>;
+export type ModelStat = z.output<typeof modelStatSchema> & {
+  /** Only on the crowd board (`source: 'crowd'`): rating interval, rank range, vote count. */
+  crowd?: CrowdStat | undefined;
+};
 
 /** What `getLeaderboard()` returns, whichever route answered. */
 export interface LeaderboardData {
@@ -60,8 +64,18 @@ export interface LeaderboardData {
   provisionalBelow: number;
   /** When the data last changed (v2 `meta.generatedAt`); null from the v1 fallback. */
   generatedAt: string | null;
-  /** Which route answered. */
-  source: 'v2' | 'v1';
+  /** Which route answered. `crowd` is the backend's leaderboard v2 (feature-detected). */
+  source: 'crowd' | 'v2' | 'v1';
+  /** Board-level facts, crowd board only. */
+  crowd?: {
+    /** Method id, for example `bt-v1`. */
+    methodology: string | null;
+    /** Votes the fit used. */
+    voteCount: number;
+    /** A stale copy, or a seeded board built without votes. */
+    degraded: boolean;
+    warnings: string[];
+  };
 }
 
 /** `GET /api/v2/leaderboard`: the shared contract schema, mapped to the app's shape. */

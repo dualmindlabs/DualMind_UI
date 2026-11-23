@@ -20,7 +20,7 @@ import {
   isRetryableError,
   toApiError,
 } from './errors';
-import { VOTE_CHOICES } from './schemas/arena';
+import { VOTE_CHOICES, type VoteReceipt } from './schemas/arena';
 
 export const VOTE_QUEUE_STORAGE_KEY = 'dm.voteQueue.v1';
 
@@ -42,7 +42,12 @@ export interface QueuedVote {
   lastError: string | null;
 }
 
-export type VoteSubmitResult = { status: 'sent' } | { status: 'queued'; error: ApiError | null };
+export type VoteSubmitResult =
+  | {
+      status: 'sent';
+      /** Present when the API's receipts flag is on. */ receipt?: VoteReceipt | null;
+    }
+  | { status: 'queued'; error: ApiError | null };
 
 export interface FlushResult {
   sent: number;
@@ -101,6 +106,13 @@ const storedQueueSchema = z.object({
     }),
   ),
 });
+
+/** The receipt on a send result, when it has one (the real client returns a `VoteResult`). */
+function receiptOf(result: unknown): VoteReceipt | null {
+  if (typeof result !== 'object' || result === null || !('receipt' in result)) return null;
+  const { receipt } = result as { receipt: unknown };
+  return typeof receipt === 'object' && receipt !== null ? (receipt as VoteReceipt) : null;
+}
 
 function defaultStorage(): StorageLike | null {
   try {
@@ -297,8 +309,8 @@ export function createVoteQueue(options: VoteQueueOptions): VoteQueue {
       return { status: 'queued', error: null };
     }
     try {
-      await options.send(vote);
-      return { status: 'sent' };
+      const result = await options.send(vote);
+      return { status: 'sent', receipt: receiptOf(result) };
     } catch (error) {
       const apiError = toApiError(error);
       // 409: the API already counted a vote for this battle (a retry racing the first send).

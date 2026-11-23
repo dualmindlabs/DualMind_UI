@@ -32,6 +32,7 @@ const turn = (overrides: Partial<LiveTurn> = {}): LiveTurn => ({
   unrated: 'fallback',
   vote: null,
   votePending: false,
+  receipt: null,
   error: null,
   errorKind: null,
   sentAt: 1_000,

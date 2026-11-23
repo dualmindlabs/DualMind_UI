@@ -74,11 +74,13 @@ export {
   type SelectionMode,
   VOTE_CHOICES,
   type VoteChoice,
+  type VoteReceipt,
   type VoteResult,
 } from './schemas/arena';
 export type { MutationResult, Usage } from './schemas/common';
 export type { FeatureFlag } from './schemas/flags';
 export type { Health } from './schemas/health';
+export type { CrowdCategory, CrowdStat } from './schemas/crowd';
 export type { LeaderboardData, ModelStat } from './schemas/leaderboard';
 export { displayNameFromModelName, KNOWN_PROVIDERS, type ModelSummary } from './schemas/models';
 export {
@@ -126,8 +128,12 @@ export {
   voteMutation,
 } from './query/mutations';
 export {
+  boardQuery,
+  categoryBoardQuery,
+  crowdCategoriesQuery,
   featureFlagQuery,
   healthQuery,
+  leaderboardMethodologyQuery,
   leaderboardQuery,
   meQuery,
   modelQuery,

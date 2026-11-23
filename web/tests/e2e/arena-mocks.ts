@@ -210,6 +210,8 @@ export async function mockArena(
     battle?: 'fallback' | 'unavailable';
     /** Thread ids that belong to another account: their reads answer 403. */
     foreignThreads?: string[];
+    /** The vote response carries a receipt (the API's receipts flag on). */
+    receipt?: boolean;
     /** Other Markdown for the battle's answers (long answers, wide tables, long code lines). */
     answers?: { a?: string; b?: string };
   } = {},
@@ -352,7 +354,20 @@ export async function mockArena(
       const body = request.postDataJSON() as Record<string, unknown>;
       if (state.offline) return route.abort('internetdisconnected');
       state.bodies.push({ path, body });
-      return json(route, 200, { success: true, message: 'Vote recorded' });
+      return json(route, 200, {
+        success: true,
+        message: 'Vote recorded',
+        ...(options.receipt
+          ? {
+              receipt: {
+                receiptId: 'c0ffee00-0000-4000-8000-000000000042',
+                seq: 4822,
+                entryHash: '7f3a9c21d4e85b60aa17c2e9b3f4081d5c6e7a8b9c0d1e2f3a4b5c6d7e8f90e4',
+                prevHash: '1b9d6bcd0e4c4a3f8b2d5e7f9a0c1d3e5f7a9b1c3d5e7f9a1b3c5d7e9f1a3b5c',
+              },
+            }
+          : {}),
+      });
     }
     if (path === '/api/threads' && method === 'GET') {
       if (options.failThreads)

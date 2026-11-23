@@ -13,6 +13,7 @@ import { useArena } from '../hooks/use-arena';
 import type { LiveAnswer, LiveTurn } from '../lib/battle-machine';
 import { VOTE_LABELS } from '../lib/turns';
 import { ModelRating, RatingOdds } from './model-rating';
+import { ReceiptChip } from './receipt-chip';
 
 function nameOf(answer: LiveAnswer | null): string {
   const model = answer?.model;
@@ -131,6 +132,7 @@ export function RevealPanel({ turn }: { turn: LiveTurn }) {
           ))}
         </ul>
         <RatingOdds a={turn.a} b={turn.b} />
+        {turn.receipt === null ? null : <ReceiptChip receipt={turn.receipt} />}
       </div>
 
       {/* The next steps: three quiet ones, then the one that matters. */}

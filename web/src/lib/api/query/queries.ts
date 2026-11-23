@@ -47,6 +47,50 @@ export function leaderboardQuery(api: ApiClient) {
   });
 }
 
+/**
+ * The leaderboard page's board: the crowd board when the backend has it on, else the classic one.
+ * Its own key, so it never mixes with `leaderboardQuery` (the classic board, used by the landing
+ * page, the models directory and the share page).
+ */
+export function boardQuery(api: ApiClient) {
+  return queryOptions({
+    queryKey: apiKeys.leaderboard.board(),
+    queryFn: ({ signal }) => api.getBoard(viaQuery(signal)),
+    staleTime: STALE_TIMES.leaderboard,
+  });
+}
+
+/** The categories the crowd board has a per-category board for; null while they are off. */
+export function crowdCategoriesQuery(api: ApiClient) {
+  return queryOptions({
+    queryKey: apiKeys.leaderboard.categories(),
+    queryFn: ({ signal }) => api.getCrowdCategories(viaQuery(signal)),
+    staleTime: STALE_TIMES.methodology,
+  });
+}
+
+/**
+ * One category's crowd board. If the backend answers "off" (404) for it, the overall board is
+ * returned instead, so a category tab never leaves the page empty.
+ */
+export function categoryBoardQuery(api: ApiClient, category: string) {
+  return queryOptions({
+    queryKey: apiKeys.leaderboard.category(category),
+    queryFn: async ({ signal }) =>
+      (await api.getCrowdBoard(category, viaQuery(signal))) ?? api.getBoard(viaQuery(signal)),
+    staleTime: STALE_TIMES.leaderboard,
+  });
+}
+
+/** The method behind the crowd board as plain text; null while it is off. */
+export function leaderboardMethodologyQuery(api: ApiClient) {
+  return queryOptions({
+    queryKey: apiKeys.leaderboard.methodology(),
+    queryFn: ({ signal }) => api.getLeaderboardMethodology(viaQuery(signal)),
+    staleTime: STALE_TIMES.methodology,
+  });
+}
+
 export function threadsQuery(api: ApiClient, limit: number = DEFAULT_THREAD_LIMIT) {
   return queryOptions({
     queryKey: apiKeys.threads.list(limit),

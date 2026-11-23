@@ -88,13 +88,10 @@ export function ModelDetailsBody({ entry, board, movement }: ModelDetailsBodyPro
             <span className="eyebrow text-muted">Elo</span>
             <span className="numeric text-stat leading-none text-fg">{formatElo(entry.elo)}</span>
           </div>
-          <p
-            className="pb-1 numeric text-ui text-fg-soft"
-            title="Estimated 95% range, from this model's record"
-          >
+          <p className="pb-1 numeric text-ui text-fg-soft" title={range.title}>
             <span aria-hidden="true">±{formatElo(range.margin)}</span>
             <span className="sr-only">
-              Estimated range {formatElo(range.low)} to {formatElo(range.high)}
+              {range.noun} range {formatElo(range.low)} to {formatElo(range.high)}
             </span>
           </p>
         </div>
@@ -105,6 +102,7 @@ export function ModelDetailsBody({ entry, board, movement }: ModelDetailsBodyPro
           domain={domain}
           tone={entry.rank === 1 ? 'lead' : 'default'}
           size="md"
+          measured={range.measured}
         />
         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-caption text-muted">
           <span>
@@ -115,7 +113,8 @@ export function ModelDetailsBody({ entry, board, movement }: ModelDetailsBodyPro
                 : `${formatEloDelta(gap)} on the leader`}
           </span>
           <span className="numeric">
-            Range {formatElo(range.low)} to {formatElo(range.high)}, estimated
+            Range {formatElo(range.low)} to {formatElo(range.high)},{' '}
+            {range.measured ? 'measured' : 'estimated'}
           </span>
         </div>
       </div>

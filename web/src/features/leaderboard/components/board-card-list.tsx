@@ -10,6 +10,7 @@ import type { Movement } from '../lib/movement';
 import type { LeaderboardEntry } from '../types';
 import { RangeBar } from './range-bar';
 import { RankMovement } from './rank-movement';
+import { RankRange } from './rank-range';
 import { RecordBar } from './record-bar';
 
 export interface BoardCardListProps {
@@ -46,6 +47,7 @@ function BoardCard({
 }) {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const range = ratingRange(entry);
+  const seeded = entry.crowd?.ratingSource === 'seeded';
 
   return (
     <li
@@ -65,6 +67,7 @@ function BoardCard({
             {formatRank(entry.rank)}
           </span>
           <RankMovement movement={movement} />
+          <RankRange entry={entry} className="max-w-10 leading-tight" />
         </span>
       ) : null}
       <div className="flex min-w-0 items-center gap-2.5">
@@ -88,27 +91,30 @@ function BoardCard({
       </div>
       <span className="grid justify-items-end gap-0.5 text-right">
         <span className="numeric text-h3 leading-none text-fg">{formatElo(entry.elo)}</span>
-        <span className="eyebrow text-muted">Elo</span>
+        <span className="eyebrow text-muted">{seeded ? 'Elo, seeded' : 'Elo'}</span>
       </span>
       <div className="col-span-2 grid gap-3">
-        <div className="grid gap-1.5">
-          <RangeBar
-            elo={range.elo}
-            low={range.low}
-            high={range.high}
-            domain={domain}
-            tone={leader ? 'lead' : 'default'}
-          />
-          <p className="numeric text-label text-muted">
-            <span aria-hidden="true">
-              Range {formatElo(range.low)} to {formatElo(range.high)}
-            </span>
-            <span className="sr-only">
-              Estimated rating range {formatElo(range.low)} to {formatElo(range.high)}
-            </span>
-          </p>
-        </div>
-        <div className="flex items-center gap-x-4 text-caption text-fg-soft">
+        {seeded ? null : (
+          <div className="grid gap-1.5">
+            <RangeBar
+              elo={range.elo}
+              low={range.low}
+              high={range.high}
+              domain={domain}
+              tone={leader ? 'lead' : 'default'}
+              measured={range.measured}
+            />
+            <p className="numeric text-label text-muted">
+              <span aria-hidden="true">
+                Range {formatElo(range.low)} to {formatElo(range.high)}
+              </span>
+              <span className="sr-only">
+                {range.noun} rating range {formatElo(range.low)} to {formatElo(range.high)}
+              </span>
+            </p>
+          </div>
+        )}
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-caption text-fg-soft">
           <span className="numeric">
             {formatPercent(entry.winRate)}
             <span className="font-sans font-normal text-muted"> win rate</span>
@@ -120,6 +126,15 @@ function BoardCard({
               {entry.battles === 1 ? 'battle' : 'battles'}
             </span>
           </span>
+          {entry.crowd === null ? null : (
+            <span className="numeric" data-votes={entry.crowd.votes}>
+              {formatCount(entry.crowd.votes)}
+              <span className="font-sans font-normal text-muted">
+                {' '}
+                {entry.crowd.votes === 1 ? 'vote' : 'votes'}
+              </span>
+            </span>
+          )}
           <ChevronRight
             aria-hidden="true"
             strokeWidth={1.75}

@@ -153,13 +153,10 @@ export function PodiumCard({ entry, place, eloStart, domain, movement, onOpen }:
                       />
                     </span>
                   </p>
-                  <p
-                    className="pb-1 numeric text-caption text-muted"
-                    title="Estimated 95% range, from this model's record"
-                  >
+                  <p className="pb-1 numeric text-caption text-muted" title={range.title}>
                     <span aria-hidden="true">±{formatElo(range.margin)}</span>
                     <span className="sr-only">
-                      Estimated range {formatElo(range.low)} to {formatElo(range.high)}
+                      {range.noun} range {formatElo(range.low)} to {formatElo(range.high)}
                     </span>
                   </p>
                 </div>
@@ -170,6 +167,7 @@ export function PodiumCard({ entry, place, eloStart, domain, movement, onOpen }:
                   domain={domain}
                   tone={leader ? 'lead' : 'default'}
                   size="md"
+                  measured={range.measured}
                 />
               </div>
 

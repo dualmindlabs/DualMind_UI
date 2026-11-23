@@ -152,6 +152,13 @@ const backend = http.createServer((request, response) => {
     response.end(leaderboard);
     return;
   }
+  // The crowd board (backend leaderboard v2) is off, like on the live API until its flag is on:
+  // the app must fall back to the classic board above.
+  if (request.method === 'GET' && request.url?.startsWith('/api/leaderboard')) {
+    response.writeHead(404, { 'content-type': 'application/json; charset=utf-8' });
+    response.end(JSON.stringify({ success: false, error: 'Not found', code: 'FEATURE_DISABLED' }));
+    return;
+  }
   if (request.method === 'GET' && request.url?.startsWith('/api/arena/model-stats')) {
     response.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
     response.end(leaderboardV1);

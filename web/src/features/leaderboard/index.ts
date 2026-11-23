@@ -6,6 +6,7 @@
 
 // Pages
 export { LeaderboardPage } from './components/leaderboard-page';
+export { MethodologyPage } from './components/methodology-page';
 
 // Shared components
 export { BoardControls, type BoardControlsProps } from './components/board-controls';

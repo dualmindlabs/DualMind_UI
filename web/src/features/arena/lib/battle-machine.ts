@@ -1,4 +1,4 @@
-import type { Answer, AnswerModel, Usage, VoteChoice } from '@/lib/api';
+import type { Answer, AnswerModel, Usage, VoteChoice, VoteReceipt } from '@/lib/api';
 
 import type { ArenaMode } from './modes';
 
@@ -50,6 +50,8 @@ export interface LiveTurn {
   vote: VoteChoice | null;
   /** The vote is stored in the offline queue and will be sent on reconnect (F-18). */
   votePending: boolean;
+  /** The vote's receipt (hash-chain handle) while the API's receipts flag is on, else null. */
+  receipt: VoteReceipt | null;
   error: string | null;
   /** What kind of failure `error` is, when the screen offers more than Try again. */
   errorKind: 'forbidden' | null;
@@ -85,7 +87,7 @@ export type BattleAction =
   | { type: 'stream-done'; id: string; usage: Usage | null; at: number; model?: AnswerModel | null }
   | { type: 'shown'; id: string; at: number }
   | { type: 'vote'; id: string; choice: VoteChoice }
-  | { type: 'voted'; id: string; queued: boolean }
+  | { type: 'voted'; id: string; queued: boolean; receipt?: VoteReceipt | null }
   | { type: 'vote-failed'; id: string; message: string }
   /** The API refused the vote for good (403, 404): voting closes, the answers stay. */
   | { type: 'vote-closed'; id: string }
@@ -160,6 +162,7 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
             unrated: null,
             vote: null,
             votePending: false,
+            receipt: null,
             error: null,
             errorKind: null,
             sentAt: action.at,
@@ -234,7 +237,14 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
       );
     case 'voted':
       return update(state, action.id, turn =>
-        turn.phase !== 'voting' ? null : { ...turn, phase: 'revealed', votePending: action.queued },
+        turn.phase !== 'voting'
+          ? null
+          : {
+              ...turn,
+              phase: 'revealed',
+              votePending: action.queued,
+              receipt: action.receipt ?? null,
+            },
       );
     case 'vote-failed':
       return update(state, action.id, turn =>
