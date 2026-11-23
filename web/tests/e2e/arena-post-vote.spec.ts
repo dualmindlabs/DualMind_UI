@@ -174,6 +174,9 @@ test.describe('Cross-examine', () => {
 for (const theme of ['dark', 'light'] as const) {
   test(`axe: key row, strip and rebuttals have no violations, ${theme}`, async ({ page }) => {
     await storeTheme(page, theme);
+    // Axe reads colours mid-fade otherwise (the rebuttals and avatars ease in): the fault it
+    // reported was a half-faded avatar, not a token.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
     await mockArena(page, { truth: true, crossExamine: true });
     await vote(page);
     await page.getByRole('button', { name: 'Ask for the critique' }).click();
