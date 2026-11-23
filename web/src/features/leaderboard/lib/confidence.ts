@@ -41,6 +41,11 @@ export function eloMargin(entry: Pick<LeaderboardEntry, 'wins' | 'losses' | 'tie
   return Math.min(MAX_ELO_MARGIN, Math.max(4, margin));
 }
 
+/** True for a crowd-board row still on its seeded starting value: no fitted rating, no interval. */
+export function isSeeded(entry: Pick<LeaderboardEntry, 'crowd'>): boolean {
+  return entry.crowd?.ratingSource === 'seeded';
+}
+
 export const ESTIMATED_RANGE_TITLE = "Estimated 95% range, from this model's record";
 export const MEASURED_RANGE_TITLE = 'Bootstrap 95% interval, fitted from the blind votes';
 

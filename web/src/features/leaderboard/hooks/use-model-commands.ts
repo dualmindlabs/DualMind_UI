@@ -32,7 +32,11 @@ export function useModelCommands(
                 'details',
               ],
               icon: ChartNoAxesColumn,
-              hint: entry.rank === null ? 'Not yet rated' : `#${formatRank(entry.rank)}`,
+              hint: entry.provisional
+                ? 'Not yet rated'
+                : entry.rank === null
+                  ? 'Rated, no rank yet'
+                  : `#${formatRank(entry.rank)}`,
               perform: () => openModel(entry.id),
             })),
           },

@@ -1,3 +1,5 @@
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+
 import { cn } from '@/lib/utils/cn';
 
 import type { RangeDomain } from '../lib/confidence';
@@ -45,6 +47,9 @@ export function RangeBar({
   const left = position(low, domain);
   const right = position(high, domain);
   const dot = position(elo, domain);
+  // A range wider than the shared scale runs off the track: say so with an arrow at that end.
+  const clipsLow = low < domain.min;
+  const clipsHigh = high > domain.max;
 
   return (
     <span
@@ -87,6 +92,20 @@ export function RangeBar({
           )}
         />
       )}
+      {clipsLow ? (
+        <ChevronLeft
+          data-clipped="low"
+          strokeWidth={2.5}
+          className="absolute top-1/2 -left-1.5 size-3 -translate-y-1/2 text-fg-soft"
+        />
+      ) : null}
+      {clipsHigh ? (
+        <ChevronRight
+          data-clipped="high"
+          strokeWidth={2.5}
+          className="absolute top-1/2 -right-1.5 size-3 -translate-y-1/2 text-fg-soft"
+        />
+      ) : null}
       <span
         style={{ left: `${dot.toFixed(2)}%` }}
         className={cn(

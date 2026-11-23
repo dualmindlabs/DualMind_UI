@@ -120,6 +120,7 @@ describe('toLeaderboardEntries (normalised model-stats to board entries)', () =>
       summary: {
         models: 0,
         rated: 0,
+        ranked: 0,
         battles: 0,
         providers: 0,
         provisional: 0,
@@ -129,6 +130,8 @@ describe('toLeaderboardEntries (normalised model-stats to board entries)', () =>
       },
       source: 'v2',
       crowd: null,
+      category: null,
+      fallback: null,
     });
   });
 });

@@ -17,17 +17,23 @@ export function shortHash(hash: string): string {
  */
 export function ReceiptChip({ receipt, className }: { receipt: VoteReceipt; className?: string }) {
   const [copied, setCopied] = useState(false);
+  const [failed, setFailed] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => () => clearTimeout(timer.current), []);
 
   async function copy() {
     try {
       await navigator.clipboard.writeText(receipt.entryHash);
+      setFailed(false);
       setCopied(true);
       clearTimeout(timer.current);
       timer.current = setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Clipboard blocked: the hash is on screen and in the label, nothing else to do.
+      // Clipboard blocked (or no secure context): say so, the short hash is on screen.
+      setCopied(false);
+      setFailed(true);
+      clearTimeout(timer.current);
+      timer.current = setTimeout(() => setFailed(false), 4000);
     }
   }
 
@@ -39,7 +45,7 @@ export function ReceiptChip({ receipt, className }: { receipt: VoteReceipt; clas
       <button
         type="button"
         onClick={() => void copy()}
-        aria-label={`Vote receipt, entry ${receipt.seq}, hash ${receipt.entryHash}. Copy the hash.`}
+        aria-label={`Vote receipt, entry ${receipt.seq}, hash ${receipt.entryHash.slice(0, 8)}. Copy the full hash.`}
         className="inline-flex min-h-9 cursor-pointer items-center gap-2 rounded-full border border-line-strong bg-surface px-3 py-1 font-mono text-caption text-fg-soft transition-colors duration-(--dur-fast) outline-none hover:bg-hover focus-visible:outline-(length:--focus-width) focus-visible:outline-offset-2 focus-visible:outline-focus focus-visible:outline-solid"
       >
         <ReceiptText aria-hidden="true" strokeWidth={1.75} className="size-3.5 text-human" />
@@ -59,8 +65,16 @@ export function ReceiptChip({ receipt, className }: { receipt: VoteReceipt; clas
       >
         How to verify
       </a>
-      <span role="status" className="sr-only">
-        {copied ? 'Receipt hash copied' : ''}
+      <span
+        role="status"
+        data-testid="receipt-copy-status"
+        className={failed ? 'text-caption text-warn' : 'sr-only'}
+      >
+        {copied
+          ? 'Receipt hash copied'
+          : failed
+            ? 'Could not copy. Copy it by hand from the page.'
+            : ''}
       </span>
     </div>
   );
