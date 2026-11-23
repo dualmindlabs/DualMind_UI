@@ -28,8 +28,10 @@ const ITEMS = [
 const CROWD_ITEMS = {
   'Elo rating':
     'Ratings are fitted from all blind votes together with a Bradley-Terry model, not updated vote by vote. A gap of 100 points means the higher model wins about 64% of decisive votes. Models with too few votes keep a seeded starting value and are marked not yet rated.',
+  'Not yet rated':
+    'Too few votes for a fitted rating. These models show a seeded starting value, are listed apart without a rank, and stay off the podium until enough votes are in.',
   'Rating range':
-    'The line on each bar is a 95% interval from the API: the votes are resampled 400 times and the model refitted each time. Next to the rank, a range such as 2–4 means the intervals still allow any of those ranks. A model gets a rank only with enough votes and a narrow enough interval.',
+    'The line on each bar is a 95% interval from the API: the votes are resampled 400 times and the model refitted each time. Next to the rank, a range such as 2–4 means the intervals still allow any of those ranks. A model gets a rank only with enough votes and a narrow enough interval; one without a rank is listed by rating.',
 } as const;
 
 /**

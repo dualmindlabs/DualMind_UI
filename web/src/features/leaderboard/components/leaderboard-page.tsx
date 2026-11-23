@@ -15,7 +15,6 @@ import { useModelDetails } from '../hooks/use-model-details';
 import { useRankMovement } from '../hooks/use-rank-movement';
 import { rangeDomain } from '../lib/confidence';
 import { PROVISIONAL_BATTLES, RATINGS_HELP_HREF } from '../lib/constants';
-import { isRated } from '../lib/entries';
 import { hasActiveFilters } from '../lib/filter';
 import { BoardCardList } from './board-card-list';
 import { BoardControls } from './board-controls';
@@ -91,8 +90,10 @@ export function LeaderboardPage() {
     if (view.visible.length === 0) {
       return <BoardNoMatch query={view.filters.query} onClear={view.clearFilters} />;
     }
-    const rated = view.visible.filter(isRated);
-    const unrated = view.visible.filter(entry => !isRated(entry));
+    // Rated rows, with or without a rank claim, share the main table; only the models with too
+    // few votes for a rating go to "not yet rated".
+    const rated = view.visible.filter(entry => !entry.provisional);
+    const unrated = view.visible.filter(entry => entry.provisional);
     return (
       <div className="grid gap-8">
         {rated.length === 0 ? (
@@ -127,6 +128,7 @@ export function LeaderboardPage() {
             onSort={view.toggleSort}
             onOpen={details.openModel}
             domain={domain}
+            crowd={board.source === 'crowd'}
           />
         ) : null}
       </div>
@@ -217,7 +219,9 @@ export function LeaderboardPage() {
               />
               <p className="flex items-center gap-2 text-caption text-muted">
                 <span aria-hidden="true" className="size-1.5 rounded-full bg-warn" />
-                Fewer than {PROVISIONAL_BATTLES} battles: listed as not yet rated, without a rank
+                {board?.source === 'crowd'
+                  ? 'Too few votes for a rating: listed as not yet rated, without a rank'
+                  : `Fewer than ${PROVISIONAL_BATTLES} battles: listed as not yet rated, without a rank`}
               </p>
             </div>
 

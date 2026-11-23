@@ -20,6 +20,8 @@ export interface UnratedGroupProps {
   onOpen: (id: string, trigger: HTMLElement | null) => void;
   /** The scale the range bars share. */
   domain?: RangeDomain | undefined;
+  /** Crowd board: "not yet rated" means too few votes, not fewer than N battles. */
+  crowd?: boolean | undefined;
 }
 
 /**
@@ -35,6 +37,7 @@ export function UnratedGroup({
   onSort,
   onOpen,
   domain,
+  crowd = false,
 }: UnratedGroupProps) {
   const [open, setOpen] = useState(false);
   const expanded = open || forceOpen;
@@ -48,8 +51,18 @@ export function UnratedGroup({
             Not yet rated
           </h3>
           <p className="max-w-reading text-ui-sm text-fg-soft">
-            {pluralize(entries.length, 'model')} with fewer than {formatCount(PROVISIONAL_BATTLES)}{' '}
-            battles. They have no rank yet: a few votes can still move their Elo a long way.
+            {crowd ? (
+              <>
+                {pluralize(entries.length, 'model')} with too few votes for a fitted rating. They
+                show a seeded starting value and have no rank yet.
+              </>
+            ) : (
+              <>
+                {pluralize(entries.length, 'model')} with fewer than{' '}
+                {formatCount(PROVISIONAL_BATTLES)} battles. They have no rank yet: a few votes can
+                still move their Elo a long way.
+              </>
+            )}
           </p>
         </div>
         {forceOpen ? null : (

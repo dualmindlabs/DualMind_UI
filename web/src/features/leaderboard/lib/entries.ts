@@ -15,7 +15,7 @@ export function isProvisional(battles: number): boolean {
   return battles < PROVISIONAL_BATTLES;
 }
 
-/** True for a model with a rank (enough battles to be rated). */
+/** True for a model with a rank claim (rated, and on the crowd board with enough votes). */
 export function isRated(entry: LeaderboardEntry): entry is RatedEntry {
   return entry.rank !== null;
 }
@@ -32,24 +32,27 @@ export function eloShare(elo: number, lowest: number, highest: number): number {
 }
 
 /**
- * Board order: rated models by rank, then the higher rating, then the name; models not yet rated
- * come after them, by rating, then battles, then name.
+ * Board order: ranked models by rank, then the higher rating, then the name. Then rated models
+ * without a rank claim (crowd board: too few votes or a wide interval), by rating, then name. Last
+ * the models not yet rated, by rating, then battles, then name. A seeded rating is on another
+ * scale, so it never competes with a fitted one.
  */
 export function byRank(a: LeaderboardEntry, b: LeaderboardEntry): number {
-  if (a.rank !== null && b.rank !== null) {
-    return a.rank - b.rank || b.elo - a.elo || a.name.localeCompare(b.name, 'en');
-  }
-  if (a.rank !== null) return -1;
-  if (b.rank !== null) return 1;
+  const tier = (entry: LeaderboardEntry) => (entry.rank !== null ? 0 : entry.provisional ? 2 : 1);
+  const byTier = tier(a) - tier(b);
+  if (byTier !== 0) return byTier;
+  if (a.rank !== null && b.rank !== null && a.rank !== b.rank) return a.rank - b.rank;
   return b.elo - a.elo || b.battles - a.battles || a.name.localeCompare(b.name, 'en');
 }
 
 /**
  * Turns the normalised `model-stats` rows (camelCase only, see lib/api/schemas/leaderboard.ts)
  * into board entries: human names, makers, the provisional flag, the Elo bar share and the rank,
- * rated models first. Elo, wins and the like are passed through as the API reports them. Ranks
- * are recomputed among the rated models only (competition ranking: equal ratings share a rank,
- * the next rank skips), because the API also ranks models with a handful of battles.
+ * rated models first. Elo, wins and the like are passed through as the API reports them. On the
+ * classic board ranks are recomputed among the rated models only (competition ranking: equal
+ * ratings share a rank, the next rank skips), because the API also ranks models with a handful of
+ * battles. On the crowd board the API's rank is used as it is: null means no rank claim, and the
+ * page shows the model by rating without inventing a number.
  */
 export function toLeaderboardEntries(stats: readonly ModelStat[]): LeaderboardEntry[] {
   if (stats.length === 0) return [];
@@ -77,7 +80,9 @@ export function toLeaderboardEntries(stats: readonly ModelStat[]): LeaderboardEn
         servedBy: servedBy(made, platform),
         rank: provisional
           ? null
-          : (stat.crowd?.rank ?? 1 + ratedElos.filter(elo => elo > stat.eloScore).length),
+          : stat.crowd
+            ? stat.crowd.rank
+            : 1 + ratedElos.filter(elo => elo > stat.eloScore).length,
         elo: stat.eloScore,
         wins: stat.totalWins,
         losses: stat.totalLosses,
@@ -95,10 +100,15 @@ export function toLeaderboardEntries(stats: readonly ModelStat[]): LeaderboardEn
 /** Board-wide numbers for the stats strip. */
 export function summarize(entries: readonly LeaderboardEntry[]): LeaderboardSummary {
   const appearances = entries.reduce((sum, entry) => sum + entry.battles, 0);
-  const ratings = entries.map(entry => entry.elo);
+  // Seeded starting values are on another scale: the board's range comes from rated rows only.
+  const rows = entries.some(entry => !entry.provisional)
+    ? entries.filter(entry => !entry.provisional)
+    : entries;
+  const ratings = rows.map(entry => entry.elo);
   return {
     models: entries.length,
-    rated: entries.filter(isRated).length,
+    rated: entries.filter(entry => !entry.provisional).length,
+    ranked: entries.filter(isRated).length,
     battles: Math.round(appearances / 2),
     providers: new Set(entries.map(entry => entry.provider)).size,
     provisional: entries.filter(entry => entry.provisional).length,
@@ -134,7 +144,7 @@ export function toLeaderboard(
   return {
     entries,
     rated: entries.filter(isRated),
-    unrated: entries.filter(entry => !isRated(entry)),
+    unrated: entries.filter(entry => entry.provisional),
     summary: summarize(entries),
     providers: providerOptions(entries),
     source: meta.source,

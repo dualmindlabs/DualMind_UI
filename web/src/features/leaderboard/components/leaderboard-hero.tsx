@@ -4,7 +4,7 @@ import { PageContainer } from '@/components/layout/page-container';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils/cn';
 
-import { ARENA_HREF, PROVISIONAL_BATTLES, RATINGS_HELP_HREF } from '../lib/constants';
+import { ARENA_HREF, RATINGS_HELP_HREF } from '../lib/constants';
 import type { LeaderboardSummary } from '../types';
 import { StatsStrip } from './stats-strip';
 
@@ -32,8 +32,8 @@ export function LeaderboardHero({ summary, updatedAt, refreshing, stale }: Leade
           </h1>
           <p className="max-w-[52ch] text-lead text-fg-soft">
             Two anonymous models answer the same prompt. People vote for the better answer before
-            they see any names, and each vote moves an Elo rating. Models with fewer than{' '}
-            {PROVISIONAL_BATTLES} battles are listed as not yet rated, without a rank.
+            they see any names, and each vote moves an Elo rating. Models without enough
+            battles or votes yet are listed as not yet rated, without a rank.
           </p>
           <div className="flex flex-wrap items-center gap-3">
             <a href={ARENA_HREF} className={cn(buttonVariants({ variant: 'primary' }), 'press')}>

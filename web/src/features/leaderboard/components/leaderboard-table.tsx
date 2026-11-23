@@ -117,7 +117,7 @@ function Row({
       </td>
       <td className="py-3.5 pr-3 pl-3 align-middle">
         <span className="flex items-center gap-3">
-          <span className="grid w-14 justify-items-end text-right">
+          <span className="grid min-w-14 justify-items-end text-right whitespace-nowrap">
             <span className="numeric text-ui text-fg">{formatElo(entry.elo)}</span>
             {seeded ? (
               <span
@@ -128,7 +128,9 @@ function Row({
               </span>
             ) : (
               <span className="numeric text-label text-muted" title={range.title}>
-                <span aria-hidden="true">±{formatElo(range.margin)}</span>
+                <span aria-hidden="true">
+                  {formatElo(range.low)}–{formatElo(range.high)}
+                </span>
                 <span className="sr-only">
                   , {range.noun.toLowerCase()} range {formatElo(range.low)} to{' '}
                   {formatElo(range.high)}
