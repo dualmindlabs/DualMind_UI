@@ -21,7 +21,12 @@ export { UnratedBadge } from './components/unrated-badge';
 
 // Hooks
 export { type BoardView, useBoardView } from './hooks/use-board-view';
-export { type LeaderboardQueryResult, useLeaderboard } from './hooks/use-leaderboard';
+export {
+  type LeaderboardQueryResult,
+  useBoard,
+  useCrowdCategories,
+  useLeaderboard,
+} from './hooks/use-leaderboard';
 export { TABLE_QUERY, useMediaQuery } from './hooks/use-media-query';
 export { useModelCommands } from './hooks/use-model-commands';
 export { type ModelDetailsState, useModelDetails } from './hooks/use-model-details';

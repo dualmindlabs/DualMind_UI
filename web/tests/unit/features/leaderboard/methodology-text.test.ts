@@ -1,11 +1,12 @@
 import { readFileSync } from 'node:fs';
+import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
 import { parseMethodology } from '@/features/leaderboard/lib/methodology-text';
 
 const text = readFileSync(
-  new URL('../../../fixtures/api/crowd-methodology.txt', import.meta.url),
+  path.resolve(process.cwd(), 'tests/fixtures/api/crowd-methodology.txt'),
   'utf8',
 );
 

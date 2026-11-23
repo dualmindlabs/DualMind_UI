@@ -1,12 +1,7 @@
 import { isApiError } from '../errors';
 import type { Transport } from '../http/transport';
 import type { CallOptions } from '../http/types';
-import {
-  crowdBoardSchema,
-  crowdCategoriesSchema,
-  type CrowdCategory,
-  methodologyTextSchema,
-} from '../schemas/crowd';
+import { crowdBoardSchema, crowdCategoriesSchema, type CrowdCategory } from '../schemas/crowd';
 import {
   type LeaderboardData,
   leaderboardV1AsDataSchema,
@@ -126,17 +121,20 @@ export function createLeaderboardEndpoints(transport: Transport): LeaderboardEnd
         ),
       ),
     getLeaderboardMethodology: options =>
-      detect('/api/leaderboard/methodology', () =>
-        transport.json(
+      detect('/api/leaderboard/methodology', async () => {
+        // Plain text, not JSON: read as a blob and decode.
+        const blob = await transport.blob(
           {
             method: 'GET',
             path: '/api/leaderboard/methodology',
             auth: 'none',
-            schema: methodologyTextSchema,
+            accept: 'text/plain',
           },
           options,
-        ),
-      ),
+        );
+        const text = await blob.text();
+        return text.trim() === '' ? null : text;
+      }),
     getBoard: async options => {
       const crowd = await getCrowdBoard(undefined, options);
       return crowd ?? getClassic(options);

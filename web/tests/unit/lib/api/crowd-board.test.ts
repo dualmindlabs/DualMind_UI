@@ -171,13 +171,13 @@ describe('vote receipt', () => {
   });
 
   it('is null when the flag is off, and a broken receipt never fails the vote', () => {
-    expect(voteResultSchema.parse({ success: true, message: 'ok' }).receipt).toBeNull();
-    expect(voteResultSchema.parse(null).receipt).toBeNull();
+    expect(voteResultSchema.parse({ success: true, message: 'ok' })).not.toHaveProperty('receipt');
+    expect(voteResultSchema.parse(null)).not.toHaveProperty('receipt');
     const broken = voteResultSchema.parse({
       success: true,
       receipt: { receiptId: 'x', seq: 'no' },
     });
     expect(broken.success).toBe(true);
-    expect(broken.receipt).toBeNull();
+    expect(broken).not.toHaveProperty('receipt');
   });
 });

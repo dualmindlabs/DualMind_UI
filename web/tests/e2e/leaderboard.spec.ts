@@ -59,7 +59,12 @@ async function mockStats(page: Page, reply: () => Reply = () => 'ok') {
 function collectErrors(page: Page) {
   const errors: string[] = [];
   page.on('console', message => {
-    if (message.type() === 'error') errors.push(message.text());
+    if (message.type() !== 'error') return;
+    // The page probes the crowd board (GET /api/leaderboard, off until the backend flag is on):
+    // the browser logs that expected 404 as a console error. Nothing else is let through.
+    const url = message.location().url;
+    if (/\/api\/leaderboard(\/|$)/.test(url) && /\b404\b/.test(message.text())) return;
+    errors.push(message.text());
   });
   page.on('pageerror', error => errors.push(error.message));
   return errors;

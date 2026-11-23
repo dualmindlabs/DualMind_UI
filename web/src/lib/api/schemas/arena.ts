@@ -163,7 +163,7 @@ export const voteResultSchema = z
       receipt: voteReceiptSchema.nullish().catch(null),
     }),
   )
-  .transform(({ receipt, ...result }) => ({ ...result, receipt: receipt ?? null }));
+  .transform(({ receipt, ...result }) => (receipt ? { ...result, receipt } : result));
 export type VoteResult = z.output<typeof voteResultSchema>;
 
 // --- Streaming (`POST /api/arena/chat/stream`) ------------------------------------------------

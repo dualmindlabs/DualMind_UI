@@ -8,7 +8,7 @@ import { SectionTitle } from '@/components/ui/section-title';
 import { useApiClient } from '@/hooks/use-api-client';
 
 import { useBoardView } from '../hooks/use-board-view';
-import { useCrowdCategories, useLeaderboard } from '../hooks/use-leaderboard';
+import { useBoard, useCrowdCategories } from '../hooks/use-leaderboard';
 import { TABLE_QUERY, useMediaQuery } from '../hooks/use-media-query';
 import { useModelCommands } from '../hooks/use-model-commands';
 import { useModelDetails } from '../hooks/use-model-details';
@@ -45,7 +45,7 @@ function eloStartFor(bottomElo: number): number {
 export function LeaderboardPage() {
   const [category, setCategory] = useState(ALL_CATEGORIES);
   const overall = category === ALL_CATEGORIES;
-  const query = useLeaderboard(overall ? undefined : category);
+  const query = useBoard(overall ? undefined : category);
   const categories = useCrowdCategories().data;
   const { isMock } = useApiClient();
   const board = query.data;

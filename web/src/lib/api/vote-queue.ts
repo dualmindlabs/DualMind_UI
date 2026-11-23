@@ -310,7 +310,8 @@ export function createVoteQueue(options: VoteQueueOptions): VoteQueue {
     }
     try {
       const result = await options.send(vote);
-      return { status: 'sent', receipt: receiptOf(result) };
+      const receipt = receiptOf(result);
+      return receipt === null ? { status: 'sent' } : { status: 'sent', receipt };
     } catch (error) {
       const apiError = toApiError(error);
       // 409: the API already counted a vote for this battle (a retry racing the first send).

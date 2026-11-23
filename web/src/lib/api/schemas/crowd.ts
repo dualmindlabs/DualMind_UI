@@ -108,6 +108,3 @@ export const crowdCategoriesSchema = z
   .transform((body): CrowdCategory[] =>
     body.items.map(item => ({ ...item, description: item.description ?? '' })),
   );
-
-/** `GET /api/leaderboard/methodology`: plain text. */
-export const methodologyTextSchema = z.string().min(1);
