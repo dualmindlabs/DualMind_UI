@@ -1,6 +1,7 @@
 import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
+import { BoardCardList } from '@/features/leaderboard/components/board-card-list';
 import { CrowdNote } from '@/features/leaderboard/components/crowd-note';
 import { Methodology } from '@/features/leaderboard/components/methodology';
 import { ModelDetailsBody } from '@/features/leaderboard/components/model-details-body';
@@ -68,6 +69,16 @@ describe('range bar whiskers', () => {
       <RangeBar elo={1050} low={1020} high={1080} domain={domain} measured />,
     );
     expect(container.querySelector('[data-clipped]')).toBeNull();
+  });
+});
+
+describe('phone cards', () => {
+  it('shows "by rating" for a rated model without a rank, and no number', () => {
+    const none = crowdBoard.entries.find(row => !row.provisional && row.rank === null);
+    if (!none) throw new Error('fixture has no unranked row');
+    render(<BoardCardList entries={[none]} onOpen={() => {}} domain={{ min: 900, max: 1200 }} />);
+    expect(screen.getByText('by rating')).toBeInTheDocument();
+    expect(screen.queryByText('Rank')).toBeNull();
   });
 });
 

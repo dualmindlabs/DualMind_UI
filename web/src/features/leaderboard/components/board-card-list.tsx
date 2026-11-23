@@ -58,14 +58,19 @@ function BoardCard({
         leader && 'bg-mind-a-wash',
       )}
     >
-      {showRank && entry.rank !== null ? (
+      {showRank ? (
         <span className="row-span-2 grid content-start justify-items-start gap-1.5 pt-0.5">
-          <span
-            className={cn('numeric text-h3 leading-none', leader ? 'text-mind-a' : 'text-fg-soft')}
-          >
-            <span className="sr-only">Rank </span>
-            {formatRank(entry.rank)}
-          </span>
+          {entry.rank === null ? null : (
+            <span
+              className={cn(
+                'numeric text-h3 leading-none',
+                leader ? 'text-mind-a' : 'text-fg-soft',
+              )}
+            >
+              <span className="sr-only">Rank </span>
+              {formatRank(entry.rank)}
+            </span>
+          )}
           <RankMovement movement={movement} />
           <RankRange entry={entry} className="max-w-10 leading-tight" />
         </span>

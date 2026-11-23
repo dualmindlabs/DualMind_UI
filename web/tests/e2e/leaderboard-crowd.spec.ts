@@ -77,6 +77,15 @@ test('a rated model without a rank claim shows no rank number, and "by rating"',
   expect(firstUnranked).toBe(lastNumbered + 1);
 });
 
+test('on a phone, an unranked row says "by rating" in its card', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await mockApi(page, { '/api/leaderboard': ok(CROWD) });
+  await page.goto('/leaderboard/');
+  const claim = page.locator('[data-model-id] [data-rank-claim="none"]').first();
+  await expect(claim).toBeVisible();
+  await expect(claim).toContainText('by rating');
+});
+
 test('the backend warnings are rendered', async ({ page }) => {
   await mockApi(page, {
     '/api/leaderboard': ok(
