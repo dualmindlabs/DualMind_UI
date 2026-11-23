@@ -39,9 +39,13 @@ export const MODEL_CALL_TIMEOUT_MS = 65_000;
 /** Non-streaming calls that wait for model output. */
 export const MODEL_CALL_PATHS = Object.freeze(['/api/arena/dualchat', '/api/arena/chat', '/api/compare']);
 
+/** The cross-examine critique runs two model calls: /api/arena/comparisons/<id>/critique. */
+const CRITIQUE_PATH = /^\/api\/arena\/comparisons\/[A-Za-z0-9-]+\/critique$/;
+
 /** @param {string} pathname */
 export function upstreamTimeoutFor(pathname) {
-  return MODEL_CALL_PATHS.includes(pathname) ? MODEL_CALL_TIMEOUT_MS : UPSTREAM_TIMEOUT_MS;
+  if (MODEL_CALL_PATHS.includes(pathname) || CRITIQUE_PATH.test(pathname)) return MODEL_CALL_TIMEOUT_MS;
+  return UPSTREAM_TIMEOUT_MS;
 }
 export const FORWARDED_REQUEST_HEADERS = Object.freeze([
   'authorization',
