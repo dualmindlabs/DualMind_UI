@@ -21,7 +21,9 @@ async function open(page: Page, options: CompareMockOptions = {}) {
 
 async function pickModel(page: Page, label: string, index: number) {
   await page.getByRole('combobox', { name: new RegExp(label) }).click();
-  await page.getByRole('option').nth(index).click();
+  await page.locator('[role="option"]:visible').nth(index).click();
+  // The list closes (and its options leave the page) before the next one opens.
+  await expect(page.locator('[role="listbox"]:visible')).toHaveCount(0);
 }
 
 async function run(page: Page) {
