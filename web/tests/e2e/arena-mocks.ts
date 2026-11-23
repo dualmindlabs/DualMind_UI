@@ -134,6 +134,16 @@ function iso(daysAgo: number, hour = 11): string {
   return date.toISOString();
 }
 
+export interface TruthOptions {
+  sample?: boolean;
+  bothWrong?: boolean;
+}
+
+export interface CrossExamineOptions {
+  critiqueDelayMs?: number;
+  fail?: { call: 'critique' | 'round2'; status: number; code: string };
+}
+
 export interface ArenaMockState {
   threads: Array<Record<string, unknown>>;
   requests: string[];
@@ -192,6 +202,23 @@ function messagesFor(threadId: string) {
   return [row(0, 'A stored prompt', null)];
 }
 
+const TRUTH_QUESTION = 'What is 17 x 23? Give just the number.';
+const TRUTH_ANSWER_A = '17 x 23 = 17 x 20 + 17 x 3 = 340 + 51 = **391**.';
+const TRUTH_ANSWER_B = 'The product is **401**.';
+
+const problem = (route: Route, status: number, code: string) =>
+  route.fulfill({
+    status,
+    contentType: 'application/problem+json',
+    body: JSON.stringify({
+      type: `https://arena.dualmindlab.tech/problems/${code.toLowerCase()}`,
+      title: code,
+      status,
+      code,
+      message: code,
+    }),
+  });
+
 const json = (route: Route, status: number, body: unknown) =>
   route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(body) });
 
@@ -214,6 +241,18 @@ export async function mockArena(
     receipt?: boolean;
     /** Other Markdown for the battle's answers (long answers, wide tables, long code lines). */
     answers?: { a?: string; b?: string };
+    /**
+     * Truth vs Taste on (backend PR 70): every battle runs a question with a known answer, the
+     * names come masked ("Model A", "Model B"), and the vote response carries the answer key.
+     * `sample` marks the item as a placeholder; `bothWrong` makes both sides miss.
+     */
+    truth?: boolean | TruthOptions;
+    /**
+     * Cross-examine on (backend PR 71): the stats route answers, the critique route returns a
+     * rebuttal per side, the round 2 route stores a second vote. `fail` makes that call fail with
+     * the given status and code.
+     */
+    crossExamine?: boolean | CrossExamineOptions;
   } = {},
 ): Promise<ArenaMockState> {
   const state: ArenaMockState = {
@@ -224,6 +263,17 @@ export async function mockArena(
     idempotencyKeys: [],
   };
   let battles = 0;
+  let firstVote: string | null = null;
+  const truth: TruthOptions | null = options.truth
+    ? options.truth === true
+      ? {}
+      : options.truth
+    : null;
+  const cross: CrossExamineOptions | null = options.crossExamine
+    ? options.crossExamine === true
+      ? {}
+      : options.crossExamine
+    : null;
   const session = sessionJson();
   await page.addInitScript(([key, value]) => window.localStorage.setItem(key, value), [
     SESSION_KEY,
@@ -314,15 +364,23 @@ export async function mockArena(
         MODELS.find(item => item.modelId === id) ?? PAIR[fallback];
       const left = pick(body.model1, 0);
       const right = pick(body.model2, 1);
-      const answer = (text: string, model: (typeof MODELS)[number], ms: number) => ({
+      const masked = (label: string) => ({
+        name: label.toLowerCase().replace(' ', '-'),
+        displayName: label,
+        provider: 'hidden',
+      });
+      const answer = (text: string, model: (typeof MODELS)[number], ms: number, label: string) => ({
         object: 'ai.response',
         success: true,
         message: text,
-        model: {
-          name: model.modelName,
-          displayName: model.displayName,
-          provider: model.providerName,
-        },
+        ...(truth ? { prompt: TRUTH_QUESTION } : {}),
+        model: truth
+          ? masked(label)
+          : {
+              name: model.modelName,
+              displayName: model.displayName,
+              provider: model.providerName,
+            },
         responseTimeMs: ms,
         usage: {
           promptTokens: 12,
@@ -335,9 +393,9 @@ export async function mockArena(
         return json(route, 200, {
           success: true,
           fallbackUsed: true,
-          agent1: answer(ANSWER_A, left, 1840),
+          agent1: answer(ANSWER_A, left, 1840, 'Model A'),
           agent2: {
-            ...answer(ANSWER_B, right, 2310),
+            ...answer(ANSWER_B, right, 2310, 'Model B'),
             servedBy: 'groq/compound-mini',
             fallbackUsed: true,
           },
@@ -346,17 +404,47 @@ export async function mockArena(
       return json(route, 200, {
         success: true,
         comparisonId: `c-live-${battles}`,
-        agent1: answer(options.answers?.a ?? ANSWER_A, left, 1840),
-        agent2: answer(options.answers?.b ?? ANSWER_B, right, 2310),
+        agent1: answer(
+          truth ? TRUTH_ANSWER_A : (options.answers?.a ?? ANSWER_A),
+          left,
+          1840,
+          'Model A',
+        ),
+        agent2: answer(
+          truth ? TRUTH_ANSWER_B : (options.answers?.b ?? ANSWER_B),
+          right,
+          2310,
+          'Model B',
+        ),
       });
     }
     if (path === '/api/arena/model-vote') {
       const body = request.postDataJSON() as Record<string, unknown>;
       if (state.offline) return route.abort('internetdisconnected');
       state.bodies.push({ path, body });
+      firstVote = typeof body.voteChoice === 'string' ? body.voteChoice : null;
       return json(route, 200, {
         success: true,
         message: 'Vote recorded',
+        // Plain classes serialise with their C# names, so the nested key is PascalCase.
+        ...(truth
+          ? {
+              answerKey: {
+                Question: TRUTH_QUESTION,
+                Answer: '391',
+                Grader: 'numeric',
+                Sample: truth.sample === true,
+                Sides: [
+                  {
+                    Slot: 1,
+                    Correct: truth.bothWrong !== true,
+                    Extracted: truth.bothWrong ? '381' : '391',
+                  },
+                  { Slot: 2, Correct: false, Extracted: '401' },
+                ],
+              },
+            }
+          : {}),
         ...(options.receipt
           ? {
               receipt: {
@@ -416,6 +504,56 @@ export async function mockArena(
         state.threads = state.threads.filter(item => item.threadId !== id);
         return json(route, 200, { success: true, message: 'Thread deleted' });
       }
+    }
+    if (cross && path === '/api/arena/cross-examine/stats') {
+      return json(route, 200, {
+        Enabled: true,
+        Method: 'xe-v1',
+        Overall: { Rounds: 1312, Flips: 289, FlipRate: 0.22, FlipRateLow: 0.2, FlipRateHigh: 0.24 },
+        Critics: [],
+      });
+    }
+    if (cross && /^\/api\/arena\/comparisons\/[^/]+\/critique$/.test(path)) {
+      state.requests.push('critique-called');
+      if (cross.critiqueDelayMs)
+        await new Promise(resolve => setTimeout(resolve, cross.critiqueDelayMs));
+      if (cross.fail?.call === 'critique')
+        return problem(route, cross.fail.status, cross.fail.code);
+      return json(route, 200, {
+        success: true,
+        comparisonId: path.split('/')[4],
+        created: true,
+        critiques: [
+          {
+            Slot: 1,
+            ModelName: 'model-a',
+            DisplayName: 'Model A',
+            Rebuttal:
+              'Model B skipped the carry: 17 x 20 is 340 and 17 x 3 is 51, so the total is 391, not 401.',
+            Words: 22,
+          },
+          {
+            Slot: 2,
+            ModelName: 'model-b',
+            DisplayName: 'Model B',
+            Rebuttal:
+              'Model A is right about the number but never shows the steps, which makes it hard to check.',
+            Words: 18,
+          },
+        ],
+      });
+    }
+    if (cross && path === '/api/arena/model-vote/round2') {
+      const body = request.postDataJSON() as Record<string, unknown>;
+      state.bodies.push({ path, body });
+      if (cross.fail?.call === 'round2') return problem(route, cross.fail.status, cross.fail.code);
+      return json(route, 200, {
+        success: true,
+        round: 2,
+        round1Choice: firstVote,
+        round2Choice: body.voteChoice,
+        flipped: body.voteChoice !== firstVote,
+      });
     }
     if (path === '/api/health') return json(route, 200, { status: 'healthy' });
     return json(route, 404, {

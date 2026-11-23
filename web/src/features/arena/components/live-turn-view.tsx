@@ -15,6 +15,7 @@ import { AnswerPane } from './answer-pane';
 import { PaneMetrics } from './pane-metrics';
 import { PanePair } from './pane-pair';
 import { PromptCard } from './prompt-card';
+import { RebuttalNote, RebuttalPending } from './rebuttal-note';
 import { RevealPanel } from './reveal-panel';
 import { TurnError, UnratedNotice } from './turn-notice';
 import { VoteBar, VoteBarLocked } from './vote-bar';
@@ -57,6 +58,23 @@ interface PaneProps {
   answer: LiveAnswer | null;
 }
 
+/**
+ * The cross-examine reply under an answer: the OTHER model's rebuttal (slot 2 wrote the one under
+ * answer A, slot 1 the one under answer B), or a placeholder while both are being written.
+ */
+function rebuttalFor(turn: LiveTurn, side: PaneProps['side']) {
+  if (side === 'solo' || turn.phase !== 'revealed') return null;
+  const { critique, rebuttals } = turn.crossExamine;
+  if (critique === 'loading') return <RebuttalPending />;
+  if (critique !== 'ready') return null;
+  const slot = side === 'a' ? 2 : 1;
+  const rebuttal = rebuttals[slot];
+  if (rebuttal === undefined) return null;
+  const critic =
+    rebuttal.displayName ?? modelLabel(side === 'a' ? turn.b : turn.a) ?? 'The other model';
+  return <RebuttalNote rebuttal={rebuttal} critic={critic} />;
+}
+
 function LivePane({ turn, side, answer }: PaneProps) {
   const reduce = useShouldReduceMotion();
   const revealing = turn.phase === 'answering' && turn.mode !== 'direct' && !reduce;
@@ -72,6 +90,7 @@ function LivePane({ turn, side, answer }: PaneProps) {
     turn.phase !== 'voting' &&
     (turn.vote === 'both-bad' || (turn.vote !== choice && turn.vote !== 'tie'));
   const revealedNow = turn.mode === 'battle' && turn.phase === 'revealed';
+  const rebuttal = rebuttalFor(turn, side);
 
   return (
     <AnswerPane
@@ -85,17 +104,22 @@ function LivePane({ turn, side, answer }: PaneProps) {
       generating={generating}
       revealing={revealedNow}
       footer={
-        // Blind integrity: timing, length and tokens hint at the model, so they wait for the
-        // reveal (and for the whole text).
-        answer && shown && !generating ? (
-          <PaneMetrics
-            items={paneMetrics({
-              text: answer.text,
-              timeMs: answer.responseTimeMs,
-              tokens: answer.usage?.completionTokens,
-            })}
-          />
-        ) : null
+        <>
+          {rebuttal}
+          {
+            // Blind integrity: timing, length and tokens hint at the model, so they wait for the
+            // reveal (and for the whole text).
+            answer && shown && !generating ? (
+              <PaneMetrics
+                items={paneMetrics({
+                  text: answer.text,
+                  timeMs: answer.responseTimeMs,
+                  tokens: answer.usage?.completionTokens,
+                })}
+              />
+            ) : null
+          }
+        </>
       }
     >
       {turn.phase === 'submitting' || (generating && answer === null) ? (
@@ -137,6 +161,12 @@ export function LiveTurnView({
       data-phase={turn.phase}
     >
       <PromptCard id={promptId} number={number} prompt={turn.prompt} />
+      {turn.evalQuestion ? (
+        <p data-testid="eval-question-note" className="text-ui-sm text-fg-soft">
+          This round used a question with a known answer in place of yours. The answer key comes
+          after you vote.
+        </p>
+      ) : null}
       {noAnswers ? null : turn.mode === 'direct' ? (
         <LivePane turn={turn} side="solo" answer={turn.a} />
       ) : (

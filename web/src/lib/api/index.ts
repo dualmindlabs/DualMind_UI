@@ -57,6 +57,7 @@ export {
   type CompareInput,
   isCompareShareId,
 } from './endpoints/compare';
+export { type Round2Input } from './endpoints/cross-examine';
 export { FEATURE_FLAGS } from './endpoints/flags';
 export { type SpeechInput } from './endpoints/speech';
 export {
@@ -84,6 +85,13 @@ export {
   type VoteResult,
 } from './schemas/arena';
 export type { MutationResult, Usage } from './schemas/common';
+export type {
+  CritiqueResult,
+  CrossExamineStats,
+  Rebuttal,
+  Round2Result,
+} from './schemas/cross-examine';
+export type { AnswerKey, AnswerKeySide } from './schemas/truth';
 export type { CompareResult, CompareShareState, CompareSide } from './schemas/compare';
 export type { CrowdCategory, CrowdStat } from './schemas/crowd';
 export type { FeatureFlag } from './schemas/flags';

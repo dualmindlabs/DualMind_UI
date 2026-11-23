@@ -1,4 +1,12 @@
-import type { Answer, AnswerModel, Usage, VoteChoice, VoteReceipt } from '@/lib/api';
+import type {
+  Answer,
+  AnswerKey,
+  AnswerModel,
+  Rebuttal,
+  Usage,
+  VoteChoice,
+  VoteReceipt,
+} from '@/lib/api';
 
 import type { ArenaMode } from './modes';
 
@@ -32,6 +40,33 @@ export interface LiveAnswer {
   usage: Usage | null;
 }
 
+/**
+ * Cross-examine after a vote (backend PR 71): ask for the critique round, read each model's
+ * rebuttal under the other's answer, optionally vote a second time. `rebuttals` is keyed by the
+ * critic's slot (1 behind answer A, 2 behind answer B). The second vote never touches the board.
+ */
+export interface CrossExamineTurn {
+  critique: 'idle' | 'loading' | 'ready' | 'failed';
+  rebuttals: Partial<Record<1 | 2, Rebuttal>>;
+  /** Why the critique round failed; null otherwise. */
+  critiqueMessage: string | null;
+  round2: 'idle' | 'voting' | 'done' | 'failed';
+  round2Choice: VoteChoice | null;
+  /** The second vote differs from the first; null until it is cast. */
+  flipped: boolean | null;
+  round2Message: string | null;
+}
+
+export const NO_CROSS_EXAMINE: CrossExamineTurn = {
+  critique: 'idle',
+  rebuttals: {},
+  critiqueMessage: null,
+  round2: 'idle',
+  round2Choice: null,
+  flipped: null,
+  round2Message: null,
+};
+
 export interface LiveTurn {
   id: string;
   prompt: string;
@@ -52,6 +87,14 @@ export interface LiveTurn {
   votePending: boolean;
   /** The vote's receipt (hash-chain handle) while the API's receipts flag is on, else null. */
   receipt: VoteReceipt | null;
+  /** Truth vs Taste: the answer key the vote response carried for an eval battle, else null. */
+  answerKey: AnswerKey | null;
+  /**
+   * Truth vs Taste: the backend asked a question with a known answer in place of `prompt`
+   * (`prompt` is then that question). False for an ordinary battle.
+   */
+  evalQuestion: boolean;
+  crossExamine: CrossExamineTurn;
   error: string | null;
   /** What kind of failure `error` is, when the screen offers more than Try again. */
   errorKind: 'forbidden' | null;
@@ -78,6 +121,8 @@ export type BattleAction =
       comparisonId: string | null;
       /** A backup model answered for a side; the battle is not rated. */
       fallbackUsed?: boolean;
+      /** The prompt the models were really asked, when the API says (an eval question). */
+      askedPrompt?: string | null | undefined;
       a: Answer;
       b: Answer;
       at: number;
@@ -87,7 +132,19 @@ export type BattleAction =
   | { type: 'stream-done'; id: string; usage: Usage | null; at: number; model?: AnswerModel | null }
   | { type: 'shown'; id: string; at: number }
   | { type: 'vote'; id: string; choice: VoteChoice }
-  | { type: 'voted'; id: string; queued: boolean; receipt?: VoteReceipt | null }
+  | {
+      type: 'voted';
+      id: string;
+      queued: boolean;
+      receipt?: VoteReceipt | null;
+      answerKey?: AnswerKey | null;
+    }
+  | { type: 'critique-start'; id: string }
+  | { type: 'critique-done'; id: string; rebuttals: readonly Rebuttal[] }
+  | { type: 'critique-failed'; id: string; message: string }
+  | { type: 'round2-start'; id: string; choice: VoteChoice }
+  | { type: 'round2-done'; id: string; flipped: boolean }
+  | { type: 'round2-failed'; id: string; message: string }
   | { type: 'vote-failed'; id: string; message: string }
   /** The API refused the vote for good (403, 404): voting closes, the answers stay. */
   | { type: 'vote-closed'; id: string }
@@ -127,6 +184,24 @@ function afterReveal(turn: LiveTurn): TurnPhase {
   return turn.comparisonId === null ? 'done' : 'awaiting_vote';
 }
 
+/**
+ * An eval battle (Truth vs Taste) asks a question the API chose, and says which in each answer's
+ * `prompt`. When that differs from what was typed, the turn shows the question that was asked.
+ */
+function askedInstead(typed: string, asked: string | null | undefined) {
+  const real = asked?.trim();
+  if (!real || real === typed.trim()) return {};
+  return { prompt: real, evalQuestion: true };
+}
+
+function rebuttalsBySlot(rebuttals: readonly Rebuttal[]): CrossExamineTurn['rebuttals'] {
+  const bySlot: CrossExamineTurn['rebuttals'] = {};
+  for (const rebuttal of rebuttals) {
+    if (rebuttal.slot === 1 || rebuttal.slot === 2) bySlot[rebuttal.slot] = rebuttal;
+  }
+  return bySlot;
+}
+
 const IN_FLIGHT: readonly TurnPhase[] = ['submitting', 'answering'];
 
 /** True while a turn is being answered: the composer shows Stop instead of Send. */
@@ -163,6 +238,9 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
             vote: null,
             votePending: false,
             receipt: null,
+            answerKey: null,
+            evalQuestion: false,
+            crossExamine: NO_CROSS_EXAMINE,
             error: null,
             errorKind: null,
             sentAt: action.at,
@@ -178,6 +256,7 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
           : {
               ...turn,
               phase: 'answering',
+              ...askedInstead(turn.prompt, action.askedPrompt),
               a: toLive(action.a),
               b: toLive(action.b),
               comparisonId: action.comparisonId,
@@ -244,6 +323,83 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
               phase: 'revealed',
               votePending: action.queued,
               receipt: action.receipt ?? null,
+              answerKey: action.answerKey ?? null,
+            },
+      );
+    case 'critique-start':
+      return update(state, action.id, turn =>
+        turn.phase !== 'revealed' || turn.crossExamine.critique === 'loading'
+          ? null
+          : {
+              ...turn,
+              crossExamine: { ...turn.crossExamine, critique: 'loading', critiqueMessage: null },
+            },
+      );
+    case 'critique-done':
+      return update(state, action.id, turn =>
+        turn.phase !== 'revealed'
+          ? null
+          : {
+              ...turn,
+              crossExamine: {
+                ...turn.crossExamine,
+                critique: 'ready',
+                critiqueMessage: null,
+                rebuttals: rebuttalsBySlot(action.rebuttals),
+              },
+            },
+      );
+    case 'critique-failed':
+      return update(state, action.id, turn =>
+        turn.phase !== 'revealed'
+          ? null
+          : {
+              ...turn,
+              crossExamine: {
+                ...turn.crossExamine,
+                critique: 'failed',
+                critiqueMessage: action.message,
+              },
+            },
+      );
+    case 'round2-start':
+      return update(state, action.id, turn =>
+        turn.phase !== 'revealed' ||
+        turn.crossExamine.critique !== 'ready' ||
+        turn.crossExamine.round2 === 'voting' ||
+        turn.crossExamine.round2 === 'done'
+          ? null
+          : {
+              ...turn,
+              crossExamine: {
+                ...turn.crossExamine,
+                round2: 'voting',
+                round2Choice: action.choice,
+                round2Message: null,
+              },
+            },
+      );
+    case 'round2-done':
+      return update(state, action.id, turn =>
+        turn.crossExamine.round2 !== 'voting'
+          ? null
+          : {
+              ...turn,
+              crossExamine: { ...turn.crossExamine, round2: 'done', flipped: action.flipped },
+            },
+      );
+    case 'round2-failed':
+      return update(state, action.id, turn =>
+        turn.crossExamine.round2 !== 'voting'
+          ? null
+          : {
+              ...turn,
+              crossExamine: {
+                ...turn.crossExamine,
+                round2: 'failed',
+                round2Choice: null,
+                round2Message: action.message,
+              },
             },
       );
     case 'vote-failed':
