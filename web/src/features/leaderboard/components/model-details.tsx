@@ -89,10 +89,12 @@ export function ModelDetails({
 
   const eyebrow = (
     <p className="flex flex-wrap items-center gap-2">
-      <span className={entry.rank === null ? 'eyebrow text-warn' : 'eyebrow text-mind-a'}>
-        {entry.rank === null
+      <span className={entry.provisional ? 'eyebrow text-warn' : 'eyebrow text-mind-a'}>
+        {entry.provisional
           ? 'Not yet rated'
-          : `Rank ${formatRank(entry.rank)} of ${board.summary.rated}`}
+          : entry.rank === null
+            ? 'Rated, no rank yet'
+            : `Rank ${formatRank(entry.rank)} of ${board.summary.ranked}`}
       </span>
       <ProviderBadge label={entry.providerLabel} via={entry.servedBy} />
     </p>

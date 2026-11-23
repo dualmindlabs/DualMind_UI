@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 import { PageContainer } from '@/components/layout/page-container';
 import { SiteFooter } from '@/components/layout/site-footer';
@@ -8,19 +8,20 @@ import { SectionTitle } from '@/components/ui/section-title';
 import { useApiClient } from '@/hooks/use-api-client';
 
 import { useBoardView } from '../hooks/use-board-view';
-import { useLeaderboard } from '../hooks/use-leaderboard';
+import { useBoard, useCrowdCategories } from '../hooks/use-leaderboard';
 import { TABLE_QUERY, useMediaQuery } from '../hooks/use-media-query';
 import { useModelCommands } from '../hooks/use-model-commands';
 import { useModelDetails } from '../hooks/use-model-details';
 import { useRankMovement } from '../hooks/use-rank-movement';
 import { rangeDomain } from '../lib/confidence';
 import { PROVISIONAL_BATTLES, RATINGS_HELP_HREF } from '../lib/constants';
-import { isRated } from '../lib/entries';
 import { hasActiveFilters } from '../lib/filter';
 import { BoardCardList } from './board-card-list';
 import { BoardControls } from './board-controls';
 import { BoardEmpty, BoardError, BoardNoMatch, BoardSkeleton } from './board-state';
 import { BoardStatus } from './board-status';
+import { ALL_CATEGORIES, CategoryTabs } from './category-tabs';
+import { CrowdNote } from './crowd-note';
 import { LeaderboardHero } from './leaderboard-hero';
 import { LeaderboardTable } from './leaderboard-table';
 import { Methodology } from './methodology';
@@ -41,14 +42,18 @@ function eloStartFor(bottomElo: number): number {
  * details sheet per model.
  */
 export function LeaderboardPage() {
-  const query = useLeaderboard();
+  const [category, setCategory] = useState(ALL_CATEGORIES);
+  const overall = category === ALL_CATEGORIES;
+  const query = useBoard(overall ? undefined : category);
+  const categories = useCrowdCategories().data;
   const { isMock } = useApiClient();
   const board = query.data;
   const view = useBoardView(board?.entries);
   const details = useModelDetails();
   const wide = useMediaQuery(TABLE_QUERY);
   useModelCommands(board?.entries, details.openModel);
-  const movement = useRankMovement(board?.rated);
+  // Rank movement is the overall board's: a category board must not overwrite its saved ranks.
+  const movement = useRankMovement(overall ? board?.rated : undefined);
   const domain = useMemo(() => rangeDomain(board?.rated ?? []), [board?.rated]);
 
   const leaderId = board?.rated[0]?.id;
@@ -85,8 +90,10 @@ export function LeaderboardPage() {
     if (view.visible.length === 0) {
       return <BoardNoMatch query={view.filters.query} onClear={view.clearFilters} />;
     }
-    const rated = view.visible.filter(isRated);
-    const unrated = view.visible.filter(entry => !isRated(entry));
+    // Rated rows, with or without a rank claim, share the main table; only the models with too
+    // few votes for a rating go to "not yet rated".
+    const rated = view.visible.filter(entry => !entry.provisional);
+    const unrated = view.visible.filter(entry => entry.provisional);
     return (
       <div className="grid gap-8">
         {rated.length === 0 ? (
@@ -121,11 +128,69 @@ export function LeaderboardPage() {
             onSort={view.toggleSort}
             onOpen={details.openModel}
             domain={domain}
+            crowd={board.source === 'crowd'}
           />
         ) : null}
       </div>
     );
   }
+
+  // Category tabs exist only while the backend serves categories (which needs the crowd board on).
+  // Keyed on the categories alone, not on the board, so the tabs stay mounted while one loads.
+  const tabCategories = categories ?? null;
+
+  const boardBody = (
+    <>
+      <BoardControls
+        filters={view.filters}
+        onFiltersChange={view.setFilters}
+        providers={board?.providers ?? []}
+        total={board?.summary.models ?? 0}
+        disabled={board === undefined}
+      />
+
+      {board !== undefined && view.visible !== undefined && board.entries.length > 0 ? (
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <BoardStatus
+            shown={view.visible.length}
+            total={board.entries.length}
+            updatedAt={query.dataUpdatedAt}
+            refreshing={query.isFetching}
+            refreshError={query.isRefetchError ? query.error : null}
+            onRefresh={() => void query.refetch()}
+            isMock={isMock}
+            className="w-full"
+          />
+          {wide ? null : <SortToggle sort={view.sort} onSortChange={view.setSort} />}
+        </div>
+      ) : null}
+
+      {board?.crowd ? (
+        <CrowdNote
+          crowd={board.crowd}
+          category={
+            board.category === null
+              ? undefined
+              : (categories?.find(item => item.id === board.category)?.label ?? board.category)
+          }
+        />
+      ) : null}
+      {board !== undefined && !overall && board.category === null ? (
+        <p role="status" data-testid="category-fallback" className="text-caption text-muted">
+          There is no separate board for this category yet. Showing all prompts.
+        </p>
+      ) : null}
+      {board?.fallback ? (
+        <p role="status" data-testid="board-fallback" className="text-caption text-warn">
+          {board.fallback === 'unavailable'
+            ? 'Live ratings are temporarily unavailable. Showing the classic board.'
+            : 'Live ratings could not be loaded. Showing the classic board.'}
+        </p>
+      ) : null}
+
+      {rankings()}
+    </>
+  );
 
   return (
     <>
@@ -170,39 +235,23 @@ export function LeaderboardPage() {
               />
               <p className="flex items-center gap-2 text-caption text-muted">
                 <span aria-hidden="true" className="size-1.5 rounded-full bg-warn" />
-                Fewer than {PROVISIONAL_BATTLES} battles: listed as not yet rated, without a rank
+                {board?.source === 'crowd'
+                  ? 'Too few votes for a rating: listed as not yet rated, without a rank'
+                  : `Fewer than ${PROVISIONAL_BATTLES} battles: listed as not yet rated, without a rank`}
               </p>
             </div>
 
-            <BoardControls
-              filters={view.filters}
-              onFiltersChange={view.setFilters}
-              providers={board?.providers ?? []}
-              total={board?.summary.models ?? 0}
-              disabled={board === undefined}
-            />
-
-            {board !== undefined && view.visible !== undefined && board.entries.length > 0 ? (
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <BoardStatus
-                  shown={view.visible.length}
-                  total={board.entries.length}
-                  updatedAt={query.dataUpdatedAt}
-                  refreshing={query.isFetching}
-                  refreshError={query.isRefetchError ? query.error : null}
-                  onRefresh={() => void query.refetch()}
-                  isMock={isMock}
-                  className="w-full"
-                />
-                {wide ? null : <SortToggle sort={view.sort} onSortChange={view.setSort} />}
-              </div>
-            ) : null}
-
-            {rankings()}
+            {tabCategories ? (
+              <CategoryTabs categories={tabCategories} value={category} onValueChange={setCategory}>
+                {boardBody}
+              </CategoryTabs>
+            ) : (
+              boardBody
+            )}
           </PageContainer>
         </section>
 
-        <Methodology />
+        <Methodology crowd={board?.source === 'crowd'} />
       </main>
       <SiteFooter />
       <ModelDetails

@@ -11,6 +11,7 @@ import type { LeaderboardEntry, SortKey, SortState } from '../types';
 import { RangeBar } from './range-bar';
 import { RankMovement } from './rank-movement';
 import { RankNumber } from './rank-number';
+import { RankRange } from './rank-range';
 import { RecordBar } from './record-bar';
 import { SortHeader } from './sort-header';
 
@@ -51,6 +52,7 @@ function Row({
 }) {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const range = ratingRange(entry);
+  const seeded = entry.crowd?.ratingSource === 'seeded';
 
   return (
     <tr
@@ -66,14 +68,17 @@ function Row({
               leader ? 'bg-mind-a' : 'bg-line-strong',
             )}
           />
-          <span className="flex items-center gap-2">
-            {entry.rank === null ? null : (
-              <RankNumber
-                rank={entry.rank}
-                className={cn('text-ui font-medium', leader ? 'text-mind-a' : 'text-fg-soft')}
-              />
-            )}
-            <RankMovement movement={movement} />
+          <span className="grid gap-0.5">
+            <span className="flex items-center gap-2">
+              {entry.rank === null ? null : (
+                <RankNumber
+                  rank={entry.rank}
+                  className={cn('text-ui font-medium', leader ? 'text-mind-a' : 'text-fg-soft')}
+                />
+              )}
+              <RankMovement movement={movement} />
+            </span>
+            <RankRange entry={entry} />
           </span>
         </td>
       ) : null}
@@ -112,26 +117,40 @@ function Row({
       </td>
       <td className="py-3.5 pr-3 pl-3 align-middle">
         <span className="flex items-center gap-3">
-          <span className="grid w-14 justify-items-end text-right">
+          <span className="grid min-w-14 justify-items-end text-right whitespace-nowrap">
             <span className="numeric text-ui text-fg">{formatElo(entry.elo)}</span>
-            <span
-              className="numeric text-label text-muted"
-              title="Estimated 95% range, from this model's record"
-            >
-              <span aria-hidden="true">±{formatElo(range.margin)}</span>
-              <span className="sr-only">
-                , estimated range {formatElo(range.low)} to {formatElo(range.high)}
+            {seeded ? (
+              <span
+                className="numeric text-label text-muted"
+                title="Starting value: too few votes for a fitted rating"
+              >
+                seeded
               </span>
-            </span>
+            ) : (
+              <span className="numeric text-label text-muted" title={range.title}>
+                <span aria-hidden="true">
+                  {formatElo(range.low)}–{formatElo(range.high)}
+                </span>
+                <span className="sr-only">
+                  , {range.noun.toLowerCase()} range {formatElo(range.low)} to{' '}
+                  {formatElo(range.high)}
+                </span>
+              </span>
+            )}
           </span>
-          <RangeBar
-            elo={range.elo}
-            low={range.low}
-            high={range.high}
-            domain={domain}
-            tone={leader ? 'lead' : 'default'}
-            className="w-16 lg:w-24 xl:w-32"
-          />
+          {seeded ? (
+            <span aria-hidden="true" className="block w-16 lg:w-24 xl:w-32" />
+          ) : (
+            <RangeBar
+              elo={range.elo}
+              low={range.low}
+              high={range.high}
+              domain={domain}
+              tone={leader ? 'lead' : 'default'}
+              measured={range.measured}
+              className="w-16 lg:w-24 xl:w-32"
+            />
+          )}
         </span>
       </td>
       <td className="hidden py-3.5 pr-3 pl-3 text-right align-middle whitespace-nowrap lg:table-cell">
@@ -161,6 +180,11 @@ function Row({
       </td>
       <td className="py-3.5 pr-2 pl-3 text-right align-middle">
         <span className="numeric text-ui text-fg-soft">{formatCount(entry.battles)}</span>
+        {entry.crowd === null || entry.crowd.votes === null ? null : (
+          <span className="block numeric text-label text-muted" data-votes={entry.crowd.votes}>
+            {formatCount(entry.crowd.votes)} {entry.crowd.votes === 1 ? 'vote' : 'votes'}
+          </span>
+        )}
       </td>
       <td aria-hidden="true" className="w-8 py-3.5 pr-3 align-middle">
         <ChevronRight

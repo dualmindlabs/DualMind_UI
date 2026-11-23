@@ -252,7 +252,12 @@ export function useBattle({
       queue
         .submit({ comparisonId: turn.comparisonId, voteChoice: choice, voteDurationMs })
         .then(result => {
-          dispatch({ type: 'voted', id: turnId, queued: result.status === 'queued' });
+          dispatch({
+            type: 'voted',
+            id: turnId,
+            queued: result.status === 'queued',
+            receipt: result.status === 'sent' ? (result.receipt ?? null) : null,
+          });
           announce(revealMessage(turn, choice, result.status === 'queued'));
         })
         .catch((error: unknown) => {
