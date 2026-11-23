@@ -40,7 +40,7 @@ Browser
 
 Cloudflare Worker (worker.js)
   ├─ /api/*   → Azure backend
-  ├─ /share/* → share/index.html
+  ├─ /share/* → web app share page (server/share.js)
   └─ /*       → ASSETS binding (dist/)
 ```
 
