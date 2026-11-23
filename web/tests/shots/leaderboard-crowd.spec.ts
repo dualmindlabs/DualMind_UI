@@ -176,6 +176,55 @@ for (const vp of VIEWPORTS) {
         await page.getByTestId('receipt-chip').scrollIntoViewIfNeeded();
         await capture(page, '8-receipt', vp.name, theme);
       });
+      test('review follow-up: warnings, unranked rows, seeded details, fallback notice', async ({
+        page,
+      }) => {
+        await page.route('**/api/v2/leaderboard', route =>
+          route.fulfill({ status: 200, contentType: 'application/json', body: CLASSIC }),
+        );
+        await page.route(/\/api\/leaderboard(\/.*)?$/, route => {
+          const { pathname } = new URL(route.request().url());
+          if (pathname !== '/api/leaderboard') {
+            return route.fulfill({ status: 404, contentType: 'application/json', body: OFF_BODY });
+          }
+          return route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({
+              ...JSON.parse(CROWD),
+              warnings: ['Showing the top 100 models only'],
+            }),
+          });
+        });
+        await page.goto('/leaderboard/');
+        await expect(page.getByTestId('crowd-warnings')).toBeVisible();
+        await expect(page.locator('[data-rank-claim="none"]').first()).toBeVisible();
+        await page.locator('[data-rank-claim="none"]').first().scrollIntoViewIfNeeded();
+        await page.waitForTimeout(500);
+        await capture(page, '9-unranked-warnings', vp.name, theme, false);
+
+        await page.getByRole('button', { name: /^Show \d+ models$/ }).click();
+        await page.locator('#unrated-list button[aria-haspopup="dialog"]').first().click();
+        await expect(page.getByRole('dialog')).toContainText('Elo, seeded');
+        await page.waitForTimeout(900);
+        await page.screenshot({
+          path: path.join(OUT, `crowd-10-seeded-details__${vp.name}__${theme}.png`),
+        });
+      });
+
+      test('review follow-up: the crowd board is down (503)', async ({ page }) => {
+        await page.route('**/api/v2/leaderboard', route =>
+          route.fulfill({ status: 200, contentType: 'application/json', body: CLASSIC }),
+        );
+        await page.route(/\/api\/leaderboard(\/.*)?$/, route =>
+          route.fulfill({ status: 503, contentType: 'application/json', body: OFF_BODY }),
+        );
+        await page.goto('/leaderboard/');
+        await expect(page.getByTestId('board-fallback')).toBeVisible();
+        await page.getByTestId('board-fallback').scrollIntoViewIfNeeded();
+        await page.waitForTimeout(500);
+        await capture(page, '11-unavailable', vp.name, theme, false);
+      });
     });
   }
 }

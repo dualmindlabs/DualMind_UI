@@ -76,7 +76,9 @@ describe('CrowdNote', () => {
 
   it('renders the backend warnings quietly', () => {
     render(<CrowdNote crowd={{ ...crowd, warnings: ['Board truncated to 100 rows'] }} />);
-    expect(within(screen.getByTestId('crowd-warnings')).getByText('Board truncated to 100 rows')).toBeVisible();
+    expect(
+      within(screen.getByTestId('crowd-warnings')).getByText('Board truncated to 100 rows'),
+    ).toBeVisible();
   });
 
   it('caps and shortens warnings, and renders them as text', () => {

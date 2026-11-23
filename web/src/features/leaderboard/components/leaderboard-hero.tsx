@@ -32,8 +32,8 @@ export function LeaderboardHero({ summary, updatedAt, refreshing, stale }: Leade
           </h1>
           <p className="max-w-[52ch] text-lead text-fg-soft">
             Two anonymous models answer the same prompt. People vote for the better answer before
-            they see any names, and each vote moves an Elo rating. Models without enough
-            battles or votes yet are listed as not yet rated, without a rank.
+            they see any names, and each vote moves an Elo rating. Models without enough battles or
+            votes yet are listed as not yet rated, without a rank.
           </p>
           <div className="flex flex-wrap items-center gap-3">
             <a href={ARENA_HREF} className={cn(buttonVariants({ variant: 'primary' }), 'press')}>

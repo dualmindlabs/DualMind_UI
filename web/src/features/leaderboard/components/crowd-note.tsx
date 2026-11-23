@@ -25,8 +25,9 @@ export function CrowdNote({
             <>Rated from blind votes{category ? ` in ${category}` : ''}</>
           ) : (
             <>
-              Rated from <span className="numeric text-fg-soft">{formatCount(crowd.voteCount)}</span>{' '}
-              blind {crowd.voteCount === 1 ? 'vote' : 'votes'}
+              Rated from{' '}
+              <span className="numeric text-fg-soft">{formatCount(crowd.voteCount)}</span> blind{' '}
+              {crowd.voteCount === 1 ? 'vote' : 'votes'}
               {category ? ` in ${category}` : ''}
             </>
           )}

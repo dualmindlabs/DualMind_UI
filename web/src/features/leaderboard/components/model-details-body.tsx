@@ -117,10 +117,10 @@ export function ModelDetailsBody({ entry, board, movement }: ModelDetailsBodyPro
             {seeded
               ? 'Starting value, not a fitted rating'
               : entry.provisional
-              ? 'Can still move a lot'
-              : leader === undefined || isLeader || gap === 0
-                ? 'Top of the board'
-                : `${formatEloDelta(gap)} on the leader`}
+                ? 'Can still move a lot'
+                : leader === undefined || isLeader || gap === 0
+                  ? 'Top of the board'
+                  : `${formatEloDelta(gap)} on the leader`}
           </span>
           {seeded ? (
             <span>No range until it has enough votes</span>
@@ -151,8 +151,8 @@ export function ModelDetailsBody({ entry, board, movement }: ModelDetailsBodyPro
               : entry.rank === null
                 ? 'Too few votes or a wide interval'
                 : sharing > 0
-                ? `Shared with ${pluralize(sharing, 'other model')}`
-                : 'Among rated models'
+                  ? `Shared with ${pluralize(sharing, 'other model')}`
+                  : 'Among rated models'
           }
         />
         <Stat

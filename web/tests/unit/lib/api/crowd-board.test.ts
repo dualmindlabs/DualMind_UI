@@ -63,7 +63,9 @@ describe('crowd board schema', () => {
     expect(result.summary.ranked).toBe(result.rated.length);
     expect(result.summary.rated).toBe(result.rated.length + noClaim.length);
     // The seeded scale never stretches the board's rating range.
-    expect(result.summary.bottomElo).toBe(Math.min(...result.entries.filter(e => !e.provisional).map(e => e.elo)));
+    expect(result.summary.bottomElo).toBe(
+      Math.min(...result.entries.filter(e => !e.provisional).map(e => e.elo)),
+    );
     expect(result.summary.topElo).toBe(1150);
   });
 
@@ -159,18 +161,21 @@ describe('feature detection', () => {
     ]);
   });
 
-  it.each([500, 502])('falls back to the classic board on a %i, with a notice and no memory', async status => {
-    const { fetch, calls } = scriptedFetch(call =>
-      pathOf(call.url) === '/api/leaderboard'
-        ? jsonResponse({ error: 'boom' }, { status })
-        : jsonResponse(v2),
-    );
-    const api = createApiClient({ fetch });
-    const first = await api.getBoard(NO_RETRY);
-    expect(first).toMatchObject({ source: 'v2', fallback: 'failed' });
-    await api.getBoard(NO_RETRY);
-    expect(calls.filter(call => pathOf(call.url) === '/api/leaderboard')).toHaveLength(2);
-  });
+  it.each([500, 502])(
+    'falls back to the classic board on a %i, with a notice and no memory',
+    async status => {
+      const { fetch, calls } = scriptedFetch(call =>
+        pathOf(call.url) === '/api/leaderboard'
+          ? jsonResponse({ error: 'boom' }, { status })
+          : jsonResponse(v2),
+      );
+      const api = createApiClient({ fetch });
+      const first = await api.getBoard(NO_RETRY);
+      expect(first).toMatchObject({ source: 'v2', fallback: 'failed' });
+      await api.getBoard(NO_RETRY);
+      expect(calls.filter(call => pathOf(call.url) === '/api/leaderboard')).toHaveLength(2);
+    },
+  );
 
   it('falls back on a network failure, and says unavailable on a 503, but not when the flag is off', async () => {
     const down = scriptedFetch(call => {
@@ -190,7 +195,9 @@ describe('feature detection', () => {
     const disabled = scriptedFetch(call =>
       pathOf(call.url) === '/api/leaderboard' ? off() : jsonResponse(v2),
     );
-    expect((await createApiClient({ fetch: disabled.fetch }).getBoard(NO_RETRY)).fallback).toBeUndefined();
+    expect(
+      (await createApiClient({ fetch: disabled.fetch }).getBoard(NO_RETRY)).fallback,
+    ).toBeUndefined();
   });
 
   it('serves the overall board for an unknown category (400), and still fails when classic fails', async () => {
@@ -203,7 +210,9 @@ describe('feature detection', () => {
     expect(data.category).toBeUndefined();
     expect(data.source).toBe('crowd');
     const allDown = scriptedFetch(jsonResponse({ error: 'boom' }, { status: 500 }));
-    await expect(createApiClient({ fetch: allDown.fetch }).getBoard(NO_RETRY)).rejects.toMatchObject({
+    await expect(
+      createApiClient({ fetch: allDown.fetch }).getBoard(NO_RETRY),
+    ).rejects.toMatchObject({
       kind: 'server',
     });
   });

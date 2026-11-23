@@ -82,7 +82,10 @@ describe('LeaderboardPage on the crowd board', () => {
   });
 
   it('says live ratings are unavailable on a 503, and shows the classic board', async () => {
-    renderWith({ '/api/leaderboard': () => down(503), '/api/v2/leaderboard': () => jsonResponse(v2) });
+    renderWith({
+      '/api/leaderboard': () => down(503),
+      '/api/v2/leaderboard': () => jsonResponse(v2),
+    });
     expect(await screen.findByTestId('board-fallback')).toHaveTextContent(
       'Live ratings are temporarily unavailable',
     );
@@ -91,7 +94,10 @@ describe('LeaderboardPage on the crowd board', () => {
   });
 
   it('falls back to the classic board on a 500 instead of an error page', async () => {
-    renderWith({ '/api/leaderboard': () => down(500), '/api/v2/leaderboard': () => jsonResponse(v2) });
+    renderWith({
+      '/api/leaderboard': () => down(500),
+      '/api/v2/leaderboard': () => jsonResponse(v2),
+    });
     expect(await screen.findByTestId('board-fallback')).toHaveTextContent('could not be loaded');
     expect(await screen.findByRole('table')).toBeInTheDocument();
     expect(screen.queryByRole('alert')).toBeNull();

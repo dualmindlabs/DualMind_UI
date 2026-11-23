@@ -70,7 +70,11 @@ export function ReceiptChip({ receipt, className }: { receipt: VoteReceipt; clas
         data-testid="receipt-copy-status"
         className={failed ? 'text-caption text-warn' : 'sr-only'}
       >
-        {copied ? 'Receipt hash copied' : failed ? 'Could not copy. Copy it by hand from the page.' : ''}
+        {copied
+          ? 'Receipt hash copied'
+          : failed
+            ? 'Could not copy. Copy it by hand from the page.'
+            : ''}
       </span>
     </div>
   );
