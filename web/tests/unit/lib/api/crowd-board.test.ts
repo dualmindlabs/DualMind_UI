@@ -167,10 +167,10 @@ describe('vote receipt', () => {
         prevHash: hash,
       },
     });
-    expect(result.receipt).toMatchObject({ seq: 42, entryHash: hash });
+    expect(result).toMatchObject({ receipt: { seq: 42, entryHash: hash } });
   });
 
-  it('is null when the flag is off, and a broken receipt never fails the vote', () => {
+  it('has no receipt when the flag is off, and a broken receipt never fails the vote', () => {
     expect(voteResultSchema.parse({ success: true, message: 'ok' })).not.toHaveProperty('receipt');
     expect(voteResultSchema.parse(null)).not.toHaveProperty('receipt');
     const broken = voteResultSchema.parse({
