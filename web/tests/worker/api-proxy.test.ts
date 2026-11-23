@@ -230,6 +230,8 @@ describe('response side', () => {
 
   it('model calls get a longer timeout than other calls', () => {
     expect(upstreamTimeoutFor('/api/arena/dualchat')).toBe(MODEL_CALL_TIMEOUT_MS);
+    expect(upstreamTimeoutFor('/api/compare')).toBe(MODEL_CALL_TIMEOUT_MS);
+    expect(upstreamTimeoutFor('/api/compare/AbCdEfGhIjKlMnOpQrSt12')).toBe(UPSTREAM_TIMEOUT_MS);
     expect(upstreamTimeoutFor('/api/arena/chat')).toBe(MODEL_CALL_TIMEOUT_MS);
     expect(upstreamTimeoutFor('/api/arena/chat/stream')).toBe(UPSTREAM_TIMEOUT_MS);
     expect(upstreamTimeoutFor('/api/threads')).toBe(UPSTREAM_TIMEOUT_MS);

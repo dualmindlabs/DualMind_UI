@@ -327,7 +327,12 @@ describe('routing helpers (server/routing.js)', () => {
       '/share/*',
       '/settings',
       '/settings/',
+      '/compare',
+      '/compare/*',
     ]);
+    expect(isSpaFallbackRoute('/compare/')).toBe(true);
+    expect(isSpaFallbackRoute('/compare/AbCdEfGhIjKlMnOpQrSt12')).toBe(true);
+    expect(isSpaFallbackRoute('/compare/x/y')).toBe(false);
     expect(isSpaFallbackRoute('/auth-callback.html')).toBe(true);
     expect(isSpaFallbackRoute('/update-password.html')).toBe(true);
     expect(isSpaFallbackRoute('/auth-callback')).toBe(false);

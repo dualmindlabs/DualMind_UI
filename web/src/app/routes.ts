@@ -49,6 +49,9 @@ export default [
   // to /login/?redirect=%2Fsettings%2F (hooks/use-require-auth.ts).
   route('settings', 'routes/settings.tsx'),
 
+  // Compare mode (backend flag be9_compare_mode): /compare/ and /compare/<shareId>, client-only.
+  route('compare/:shareId?', 'routes/compare.tsx'),
+
   // Anything else: the 404 page. Prerendered as /404 (build.js moves it to dist/404.html, which
   // the Worker serves with status 404); this entry also covers client-side navigation.
   route('*', 'routes/not-found.tsx'),

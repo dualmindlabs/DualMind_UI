@@ -34,6 +34,10 @@ export const SPA_FALLBACK_ROUTES = [
   // Never indexed (isNoindexPath).
   '/settings',
   '/settings/',
+  // Compare mode (backend flag be9_compare_mode): /compare/ to run one and /compare/<shareId> to
+  // read a stored result. Signed-in work, or a link to a shared result: never indexed.
+  '/compare',
+  '/compare/*',
 ];
 
 /** Where the fallback is served from. Workers assets serve dist/__spa-fallback.html here. */
@@ -95,6 +99,8 @@ export function isNoindexPath(pathname) {
     pathname.startsWith('/design/') ||
     pathname === '/settings' ||
     pathname === '/settings/' ||
+    pathname === '/compare' ||
+    pathname.startsWith('/compare/') ||
     pathname === SPA_FALLBACK_PATH ||
     pathname === `${SPA_FALLBACK_PATH}.html`
   );

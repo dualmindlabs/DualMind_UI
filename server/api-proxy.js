@@ -37,7 +37,7 @@ export const DEFAULT_BACKEND_URL = 'https://api.dualmindlab.tech';
 export const UPSTREAM_TIMEOUT_MS = 30_000;
 export const MODEL_CALL_TIMEOUT_MS = 65_000;
 /** Non-streaming calls that wait for model output. */
-export const MODEL_CALL_PATHS = Object.freeze(['/api/arena/dualchat', '/api/arena/chat']);
+export const MODEL_CALL_PATHS = Object.freeze(['/api/arena/dualchat', '/api/arena/chat', '/api/compare']);
 
 /** @param {string} pathname */
 export function upstreamTimeoutFor(pathname) {
