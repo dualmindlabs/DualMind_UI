@@ -121,6 +121,7 @@ export function Composer({
           )}
         >
           <PromptInputTextarea
+            dir="auto"
             aria-label="Your prompt"
             placeholder={
               followUp ? 'Ask a follow-up, same two models' : MODE_DETAILS[mode].placeholder

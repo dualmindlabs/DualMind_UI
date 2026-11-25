@@ -371,6 +371,8 @@ describe('routing helpers (server/routing.js)', () => {
       '/settings/',
       '/compare',
       '/compare/*',
+      '/private',
+      '/private/',
     ]);
     expect(isSpaFallbackRoute('/compare/')).toBe(true);
     expect(isSpaFallbackRoute('/compare/AbCdEfGhIjKlMnOpQrSt12')).toBe(true);
@@ -418,6 +420,8 @@ describe('routing helpers (server/routing.js)', () => {
     expect(response?.headers.get('X-Robots-Tag')).toBe('noindex, nofollow');
     expect(isNoindexPath('/settings/')).toBe(true);
     expect(isNoindexPath('/settings')).toBe(true);
+    expect(isNoindexPath('/private/')).toBe(true);
+    expect(isNoindexPath('/private')).toBe(true);
   });
 
   it('returns null when the fallback page is missing', async () => {

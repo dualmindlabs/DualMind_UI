@@ -5,6 +5,7 @@ import { shareIdFromLocation } from '@/lib/site/share';
 import { SHARE_NO_STORE } from '../../../server/caching.js';
 import {
   escapeHtml,
+  fallbackPageMeta,
   genericShareMeta,
   isShareRoute,
   isShareUuid,
@@ -326,6 +327,33 @@ describe('loadShareFacts', () => {
     expect(Date.now() - started).toBeLessThan(2000);
     expect(log).toHaveBeenCalledWith(expect.objectContaining({ outcome: 'timeout' }));
     expect(JSON.stringify(log.mock.calls)).not.toContain(ID);
+  });
+});
+
+describe('fallbackPageMeta: tags for the other client-only pages', () => {
+  it('gives compare links a title, a description, the share card and noindex', () => {
+    const meta = fallbackPageMeta('/compare/AbCdEfGhIjKlMnOpQrSt12', ORIGIN);
+    expect(meta?.title).toBe('Shared comparison · DualMind Arena');
+    expect(meta?.url).toBe(`${ORIGIN}/compare/AbCdEfGhIjKlMnOpQrSt12`);
+    expect(meta?.image).toBe(`${ORIGIN}/og/share.png`);
+    expect(meta?.robots).toBe('noindex, nofollow');
+    expect(meta?.description.length).toBeGreaterThan(20);
+    // The tags use the same markup as share links.
+    expect(shareMetaTags(meta!)).toContain('property="og:title"');
+  });
+
+  it.each([
+    ['/settings/', 'Settings · DualMind Arena'],
+    ['/auth-callback.html', 'Signing you in · DualMind Arena'],
+    ['/update-password.html', 'Choose a new password · DualMind Arena'],
+    ['/private/', 'Private arena · DualMind Arena'],
+  ])('%s gets its own title', (path, title) => {
+    expect(fallbackPageMeta(path, ORIGIN)?.title).toBe(title);
+  });
+
+  it('has nothing for other paths', () => {
+    expect(fallbackPageMeta('/leaderboard/', ORIGIN)).toBeNull();
+    expect(fallbackPageMeta('/share/abc', ORIGIN)).toBeNull();
   });
 });
 

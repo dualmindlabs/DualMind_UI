@@ -7,6 +7,7 @@ import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { config } from '@/config/env';
 import { useAuth } from '@/hooks/use-auth';
+import { track } from '@/lib/analytics';
 import { saveAuthHandoff } from '@/lib/session/auth-handoff';
 import {
   authErrorMessage,
@@ -187,6 +188,7 @@ export function SignupPage() {
         },
       });
       if (error) throw error;
+      track('signup');
       if (data.session) {
         setStatus('Account created. Taking you to the Arena');
         goTo(target);

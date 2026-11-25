@@ -104,7 +104,11 @@ function AnswerLink({ node: _node, href, children }: ComponentProps<'a'> & Extra
 function heading(level: 1 | 2 | 3 | 4 | 5 | 6) {
   const Tag = level === 1 ? 'h4' : level === 2 ? 'h5' : 'h6';
   function AnswerHeading({ node: _node, children }: ComponentProps<'h1'> & ExtraProps) {
-    return <Tag data-level={level}>{children}</Tag>;
+    return (
+      <Tag data-level={level} dir="auto">
+        {children}
+      </Tag>
+    );
   }
   return AnswerHeading;
 }
@@ -145,20 +149,24 @@ export const Markdown = memo(function Markdown({
   streaming = false,
   className,
 }: MarkdownProps) {
+  // `dir="auto"`: an Urdu, Arabic or Hebrew answer reads right to left, an English one stays left
+  // to right. The wrapper adds no box (`contents`), the direction still reaches the answer.
   return (
-    <Streamdown
-      className={className ?? ''}
-      mode={streaming ? 'streaming' : 'static'}
-      isAnimating={streaming}
-      parseIncompleteMarkdown={streaming}
-      skipHtml
-      rehypePlugins={ANSWER_REHYPE_PLUGINS}
-      components={COMPONENTS}
-      controls={false}
-      linkSafety={{ enabled: false }}
-      lineNumbers={false}
-    >
-      {children}
-    </Streamdown>
+    <div dir="auto" className="contents">
+      <Streamdown
+        className={className ?? ''}
+        mode={streaming ? 'streaming' : 'static'}
+        isAnimating={streaming}
+        parseIncompleteMarkdown={streaming}
+        skipHtml
+        rehypePlugins={ANSWER_REHYPE_PLUGINS}
+        components={COMPONENTS}
+        controls={false}
+        linkSafety={{ enabled: false }}
+        lineNumbers={false}
+      >
+        {children}
+      </Streamdown>
+    </div>
   );
 });

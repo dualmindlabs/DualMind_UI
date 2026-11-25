@@ -11,6 +11,7 @@ import { ChangePasswordForm } from '@/features/auth';
 import { useApiClient } from '@/hooks/use-api-client';
 import { useAuth } from '@/hooks/use-auth';
 import { authErrorMessage, toUserSyncInput, validateName } from '@/lib/supabase';
+import { DATE_LOCALE } from '@/lib/utils/locale';
 
 import { SettingsCard, SettingsSection } from './settings-card';
 
@@ -41,7 +42,7 @@ function memberSince(value: string | undefined): string | null {
   if (!value) return null;
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return null;
-  return new Intl.DateTimeFormat(undefined, { month: 'long', year: 'numeric' }).format(date);
+  return new Intl.DateTimeFormat(DATE_LOCALE, { month: 'long', year: 'numeric' }).format(date);
 }
 
 function IdentityCard({ user, name }: { user: User; name: string }) {

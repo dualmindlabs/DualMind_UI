@@ -62,11 +62,11 @@ export { FEATURE_FLAGS } from './endpoints/flags';
 export {
   GUEST_PROMPT_MAX_CHARS,
   type GuestBattleInput,
-  type PrivateArenaInput,
   PRIVATE_ARENA_MAX_ARENAS,
   PRIVATE_ARENA_MAX_PROMPTS,
   PRIVATE_ARENA_NAME_MAX_CHARS,
   PRIVATE_PROMPT_MAX_CHARS,
+  type PrivateArenaInput,
 } from './endpoints/launch';
 export { type SpeechInput } from './endpoints/speech';
 export {
@@ -171,6 +171,9 @@ export {
   meQuery,
   modelQuery,
   modelsQuery,
+  privateArenasQuery,
+  privateBoardQuery,
+  publicConfigQuery,
   sharedThreadQuery,
   threadMessagesQuery,
   threadQuery,

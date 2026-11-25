@@ -16,6 +16,7 @@ import {
   type VoteModels,
   type VoteQueue,
 } from '@/lib/api';
+import { track } from '@/lib/analytics';
 import { resolveDisplayName } from '@/lib/models/display-name';
 
 import { createAttemptTracker } from '../lib/battle-attempt';
@@ -216,6 +217,7 @@ export function useBattle({
                 throw error;
               });
             attempts.settle();
+            track('first_battle');
             dispatch({
               type: 'answers',
               id,
@@ -269,6 +271,7 @@ export function useBattle({
       queue
         .submit({ comparisonId: turn.comparisonId, voteChoice: choice, voteDurationMs })
         .then(result => {
+          track('vote');
           dispatch({
             type: 'voted',
             id: turnId,

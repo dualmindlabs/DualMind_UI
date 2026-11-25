@@ -13,9 +13,18 @@ const SHARED = [ROOT, 'shared-threads'] as const;
 const USERS = [ROOT, 'users'] as const;
 const FLAGS = [ROOT, 'feature-flags'] as const;
 const ARENA = [ROOT, 'arena'] as const;
+const CONFIG = [ROOT, 'config'] as const;
+const PRIVATE_ARENAS = [ROOT, 'private-arenas'] as const;
 
 export const apiKeys = {
   all: [ROOT] as const,
+  publicConfig: () => [...CONFIG, 'public'] as const,
+  privateArenas: {
+    all: PRIVATE_ARENAS,
+    list: () => [...PRIVATE_ARENAS, 'list'] as const,
+    detail: (id: string) => [...PRIVATE_ARENAS, 'detail', id] as const,
+    board: (id: string) => [...PRIVATE_ARENAS, 'board', id] as const,
+  },
   health: HEALTH,
   models: {
     all: MODELS,

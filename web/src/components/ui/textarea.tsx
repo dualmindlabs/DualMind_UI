@@ -11,6 +11,8 @@ import { cn } from '@/lib/utils/cn';
 export function Textarea({ className, ...props }: ComponentProps<'textarea'>) {
   return (
     <textarea
+      // Right-to-left text (Urdu, Arabic, Hebrew) is typed right to left.
+      dir="auto"
       data-slot="textarea"
       className={cn(
         'min-h-28 w-full min-w-0 resize-y rounded-sm border border-line-strong bg-surface-2 px-3.5 py-3 text-body text-fg transition-[border-color,background-color] duration-(--dur-fast) ease-out-expo placeholder:text-muted hover:border-fg-soft sm:text-ui',

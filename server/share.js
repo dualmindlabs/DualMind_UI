@@ -123,6 +123,67 @@ export function genericShareMeta(origin, id) {
   };
 }
 
+/** Titles and descriptions of the client-only pages that are not share links. */
+const FALLBACK_PAGES = [
+  {
+    test: pathname => pathname === '/compare' || pathname.startsWith('/compare/'),
+    title: `Shared comparison · ${SITE}`,
+    description:
+      'Two AI models answered the same prompt side by side. Open the shared comparison, then run your own.',
+    robots: 'noindex, nofollow',
+  },
+  {
+    test: pathname => pathname === '/private' || pathname === '/private/',
+    title: `Private arena · ${SITE}`,
+    description: 'Run blind battles on your own prompts and keep the results to yourself.',
+    robots: 'noindex, nofollow',
+  },
+  {
+    test: pathname => pathname === '/settings' || pathname === '/settings/',
+    title: `Settings · ${SITE}`,
+    description: 'Your profile, how the Arena looks and behaves, and a copy of your data.',
+    robots: 'noindex, nofollow',
+  },
+  {
+    test: pathname => pathname === '/auth-callback.html',
+    title: `Signing you in · ${SITE}`,
+    description: 'Finishing your sign-in to DualMind Arena.',
+    robots: 'noindex, nofollow',
+  },
+  {
+    test: pathname => pathname === '/update-password.html',
+    title: `Choose a new password · ${SITE}`,
+    description: 'Set a new password for your DualMind Arena account.',
+    robots: 'noindex, nofollow',
+  },
+];
+
+/**
+ * The tags for a client-only page that is not a share link (compare links, settings, the auth
+ * callback pages ...): a title, a description and the site's share card, so a pasted link no
+ * longer unfurls as a blank card. Always noindex. Null for any other path.
+ * @param {string} pathname
+ * @param {string} origin
+ * @returns {ShareMeta | null}
+ */
+export function fallbackPageMeta(pathname, origin) {
+  const page = FALLBACK_PAGES.find(candidate => candidate.test(pathname));
+  if (!page) return null;
+  const clean = pathname.length > 1 ? pathname.replace(/\/+$/, '') : pathname;
+  // Compare links carry a result id: the canonical is the page itself, with no query.
+  const url = `${origin}${clean}${pathname === '/private/' || pathname === '/private' ? '/' : ''}`;
+  return {
+    title: page.title,
+    ogTitle: page.title.replace(` · ${SITE}`, ''),
+    description: page.description,
+    url,
+    image: `${origin}${SHARE_IMAGE.path}`,
+    imageAlt: SHARE_IMAGE.alt,
+    robots: page.robots,
+    shared: false,
+  };
+}
+
 /**
  * The tags for a thread the API shares publicly. Only the first prompt and the kind of thread are
  * used: never model names (a battle stays blind) and never anything about the account.

@@ -59,7 +59,12 @@ import {
   webContentSecurityPolicy,
 } from './server/security-headers.js';
 import { enrichSeoPage } from './server/seo-data.js';
-import { isShareRoute, serveSharePage } from './server/share.js';
+import {
+  fallbackPageMeta,
+  injectShareMeta,
+  isShareRoute,
+  serveSharePage,
+} from './server/share.js';
 import { loadWebManifest } from './server/web-manifest.js';
 
 const FORCE_WAITLIST = true;
@@ -186,7 +191,7 @@ const arena = {
     if ((request.method === 'GET' || request.method === 'HEAD') && isSpaFallbackRoute(pathname)) {
       const fallback = isShareRoute(pathname)
         ? await serveSharePage(request, env, ctx, { allowLookup: () => shareLookupAllowed(request, env) })
-        : await serveSpaFallback(request, env);
+        : await serveSpaFallbackWithMeta(request, env, url);
       if (fallback) {
         return fallback;
       }
@@ -243,6 +248,19 @@ const arena = {
     return new Response('Not Found', { status: 404 });
   },
 };
+
+// The other client-only pages (compare links, settings, the auth callbacks) get a title, a
+// description and the share card written in, so a pasted link no longer unfurls blank.
+async function serveSpaFallbackWithMeta(request, env, url) {
+  const page = await serveSpaFallback(request, env);
+  if (!page) return null;
+  const meta = fallbackPageMeta(url.pathname, url.origin);
+  if (!meta) return page;
+  const tagged = injectShareMeta(page, meta);
+  tagged.headers.delete('etag');
+  tagged.headers.delete('content-length');
+  return tagged;
+}
 
 // A share-page lookup that misses the edge cache calls the API twice, so it is counted in the read
 // group (per client). The synthetic path only classifies the request: nothing is fetched from it.

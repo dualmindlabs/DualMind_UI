@@ -9,7 +9,7 @@ export const cookiesContent: PageContent = {
   heading: { text: 'Cookies,', human: 'almost none.' },
   intro:
     'DualMind Arena does not track you with cookies. This page lists everything it stores in your browser, so you can check it.',
-  updated: '2026-10-20',
+  updated: '2026-11-26',
   sections: [
     {
       id: 'summary',
@@ -19,7 +19,7 @@ export const cookiesContent: PageContent = {
           type: 'callout',
           tone: 'summary',
           title: 'The short version',
-          text: 'We do not use analytics, advertising or tracking cookies. The Arena keeps your sign-in session and a few settings in your browser’s local storage. The only cookie we set is dm_preview, and only if you open a preview link before launch.',
+          text: 'We do not use analytics, advertising or tracking cookies. The only exception is optional, cookieless visit counting that stays off unless you accept it in a banner. The Arena keeps your sign-in session and a few settings in your browser’s local storage. The only cookie we set is dm_preview, and only if you open a preview link before launch.',
         },
       ],
     },
@@ -85,6 +85,16 @@ export const cookiesContent: PageContent = {
                 'A short-lived marker that stops a redirect loop between the app and the sign-in page. It is cleared when you close the tab.',
             },
             {
+              term: 'Sign-in handoff (local storage)',
+              description:
+                'When you leave to sign up or sign in, the prompt you typed and the page you wanted are kept here for up to an hour, so a confirmation link opened in another tab can bring you back to them. It is read once and then deleted.',
+            },
+            {
+              term: 'Analytics choice (local storage)',
+              description:
+                'Only when optional visit counting is switched on: whether you accepted or declined it. Nothing is counted unless you accepted, and never for browsers that send Do Not Track or Global Privacy Control.',
+            },
+            {
               term: 'Waitlist flag (local storage)',
               description:
                 'A marker on the waitlist site that remembers you already joined, so the form does not ask again.',
@@ -100,7 +110,7 @@ export const cookiesContent: PageContent = {
         {
           type: 'list',
           items: [
-            'No analytics cookies or scripts.',
+            'No analytics cookies. The optional visit counting uses no cookies at all.',
             'No advertising cookies, and no ads.',
             'No tracking pixels.',
             'No A/B testing tools.',
@@ -109,7 +119,7 @@ export const cookiesContent: PageContent = {
         },
         {
           type: 'paragraph',
-          text: 'Because we only use storage that the app needs to work, we do not show a cookie banner. If we ever add anything optional, we will ask first.',
+          text: 'Because the app itself only uses storage it needs to work, it shows no cookie banner. The one optional thing, visit counting, asks first, in its own banner, and only when it is switched on.',
         },
       ],
     },
@@ -127,7 +137,7 @@ export const cookiesContent: PageContent = {
         },
         {
           type: 'paragraph',
-          text: 'Do Not Track: we do not track you, so there is nothing for the setting to switch off.',
+          text: 'Do Not Track and Global Privacy Control: if your browser sends either one, the optional visit counting never asks and never counts you.',
         },
       ],
     },

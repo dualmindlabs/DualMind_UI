@@ -39,6 +39,7 @@ import {
   type Visibility,
 } from '@/lib/api';
 import { sharePath, shareUrl } from '@/lib/site/share';
+import { track } from '@/lib/analytics';
 import { canShareNatively, copyText, shareNatively } from '@/lib/utils/clipboard';
 import { cn } from '@/lib/utils/cn';
 
@@ -135,6 +136,7 @@ function ShareForm({ thread }: { thread: Thread }) {
   const copy = async () => {
     if (await copyText(url)) {
       setCopied(true);
+      track('share');
       toast.success('Link copied', { description: url });
     } else {
       toast.error('Could not copy the link', {

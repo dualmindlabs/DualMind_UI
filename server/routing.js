@@ -38,6 +38,9 @@ export const SPA_FALLBACK_ROUTES = [
   // read a stored result. Signed-in work, or a link to a shared result: never indexed.
   '/compare',
   '/compare/*',
+  // The private arena (flag off by default): signed-in work on your own prompts. Never indexed.
+  '/private',
+  '/private/',
 ];
 
 /** Where the fallback is served from. Workers assets serve dist/__spa-fallback.html here. */
@@ -101,6 +104,8 @@ export function isNoindexPath(pathname) {
     pathname === '/settings/' ||
     pathname === '/compare' ||
     pathname.startsWith('/compare/') ||
+    pathname === '/private' ||
+    pathname === '/private/' ||
     pathname === SPA_FALLBACK_PATH ||
     pathname === `${SPA_FALLBACK_PATH}.html`
   );

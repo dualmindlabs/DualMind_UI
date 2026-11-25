@@ -11,6 +11,7 @@ import { findBattleIndex } from '../lib/demo-machine';
 import { BattleSection } from './battle-section';
 import { ClosingCta } from './closing-cta';
 import { FeaturesSection } from './features-section';
+import { GuestBattle } from './guest-battle';
 import { HeroSection } from './hero-section';
 import { LeaderboardPreview } from './leaderboard-preview';
 import { ModelStrip } from './model-strip';
@@ -47,6 +48,7 @@ export function LandingPage() {
         <HeroSection onAsk={ask} stats={stats} />
         <ModelStrip stats={stats} />
         <BattleSection demo={demo} demoRef={demoRef} />
+        <GuestBattle />
         <StepsSection stats={stats} />
         <FeaturesSection stats={stats} />
         <LeaderboardPreview stats={stats} />

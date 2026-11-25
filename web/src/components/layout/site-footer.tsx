@@ -2,6 +2,7 @@ import { ArrowUpRight } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import { Emblem } from '@/components/layout/emblem';
+import { AnalyticsChoicesButton } from '@/components/layout/analytics-consent';
 import { Wordmark } from '@/components/layout/wordmark';
 import { buttonVariants } from '@/components/ui/button';
 import { BRAND_SUPPORTING } from '@/content/brand';
@@ -124,7 +125,10 @@ export function SiteFooter({ status, navLabel = 'Footer', className }: SiteFoote
 
       <div className="border-t border-line">
         <div className="mx-auto flex max-w-page flex-col gap-3 px-4 py-6 text-caption text-muted sm:flex-row sm:items-center sm:justify-between sm:px-6">
-          <p>© {YEAR} DualMind Labs. All rights reserved.</p>
+          <p>
+            © {YEAR} DualMind Labs. All rights reserved.{' '}
+            <AnalyticsChoicesButton className="underline underline-offset-4 hover:text-fg" />
+          </p>
           <p className="eyebrow">{BRAND_SUPPORTING}</p>
         </div>
       </div>

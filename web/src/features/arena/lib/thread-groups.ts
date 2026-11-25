@@ -1,4 +1,5 @@
 import type { Thread } from '@/lib/api';
+import { DATE_LOCALE } from '@/lib/utils/locale';
 
 /**
  * The history sidebar's rules (new-features.md F-8): threads grouped by the day they were last
@@ -86,7 +87,11 @@ export function filterThreads(threads: readonly Thread[], query: string): Thread
 }
 
 /** A short time for a row: "14:05" today, "Mon" this week, "3 Oct" before, "3 Oct 2025" older. */
-export function formatThreadTime(time: number | null, now: number, locale?: string): string {
+export function formatThreadTime(
+  time: number | null,
+  now: number,
+  locale: string = DATE_LOCALE,
+): string {
   if (time === null) return '';
   const group = groupFor(time, now);
   const date = new Date(time);
