@@ -44,7 +44,12 @@ export const GUEST_SIGNUP_HREF = `${SIGNUP_PATH}?redirect=${encodeURIComponent('
  * the page asks the visitor to sign up for the vote and the reveal. No model name is ever shown
  * here, even if the API sends one.
  */
-export function GuestBattle() {
+export function GuestBattle({
+  navigate = href => window.location.assign(href),
+}: {
+  /** Leaves for the sign-up page with a full page load; a test passes a spy. */
+  navigate?: (href: string) => void;
+}) {
   const features = useFeatures();
   const api = useApiClient();
   const [prompt, setPrompt] = useState('');
@@ -102,7 +107,7 @@ export function GuestBattle() {
 
   const signUp = () => {
     if (phase.kind === 'done') savePromptDraft(phase.prompt);
-    window.location.assign(GUEST_SIGNUP_HREF);
+    navigate(GUEST_SIGNUP_HREF);
   };
 
   return (

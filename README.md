@@ -160,6 +160,8 @@ The web app reads public build-time values from `VITE_` variables (`web/.env.exa
 | `VITE_API_BASE_URL` | API origin; empty means same-origin `/api/*`, which the Worker proxies. |
 | `VITE_API_MOCK` | `1` answers every API call from an in-memory mock (demo and offline mode, e2e tests). |
 | `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` | Public Supabase project values for sign-in. Production and previews read them from the Workers Builds build variables. |
+| `VITE_FEATURE_PHONE_SIGNIN`, `VITE_FEATURE_GUEST_BATTLE`, `VITE_FEATURE_PRIVATE_ARENA` | Launch features, all off unless set to `1`. The guest battle and the private arena also need the backend's flag (`GET /api/config/public`). |
+| `VITE_ANALYTICS_TOKEN` | Cloudflare Web Analytics site token. Unset means no analytics; set, the beacon loads only after the visitor accepts. |
 
 Cloudflare Worker settings:
 

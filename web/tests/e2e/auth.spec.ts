@@ -701,3 +701,46 @@ test.describe('accessibility, layout and screenshots', () => {
     }
   }
 });
+
+// Cycle 2 audit P1-6: Google refuses sign-in inside in-app browsers, so say so up front.
+test.describe('in-app browsers', () => {
+  test.use({
+    userAgent:
+      'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 LinkedInApp/9.30.1234',
+  });
+
+  test('/login/ warns that Google does not work there and keeps the other ways in', async ({
+    page,
+  }) => {
+    await mockSupabase(page);
+    await page.goto('/login/');
+    const notice = page.getByTestId('in-app-browser-notice');
+    await expect(notice).toContainText('Open this page in your browser to use Google');
+    await expect(page.getByRole('button', { name: 'Copy link' })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Continue with GitHub/ })).toBeVisible();
+    await expect(page.getByRole('tab', { name: 'Email code' })).toBeVisible();
+  });
+});
+
+// Cycle 2 audit P1-5: the draft and the destination survive the OAuth round trip.
+test('Continue with Google keeps the prompt draft and the destination in localStorage', async ({
+  page,
+}) => {
+  await mockSupabase(page);
+  await page.goto('/login/?redirect=%2Fcompare%2F');
+  await page.evaluate(() =>
+    window.sessionStorage.setItem(
+      'dm.promptDraft.v1',
+      JSON.stringify({ text: 'Kept across sign-in', savedAt: Date.now() }),
+    ),
+  );
+  await page.getByRole('button', { name: /Continue with Google/ }).click();
+  await page.waitForURL(`${SUPABASE}/auth/v1/authorize**`);
+  // Back on the app's own origin, the record the sign-in page left is still there.
+  await page.goto('/login/');
+  const record = await page.evaluate(() => window.localStorage.getItem('dm.authHandoff.v1'));
+  expect(JSON.parse(record ?? '{}')).toMatchObject({
+    draft: 'Kept across sign-in',
+    redirect: '/compare/',
+  });
+});

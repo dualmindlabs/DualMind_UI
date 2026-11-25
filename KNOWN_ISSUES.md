@@ -111,6 +111,18 @@ Last updated: 2026-11-23
 
 ---
 
+## Cycle 2 launch gaps (2026-11-26)
+
+Fixed in the cycle 2 PR for [#132](https://github.com/dualmindlabs/DualMind_UI/issues/132): phone sign-in is off by default with an allow-listed country code, the gate passes the legal pages, the waitlist worker is hardened, the prompt and destination survive sign-up and OAuth, in-app browsers are warned, model data is in the HTML of `/leaderboard/` and `/models/`, the UI works with masked model names, and the legacy session copy and `/auth-verify` are gone.
+
+Still open, by design or because it needs an owner:
+
+- **Owner actions**: Twilio geographic permissions (India only) and Supabase's hourly SMS limit; Supabase's redirect allow-list must accept `/auth-callback.html?redirect=...`; after deploy, check that `early.dualmindlab.tech` still answers once `workers_dev` is off (its custom domain is not in `wrangler.jsonc`); set the Turnstile site key, `TURNSTILE_SECRET_KEY` and `VITE_ANALYTICS_TOKEN` only when those features are switched on.
+- **Funnel events** have no sink yet: Cloudflare Web Analytics counts page views only, so `dm:funnel` events need a decision (a second tool, or a Back endpoint).
+- **A vote queued offline** on a masked battle shows the names only after a reload of the thread: the queue flush does not feed the open turn.
+- **The rating copy** (Elo, one vote at a time) still says "Elo" until the crowd board (Bradley-Terry) is switched on; change it in the same release.
+- **Sign-in notice emails** are throttled only in the browser: confirm the `email-wel-safe` function has its own per-user limit.
+
 ## Related issues in the other repo
 
 The backend issues are tracked in the private backend repo's [KNOWN_ISSUES.md](https://github.com/dualmindlabs/DualMind_Back/blob/master/KNOWN_ISSUES.md) (access required). They include:
