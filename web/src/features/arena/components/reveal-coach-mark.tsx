@@ -20,7 +20,7 @@ export function RevealCoachMark() {
     <div
       role="note"
       aria-label="How a battle works"
-      className="flex max-w-xl max-sm:hidden items-start gap-3 rounded-lg border border-line bg-glass px-4 py-3 text-left text-ui-sm text-fg-soft shadow-raise"
+      className="flex max-w-xl items-start gap-3 rounded-lg border border-line bg-glass px-4 py-3 text-left text-ui-sm text-fg-soft shadow-raise max-sm:hidden"
       data-testid="reveal-coach-mark"
     >
       <EyeOff aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-human" strokeWidth={2} />
