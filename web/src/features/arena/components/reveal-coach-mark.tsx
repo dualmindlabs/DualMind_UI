@@ -7,8 +7,10 @@ import { dismissRevealCoach, isRevealCoachDismissed } from '../lib/coach-mark';
 
 /**
  * A one-time note under the empty Battle heading: the names are hidden until you vote. "Got it"
- * (or any vote, which ends the empty screen anyway) keeps it away for good through localStorage;
- * with storage blocked it shows on every visit and still closes for the current one.
+ * keeps it away for good through localStorage; with storage blocked it shows on every visit and
+ * still closes for the current one. It is hidden below the `sm` breakpoint: the phone layout of
+ * the empty arena is tuned to keep the prompt box above the fold (mobile.spec.ts), and the note
+ * would push it out. Phones get the same explanation from the reveal itself.
  */
 export function RevealCoachMark() {
   const [open, setOpen] = useState(() => !isRevealCoachDismissed());
@@ -18,7 +20,7 @@ export function RevealCoachMark() {
     <div
       role="note"
       aria-label="How a battle works"
-      className="flex max-w-xl items-start gap-3 rounded-lg border border-line bg-glass px-4 py-3 text-left text-ui-sm text-fg-soft shadow-raise"
+      className="flex max-w-xl max-sm:hidden items-start gap-3 rounded-lg border border-line bg-glass px-4 py-3 text-left text-ui-sm text-fg-soft shadow-raise"
       data-testid="reveal-coach-mark"
     >
       <EyeOff aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-human" strokeWidth={2} />
