@@ -32,14 +32,14 @@ export const faqContent: PageContent = {
           type: 'faq',
           question: 'Is it free?',
           answer: [
-            'Creating an account and using the Arena costs nothing today. If that changes, we will say so on this site before it does.',
+            'Creating an account and using the Arena costs nothing today, and we do not ask for a credit card. The Pricing page lists the limits that apply. If that changes, we will say so on this site before it does.',
           ],
         },
         {
           type: 'faq',
           question: 'Which models can I compare?',
           answer: [
-            'The model picker shows the models available right now, and the Models page lists them. The list changes as models are added or retired, so we do not keep a fixed list here.',
+            'The model picker shows the models available right now, and the Models page lists them with their live count. Today the lineup is mostly open-weight models such as Llama, Qwen, Mistral and Gemma, served through Cloudflare Workers AI, Groq and Google. The list changes as models are added or retired, so we do not keep a fixed list here.',
             'You can suggest a model by writing to support@dualmindlab.tech. We cannot promise to add it: it depends on whether we can get reliable access to it.',
           ],
         },

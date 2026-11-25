@@ -20,6 +20,18 @@ export const SEO = {
     'DualMind Arena. Two models. One prompt. You decide. Two answer panes, A in cyan and B in terracotta.',
 } as const;
 
+/**
+ * The one honest line about the lineup, under the hero subhead: the count and the number of
+ * providers come from the live leaderboard (never typed in), and the families named are the ones
+ * that make up most of it. Until the numbers arrive the line has no numbers.
+ */
+export function lineupLine(counts: { models: number; providers: number } | null): string {
+  const families = 'mostly open-weight models such as Llama, Qwen, Mistral and Gemma';
+  if (counts === null) return `The lineup is ${families}.`;
+  const providers = counts.providers === 1 ? '1 provider' : `${counts.providers} providers`;
+  return `${counts.models} live models from ${providers}, ${families}.`;
+}
+
 export const HERO = {
   eyebrow: 'Live arena',
   eyebrowDetail: 'Blind battles, public Elo ratings',
@@ -37,8 +49,11 @@ export const HERO = {
  * arena (UI audit P1-1); only the chips play the recorded demo, and the copy says so.
  */
 export const HERO_STATUS = {
-  idle: 'Your own prompt runs on real models after a free sign-in.',
+  idle: 'Your own prompt runs on real models after a free sign-in. No credit card.',
   signIn: 'Taking you to sign in. Your prompt goes with you.',
+  // Shown instead when the browser would not keep the prompt (private mode, some in-app browsers).
+  signInNoDraft:
+    'Taking you to sign in. Your browser would not keep your prompt, so type it again in the arena.',
   demo: 'Playing a recorded battle below.',
   demoLink: 'Sign in to battle real models',
 } as const;

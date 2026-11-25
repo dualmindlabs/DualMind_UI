@@ -15,6 +15,12 @@ export interface SiteLink {
 
 /** The public source repository. */
 export const GITHUB_URL = 'https://github.com/dualmindlabs/DualMind_UI';
+/** The organization's own site (the Organization JSON-LD `url`, the built-by strip). */
+export const ORG_SITE_URL = 'https://dualmindlab.tech';
+/** The organization's GitHub page (the Organization JSON-LD `sameAs`, the built-by strip). */
+export const ORG_GITHUB_URL = 'https://github.com/dualmindlabs';
+/** The public changelog: what changed and when, in the repository. */
+export const CHANGELOG_URL = `${GITHUB_URL}/blob/master/CHANGELOG.md`;
 /** The support address already used across the site (FAQ, privacy page). */
 export const SUPPORT_EMAIL = 'support@dualmindlab.tech';
 
@@ -24,6 +30,7 @@ export const primaryNav: readonly SiteLink[] = [
   { label: 'Leaderboard', href: '/leaderboard/', description: 'Rankings from every vote' },
   { label: 'Models', href: '/models/', description: 'Every model in the Arena' },
   { label: 'How it works', href: '/how-it-works/', description: 'Battles, votes and ratings' },
+  { label: 'Pricing', href: '/pricing/', description: 'Free during the beta, with the real limits' },
 ];
 
 export const signInLink: SiteLink = { label: 'Sign in', href: '/login/' };
@@ -47,6 +54,7 @@ export const footerColumns: readonly FooterColumn[] = [
       { label: 'Arena', href: '/' },
       { label: 'Leaderboard', href: '/leaderboard/' },
       { label: 'Models', href: '/models/' },
+      { label: 'Pricing', href: '/pricing/' },
       { label: 'API', href: '/developers/' },
     ],
   },

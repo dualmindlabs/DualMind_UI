@@ -9,7 +9,7 @@ export const termsContent: PageContent = {
   heading: { text: 'Terms of Service,', human: 'plainly.' },
   intro:
     'These terms apply when you use DualMind Arena ("the Service"). By using it you agree to them. If you do not agree, please do not use the Service.',
-  updated: '2026-10-20',
+  updated: '2026-11-25',
   sections: [
     {
       id: 'summary',
@@ -171,6 +171,7 @@ export const termsContent: PageContent = {
         {
           type: 'list',
           items: [
+            'The Service is run by DualMind Labs.',
             'General questions: support@dualmindlab.tech',
             'Privacy and data requests: privacy@dualmindlab.tech',
           ],

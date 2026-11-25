@@ -32,13 +32,14 @@ interface HeroComposerProps {
  */
 export function HeroComposer({ onAsk, className }: HeroComposerProps) {
   const [prompt, setPrompt] = useState('');
-  const [status, setStatus] = useState<'idle' | 'demo' | 'sign-in'>('idle');
+  const [status, setStatus] = useState<'idle' | 'demo' | 'sign-in' | 'sign-in-no-draft'>('idle');
   const narrow = useMediaQuery('(max-width: 30rem)');
 
   const signInWith = (text: string) => {
     if (text.trim() === '') return;
-    setStatus('sign-in');
-    sendPromptToSignIn(text);
+    // The page leaves for sign-in; say "goes with you" only when the prompt was really kept.
+    const kept = sendPromptToSignIn(text);
+    setStatus(kept ? 'sign-in' : 'sign-in-no-draft');
   };
 
   const playDemo = (text: string) => {
@@ -83,6 +84,8 @@ export function HeroComposer({ onAsk, className }: HeroComposerProps) {
       <p role="status" className="mt-3 min-h-6 text-ui-sm text-fg-soft" data-testid="hero-status">
         {status === 'sign-in' ? (
           HERO_STATUS.signIn
+        ) : status === 'sign-in-no-draft' ? (
+          HERO_STATUS.signInNoDraft
         ) : status === 'demo' ? (
           <>
             {HERO_STATUS.demo}{' '}

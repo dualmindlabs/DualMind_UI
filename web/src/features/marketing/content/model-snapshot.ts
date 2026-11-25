@@ -1,10 +1,10 @@
 /**
- * The first 24 models of the public leaderboard as listed on 2026-10-20 (names and providers only,
+ * The first 24 models of the public leaderboard as listed on 2026-11-25 (names and providers only,
  * from `GET https://api.dualmindlab.tech/api/arena/model-stats`). The model strip starts with this
  * list so the prerendered page is not empty, labels it with its date, and swaps in the live list
  * as soon as the API answers. No numbers come from here.
  */
-export const MODEL_SNAPSHOT_DATE = '20 Oct 2026';
+export const MODEL_SNAPSHOT_DATE = '25 Nov 2026';
 
 export const MODEL_SNAPSHOT: ReadonlyArray<{ name: string; providerId: string }> = [
   { name: 'llama-3.3-70b-instruct-fp8-fast', providerId: 'cloudflare' },

@@ -196,7 +196,7 @@ Headers:
 - HTML: `no-cache` (revalidate on every visit, cheap with ETags) instead of today's `no-store`. `/share/*`: `no-store`.
 - Security headers on HTML:
   - `Content-Security-Policy`, shipped as `Report-Only` first, then enforced at cutover: `default-src 'self'; script-src 'self' 'sha256-<theme+session inline script>'; connect-src 'self' https://<project>.supabase.co; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'`.
-  - `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` (camera, geolocation off; microphone `self` for voice input later).
+  - `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` (camera, geolocation and microphone off; loosen the microphone to `self` when voice input ships).
   - `Strict-Transport-Security`.
   - Drop the deprecated `X-XSS-Protection`.
 - `robots.txt` and `sitemap.xml` are generated at build time from the route table (one source, real `lastmod`), no longer hardcoded in the Worker.

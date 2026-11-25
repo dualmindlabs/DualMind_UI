@@ -104,6 +104,20 @@ test.describe('the arena at /', () => {
     expect(csp).toEqual([]);
   });
 
+  test('a first-run note says voting reveals the names, and "Got it" keeps it away', async ({
+    page,
+  }) => {
+    await mockArena(page);
+    await openArena(page);
+    const note = page.getByRole('note', { name: 'How a battle works' });
+    await expect(note).toContainText('model names appear once your vote is in');
+    await note.getByRole('button', { name: 'Got it' }).click();
+    await expect(note).toHaveCount(0);
+    await page.reload();
+    await expect(page.getByTestId('arena')).toBeVisible();
+    await expect(page.getByRole('note', { name: 'How a battle works' })).toHaveCount(0);
+  });
+
   test('the account menu has no way back to a classic arena', async ({ page }) => {
     await mockArena(page);
     await openArena(page);

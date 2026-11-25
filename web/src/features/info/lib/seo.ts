@@ -3,6 +3,7 @@ import type { MetaDescriptor } from 'react-router';
 import { config } from '@/config/env';
 import { BRAND_PRIMARY } from '@/content/brand';
 import { type JsonLd, pageMeta, type PageMetaInput } from '@/lib/site/page-meta';
+import { webApplicationJsonLd } from '@/lib/site/structured-data';
 
 import type { PageContent } from '../content';
 import { faqId } from './blocks';
@@ -62,6 +63,9 @@ export function infoMeta(page: PageContent): MetaDescriptor[] {
     },
   };
   if (page.slug === 'faq') input.jsonLd = faqJsonLd(page) as JsonLd;
+  if (page.slug === 'pricing') {
+    input.jsonLd = { '@context': 'https://schema.org', ...webApplicationJsonLd() } as JsonLd;
+  }
   return pageMeta(input);
 }
 

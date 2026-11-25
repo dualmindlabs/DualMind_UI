@@ -194,7 +194,7 @@ Slice S11; fixes KNOWN_ISSUES #3, where the legacy rewrite to `/share/index.html
 | `Strict-Transport-Security` | `max-age=63072000; includeSubDomains` | everything |
 | `X-Content-Type-Options` | `nosniff` | everything |
 | `Referrer-Policy` | `strict-origin-when-cross-origin` | everything |
-| `Permissions-Policy` | `camera=(), geolocation=(), payment=(), usb=(), microphone=(self)` (the microphone stays available to the Arena itself for voice input later) | pages and files |
+| `Permissions-Policy` | `camera=(), geolocation=(), payment=(), usb=(), microphone=()` (no page uses the microphone; loosen it to `(self)` in the same change that adds voice input) | pages and files |
 | `Cross-Origin-Opener-Policy` | `same-origin` | pages and files |
 | `X-Frame-Options` | `DENY` (old browsers; `frame-ancestors 'none'` is the modern form) | pages and files |
 | `X-XSS-Protection` | removed: deprecated, and harmful in old browsers | never |
