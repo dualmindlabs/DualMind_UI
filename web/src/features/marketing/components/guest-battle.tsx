@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import { useApiClient } from '@/hooks/use-api-client';
 import { useFeatures } from '@/hooks/use-features';
 import {
@@ -166,9 +167,8 @@ export function GuestBattle() {
             <label htmlFor={inputId} className="sr-only">
               Your prompt for the free battle
             </label>
-            <textarea
+            <Textarea
               id={inputId}
-              dir="auto"
               rows={3}
               maxLength={GUEST_PROMPT_MAX_CHARS}
               value={prompt}
@@ -177,7 +177,6 @@ export function GuestBattle() {
               aria-describedby={statusId}
               onFocus={() => setArmed(true)}
               onChange={event => setPrompt(event.target.value)}
-              className="min-h-24 w-full resize-y rounded-sm border border-line-strong bg-surface-2 px-3.5 py-3 text-body text-fg placeholder:text-muted sm:text-ui"
             />
             <div ref={widget} data-testid="guest-turnstile" />
             <div className="flex flex-wrap items-center gap-3">

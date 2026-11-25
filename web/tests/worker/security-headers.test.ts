@@ -61,6 +61,27 @@ describe('the web page CSP', () => {
     ]);
   });
 
+  it('adds Cloudflare script and frame origins only when a launch feature needs them', () => {
+    expect(policy.has('frame-src')).toBe(false);
+    const on = directives(
+      webContentSecurityPolicy({
+        scriptHashes: [HASH],
+        connectSrc: ['https://cloudflareinsights.com'],
+        scriptSrc: ['https://static.cloudflareinsights.com', 'https://challenges.cloudflare.com'],
+        frameSrc: ['https://challenges.cloudflare.com'],
+      }),
+    );
+    expect(on.get('script-src')).toEqual([
+      "'self'",
+      'https://static.cloudflareinsights.com',
+      'https://challenges.cloudflare.com',
+      `'sha256-${HASH}'`,
+    ]);
+    expect(on.get('frame-src')).toEqual(['https://challenges.cloudflare.com']);
+    expect(on.get('connect-src')).toContain('https://cloudflareinsights.com');
+    expect(on.get('script-src')).not.toContain("'unsafe-inline'");
+  });
+
   it('without a manifest, scripts fall back to the origin only', () => {
     expect(directives(webContentSecurityPolicy()).get('script-src')).toEqual(["'self'"]);
   });

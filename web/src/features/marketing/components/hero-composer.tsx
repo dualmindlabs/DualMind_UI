@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { PlaceholdersAndVanishInput } from '@/components/vendor/aceternity/placeholders-and-vanish-input';
+import { PROMPT_DATA_WARNING } from '@/content/prompt-warning';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { sendPromptToSignIn } from '@/lib/session/prompt-draft';
 import { cn } from '@/lib/utils/cn';
@@ -62,6 +63,9 @@ export function HeroComposer({ onAsk, className }: HeroComposerProps) {
           className="max-w-none"
         />
       </div>
+      <p data-testid="prompt-data-warning" className="mt-2 px-4 text-caption text-muted">
+        {PROMPT_DATA_WARNING}
+      </p>
       <div className="mt-5 flex max-w-xl flex-wrap items-center justify-start gap-2">
         <span className="mr-1 eyebrow text-muted">Or watch</span>
         {DEMO_BATTLES.map((battle, index) => (

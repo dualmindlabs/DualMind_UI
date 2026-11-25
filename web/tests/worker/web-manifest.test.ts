@@ -28,6 +28,22 @@ describe('web manifest', () => {
     expect(manifest?.connectSrc).toEqual(['https://abc.supabase.co', 'wss://abc.supabase.co']);
   });
 
+  it('reads the optional script and frame origins, https only', () => {
+    const base = { version: 1, pages: ['/'], scriptHashes: [HASH] };
+    const manifest = parseWebManifest({
+      ...base,
+      scriptSrc: ['https://static.cloudflareinsights.com'],
+      frameSrc: ['https://challenges.cloudflare.com'],
+    });
+    expect(manifest?.scriptSrc).toEqual(['https://static.cloudflareinsights.com']);
+    expect(manifest?.frameSrc).toEqual(['https://challenges.cloudflare.com']);
+    expect(parseWebManifest(base)?.scriptSrc).toEqual([]);
+    expect(parseWebManifest({ ...base, scriptSrc: ['http://evil.test'] })).toBeNull();
+    expect(parseWebManifest({ ...base, frameSrc: ['wss://evil.test'] })).toBeNull();
+    expect(parseWebManifest({ ...base, scriptSrc: ['https://x.test/path'] })).toBeNull();
+    expect(parseWebManifest({ ...base, scriptSrc: 'https://x.test' })).toBeNull();
+  });
+
   it('rejects anything that could weaken or break the policy', () => {
     for (const bad of [
       null,

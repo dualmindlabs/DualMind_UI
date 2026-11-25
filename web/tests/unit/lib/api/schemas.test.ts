@@ -432,3 +432,25 @@ describe('feature flags (recorded)', () => {
     expect(featureFlagSchema.safeParse({ enabled: true }).success).toBe(false);
   });
 });
+
+describe('voteResultSchema models (blind mask)', () => {
+  it('reads the two names a masking backend sends with the vote', () => {
+    const parsed = voteResultSchema.parse({
+      success: true,
+      models: {
+        left: { name: 'vendor/alpha', displayName: 'Alpha', provider: 'vendor' },
+        right: 'vendor/beta',
+      },
+    });
+    expect(parsed.models?.left.name).toBe('vendor/alpha');
+    expect(parsed.models?.right.name).toBe('vendor/beta');
+  });
+
+  it('has no models when the backend does not send them, or sends junk', () => {
+    expect(voteResultSchema.parse({ success: true })).not.toHaveProperty('models');
+    expect(voteResultSchema.parse({ success: true, models: 'nope' })).not.toHaveProperty('models');
+    expect(voteResultSchema.parse({ success: true, models: { left: {} } })).not.toHaveProperty(
+      'models',
+    );
+  });
+});
