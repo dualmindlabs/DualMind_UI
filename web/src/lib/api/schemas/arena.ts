@@ -160,6 +160,17 @@ export const voteReceiptSchema = withAliases(
 );
 export type VoteReceipt = z.output<typeof voteReceiptSchema>;
 
+/**
+ * The names of the two models, which a backend that masks them (Features:MaskDualchatModels)
+ * sends only in the vote response: `{ left, right }`. Absent when the battle response already
+ * named them, or when the vote was an "already voted" repeat. Malformed names are dropped.
+ */
+export const voteModelsSchema = z
+  .object({ left: answerModelSchema, right: answerModelSchema })
+  .nullish()
+  .catch(null);
+export type VoteModels = NonNullable<z.output<typeof voteModelsSchema>>;
+
 export const voteResultSchema = z
   .preprocess(
     (input: unknown) => (input === null || input === undefined || input === '' ? {} : input),
@@ -169,12 +180,15 @@ export const voteResultSchema = z
       receipt: voteReceiptSchema.nullish().catch(null),
       /** Truth vs Taste: present only for an eval battle, after the vote (backend PR 70). */
       answerKey: answerKeySchema.nullish().catch(null),
+      /** The two model names, when the backend masks them in the battle response. */
+      models: voteModelsSchema,
     }),
   )
-  .transform(({ receipt, answerKey, ...result }) => ({
+  .transform(({ receipt, answerKey, models, ...result }) => ({
     ...result,
     ...(receipt ? { receipt } : {}),
     ...(answerKey ? { answerKey } : {}),
+    ...(models ? { models } : {}),
   }));
 export type VoteResult = z.output<typeof voteResultSchema>;
 

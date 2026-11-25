@@ -13,6 +13,7 @@ import {
   type QueuedVote,
   toThreadTitle,
   type VoteChoice,
+  type VoteModels,
   type VoteQueue,
 } from '@/lib/api';
 import { resolveDisplayName } from '@/lib/models/display-name';
@@ -274,8 +275,16 @@ export function useBattle({
             queued: result.status === 'queued',
             receipt: result.status === 'sent' ? (result.receipt ?? null) : null,
             answerKey: result.status === 'sent' ? (result.answerKey ?? null) : null,
+            models: result.status === 'sent' ? (result.models ?? null) : null,
           });
-          announce(revealMessage(turn, choice, result.status === 'queued'));
+          announce(
+            revealMessage(
+              turn,
+              choice,
+              result.status === 'queued',
+              result.status === 'sent' ? (result.models ?? null) : null,
+            ),
+          );
         })
         .catch((error: unknown) => {
           const failure = voteFailure(error);
@@ -385,11 +394,20 @@ function modelTitle(
   return model ? resolveDisplayName(model.name, model.displayName) : 'unknown';
 }
 
-function revealMessage(turn: LiveTurn, choice: VoteChoice, queued: boolean): string {
-  const a = modelTitle(turn.a?.model);
-  const b = modelTitle(turn.b?.model);
+function revealMessage(
+  turn: LiveTurn,
+  choice: VoteChoice,
+  queued: boolean,
+  models: VoteModels | null,
+): string {
   const saved = queued
     ? ' Your vote is saved on this device and will be sent when you are back online.'
     : '';
-  return `${CHOICE_WORDS[choice]}. Model A was ${a}. Model B was ${b}.${saved}`;
+  const left = turn.a?.model ?? models?.left;
+  const right = turn.b?.model ?? models?.right;
+  if (!left || !right) {
+    // A masked battle that was voted offline: the names come with the vote that is sent later.
+    return `${CHOICE_WORDS[choice]}.${queued ? ' The model names appear when your vote is sent.' : ''}${saved}`;
+  }
+  return `${CHOICE_WORDS[choice]}. Model A was ${modelTitle(left)}. Model B was ${modelTitle(right)}.${saved}`;
 }

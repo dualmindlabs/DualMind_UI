@@ -20,7 +20,7 @@ import {
   isRetryableError,
   toApiError,
 } from './errors';
-import { VOTE_CHOICES, type VoteReceipt } from './schemas/arena';
+import { VOTE_CHOICES, type VoteModels, type VoteReceipt } from './schemas/arena';
 import type { AnswerKey } from './schemas/truth';
 
 export const VOTE_QUEUE_STORAGE_KEY = 'dm.voteQueue.v1';
@@ -49,6 +49,8 @@ export type VoteSubmitResult =
       /** Present when the API's receipts flag is on. */ receipt?: VoteReceipt | null;
       /** Present for a Truth vs Taste battle (backend PR 70), after the vote. */
       answerKey?: AnswerKey | null;
+      /** The two model names, when the backend masks them until the vote (blind mask). */
+      models?: VoteModels | null;
     }
   | { status: 'queued'; error: ApiError | null };
 
@@ -118,6 +120,16 @@ function receiptOf(result: unknown): VoteReceipt | null {
 }
 
 /** The answer key on a send result, when it has one (an eval battle's vote response). */
+function modelsOf(result: unknown): VoteModels | null {
+  if (typeof result !== 'object' || result === null || !('models' in result)) return null;
+  const { models } = result;
+  if (typeof models !== 'object' || models === null) return null;
+  const { left, right } = models as Record<string, unknown>;
+  return typeof left === 'object' && left !== null && typeof right === 'object' && right !== null
+    ? (models as VoteModels)
+    : null;
+}
+
 function answerKeyOf(result: unknown): AnswerKey | null {
   if (typeof result !== 'object' || result === null || !('answerKey' in result)) return null;
   const { answerKey } = result;
@@ -322,10 +334,12 @@ export function createVoteQueue(options: VoteQueueOptions): VoteQueue {
       const result = await options.send(vote);
       const receipt = receiptOf(result);
       const answerKey = answerKeyOf(result);
+      const models = modelsOf(result);
       return {
         status: 'sent',
         ...(receipt === null ? {} : { receipt }),
         ...(answerKey === null ? {} : { answerKey }),
+        ...(models === null ? {} : { models }),
       };
     } catch (error) {
       const apiError = toApiError(error);

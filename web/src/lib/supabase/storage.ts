@@ -3,9 +3,10 @@
  *
  * - The session itself is supabase-js's (`sb-<project ref>-auth-token`, default key).
  * - `dualmind.auth.supabase` is the legacy app's copy (`{ user, session }`, written by
- *   js/auth/supabase-auth.js and the old /login/ page). Until the arena slice (S8) the new pages
- *   keep it in step (the legacy arena reads it), migrate a session that only exists there, and
- *   remove it with the other legacy keys on sign-out.
+ *   js/auth/supabase-auth.js and the old /login/ page). The classic arena that read it is gone
+ *   (slice S8), so the new pages no longer write it (a second copy of the access and refresh
+ *   tokens was extra exposure for nothing). They still migrate a session that only exists there
+ *   and remove it with the other legacy keys on sign-out; both go in the next release.
  * - Signing out also empties the offline vote queue (`dm.voteQueue.v1`: votes belong to the user
  *   who cast them) and the cached profile.
  */
@@ -55,14 +56,6 @@ function attempt(action: () => void): void {
   } catch {
     // Full or blocked storage: the auth flow continues without the copy.
   }
-}
-
-/** Keeps the legacy app's copy of the session in step with supabase-js's own. */
-export function writeLegacySession(storage: KeyValueStorage | null, session: Session): void {
-  if (!storage) return;
-  attempt(() =>
-    storage.setItem(LEGACY_SESSION_KEY, JSON.stringify({ user: session.user, session })),
-  );
 }
 
 /** Removes every legacy session key. */

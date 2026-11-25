@@ -151,7 +151,7 @@ describe('createAuthStore', () => {
     expect(loadClient).not.toHaveBeenCalled();
   });
 
-  it('reads a stored session, mirrors it for the legacy arena and syncs the profile once', async () => {
+  it('reads a stored session, writes no legacy copy and syncs the profile once', async () => {
     const session = fakeSession();
     const local = memoryStorage({ [CONFIG.storageKey]: JSON.stringify(session) });
     const tab = memoryStorage();
@@ -161,10 +161,8 @@ describe('createAuthStore', () => {
     await settled();
     expect(store.getState()).toMatchObject({ status: 'signed-in', user: { id: 'user-1' } });
     expect(store.getState().profile).toEqual({ role: 'tester' });
-    expect(JSON.parse(local.getItem('dualmind.auth.supabase') ?? '{}')).toMatchObject({
-      session: { access_token: 'access-1' },
-      user: { id: 'user-1' },
-    });
+    // The legacy second copy of the tokens is no longer written.
+    expect(local.getItem('dualmind.auth.supabase')).toBeNull();
     expect(JSON.parse(tab.getItem('dm.profile.v1') ?? '{}')).toEqual({
       userId: 'user-1',
       profile: { role: 'tester' },

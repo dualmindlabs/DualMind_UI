@@ -5,6 +5,7 @@ import type {
   Rebuttal,
   Usage,
   VoteChoice,
+  VoteModels,
   VoteReceipt,
 } from '@/lib/api';
 
@@ -138,6 +139,8 @@ export type BattleAction =
       queued: boolean;
       receipt?: VoteReceipt | null;
       answerKey?: AnswerKey | null;
+      /** The model names from the vote response, when the backend masks them until then. */
+      models?: VoteModels | null;
     }
   | { type: 'critique-start'; id: string }
   | { type: 'critique-done'; id: string; rebuttals: readonly Rebuttal[] }
@@ -324,6 +327,9 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
               votePending: action.queued,
               receipt: action.receipt ?? null,
               answerKey: action.answerKey ?? null,
+              // A masked battle names its models only here; an unmasked one keeps its own.
+              a: withModel(turn.a, action.models?.left),
+              b: withModel(turn.b, action.models?.right),
             },
       );
     case 'critique-start':
@@ -436,6 +442,12 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
         return { ...turn, phase: afterReveal(turn), shownAt: turn.answeredAt };
       });
   }
+}
+
+/** The answer with the vote response's name filled in where the battle response had none. */
+function withModel(answer: LiveAnswer | null, model: AnswerModel | undefined): LiveAnswer | null {
+  if (!answer || !model || answer.model) return answer;
+  return { ...answer, model };
 }
 
 /** Names may be shown: always in Side by side and Direct, after the vote in a battle. */

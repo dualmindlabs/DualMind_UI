@@ -72,3 +72,14 @@ export function withRedirect(path: string, search: string, origin: string): stri
   const target = redirectFromSearch(search, origin);
   return target === DEFAULT_REDIRECT ? path : `${path}?redirect=${encodeURIComponent(target)}`;
 }
+
+/**
+ * The address the Supabase emails (confirmation, magic link) send the browser to: the callback
+ * page, with the validated destination as `?redirect=` so a new tab still knows where to go.
+ * Needs Supabase's redirect allow-list to accept a query string on this path.
+ */
+export function callbackUrl(origin: string, redirectTo: string = DEFAULT_REDIRECT): string {
+  const target = safeRedirect(redirectTo, origin);
+  const base = `${origin}${AUTH_CALLBACK_PATH}`;
+  return target === DEFAULT_REDIRECT ? base : `${base}?redirect=${encodeURIComponent(target)}`;
+}

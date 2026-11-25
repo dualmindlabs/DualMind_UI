@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import {
+  ALLOWED_PHONE_COUNTRY_CODES,
   checkPwnedPassword,
   evaluatePassword,
   normalizeOtp,
@@ -30,16 +31,23 @@ describe('field checks', () => {
     expect(normalizeOtp(' 123 456 ')).toBe('123456');
   });
 
-  it('normalises phone numbers to E.164, with +91 for ten bare digits as before', () => {
-    expect(normalizePhone('98765 43210')).toBe('+919876543210');
+  it('accepts only an explicit, allow-listed country code (SMS pumping guard)', () => {
+    expect(ALLOWED_PHONE_COUNTRY_CODES).toEqual(['91']);
     expect(normalizePhone('+91 98765-43210')).toBe('+919876543210');
-    expect(normalizePhone('919876543210')).toBe('+919876543210');
-    expect(normalizePhone('+1 (415) 555-0100')).toBe('+14155550100');
-    expect(normalizePhone('12345')).toBeNull();
+    expect(normalizePhone('  +919876543210 ')).toBe('+919876543210');
+    // No silent +91 for a bare number, whatever its length.
+    expect(normalizePhone('98765 43210')).toBeNull();
+    expect(normalizePhone('919876543210')).toBeNull();
+    expect(normalizePhone('2125551234')).toBeNull();
+    // Other countries are off until Twilio's geographic permissions allow them.
+    expect(normalizePhone('+1 (415) 555-0100')).toBeNull();
+    expect(normalizePhone('+44 20 7946 0000')).toBeNull();
     expect(normalizePhone('+0123456789')).toBeNull();
+    expect(normalizePhone('+91 123')).toBeNull();
     expect(validatePhone('')).toMatch(/Enter your phone/);
-    expect(validatePhone('123')).toMatch(/country code/);
-    expect(validatePhone('+44 20 7946 0000')).toBeNull();
+    expect(validatePhone('9876543210')).toMatch(/Start with the country code/);
+    expect(validatePhone('+44 20 7946 0000')).toMatch(/\+91/);
+    expect(validatePhone('+91 98765 43210')).toBeNull();
   });
 
   it('checks names and passwords', () => {

@@ -5,6 +5,7 @@ import { useSearchParams } from 'react-router';
 import { useApiClient } from '@/hooks/use-api-client';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { threadQuery } from '@/lib/api';
+import { claimAuthHandoff } from '@/lib/session/auth-handoff';
 import { clearPromptDraft, readPromptDraft } from '@/lib/session/prompt-draft';
 
 import { ArenaContext, type ArenaState } from '../hooks/use-arena';
@@ -37,6 +38,9 @@ export function ArenaProvider({ children }: { children: ReactNode }) {
   const [shareThreadId, setShareThreadId] = useState<string | null>(null);
   // A prompt typed on the landing page before signing in (UI audit P1-1): it opens in the box,
   // focused and not sent. Read once; the effect below clears it from the tab.
+  // A sign-up or OAuth round trip may have left it in localStorage (lib/session/auth-handoff.ts):
+  // claiming first puts it back into this tab, and says where the visitor was heading.
+  const [handoff] = useState(() => claimAuthHandoff());
   const [landingDraft] = useState(() => readPromptDraft());
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [shortcutsReturnFocus, setShortcutsReturnFocus] = useState<HTMLElement | null>(null);
@@ -100,6 +104,11 @@ export function ArenaProvider({ children }: { children: ReactNode }) {
     // After the current render: the composer may be about to move (empty state to thread).
     requestAnimationFrame(() => composerRef.current?.focus());
   }, []);
+
+  // OAuth always returns to `/`: carry on to the page the visitor asked for.
+  useEffect(() => {
+    if (handoff && handoff.redirect !== '/') window.location.replace(handoff.redirect);
+  }, [handoff]);
 
   useEffect(() => {
     if (landingDraft === null) return;

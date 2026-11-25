@@ -53,7 +53,7 @@ describe('LoginPage', () => {
     expect(screen.getByText('VITE_SUPABASE_URL')).toBeInTheDocument();
   });
 
-  it('offers OAuth, password, email code and phone code to a signed-out visitor', async () => {
+  it('offers OAuth, password and email code to a signed-out visitor, and no phone tab', async () => {
     renderLogin(storeWith(null));
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
       'Welcome back to the Arena.',
@@ -61,7 +61,8 @@ describe('LoginPage', () => {
     expect(screen.getByRole('button', { name: /Continue with Google/ })).toBeVisible();
     expect(screen.getByRole('button', { name: /Continue with GitHub/ })).toBeVisible();
     const tabs = screen.getAllByRole('tab').map(tab => tab.textContent);
-    expect(tabs).toEqual(['Password', 'Email code', 'Phone code']);
+    expect(tabs).toEqual(['Password', 'Email code']);
+    expect(screen.queryByRole('tab', { name: 'Phone code' })).not.toBeInTheDocument();
     expect(screen.getByLabelText('Email')).toHaveAttribute('autocomplete', 'email');
     expect(screen.getByLabelText('Password', { selector: 'input' })).toHaveAttribute(
       'autocomplete',
@@ -71,8 +72,6 @@ describe('LoginPage', () => {
       'href',
       '/forgot-password/',
     );
-    await userEvent.click(screen.getByRole('tab', { name: 'Phone code' }));
-    expect(await screen.findByLabelText('Phone number')).toHaveAttribute('autocomplete', 'tel');
   });
 
   it('shows inline errors linked to their fields and focuses the first one', async () => {

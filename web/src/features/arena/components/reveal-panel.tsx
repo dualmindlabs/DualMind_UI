@@ -17,9 +17,11 @@ import { CrossExamineSlot } from './cross-examine-strip';
 import { ModelRating, RatingOdds } from './model-rating';
 import { ReceiptChip } from './receipt-chip';
 
-function nameOf(answer: LiveAnswer | null): string {
+/** The name, or the reason there is none: a masked battle voted offline has no names yet. */
+function nameOf(answer: LiveAnswer | null, namesPending = false): string {
   const model = answer?.model;
-  return model ? resolveDisplayName(model.name, model.displayName) : 'Unknown model';
+  if (model) return resolveDisplayName(model.name, model.displayName);
+  return namesPending ? 'Shown when your vote is sent' : 'Unknown model';
 }
 
 const VERDICT_TONE = {
@@ -56,6 +58,7 @@ export function RevealPanel({ turn }: { turn: LiveTurn }) {
   if (turn.vote === null) return null;
   const shareId = battle.state.threadId ?? threadId;
   const pending = turn.votePending && battle.pendingVotes > 0;
+  const namesPending = turn.votePending;
   const sides = [
     { side: 'a', answer: turn.a, picked: turn.vote === 'left' },
     { side: 'b', answer: turn.b, picked: turn.vote === 'right' },
@@ -115,9 +118,9 @@ export function RevealPanel({ turn }: { turn: LiveTurn }) {
                 side === 'a' ? 'justify-items-start text-start' : 'justify-items-end text-end',
               )}
             >
-              <ModelMark name={nameOf(answer)} who={side} size="lg" />
+              <ModelMark name={nameOf(answer, namesPending)} who={side} size="lg" />
               <span className="min-w-0 text-ui font-semibold tracking-tight [overflow-wrap:anywhere] text-fg">
-                {nameOf(answer)}
+                {nameOf(answer, namesPending)}
               </span>
               {answer?.model ? (
                 <span className="text-caption text-fg-soft">

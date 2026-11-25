@@ -58,6 +58,7 @@ import {
   LEGACY_CONTENT_SECURITY_POLICY,
   webContentSecurityPolicy,
 } from './server/security-headers.js';
+import { enrichSeoPage } from './server/seo-data.js';
 import { isShareRoute, serveSharePage } from './server/share.js';
 import { loadWebManifest } from './server/web-manifest.js';
 
@@ -251,8 +252,11 @@ async function shareLookupAllowed(request, env) {
   return !gate.response;
 }
 
-function serveArena(request, env, ctx) {
-  return arena.fetch(request, env, ctx);
+// The Arena, then (for /leaderboard/ and /models/) the model data for crawlers without
+// JavaScript (server/seo-data.js, fail-safe).
+async function serveArena(request, env, ctx) {
+  const response = await arena.fetch(request, env, ctx);
+  return enrichSeoPage(request, response, { env, ctx });
 }
 
 function isV2Path(pathname) {

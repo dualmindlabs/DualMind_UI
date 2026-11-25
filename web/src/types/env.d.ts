@@ -12,6 +12,14 @@ interface ImportMetaEnv {
   readonly VITE_SUPABASE_URL?: string;
   /** Supabase public anon key (public by design; from the build variables, never committed). */
   readonly VITE_SUPABASE_ANON_KEY?: string;
+  /** `1` shows the phone-code sign-in tab (off by default; see src/config/features.ts). */
+  readonly VITE_FEATURE_PHONE_SIGNIN?: string;
+  /** `1` enables the guest battle on the landing page (also needs the backend flag). */
+  readonly VITE_FEATURE_GUEST_BATTLE?: string;
+  /** `1` enables the /private/ arena page (also needs the backend flag). */
+  readonly VITE_FEATURE_PRIVATE_ARENA?: string;
+  /** Cloudflare Web Analytics site token; unset means no analytics. */
+  readonly VITE_ANALYTICS_TOKEN?: string;
 }
 
 interface ImportMeta {
