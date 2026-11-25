@@ -76,8 +76,7 @@ describe('info pages', () => {
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
     expect(screen.getAllByRole('note')[0]).toHaveTextContent('free while it is in beta');
     const ld = infoMeta(pricingContent).find(tag => 'script:ld+json' in tag) as
-      | { 'script:ld+json': Record<string, unknown> }
-      | undefined;
+      { 'script:ld+json': Record<string, unknown> } | undefined;
     const app = ld?.['script:ld+json'];
     expect(app?.['@type']).toBe('WebApplication');
     expect(app?.isAccessibleForFree).toBe(true);

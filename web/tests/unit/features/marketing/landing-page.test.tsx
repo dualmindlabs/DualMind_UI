@@ -187,8 +187,12 @@ describe('LandingPage', () => {
   it('states the lineup honestly: no numbers until the live board arrives, then the live count', async () => {
     renderLanding();
     const line = screen.getByTestId('hero-lineup');
-    expect(line).toHaveTextContent('mostly open-weight models such as Llama, Qwen, Mistral and Gemma');
-    await waitFor(() => expect(line).toHaveTextContent(/^\d+ live models from \d+ providers?, mostly/));
+    expect(line).toHaveTextContent(
+      'mostly open-weight models such as Llama, Qwen, Mistral and Gemma',
+    );
+    await waitFor(() =>
+      expect(line).toHaveTextContent(/^\d+ live models from \d+ providers?, mostly/),
+    );
   });
 
   it('shows who builds it, with real links only', () => {

@@ -30,7 +30,11 @@ export const primaryNav: readonly SiteLink[] = [
   { label: 'Leaderboard', href: '/leaderboard/', description: 'Rankings from every vote' },
   { label: 'Models', href: '/models/', description: 'Every model in the Arena' },
   { label: 'How it works', href: '/how-it-works/', description: 'Battles, votes and ratings' },
-  { label: 'Pricing', href: '/pricing/', description: 'Free during the beta, with the real limits' },
+  {
+    label: 'Pricing',
+    href: '/pricing/',
+    description: 'Free during the beta, with the real limits',
+  },
 ];
 
 export const signInLink: SiteLink = { label: 'Sign in', href: '/login/' };
