@@ -7,6 +7,7 @@ import {
   escapeHtml,
   genericShareMeta,
   isShareRoute,
+  isShareUuid,
   loadShareFacts,
   oneLine,
   SHARE_META_MISS_TTL_SECONDS,
@@ -325,6 +326,54 @@ describe('loadShareFacts', () => {
     expect(Date.now() - started).toBeLessThan(2000);
     expect(log).toHaveBeenCalledWith(expect.objectContaining({ outcome: 'timeout' }));
     expect(JSON.stringify(log.mock.calls)).not.toContain(ID);
+  });
+});
+
+describe('share look-ups are UUID-only and counted', () => {
+  it('recognises UUID ids only', () => {
+    expect(isShareUuid(ID)).toBe(true);
+    expect(isShareUuid(ID.toUpperCase())).toBe(true);
+    expect(isShareUuid('t-recursion')).toBe(false);
+    expect(isShareUuid(`${ID}0`)).toBe(false);
+    expect(isShareUuid(null)).toBe(false);
+  });
+
+  it('skips the upstream call when the limiter says no, and caches nothing', async () => {
+    const cache = memoryCache();
+    const fetchImpl = upstream({ messages: [message(0, 'Prompt', null)] });
+    const log = vi.fn();
+    const facts = await loadShareFacts(ID, {}, ORIGIN, {
+      fetchImpl,
+      cache,
+      log,
+      allowLookup: () => Promise.resolve(false),
+    });
+    expect(facts).toBeNull();
+    expect(fetchImpl).not.toHaveBeenCalled();
+    expect(cache.put).not.toHaveBeenCalled();
+    expect(log).toHaveBeenCalledWith(expect.objectContaining({ outcome: 'rate_limited' }));
+  });
+
+  it('does not count a cache hit against the limiter', async () => {
+    const cache = memoryCache();
+    const fetchImpl = upstream({ messages: [message(0, 'Prompt', null)] });
+    const allowLookup = vi.fn(() => Promise.resolve(true));
+    await loadShareFacts(ID, {}, ORIGIN, { fetchImpl, cache, log: silent, allowLookup });
+    await loadShareFacts(ID, {}, ORIGIN, { fetchImpl, cache, log: silent, allowLookup });
+    expect(allowLookup).toHaveBeenCalledTimes(1);
+  });
+
+  it('a random slug gets the generic tags without any API call', async () => {
+    const backend = upstream({ messages: [message(0, 'Prompt', null)] });
+    vi.stubGlobal('fetch', backend);
+    const response = await worker.fetch(
+      new Request(`${ORIGIN}/share/some-random-slug`, { headers: PREVIEW }),
+      { ASSETS: fakeAssets(DIST), BACKEND_URL: 'https://backend.test' },
+    );
+    vi.unstubAllGlobals();
+    expect(response.status).toBe(200);
+    expect(backend).not.toHaveBeenCalled();
+    expect(response.headers.get('x-robots-tag')).toBe('noindex, nofollow');
   });
 });
 

@@ -139,6 +139,7 @@ const redirects: Array<[from: string, to: string]> = [
   ['/careers', '/about/'],
   ['/careers/', '/about/'],
   ['/auth-verify.html', '/'],
+  ['/auth-verify', '/'],
   ['/verify.html', '/'],
 ];
 

@@ -8,7 +8,8 @@
 //   page's title, description, canonical URL, Open Graph and Twitter tags into the HTML with
 //   HTMLRewriter. For a thread the API returns WITHOUT a token (public or unlisted, while the
 //   API's `public_sharing` flag is on), the title is the first prompt; anything else (private,
-//   unknown, an API error or a slow API) gets the generic share tags. No visitor credential is
+//   unknown, an API error or a slow API) gets the generic share tags. Only UUID-shaped ids are
+//   looked up at all, and a lookup that misses the edge cache counts against the read limit. No visitor credential is
 //   ever sent upstream, so a private thread can never leak into a preview.
 // - The upstream lookup has a short timeout and is kept in the edge cache (Cache API) for a
 //   couple of minutes, so a link pasted in a busy chat does not hit the API for every preview.
@@ -20,6 +21,14 @@ import { matchesOneSegment, serveSpaFallback } from './routing.js';
 
 /** Thread ids: the API's UUIDs, kept loose (letters, digits, - and _) for other id formats. */
 export const SHARE_ID_RE = /^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/;
+
+/** Only UUID-shaped ids are looked up upstream: a random slug costs no API call at all. */
+export const SHARE_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** @param {unknown} value */
+export function isShareUuid(value) {
+  return typeof value === 'string' && SHARE_UUID_RE.test(value);
+}
 
 /** Query parameters of old share links, in the order the legacy page read them. */
 export const SHARE_QUERY_KEYS = Object.freeze(['threadId', 'thread', 'id']);
@@ -269,7 +278,7 @@ export function shareFactsFrom(threadBody, messagesBody) {
 /**
  * The two Cache API methods used here (caches.default in the Workers runtime).
  * @typedef {{ match: (request: Request) => Promise<Response | undefined>, put: (request: Request, response: Response) => Promise<void> }} ShareMetaCache
- * @typedef {{ fetchImpl?: (input: string, init: RequestInit) => Promise<Response>, cache?: ShareMetaCache | null, timeoutMs?: number, waitUntil?: ((promise: Promise<unknown>) => void) | undefined, log?: (event: object) => void }} ShareMetaOptions
+ * @typedef {{ fetchImpl?: (input: string, init: RequestInit) => Promise<Response>, cache?: ShareMetaCache | null, timeoutMs?: number, allowLookup?: () => Promise<boolean>, waitUntil?: ((promise: Promise<unknown>) => void) | undefined, log?: (event: object) => void }} ShareMetaOptions
  */
 
 function defaultCache() {
@@ -299,6 +308,7 @@ export async function loadShareFacts(id, env, origin, options = {}) {
     fetchImpl = (input, init) => globalThis.fetch(input, init),
     cache = defaultCache(),
     timeoutMs = SHARE_META_TIMEOUT_MS,
+    allowLookup,
     waitUntil,
     log = event => console.log(JSON.stringify(event)),
   } = options;
@@ -313,6 +323,21 @@ export async function loadShareFacts(id, env, origin, options = {}) {
       }
     } catch {
       // A broken cache entry is a miss.
+    }
+  }
+
+  // Cache hits above are free. An upstream lookup is counted (the Worker passes the read limiter
+  // here); over the limit the page gets the generic tags and nothing is cached.
+  if (allowLookup) {
+    let allowed = true;
+    try {
+      allowed = await allowLookup();
+    } catch {
+      allowed = true;
+    }
+    if (!allowed) {
+      log({ event: 'share_meta_fallback', outcome: 'rate_limited', ms: 0 });
+      return null;
     }
   }
 
@@ -385,7 +410,7 @@ export async function serveSharePage(request, env, ctx, options = {}) {
 
   const url = new URL(request.url);
   const id = shareIdFromUrl(url);
-  const facts = id
+  const facts = id && isShareUuid(id)
     ? await loadShareFacts(id, env, url.origin, {
         waitUntil: ctx?.waitUntil ? promise => ctx.waitUntil(promise) : undefined,
         ...options,

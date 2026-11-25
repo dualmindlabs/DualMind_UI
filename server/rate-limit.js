@@ -29,10 +29,55 @@ export const RATE_LIMIT_GROUPS = Object.freeze({
 
 export const BINDING_TIMEOUT_MS = 50;
 
-const BATTLE_PATHS = new Set(['/api/arena/dualchat', '/api/arena/chat', '/api/arena/chat/stream']);
+// Every path below makes at least one model call (compare and critique make two), so they share
+// the battle group's 6 per minute. The guest battle and the private arena battle are the same.
+const BATTLE_PATHS = new Set([
+  '/api/arena/dualchat',
+  '/api/arena/chat',
+  '/api/arena/chat/stream',
+  '/api/arena/guest-battle',
+  '/api/compare',
+]);
 const VOTE_PATHS = new Set(['/api/arena/model-vote']);
+const CRITIQUE_PATH_RE = /^\/api\/arena\/comparisons\/[^/]+\/critique$/;
+const PRIVATE_BATTLE_PATH_RE = /^\/api\/private-arenas\/[^/]+\/battle$/;
+const PRIVATE_VOTE_PATH_RE = /^\/api\/private-arenas\/[^/]+\/vote$/;
 const SPEECH_PATHS = new Set(['/api/speech/generate', '/api/audio/tts']);
 const EXEMPT_PATHS = new Set(['/api/health', '/api/v2/health']);
+
+// The v2 leaderboard is served from the Worker's own Cache API entry (server/v2/leaderboard/
+// cache.ts). A read that the cache can answer costs no upstream call, so it is not counted: a
+// class or a hostel behind one NAT opening /leaderboard/ together must not get 429s. The key and
+// the freshness window equal CACHE_KEY_PATH and STALE_SECONDS there (a test checks both).
+export const LEADERBOARD_CACHE_KEY_PATH = '/__cache/leaderboard/v1';
+export const LEADERBOARD_CACHE_MAX_AGE_MS = 600_000;
+const LEADERBOARD_PATH = '/api/v2/leaderboard';
+
+/**
+ * True for an anonymous GET or HEAD of the v2 leaderboard that the Cache API entry can answer
+ * (stored less than ten minutes ago). Never throws.
+ * @param {Request} request
+ * @param {{ cache?: { match: (request: Request) => Promise<Response | undefined> } | null, now?: () => number }} [options]
+ * @returns {Promise<boolean>}
+ */
+export async function isPublicCacheHit(request, options = {}) {
+  try {
+    const verb = request.method.toUpperCase();
+    if (verb !== 'GET' && verb !== 'HEAD') return false;
+    const url = new URL(request.url);
+    const path = url.pathname.length > 1 ? url.pathname.replace(/\/+$/, '') : url.pathname;
+    if (path !== LEADERBOARD_PATH || request.headers.get('authorization')) return false;
+    const cache = options.cache === undefined ? globalThis.caches?.default : options.cache;
+    if (!cache) return false;
+    const hit = await cache.match(new Request(new URL(LEADERBOARD_CACHE_KEY_PATH, url)));
+    if (!hit) return false;
+    const storedAt = Number(hit.headers.get('X-DM-Stored-At'));
+    const now = (options.now ?? Date.now)();
+    return Number.isFinite(storedAt) && now - storedAt < LEADERBOARD_CACHE_MAX_AGE_MS;
+  } catch {
+    return false;
+  }
+}
 
 const DEV_SALT = 'dualmind-unsalted-development-salt';
 const PROBLEM_CONTENT_TYPE = 'application/problem+json; charset=utf-8';
@@ -51,8 +96,10 @@ export function classify(method, pathname) {
   if (!path.startsWith('/api/') || EXEMPT_PATHS.has(path)) return null;
   if (verb === 'GET' || verb === 'HEAD') return 'read';
   if (verb === 'POST') {
-    if (BATTLE_PATHS.has(path)) return 'battle';
-    if (VOTE_PATHS.has(path)) return 'vote';
+    if (BATTLE_PATHS.has(path) || CRITIQUE_PATH_RE.test(path) || PRIVATE_BATTLE_PATH_RE.test(path)) {
+      return 'battle';
+    }
+    if (VOTE_PATHS.has(path) || PRIVATE_VOTE_PATH_RE.test(path)) return 'vote';
     if (SPEECH_PATHS.has(path)) return 'speech';
   }
   return 'write';
@@ -162,11 +209,18 @@ let warnedUnsalted = false;
  *   log?: (event: object) => void,
  *   timeoutMs?: number,
  *   newId?: () => string,
+ *   isCacheHit?: (request: Request) => Promise<boolean>,
  * }} [options] `verifyUser` returns the id of a verified user (BE-0 verifier), else null.
  * @returns {Promise<{ group: string | null, requestId: string | null, response: Response | null, decorate: (response: Response) => Response }>}
  */
 export async function checkRateLimit(request, env, options = {}) {
-  const { verifyUser, log = defaultLog, timeoutMs = BINDING_TIMEOUT_MS, newId = () => crypto.randomUUID() } = options;
+  const {
+    verifyUser,
+    log = defaultLog,
+    timeoutMs = BINDING_TIMEOUT_MS,
+    newId = () => crypto.randomUUID(),
+    isCacheHit,
+  } = options;
   const none = { group: null, requestId: null, response: null, decorate: response => response };
   let group;
   try {
@@ -175,6 +229,17 @@ export async function checkRateLimit(request, env, options = {}) {
     return none;
   }
   if (!group) return none;
+
+  // Public reads the edge cache can answer are not counted (see isPublicCacheHit).
+  if (group === 'read' && isCacheHit) {
+    let hit = false;
+    try {
+      hit = await isCacheHit(request);
+    } catch {
+      hit = false;
+    }
+    if (hit) return none;
+  }
 
   const requestId = sanitizeRequestId(request.headers.get('x-request-id')) ?? newId();
   const route = new URL(request.url).pathname;

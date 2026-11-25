@@ -39,6 +39,8 @@ export const LEGACY_REDIRECTS = [
     to: '/',
     reason: 'Developer diagnostics page, not for visitors',
   },
+  // The clean URL used to be served by the clean-URL fallback while the file shipped.
+  { from: '/auth-verify', match: 'exact', to: '/', reason: 'Developer diagnostics page, removed' },
   { from: '/verify.html', match: 'exact', to: '/', reason: 'Developer diagnostics page' },
   // Slice S6: sign-in pages on clean canonical paths. The query is kept, so ?redirect= survives.
   { from: '/login-modern.html', match: 'exact', to: '/login/', reason: 'Old sign-in page' },

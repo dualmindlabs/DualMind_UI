@@ -29,7 +29,7 @@ export type SignupMock = { requests: Record<string, unknown>[]; emails: Set<stri
 
 /**
  * Stands in for POST /api/signup (server/signup.js), which `vite preview` doesn't serve. Like the
- * real one, a new email gets 201 {"status":"created"} and a known one 200 {"status":"exists"}.
+ * real one, a new and a known email both get 201 {"status":"created"} (no email enumeration).
  * `status` forces that HTTP status instead (400, 429, 500...); `abort` drops the connection.
  */
 export async function mockSignup(
@@ -45,12 +45,11 @@ export async function mockSignup(
       return route.fulfill({ status: options.status, contentType: 'application/json', body: '{"error":"mocked"}' });
     }
     const email = String(body.email ?? '').toLowerCase();
-    const exists = mock.emails.has(email);
     mock.emails.add(email);
     return route.fulfill({
-      status: exists ? 200 : 201,
+      status: 201,
       contentType: 'application/json',
-      body: JSON.stringify({ status: exists ? 'exists' : 'created' }),
+      body: JSON.stringify({ status: 'created' }),
     });
   });
   return mock;

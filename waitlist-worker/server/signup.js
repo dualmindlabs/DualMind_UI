@@ -6,19 +6,23 @@
  *   { "email": "ada@example.com", "ref": "arena" }      ref is optional
  *
  * Responses (always JSON, never cached):
- *   201 { "status": "created" }   added
- *   200 { "status": "exists" }    already on the list (emails are compared case-insensitively)
+ *   201 { "status": "created" }   added, or already on the list: the answer is the same, so the
+ *                                 form cannot be used to find out who has signed up (emails are
+ *                                 compared case-insensitively)
  *   400 { "error": "invalid_email" | "invalid_body" }
- *   403 { "error": "forbidden_origin" }          not a same-origin request
+ *   403 { "error": "forbidden_origin" }          not a same-origin request, or a host that is not ours
  *   405 { "error": "method_not_allowed" }        anything but POST (with Allow: POST)
  *   413 { "error": "too_large" }
  *   415 { "error": "unsupported_media_type" }
  *   429 { "error": "rate_limited" }              with Retry-After
  *   500 { "error": "server_error" }
  *
- * Abuse guards: the same-origin check, the body size cap, a honeypot field (`website`, hidden on
+ * Abuse guards: the hostname check (only early.dualmindlab.tech, plus localhost for development;
+ * wrangler.jsonc also sets workers_dev false, so the workers.dev copy does not exist), the
+ * same-origin check, the body size cap, a honeypot field (`website`, hidden on
  * the page: if it has a value the request gets a normal-looking 201 and nothing is stored) and a
- * per-IP limit of RATE_LIMIT.max requests per RATE_LIMIT.windowSeconds, counted in the Cache API.
+ * per-client limit of RATE_LIMIT.max requests per RATE_LIMIT.windowSeconds, counted in the Cache API
+ * (an IPv6 client is counted by its /64, so one subscriber cannot rotate through its addresses).
  * That limit is per Cloudflare data centre and not atomic, so it slows a script down rather than
  * stopping a determined one.
  */
@@ -28,6 +32,8 @@ export const MAX_EMAIL_LENGTH = 254;
 export const MAX_USER_AGENT_LENGTH = 256;
 export const HONEYPOT_FIELD = 'website';
 export const RATE_LIMIT = { max: 10, windowSeconds: 600 };
+/** The hosts that may serve the signup. Anything else (a workers.dev copy, a proxy) is refused. */
+export const ALLOWED_HOSTS = Object.freeze(['early.dualmindlab.tech', 'localhost', '127.0.0.1']);
 
 // The rule browsers use for <input type="email"> (WHATWG HTML), but the domain needs a dot.
 const EMAIL_PATTERN =
@@ -62,7 +68,7 @@ export async function handleSignup(request, env, { rateLimit = cacheRateLimit } 
   if (request.method !== 'POST') {
     return json({ error: 'method_not_allowed' }, 405, { Allow: 'POST' });
   }
-  if (!isSameOrigin(request, url)) {
+  if (!ALLOWED_HOSTS.includes(url.hostname) || !isSameOrigin(request, url)) {
     return json({ error: 'forbidden_origin' }, 403);
   }
   const type = (request.headers.get('Content-Type') || '').split(';')[0].trim().toLowerCase();
@@ -118,9 +124,9 @@ export async function handleSignup(request, env, { rateLimit = cacheRateLimit } 
     return json({ error: 'server_error' }, 500);
   }
   try {
-    const result = await env.DB.prepare(INSERT_SQL).bind(email, ref, country, userAgent).run();
-    const created = (result?.meta?.changes ?? 0) > 0;
-    return created ? json({ status: 'created' }, 201) : json({ status: 'exists' }, 200);
+    await env.DB.prepare(INSERT_SQL).bind(email, ref, country, userAgent).run();
+    // The same answer for a new and a known address: no email enumeration.
+    return json({ status: 'created' }, 201);
   } catch (error) {
     console.error('signup: D1 insert failed', error);
     return json({ error: 'server_error' }, 500);
@@ -172,7 +178,7 @@ export async function cacheRateLimit(request, url) {
   const cache = globalThis.caches?.default;
   const ip = request.headers.get('CF-Connecting-IP');
   if (!cache || !ip) return true;
-  const key = new Request(`${url.origin}/__rate-limit/signup/${encodeURIComponent(ip)}`);
+  const key = new Request(`${url.origin}/__rate-limit/signup/${encodeURIComponent(clientKey(ip))}`);
   const hit = await cache.match(key);
   const count = hit ? Number(await hit.text()) || 0 : 0;
   if (count >= RATE_LIMIT.max) return false;
@@ -181,6 +187,27 @@ export async function cacheRateLimit(request, url) {
     new Response(String(count + 1), { headers: { 'Cache-Control': `max-age=${RATE_LIMIT.windowSeconds}` } }),
   );
   return true;
+}
+
+/**
+ * The counter key of a client address: an IPv4 address as it is, an IPv6 address reduced to its
+ * /64 (the first four groups), because one subscriber owns a whole /64 and could otherwise use a
+ * fresh address for every request.
+ */
+export function clientKey(ip) {
+  const address = String(ip).trim().toLowerCase();
+  if (!address.includes(':')) return address;
+  // IPv4-mapped (::ffff:1.2.3.4): the client is the IPv4 address.
+  const mapped = /^::ffff:(\d{1,3}(?:\.\d{1,3}){3})$/.exec(address);
+  if (mapped) return mapped[1];
+  const [head, tail] = address.split('::');
+  const headGroups = head ? head.split(':') : [];
+  const tailGroups = tail === undefined ? [] : tail ? tail.split(':') : [];
+  const missing = tail === undefined ? 0 : Math.max(0, 8 - headGroups.length - tailGroups.length);
+  const groups = [...headGroups, ...Array(missing).fill('0'), ...tailGroups];
+  const prefix = groups.slice(0, 4).map(group => group.padStart(4, '0'));
+  while (prefix.length < 4) prefix.push('0000');
+  return `${prefix.join(':')}::/64`;
 }
 
 function json(data, status, headers = {}) {

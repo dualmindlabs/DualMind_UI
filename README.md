@@ -105,7 +105,7 @@ DualMind_UI/
 ├── contract/               # Shared zod schemas for the public API
 ├── wrangler.jsonc          # Worker config (dualmind-arena)
 ├── build.js                # Composes dist/ from the web build, a few static files and the generated sitemap
-├── config.js, auth-verify.html  # Still shipped until the config cleanup (KNOWN_ISSUES.md)
+├── config.js                    # Still shipped until the config cleanup (KNOWN_ISSUES.md)
 ├── assets/                 # Static images
 ├── tests/api/              # Worker and API tests (Vitest)
 ├── legacy/                 # Retired pages, tests and tools, kept for reference only

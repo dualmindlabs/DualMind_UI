@@ -33,7 +33,6 @@ const webClientDir = path.join(webDir, 'build', 'client');
 // Slice S11 dropped the legacy share/ page: /share/<id> is the web app's client-only share page
 // (server/share.js), and nothing in dist/ may live under /share/.
 const filesToCopy = [
-    'auth-verify.html',
     'config.js',
     'manifest.json',
     'theme.js',

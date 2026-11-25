@@ -22,7 +22,7 @@ How the DualMind Arena frontend is built, served and organised while it moves fr
                     dist/ (composed by build.js at build time)
           ┌─────────────────────────┴─────────────────────────┐
    legacy files (repo root)                         web/build/client (React app)
-   auth-verify.html, config.js,                     index.html (/ landing, prerendered),
+   config.js,                                        index.html (/ landing, prerendered),
    assets/*.png ...                                 design/index.html (prerendered),
                                                     assets/<name>-<hash>.js|css|woff2,
                                                     __spa-fallback.html, og/, favicon.svg
@@ -118,7 +118,7 @@ Every top-level folder of `web/src` has a README with its purpose and rules.
 `node build.js` (also `npm run build` / `pnpm build` at the root) is self-contained, because Cloudflare Workers Builds runs it unchanged:
 
 1. **Build the web app:** `npm ci` and `npm run build` in `web/` (`react-router build`, Vite). Skipped with `SKIP_WEB_BUILD=1` when a CI job built it already.
-2. **Copy the legacy allowlist** (`auth-verify.html`, `config.js`, `manifest.json`, `theme.js`, `assets/`) into `dist/`.
+2. **Copy the legacy allowlist** (`config.js`, `manifest.json`, `theme.js`, `assets/`) into `dist/`.
 3. **Overlay `web/build/client`:** new pages at their paths, hashed files into `dist/assets/` next to the legacy images. With `/` prerendered (slice S3), React Router writes its SPA fallback as `__spa-fallback.html` and the landing page as `index.html`, (no legacy home page remains; `replacedByWeb` is empty). The build fails if `legacy-app.html` exists in the repository root, or if `dist/index.html` turns out to be the SPA fallback.
 4. **Write `dist/__web-manifest.json`** for the Worker: the web app's pages, the sha256 hashes of their inline scripts (for the CSP, section 6) and extra `connect-src` origins: the Supabase project from the `VITE_SUPABASE_URL` build variable (https and wss; a warning, not a failure, when it is unset) and `https://api.pwnedpasswords.com` for the sign-up breach check. Since S6 the legacy sign-in pages (`login-modern.html`, `signup-modern.html`, `forgot-password.html`, `auth-callback.html`, `update-password.html` and the `login/` folder) are no longer copied: their URLs redirect or are served by the web app. Since S11 the legacy `share/` folder is not copied either: `/share/<id>` is the web app's share page.
 5. **Check the result** and fail the build when a legacy file or a sitemap URL is missing, when a web file would replace a legacy one (`replacedByWeb` is empty since the cutover), or when a file in `assets/` has no content hash.
@@ -217,6 +217,7 @@ Permanent (301), same origin, query string kept (the browser keeps the `#hash`).
 | `/how-it-works/how-it-works` | folder | `/how-it-works/` | Duplicate copy |
 | `/careers` | folder | `/about/` | The copied careers page was removed |
 | `/auth-verify.html` | exact | `/` | Developer diagnostics |
+| `/auth-verify` | exact | `/` | Developer diagnostics (the page itself is deleted) |
 | `/verify.html` | exact | `/` | Developer diagnostics |
 | `/login-modern.html`, `/login-modern` | exact | `/login/` | Old sign-in page (S6) |
 | `/login/index.html` | exact | `/login/` | One URL for sign-in |

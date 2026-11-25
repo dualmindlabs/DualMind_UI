@@ -14,6 +14,11 @@
 // deploys it). The Arena then works as before; run_worker_first can stay on, because
 // serveArena() serves the static files itself.
 //
+// The legal pages (/privacy/, /terms/, /cookies/), /.well-known/* and the files they load
+// (/assets/*, /og/*, favicons) are the one exception: GET and HEAD pass the gate (server/gate.js),
+// because the waitlist's privacy and terms links point at them. FORCE_WAITLIST="false" as a
+// Worker variable also switches the gate off, without a code change.
+//
 // Preview bypass, for showing the Arena while it is closed:
 //   https://arena.dualmindlab.tech/?preview=dualmind-preview   sets a `dm_preview` cookie (30 days)
 //   https://arena.dualmindlab.tech/?preview=off                clears it
@@ -35,9 +40,10 @@
 // ---------------------------------------------------------------------------
 import { proxyApi } from './server/api-proxy.js';
 import { problemTypeUrl } from './server/problem-types.js';
-import { checkRateLimit } from './server/rate-limit.js';
+import { checkRateLimit, isPublicCacheHit } from './server/rate-limit.js';
 import { sanitizeRequestId } from './server/request-id.js';
 import { cacheControlFor } from './server/caching.js';
+import { gateEnabled, isGatePassthrough } from './server/gate.js';
 import { redirectResponse } from './server/redirects.js';
 import {
   isNoindexPath,
@@ -71,7 +77,9 @@ export default {
 
 // The pre-launch gate (see the comment at the top).
 async function handleRequest(request, env, ctx) {
-  if (!FORCE_WAITLIST) {
+  // FORCE_WAITLIST is the default; the FORCE_WAITLIST variable ("false") switches the gate off
+  // without a code change (server/gate.js).
+  if (!FORCE_WAITLIST || !gateEnabled(env)) {
     return serveArena(request, env, ctx);
   }
 
@@ -91,6 +99,12 @@ async function handleRequest(request, env, ctx) {
   }
 
   if (hasPreviewCookie(request)) {
+    return serveArena(request, env, ctx);
+  }
+
+  // The legal pages (privacy, terms, cookies, /.well-known/*) and the files they load are
+  // public even while the gate is on: the waitlist links to them.
+  if (isGatePassthrough(request.method, url.pathname)) {
     return serveArena(request, env, ctx);
   }
 
@@ -125,7 +139,7 @@ const arena = {
     // Rate limits (server/rate-limit.js, BE-3) run first for every /api/ request, so a limited
     // caller costs no upstream call. Allowed responses carry RateLimit-Policy.
     if (pathname.startsWith('/api/')) {
-      const gate = await checkRateLimit(request, env, { verifyUser: verifiedUserId });
+      const gate = await checkRateLimit(request, env, { verifyUser: verifiedUserId, isCacheHit: isPublicCacheHit });
       if (gate.response) {
         return gate.response;
       }
@@ -170,7 +184,7 @@ const arena = {
     // ?id= forms) get it never cached, with the link-preview tags written in (server/share.js).
     if ((request.method === 'GET' || request.method === 'HEAD') && isSpaFallbackRoute(pathname)) {
       const fallback = isShareRoute(pathname)
-        ? await serveSharePage(request, env, ctx)
+        ? await serveSharePage(request, env, ctx, { allowLookup: () => shareLookupAllowed(request, env) })
         : await serveSpaFallback(request, env);
       if (fallback) {
         return fallback;
@@ -228,6 +242,14 @@ const arena = {
     return new Response('Not Found', { status: 404 });
   },
 };
+
+// A share-page lookup that misses the edge cache calls the API twice, so it is counted in the read
+// group (per client). The synthetic path only classifies the request: nothing is fetched from it.
+async function shareLookupAllowed(request, env) {
+  const probe = new Request(new URL('/api/share-meta', request.url), { headers: request.headers });
+  const gate = await checkRateLimit(probe, env, { verifyUser: null });
+  return !gate.response;
+}
 
 function serveArena(request, env, ctx) {
   return arena.fetch(request, env, ctx);

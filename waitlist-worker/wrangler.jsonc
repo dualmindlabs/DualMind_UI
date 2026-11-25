@@ -2,6 +2,8 @@
   "name": "dualmind-waitlist",
   "main": "worker.js",
   "compatibility_date": "2024-12-01",
+  // Off: the workers.dev copy has no Cache API (so no signup rate limit) and skips the zone rules.
+  "workers_dev": false,
   // The page is a Vite + React app. `npx wrangler deploy` (run from this folder, as before)
   // installs its dependencies and builds it into dist/ first, then uploads dist/ as the assets.
   "build": {

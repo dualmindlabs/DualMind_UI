@@ -43,8 +43,7 @@ Content-Type: application/json
 
 | Answer | Meaning | The page shows |
 | --- | --- | --- |
-| `201 {"status":"created"}` | added | "You're on the list." |
-| `200 {"status":"exists"}` | already on the list (case-insensitive) | "… is already on the list" |
+| `201 {"status":"created"}` | added (or already on the list) | "You're on the list." |
 | `400 {"error":"invalid_email" \| "invalid_body"}` | | "Enter a valid email address" |
 | `429 {"error":"rate_limited"}` | too many tries | "Too many tries from this network" |
 | `403`, `405`, `413`, `415`, `500`, or no answer within 10 s | | "We couldn't save your spot" |
@@ -52,7 +51,7 @@ Content-Type: application/json
 What the handler does:
 
 - **Validates** the email (the browser's `type="email"` rule, plus a dot in the domain, at most 254 characters and 64 before the `@`) and stores it trimmed and lower-cased. `ref` is kept only as a short slug (`[a-z0-9_-]`, up to 40 characters), otherwise `null`.
-- **Stores** `email`, `ref`, `country` (`request.cf.country`) and `user_agent` (first 256 characters), with `created_at`. `INSERT … ON CONFLICT(email) DO NOTHING` makes repeats harmless. It does not store the IP address, and the Worker's traffic log skips `/api/` requests.
+- **Stores** `email`, `ref`, `country` (`request.cf.country`) and `user_agent` (first 256 characters), with `created_at`. `INSERT … ON CONFLICT(email) DO NOTHING` makes repeats harmless, and a known address gets the same `201` as a new one (no email enumeration). It does not store the IP address, and the Worker keeps no traffic log. Only `early.dualmindlab.tech` (and localhost) may serve the signup; `workers_dev` is off.
 - **Abuse guards:** only same-origin `POST`s with a JSON body (the `Origin` must be the page's own, so other sites can't post through visitors' browsers); bodies over 2 KB are refused; a hidden honeypot field (`website`) that people never see: if a bot fills it, it gets a normal-looking `201` and nothing is stored; and a per-IP limit of 10 requests per 10 minutes, counted in the Cache API. That limit is per Cloudflare data centre and not atomic, so it slows scripts down rather than stopping a determined attacker.
 
 To read the list:

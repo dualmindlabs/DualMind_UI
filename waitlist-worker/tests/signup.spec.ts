@@ -47,15 +47,30 @@ test('a valid email is posted to /api/signup, lower-cased with the ref, and the 
   expect(await readDevice(page)).toBe('harsh.test@example.com');
 
   await page.reload();
-  await expect(page.getByTestId('signup-hint')).toContainText("You've already joined from this device as harsh.test@example.com");
+  await expect(page.getByTestId('signup-hint')).toContainText("You've already joined from this device.")
+  await expect(page.getByTestId('signup-hint')).not.toContainText('harsh.test@example.com');
 });
 
-test('an email already on the list is reported as a duplicate', async ({ page }) => {
+test('an email already on the list looks the same as a new one', async ({ page }) => {
   await mockSignup(page, { known: ['dup@example.com'] });
   await page.goto('/');
   await submit(page, 'DUP@example.com');
-  await expect(page.locator('#signup-status')).toContainText('dup@example.com is already on the list');
+  await expect(page.getByTestId('signup-success')).toContainText("You're on the list.");
   expect(await readDevice(page)).toBe('dup@example.com');
+});
+
+test('the form links the privacy policy and terms on the Arena site, and says how to opt out', async ({ page }) => {
+  await page.goto('/');
+  const notice = page.getByTestId('signup-notice');
+  await expect(notice).toContainText('privacy@dualmindlab.tech');
+  await expect(notice.getByRole('link', { name: 'privacy policy' })).toHaveAttribute(
+    'href',
+    'https://arena.dualmindlab.tech/privacy/',
+  );
+  await expect(notice.getByRole('link', { name: 'terms' })).toHaveAttribute(
+    'href',
+    'https://arena.dualmindlab.tech/terms/',
+  );
 });
 
 test('an invalid email shows an error and sends nothing', async ({ page }) => {

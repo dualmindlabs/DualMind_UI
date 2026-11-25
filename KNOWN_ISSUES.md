@@ -107,7 +107,7 @@ Last updated: 2026-11-23
 - **Severity:** Low · **Status:** Fixed by the change that updated this file.
 - **Deleted** (no reference in code, workflows or `package.json`; only audit documents mention them): `start.bat`, `startup.bat`, `commit_and_push.sh`, `commit_and_push.ps1` (wrapped `git add .` and pushed without review), `test-everything.js` (a browser-console script for old ports), `test-supabase-auth.js` (a Node script that carried the public Supabase URL and anon key) and `build-deploy.js` (an older build script that copies files that no longer exist, such as `arena-core.js` and `admin-email-system/`; `npm run build` uses `build.js`).
 - **Moved to `legacy/`** (kept for reference, not served, not built): the retired sign-in pages and share page, a mock API server, the unused stylesheet and FPS monitor, and a Playwright spec for the old sign-up page. See `legacy/README.md`. The relative links inside the moved pages are not updated, so they will not render from there.
-- **Left in place on purpose:** `serve.json` (read by `npm run dev`), and `auth-verify.html`, `config.js`, `theme.js`, `manifest.json`, `.assetsignore` (listed in `build.js`).
+- **Left in place on purpose:** `serve.json` (read by `npm run dev`), and `config.js`, `theme.js`, `manifest.json`, `.assetsignore` (listed in `build.js`).
 
 ---
 

@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { LEGACY_KEY, mockSignup, mockStats, scrollThrough, settle, shotPath } from './helpers';
 
 // Screenshots for review, at desktop (1440x900) and mobile (360x780) sizes. The signup endpoint is
-// mocked (helpers.ts): it remembers emails, so a second try with the same one is a duplicate.
+// mocked (helpers.ts): it remembers emails, and a second try with the same one looks like the first.
 test.beforeEach(async ({ page }) => {
   await mockStats(page);
 });
@@ -13,7 +13,7 @@ test('hero', async ({ page }, testInfo) => {
   await page.screenshot({ path: shotPath(testInfo, '01-hero') });
 });
 
-test('signup states: success, returning visitor, duplicate, invalid', async ({ page }, testInfo) => {
+test('signup states: success, returning visitor, same email again, invalid', async ({ page }, testInfo) => {
   await mockSignup(page);
   await page.goto('/');
   await settle(page);
@@ -31,7 +31,7 @@ test('signup states: success, returning visitor, duplicate, invalid', async ({ p
   await page.screenshot({ path: shotPath(testInfo, '11-returning-visitor') });
   await input.fill('ada@example.com');
   await input.press('Enter');
-  await expect(page.locator('#signup-status')).toContainText('already on the list');
+  await expect(page.getByTestId('signup-success')).toBeVisible();
   await page.screenshot({ path: shotPath(testInfo, '04-duplicate') });
 
   await input.fill('ada@');
