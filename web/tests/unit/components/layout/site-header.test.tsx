@@ -18,7 +18,7 @@ describe('SiteHeader', () => {
       within(nav)
         .getAllByRole('link')
         .map(link => link.textContent),
-    ).toEqual(['Arena', 'Leaderboard', 'Models', 'How it works']);
+    ).toEqual(['Arena', 'Leaderboard', 'Models', 'How it works', 'Pricing']);
     expect(within(banner).getByRole('link', { name: 'Sign in' })).toHaveAttribute(
       'href',
       '/login/',

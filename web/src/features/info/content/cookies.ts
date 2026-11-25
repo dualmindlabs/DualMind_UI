@@ -4,7 +4,7 @@ export const cookiesContent: PageContent = {
   slug: 'cookies',
   title: 'Cookie Policy',
   description:
-    'DualMind Arena sets no tracking cookies. This page lists the browser storage it does use: sign-in session, theme and settings, and a preview cookie before launch.',
+    'DualMind Arena sets no tracking cookies. This page lists the browser storage it uses: sign-in session, theme, settings and a pre-launch preview cookie.',
   eyebrow: 'Legal',
   heading: { text: 'Cookies,', human: 'almost none.' },
   intro:

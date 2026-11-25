@@ -210,7 +210,7 @@ describe('LandingPage', () => {
       'href',
       'mailto:support@dualmindlab.tech',
     );
-    expect(within(strip).getByRole('link', { name: /dualmindlab\.tech/ })).toHaveAttribute(
+    expect(within(strip).getByRole('link', { name: 'dualmindlab.tech' })).toHaveAttribute(
       'href',
       'https://dualmindlab.tech',
     );
