@@ -35,7 +35,7 @@ async function blockingViolations(page: Page) {
 }
 
 test.describe('header and command palette (desktop)', () => {
-  test('keyboard: skip link, home, the five nav links, then the palette trigger', async ({
+  test('keyboard: skip link, home, the four nav links, then the palette trigger', async ({
     page,
   }) => {
     await page.goto('/design/');
@@ -47,7 +47,7 @@ test.describe('header and command palette (desktop)', () => {
     await expect(page.getByRole('link', { name: 'Skip to content' })).toBeFocused();
     await page.keyboard.press('Tab');
     await expect(banner.getByRole('link', { name: 'DualMind Arena, home' })).toBeFocused();
-    for (const name of ['Arena', 'Leaderboard', 'Models', 'How it works', 'Pricing']) {
+    for (const name of ['Arena', 'Leaderboard', 'Models', 'How it works']) {
       await page.keyboard.press('Tab');
       await expect(nav.getByRole('link', { name, exact: true })).toBeFocused();
     }

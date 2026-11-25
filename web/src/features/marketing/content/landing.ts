@@ -10,6 +10,7 @@ import { DEMO_BATTLES } from './demo';
 export const SIGN_IN_HREF = '/login/';
 export const LEADERBOARD_HREF = '/leaderboard/';
 export const HOW_IT_WORKS_HREF = '/how-it-works/';
+export const PRICING_HREF = '/pricing/';
 
 export const SEO = {
   title: 'DualMind Arena: blind battles between AI models',

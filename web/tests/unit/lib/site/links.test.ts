@@ -9,7 +9,6 @@ describe('site links', () => {
       'Leaderboard',
       'Models',
       'How it works',
-      'Pricing',
     ]);
   });
 

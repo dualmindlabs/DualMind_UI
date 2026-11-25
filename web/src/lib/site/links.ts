@@ -24,17 +24,17 @@ export const CHANGELOG_URL = `${GITHUB_URL}/blob/master/CHANGELOG.md`;
 /** The support address already used across the site (FAQ, privacy page). */
 export const SUPPORT_EMAIL = 'support@dualmindlab.tech';
 
-/** The header navigation (design-direction.md section 12, global shell). */
+/**
+ * The header navigation (design-direction.md section 12, global shell). Four links on purpose:
+ * the signed-in arena header shows them too, and a fifth overflows it between 1024 and 1280 px
+ * (arena-flow.spec.ts). Pricing is in the footer, the landing page's closing section and the
+ * sitemap.
+ */
 export const primaryNav: readonly SiteLink[] = [
   { label: 'Arena', href: '/', description: 'Ask once, compare two anonymous models' },
   { label: 'Leaderboard', href: '/leaderboard/', description: 'Rankings from every vote' },
   { label: 'Models', href: '/models/', description: 'Every model in the Arena' },
   { label: 'How it works', href: '/how-it-works/', description: 'Battles, votes and ratings' },
-  {
-    label: 'Pricing',
-    href: '/pricing/',
-    description: 'Free during the beta, with the real limits',
-  },
 ];
 
 export const signInLink: SiteLink = { label: 'Sign in', href: '/login/' };
