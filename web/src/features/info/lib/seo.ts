@@ -64,7 +64,7 @@ export function infoMeta(page: PageContent): MetaDescriptor[] {
   };
   if (page.slug === 'faq') input.jsonLd = faqJsonLd(page) as JsonLd;
   if (page.slug === 'pricing') {
-    input.jsonLd = { '@context': 'https://schema.org', ...webApplicationJsonLd() } as JsonLd;
+    input.jsonLd = { '@context': 'https://schema.org', ...webApplicationJsonLd() };
   }
   return pageMeta(input);
 }
