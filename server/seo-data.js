@@ -45,7 +45,7 @@ const PAGE_TITLE = { leaderboard: 'Leaderboard', models: 'Models' };
 /**
  * The first SEO_MAX_ITEMS well-formed rows, best first. On the leaderboard, provisional rows are
  * left out: the methodology page says they have no rank. The models page lists every model.
- * @param {Board} board
+ * @param {Board | null | undefined} board
  * @param {SeoKind} [kind]
  */
 export function topItems(board, kind = 'leaderboard') {
