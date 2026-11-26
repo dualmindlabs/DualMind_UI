@@ -125,11 +125,7 @@ describe('a turn that failed, by the kind of failure', () => {
 
   it('puts the prompt back into the composer on request', async () => {
     const setDraft = vi.fn();
-    view(
-      failed({ error: 'Prompt is too long.', errorKind: 'validation' }),
-      vi.fn(),
-      setDraft,
-    );
+    view(failed({ error: 'Prompt is too long.', errorKind: 'validation' }), vi.fn(), setDraft);
     await userEvent.click(screen.getByRole('button', { name: 'Put the prompt back' }));
     expect(setDraft).toHaveBeenCalledWith('Explain recursion');
   });

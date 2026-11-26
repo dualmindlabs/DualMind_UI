@@ -150,7 +150,9 @@ test.describe('icons and the web app manifest', () => {
     };
     expect(manifest.name).toBe('DualMind Arena');
     expect(manifest.short_name).toBe('DualMind');
-    expect(manifest.description).toBe('Blind battles between AI models, with a public leaderboard.');
+    expect(manifest.description).toBe(
+      'Blind battles between AI models, with a public leaderboard.',
+    );
     expect(manifest.start_url).toBe('/');
     expect(manifest.display).toBe('standalone');
     expect(manifest.background_color).toBe('#08090B');

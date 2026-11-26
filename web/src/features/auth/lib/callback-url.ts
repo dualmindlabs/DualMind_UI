@@ -96,7 +96,10 @@ export function readRecoveryMark(storage: Pick<Storage, 'getItem'> | null): bool
   }
 }
 
-export function writeRecoveryMark(storage: Pick<Storage, 'setItem' | 'removeItem'> | null, on: boolean) {
+export function writeRecoveryMark(
+  storage: Pick<Storage, 'setItem' | 'removeItem'> | null,
+  on: boolean,
+) {
   try {
     if (on) storage?.setItem(RECOVERY_MARK_KEY, '1');
     else storage?.removeItem(RECOVERY_MARK_KEY);

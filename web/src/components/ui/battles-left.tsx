@@ -18,7 +18,10 @@ export function BattlesLeft({
 }) {
   const left = Math.max(0, Math.min(limit, remaining));
   return (
-    <span data-testid="battles-left" className={cn('text-caption text-muted tabular-nums', className)}>
+    <span
+      data-testid="battles-left"
+      className={cn('text-caption text-muted tabular-nums', className)}
+    >
       {left} of {limit} {noun} left today
     </span>
   );

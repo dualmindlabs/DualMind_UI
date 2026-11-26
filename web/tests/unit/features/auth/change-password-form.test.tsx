@@ -106,9 +106,7 @@ describe('ChangePasswordForm', () => {
     const auth = makeAuth();
     const onChanged = vi.fn();
     renderWith(auth, <ChangePasswordForm onChanged={onChanged} onCancel={() => {}} />);
-    await userEvent.click(
-      await screen.findByRole('button', { name: /Email me a code instead/ }),
-    );
+    await userEvent.click(await screen.findByRole('button', { name: /Email me a code instead/ }));
     expect(screen.queryByLabelText('Current password')).toBeNull();
     await userEvent.click(screen.getByRole('button', { name: 'Email me a code' }));
     await userEvent.type(await screen.findByLabelText('Code from the email'), '654321');
@@ -183,7 +181,10 @@ describe('UpdatePasswordPage', () => {
 
   it('marks the tab after a real recovery link', async () => {
     try {
-      renderWith(makeAuth(), <UpdatePasswordPage link={link({ type: 'recovery', hasTokens: true })} />);
+      renderWith(
+        makeAuth(),
+        <UpdatePasswordPage link={link({ type: 'recovery', hasTokens: true })} />,
+      );
       await screen.findByRole('heading', { name: 'Choose a new password' });
       expect(window.sessionStorage.getItem('dm.recovery.v1')).toBe('1');
     } finally {

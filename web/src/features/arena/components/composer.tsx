@@ -251,7 +251,9 @@ export function Composer({
       ) : null}
       {/* One always-mounted polite region: it speaks once, when the limit is crossed, not on each key. */}
       <p role="status" aria-live="polite" className="sr-only" data-testid="prompt-limit-status">
-        {tooLong ? `Too long to send. Shorten your prompt to ${MAX_PROMPT_CHARS.toLocaleString('en-US')} characters.` : ''}
+        {tooLong
+          ? `Too long to send. Shorten your prompt to ${MAX_PROMPT_CHARS.toLocaleString('en-US')} characters.`
+          : ''}
       </p>
       <p
         data-testid="prompt-data-warning"

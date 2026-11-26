@@ -99,7 +99,8 @@ export function MethodologyPage() {
               How the board is <span className="human-voice text-human">built.</span>
             </h1>
             <p className="max-w-[52ch] text-lead text-fg-soft">
-              The ratings, the intervals and the ranks, as the leaderboard service reports them. The computation is under audit.
+              The ratings, the intervals and the ranks, as the leaderboard service reports them. The
+              computation is under audit.
             </p>
           </div>
         </PageHero>

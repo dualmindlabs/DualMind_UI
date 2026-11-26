@@ -42,7 +42,6 @@ function tabStorage(): Storage | null {
   }
 }
 
-
 /**
  * `/update-password.html`, the target of the reset email (unchanged address). supabase-js turns
  * the recovery tokens in the #hash into a session; this page then sets the new password. An

@@ -303,7 +303,9 @@ test.describe('Footer', () => {
     );
     await expect(footer.getByRole('link', { name: 'Status' })).toHaveCount(0);
     await expect(footer).not.toContainText('one verdict');
-    await expect(footer).toContainText('Blind battles between AI models, with a public leaderboard.');
+    await expect(footer).toContainText(
+      'Blind battles between AI models, with a public leaderboard.',
+    );
   });
 
   for (const viewport of [

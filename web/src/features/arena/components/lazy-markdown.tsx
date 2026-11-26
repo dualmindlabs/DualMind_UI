@@ -12,7 +12,13 @@ const Markdown = lazyWithRetry(() =>
  * page's guest battle, the private arena): the hardened Markdown component (markdown.tsx) loads as
  * its own chunk, and the answer shows as plain text for the moment it takes.
  */
-export function LazyMarkdown({ children, className }: { children: string; className?: string | undefined }) {
+export function LazyMarkdown({
+  children,
+  className,
+}: {
+  children: string;
+  className?: string | undefined;
+}) {
   return (
     <Suspense
       fallback={
