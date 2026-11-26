@@ -140,7 +140,7 @@ export interface MarkdownProps {
   children: string;
   /** True while text is still arriving: unfinished Markdown is completed for display. */
   streaming?: boolean;
-  className?: string;
+  className?: string | undefined;
 }
 
 /** One answer, rendered safely. Memoised: a pane re-renders only when its text changes. */
