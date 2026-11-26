@@ -144,11 +144,23 @@ const FALLBACK_PAGES = [
     description: 'Your profile, how the Arena looks and behaves, and a copy of your data.',
     robots: 'noindex, nofollow',
   },
+  {
+    test: pathname => pathname === '/auth-callback.html',
+    title: `Signing you in · ${SITE}`,
+    description: 'Finishing your sign-in to DualMind Arena.',
+    robots: 'noindex, nofollow',
+  },
+  {
+    test: pathname => pathname === '/update-password.html',
+    title: `Choose a new password · ${SITE}`,
+    description: 'Set a new password for your DualMind Arena account.',
+    robots: 'noindex, nofollow',
+  },
 ];
 
 /**
  * The tags for a client-only page that is not a share link (compare links, settings, the auth
- * pages ...): a title, a description and the site's share card, so a pasted link no
+ * callback pages ...): a title, a description and the site's share card, so a pasted link no
  * longer unfurls as a blank card. Always noindex. Null for any other path.
  * @param {string} pathname
  * @param {string} origin
