@@ -41,6 +41,7 @@ describe('site links', () => {
       '/privacy/',
       '/terms/',
       '/cookies/',
+      '/data/',
     ]);
   });
 });

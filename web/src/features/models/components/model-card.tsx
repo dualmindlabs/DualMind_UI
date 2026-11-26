@@ -3,6 +3,7 @@ import { useRef } from 'react';
 
 import { ModelMark } from '@/components/ui/model-mark';
 import {
+  AvailabilityBadge,
   EloBar,
   formatCount,
   formatElo,
@@ -10,7 +11,6 @@ import {
   formatPercent,
   formatRank,
   type LeaderboardEntry,
-  RetiredBadge,
   UnratedBadge,
 } from '@/features/leaderboard';
 import { cn } from '@/lib/utils/cn';
@@ -50,11 +50,11 @@ const OPEN_BUTTON =
   'cursor-pointer text-left outline-none after:absolute after:inset-0 after:z-[2] after:rounded-[inherit] focus-visible:after:outline-(length:--focus-width) focus-visible:after:-outline-offset-2 focus-visible:after:outline-focus focus-visible:after:outline-solid';
 
 function Rank({ entry, className }: { entry: LeaderboardEntry; className?: string }) {
-  if (entry.retired) {
+  if (entry.availability !== 'blind') {
     return (
       <span className="inline-flex flex-wrap items-center gap-2">
-        <RetiredBadge />
-        {entry.rank === null ? null : <RankNumber rank={entry.rank} className={className} />}
+        <AvailabilityBadge availability={entry.availability} />
+        <RankNumber rank={entry.rank} className={className} />
       </span>
     );
   }

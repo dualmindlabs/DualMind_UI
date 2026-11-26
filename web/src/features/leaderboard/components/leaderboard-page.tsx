@@ -13,6 +13,7 @@ import { TABLE_QUERY, useMediaQuery } from '../hooks/use-media-query';
 import { useModelCommands } from '../hooks/use-model-commands';
 import { useModelDetails } from '../hooks/use-model-details';
 import { useRankMovement } from '../hooks/use-rank-movement';
+import { useShowAll } from '../hooks/use-show-all';
 import { rangeDomain } from '../lib/confidence';
 import { PROVISIONAL_BATTLES, RATINGS_HELP_HREF } from '../lib/constants';
 import { hasActiveFilters } from '../lib/filter';
@@ -27,6 +28,7 @@ import { LeaderboardTable } from './leaderboard-table';
 import { Methodology } from './methodology';
 import { ModelDetails } from './model-details';
 import { Podium } from './podium';
+import { ScopeSwitch } from './scope-switch';
 import { SortToggle } from './sort-toggle';
 import { UnratedGroup } from './unrated-group';
 
@@ -48,15 +50,21 @@ export function LeaderboardPage() {
   const categories = useCrowdCategories().data;
   const { isMock } = useApiClient();
   const board = query.data;
-  const view = useBoardView(board?.entries);
+  // The default board holds the models a visitor can meet in a blind battle. The rest (pick-only,
+  // retired, not chat models) come in with one switch, each with its own label.
+  const [showAll, setShowAll] = useShowAll();
+  const slice = board === undefined ? undefined : showAll ? board : board.blind;
+  const hidden = board === undefined ? 0 : board.entries.length - board.blind.entries.length;
+  const view = useBoardView(slice?.entries);
   const details = useModelDetails();
   const wide = useMediaQuery(TABLE_QUERY);
-  useModelCommands(board?.entries, details.openModel);
+  useModelCommands(slice?.entries, details.openModel);
   // Rank movement is the overall board's: a category board must not overwrite its saved ranks.
-  const movement = useRankMovement(overall ? board?.rated : undefined);
-  const domain = useMemo(() => rangeDomain(board?.rated ?? []), [board?.rated]);
+  // Ranks of the full board differ from the default view's, so movement is read on the default only.
+  const movement = useRankMovement(overall && !showAll ? board?.blind.rated : undefined);
+  const domain = useMemo(() => rangeDomain(slice?.rated ?? []), [slice?.rated]);
 
-  const leaderId = board?.rated[0]?.id;
+  const leaderId = slice?.rated[0]?.id;
   const loading = board === undefined && query.isPending;
   const failed = board === undefined && query.isError;
 
@@ -87,6 +95,13 @@ export function LeaderboardPage() {
       );
     }
     if (board.entries.length === 0) return <BoardEmpty />;
+    if (slice !== undefined && slice.entries.length === 0) {
+      return (
+        <p className="rounded-md border border-line bg-surface px-4 py-3 text-ui text-fg-soft">
+          No model is in blind battles right now. Turn on the switch above to see the others.
+        </p>
+      );
+    }
     if (view.visible.length === 0) {
       return <BoardNoMatch query={view.filters.query} onClear={view.clearFilters} />;
     }
@@ -144,8 +159,8 @@ export function LeaderboardPage() {
       <BoardControls
         filters={view.filters}
         onFiltersChange={view.setFilters}
-        providers={board?.providers ?? []}
-        total={board?.summary.models ?? 0}
+        providers={slice?.providers ?? []}
+        total={slice?.summary.models ?? 0}
         disabled={board === undefined}
       />
 
@@ -153,18 +168,27 @@ export function LeaderboardPage() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <BoardStatus
             shown={view.visible.length}
-            total={board.entries.length}
+            total={slice?.entries.length ?? 0}
             updatedAt={query.dataUpdatedAt}
             refreshing={query.isFetching}
             refreshError={query.isRefetchError ? query.error : null}
             onRefresh={() => void query.refetch()}
             isMock={isMock}
+            savedAt={board.savedAt}
             className="w-full"
           />
           {wide ? null : <SortToggle sort={view.sort} onSortChange={view.setSort} />}
         </div>
       ) : null}
 
+      {board !== undefined ? (
+        <ScopeSwitch checked={showAll} onCheckedChange={setShowAll} hidden={hidden} />
+      ) : null}
+      {board?.source === 'crowd' && !showAll && hidden > 0 ? (
+        <p className="text-caption text-muted">
+          Ranks and rank ranges count every model on the board, so a rank here can skip a number.
+        </p>
+      ) : null}
       {board?.crowd ? (
         <CrowdNote
           crowd={board.crowd}
@@ -198,13 +222,14 @@ export function LeaderboardPage() {
       <SiteHeader />
       <main id="main" tabIndex={-1} className="outline-none">
         <LeaderboardHero
-          summary={board?.summary}
+          summary={slice?.summary}
           updatedAt={query.dataUpdatedAt}
           refreshing={query.isFetching && !loading}
           stale={query.isRefetchError}
+          savedAt={board?.savedAt ?? null}
         />
 
-        {failed || board?.rated.length === 0 ? null : (
+        {failed || slice?.rated.length === 0 ? null : (
           <section aria-labelledby="podium-title" className="pt-12 md:pt-20">
             <PageContainer className="grid gap-8">
               <SectionTitle
@@ -214,8 +239,8 @@ export function LeaderboardPage() {
                 title="The models to beat"
               />
               <Podium
-                entries={board?.rated}
-                eloStart={board ? eloStartFor(board.summary.bottomElo) : 0}
+                entries={slice?.rated}
+                eloStart={slice ? eloStartFor(slice.summary.bottomElo) : 0}
                 domain={domain}
                 movement={movement}
                 onOpen={details.openModel}

@@ -119,11 +119,12 @@ test('the live strip shows the leaderboard numbers and the #1', async ({ page })
   await page.goto('/');
   const strip = page.getByTestId('live-strip');
   await expect(strip).toHaveAttribute('data-state', 'ready');
-  // The #1 is the API's own leader: 96 battles are enough to be rated (the threshold is 5).
-  await expect(strip).toContainText('Llama 3.3 70B Instruct');
-  await expect(strip).toContainText('1150 Elo · Meta');
+  // The #1 is the best model a visitor can meet in a blind battle. The API's own leader
+  // (Llama 3.3 70B) is pick-only, so it is not on the landing page.
+  await expect(strip).toContainText('Gemma 3n E2B IT');
+  await expect(strip).not.toContainText('Llama 3.3 70B Instruct');
   await expect(strip).toContainText('Live from the public leaderboard');
-  await expect(page.getByTestId('model-strip-source')).toHaveText('Live · 49 models');
+  await expect(page.getByTestId('model-strip-source')).toHaveText('10 models in blind battles');
 });
 
 for (const failure of ['server error', 'network error'] as const) {
@@ -225,6 +226,20 @@ test.describe('the head script at / (the classic arena is gone)', () => {
     await page.goto('/?arena=legacy');
     await page.waitForTimeout(500);
     expect(new URL(page.url()).pathname).toBe('/');
+  });
+
+  test("someone else's tokens in the address sign nobody in on /, and leave the address", async ({
+    page,
+  }) => {
+    const hash =
+      '#access_token=a.b.c&refresh_token=r&expires_in=3600&token_type=bearer&type=magiclink';
+    await page.goto(`/${hash}`);
+    await expect(page.getByRole('heading', { level: 1, name: HEADLINE })).toBeVisible();
+    expect(new URL(page.url()).pathname).toBe('/');
+    await expect.poll(() => new URL(page.url()).hash).toBe('');
+    const keys = await page.evaluate(() => Object.keys(window.localStorage));
+    expect(keys.filter(key => key.startsWith('sb-'))).toEqual([]);
+    await expect(page.locator('html')).not.toHaveAttribute('data-arena', '');
   });
 
   test('signed-out visitors stay on the landing page', async ({ page }) => {

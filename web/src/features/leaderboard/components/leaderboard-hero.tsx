@@ -13,6 +13,8 @@ export interface LeaderboardHeroProps {
   updatedAt: number;
   refreshing: boolean;
   stale: boolean;
+  /** Saved copy: when the Worker last confirmed the numbers (ISO), else null. */
+  savedAt?: string | null;
 }
 
 /**
@@ -20,7 +22,13 @@ export interface LeaderboardHeroProps {
  * next steps, and the live stats strip, on the duel mesh with a fading grid. Everything but the
  * numbers is in the prerendered HTML.
  */
-export function LeaderboardHero({ summary, updatedAt, refreshing, stale }: LeaderboardHeroProps) {
+export function LeaderboardHero({
+  summary,
+  updatedAt,
+  refreshing,
+  stale,
+  savedAt = null,
+}: LeaderboardHeroProps) {
   return (
     <header className="grain relative isolate overflow-hidden border-b border-line mesh-duel">
       <div aria-hidden="true" className="absolute inset-0 -z-10 bg-grid opacity-70" />
@@ -47,7 +55,13 @@ export function LeaderboardHero({ summary, updatedAt, refreshing, stale }: Leade
             </a>
           </div>
         </div>
-        <StatsStrip summary={summary} updatedAt={updatedAt} refreshing={refreshing} stale={stale} />
+        <StatsStrip
+          summary={summary}
+          updatedAt={updatedAt}
+          refreshing={refreshing}
+          stale={stale}
+          savedAt={savedAt}
+        />
       </PageContainer>
     </header>
   );

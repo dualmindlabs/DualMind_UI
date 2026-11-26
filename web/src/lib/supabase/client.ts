@@ -7,21 +7,28 @@
  *   the #hash, and PKCE email links only work in the browser that asked for them.
  * - The storage key stays supabase-js's default (`sb-<project ref>-auth-token`), which the legacy
  *   pages also write, so old and new pages share one session during the migration.
- * - `detectSessionInUrl`: the client reads the tokens from the URL on /auth-callback.html,
- *   /update-password.html and OAuth returns, then removes them from the address bar.
+ * - `detectSessionInUrl`: the client reads the tokens from the URL on /auth-callback.html and
+ *   /update-password.html only (OAuth returns there too), then removes them from the address bar.
+ *   Any other page ignores them (url-tokens.ts).
  */
 import type { createClient } from '@supabase/supabase-js';
 
 import { type SupabaseConfig, supabaseConfig } from '@/config/supabase';
 
+import { shouldDetectSessionInUrl } from './url-tokens';
+
 /** The client type, as createClient() returns it (no generated database types: auth only). */
 export type AuthClient = ReturnType<typeof createClient>;
 
-/** The client's auth options; unit-tested so a change here is deliberate. */
+/**
+ * The client's auth options; unit-tested so a change here is deliberate. `detectSessionInUrl` is
+ * a function: tokens in the address are read only on the auth pages, never on `/` or any other
+ * page, so a link with someone else's tokens cannot sign a visitor in (url-tokens.ts).
+ */
 export const AUTH_CLIENT_OPTIONS = Object.freeze({
   persistSession: true,
   autoRefreshToken: true,
-  detectSessionInUrl: true,
+  detectSessionInUrl: (url: URL) => shouldDetectSessionInUrl(url),
   flowType: 'implicit',
 } as const);
 

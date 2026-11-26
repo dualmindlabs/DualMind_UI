@@ -110,19 +110,26 @@ const cases: Array<{
     marked: false,
   },
   {
-    name: 'an OAuth return in the hash stays for the app',
+    name: 'an OAuth return in the hash does not sign anyone in or open the arena on /',
     hash: OAUTH_HASH,
     target: null,
-    marked: true,
+    marked: false,
   },
-  { name: 'a PKCE code stays for the app', search: '?code=123abc', target: null, marked: true },
+  { name: 'a PKCE code on / is ignored', search: '?code=123abc', target: null, marked: false },
   {
-    name: 'an email token hash stays for the app',
+    name: 'an email token hash on / is ignored',
     search: '?token_hash=t&type=signup',
+    target: null,
+    marked: false,
+  },
+  { name: 'a magic link on / is ignored', hash: '#type=magiclink', target: null, marked: false },
+  {
+    name: "someone else's tokens on / leave a signed-in visitor in their own arena",
+    hash: '#access_token=a&refresh_token=r&expires_in=3600&token_type=bearer&type=magiclink',
+    storage: SIGNED_IN,
     target: null,
     marked: true,
   },
-  { name: 'a magic link stays for the app', hash: '#type=magiclink', target: null, marked: true },
   {
     name: 'a recovery link goes on to the new password page, hash kept',
     hash: '#access_token=abc&type=recovery',
@@ -194,9 +201,9 @@ describe('signed-in switch at /', () => {
     expect(SESSION_HANDOFF_SCRIPT).not.toContain('dm.arena');
   });
 
-  it('treats storage that cannot be read as signed out, but still follows auth params', () => {
+  it('treats storage that cannot be read as signed out, whatever the URL carries', () => {
     expect(runScriptFull({}, 'throws')).toEqual({ target: null, marked: false });
-    expect(runScriptFull({ search: '?code=1' }, 'throws')).toEqual({ target: null, marked: true });
+    expect(runScriptFull({ search: '?code=1' }, 'throws')).toEqual({ target: null, marked: false });
     const throwing = {
       length: 1,
       key: () => {
@@ -214,7 +221,7 @@ describe('signed-in switch at /', () => {
     });
     expect(landingView({ search: '', hash: '' }, memoryStorage({}))).toEqual({ kind: 'landing' });
     expect(landingView({ search: '?code=1', hash: '' }, memoryStorage({}))).toEqual({
-      kind: 'arena',
+      kind: 'landing',
     });
   });
 

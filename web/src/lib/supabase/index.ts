@@ -59,7 +59,16 @@ export {
   browserSessionStorage,
   clearSignedOutData,
   LEGACY_AUTH_KEYS,
+  RECOVERY_MARK_KEY,
 } from './storage';
+export {
+  accountSwitchPending,
+  readsUrlTokens,
+  readSwitchConfirmed,
+  shouldDetectSessionInUrl,
+  SWITCH_CONFIRM_KEY,
+  writeSwitchConfirmed,
+} from './url-tokens';
 export {
   ALLOWED_PHONE_COUNTRY_CODES,
   normalizeEmail,

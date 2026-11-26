@@ -8,11 +8,11 @@ import { type RangeDomain, ratingRange } from '../lib/confidence';
 import { formatCount, formatElo, formatPercent, formatRank } from '../lib/format';
 import type { Movement } from '../lib/movement';
 import type { LeaderboardEntry } from '../types';
+import { AvailabilityBadge } from './availability-badge';
 import { RangeBar } from './range-bar';
 import { RankMovement } from './rank-movement';
 import { RankRange } from './rank-range';
 import { RecordBar } from './record-bar';
-import { RetiredBadge } from './retired-badge';
 
 export interface BoardCardListProps {
   /** Filtered and sorted. */
@@ -93,7 +93,7 @@ function BoardCard({
             {entry.providerLabel}
             {entry.servedBy ? ` · ${entry.servedBy}` : ''}
           </span>
-          {entry.retired ? <RetiredBadge className="w-fit" /> : null}
+          <AvailabilityBadge availability={entry.availability} className="w-fit" />
         </div>
       </div>
       <span className="grid justify-items-end gap-0.5 text-right">

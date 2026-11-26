@@ -14,10 +14,11 @@ import type { Leaderboard, LeaderboardEntry, RatedEntry } from '@/features/leade
 export interface LiveStats {
   battles: number;
   votes: number;
+  /** Models a visitor can meet in a blind battle (not pick-only, retired or non-chat ones). */
   models: number;
   /** Serving platforms ("Cloudflare Workers AI"), in board order of their best model. */
   providers: string[];
-  /** Every model: the rated ones best rank first, then the ones not yet rated. */
+  /** Every model in blind battles: the rated ones best rank first, then the ones not yet rated. */
   ranked: LeaderboardEntry[];
   /** The rated models only, best rank first: the leader and the top five come from here. */
   top: RatedEntry[];
@@ -31,9 +32,11 @@ export function toLiveStats(board: Leaderboard): LiveStats {
   return {
     battles: board.summary.battles,
     votes: Math.round(outcomes / 2),
-    models: board.summary.models,
-    providers: [...new Set(board.entries.map(entry => entry.platformLabel))],
-    ranked: board.entries,
-    top: board.rated,
+    // "In the arena now" and the top five name the models a visitor can actually meet in a blind
+    // battle. Battles and votes stay whole-board facts: they happened, whoever got them.
+    models: board.blind.summary.models,
+    providers: [...new Set(board.blind.entries.map(entry => entry.platformLabel))],
+    ranked: board.blind.entries,
+    top: board.blind.rated,
   };
 }

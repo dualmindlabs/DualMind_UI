@@ -79,6 +79,31 @@ export async function isPublicCacheHit(request, options = {}) {
   }
 }
 
+/**
+ * The address a counter is keyed by. IPv4 stays as it is. An IPv6 address is cut to its /64
+ * (the first four groups): one household or host controls a whole /64, so keying by the full
+ * address would give it unlimited buckets. The backend does the same (ClientIp.Normalize).
+ * @param {string} address
+ * @returns {string}
+ */
+export function normaliseAddress(address) {
+  if (!address.includes(':')) return address;
+  let text = address.trim().toLowerCase();
+  const zone = text.indexOf('%');
+  if (zone !== -1) text = text.slice(0, zone);
+  // An IPv4-mapped address (::ffff:1.2.3.4) is an IPv4 client.
+  const mapped = /^::ffff:(\d{1,3}(?:\.\d{1,3}){3})$/.exec(text);
+  if (mapped) return mapped[1];
+  const halves = text.split('::');
+  if (halves.length > 2) return address;
+  const head = halves[0] ? halves[0].split(':') : [];
+  const tail = halves.length === 2 && halves[1] ? halves[1].split(':') : [];
+  if (halves.length === 1 && head.length !== 8) return address;
+  const groups = halves.length === 2 ? [...head, ...Array(Math.max(0, 8 - head.length - tail.length)).fill('0'), ...tail] : head;
+  if (groups.length !== 8 || groups.some(group => !/^[0-9a-f]{1,4}$/.test(group))) return address;
+  return `${groups.slice(0, 4).map(group => group.replace(/^0+(?=.)/, '')).join(':')}::/64`;
+}
+
 const DEV_SALT = 'dualmind-unsalted-development-salt';
 const PROBLEM_CONTENT_TYPE = 'application/problem+json; charset=utf-8';
 
@@ -130,7 +155,7 @@ export async function limiterKey(request, env, userId) {
   if (userId) {
     return { key: `u:${userId}`, kind: 'user', hash8: salt ? (await hmacHex(salt, `user:${userId}`)).slice(0, 8) : null };
   }
-  const address = request.headers.get('cf-connecting-ip') || 'unknown';
+  const address = normaliseAddress(request.headers.get('cf-connecting-ip') || 'unknown');
   if (!salt) {
     // No secret yet: the raw address is the in-memory key for the binding, never logged.
     return { key: `ip:${address}`, kind: 'ip', hash8: null };

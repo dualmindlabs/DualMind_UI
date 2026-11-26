@@ -11,6 +11,7 @@ import {
   LEADERBOARD_CACHE_KEY_PATH,
   LEADERBOARD_CACHE_MAX_AGE_MS,
   limiterKey,
+  normaliseAddress,
   policyHeader,
   RATE_LIMIT_GROUPS,
 } from '../../../server/rate-limit.js';
@@ -417,5 +418,35 @@ describe('cache hits on public reads', () => {
     );
     expect(denied.response?.status).toBe(429);
     expect(isCacheHit).not.toHaveBeenCalled();
+  });
+});
+
+describe('IPv6 visitors share one bucket per /64', () => {
+  it.each([
+    ['2001:db8:abcd:12::1', '2001:db8:abcd:12::/64'],
+    ['2001:db8:abcd:12:ffff:ffff:ffff:ffff', '2001:db8:abcd:12::/64'],
+    ['2001:0db8:abcd:0012:0000:0000:0000:0001', '2001:db8:abcd:12::/64'],
+    ['2001:DB8:ABCD:12::beef%eth0', '2001:db8:abcd:12::/64'],
+    ['::1', '0:0:0:0::/64'],
+    ['::ffff:203.0.113.7', '203.0.113.7'],
+    ['203.0.113.7', '203.0.113.7'],
+    ['unknown', 'unknown'],
+    ['not:an:address', 'not:an:address'],
+  ])('%s -> %s', (address, expected) => {
+    expect(normaliseAddress(address)).toBe(expected);
+  });
+
+  it('gives two addresses in one /64 the same key, and another /64 a different one', async () => {
+    const ip = (address: string) =>
+      request('GET', '/api/arena/models', { 'cf-connecting-ip': address });
+    const a = await limiterKey(ip('2001:db8:abcd:12::1'), {}, null);
+    const b = await limiterKey(ip('2001:db8:abcd:12:aaaa:bbbb:cccc:dddd'), {}, null);
+    const other = await limiterKey(ip('2001:db8:abcd:13::1'), {}, null);
+    expect(a.key).toBe(b.key);
+    expect(a.key).not.toBe(other.key);
+    const salted = { PRIVACY_SALT: 's' };
+    expect((await limiterKey(ip('2001:db8:abcd:12::1'), salted, null)).key).toBe(
+      (await limiterKey(ip('2001:db8:abcd:12::2'), salted, null)).key,
+    );
   });
 });

@@ -24,6 +24,8 @@ export const leaderboardItemSchema = z
     totalResponses: z.number().int().min(0).meta({ description: 'Battles the model took part in', example: 96 }),
     winRate: z.number().min(0).max(100).meta({ description: 'Percent from 0 to 100 with two decimals; ties count as non-wins', example: 64.58 }),
     provisional: z.boolean().meta({ description: 'True while totalResponses is below meta.provisionalBelow', example: false }),
+    active: z.boolean().optional().meta({ description: 'False for a model the Arena no longer serves. Present once the DualMind API sends it.', example: true }),
+    blindEligible: z.boolean().optional().meta({ description: 'False for a model that is never drawn for a blind battle (it can only be picked in Side by side). Present once the DualMind API sends it.', example: true }),
   })
   .meta({ id: 'LeaderboardItem' });
 export type LeaderboardItem = z.infer<typeof leaderboardItemSchema>;
@@ -34,6 +36,8 @@ export const leaderboardMetaSchema = z
     count: z.number().int().min(0).meta({ example: 53 }),
     provisionalBelow: z.number().int().min(0).meta({ example: PROVISIONAL_BELOW }),
     source: z.string().meta({ example: LEADERBOARD_SOURCE }),
+    stale: z.boolean().optional().meta({ description: 'True only while a saved copy is served because the DualMind API cannot be reached.', example: true }),
+    checkedAt: z.iso.datetime().optional().meta({ description: 'Only with `stale`: the last time the Worker confirmed this data with the DualMind API.', example: '2026-10-21T08:35:00.000Z' }),
   })
   .meta({ id: 'LeaderboardMeta' });
 

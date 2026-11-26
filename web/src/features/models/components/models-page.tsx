@@ -12,11 +12,13 @@ import {
   BoardError,
   BoardStatus,
   ModelDetails,
+  ScopeSwitch,
   SortToggle,
   useBoardView,
   useLeaderboard,
   useModelCommands,
   useModelDetails,
+  useShowAll,
 } from '@/features/leaderboard';
 import { useApiClient } from '@/hooks/use-api-client';
 import { cn } from '@/lib/utils/cn';
@@ -98,21 +100,26 @@ export function ModelsPage() {
   const query = useLeaderboard();
   const { isMock } = useApiClient();
   const board = query.data;
-  const view = useBoardView(board?.entries);
+  // The directory lists what a visitor can use: models in blind battles and pick-only models
+  // (each pick-only one is labelled). Retired models and non-chat ones come in with one switch.
+  const [showAll, setShowAll] = useShowAll();
+  const slice = board === undefined ? undefined : showAll ? board : board.usable;
+  const hidden = board === undefined ? 0 : board.entries.length - board.usable.entries.length;
+  const view = useBoardView(slice?.entries);
   const details = useModelDetails();
-  useModelCommands(board?.entries, details.openModel);
+  useModelCommands(slice?.entries, details.openModel);
   const [layout, setLayout] = useState<ModelLayout>('cards');
   const [pinned, setPinned] = useState<string[]>([]);
 
   const failed = board === undefined && query.isError;
-  const leaderElo = board?.rated[0]?.elo ?? board?.summary.topElo ?? 0;
+  const leaderElo = slice?.rated[0]?.elo ?? slice?.summary.topElo ?? 0;
   const pinnedModels = useMemo(
     () =>
       pinned.flatMap(id => {
-        const entry = board?.entries.find(item => item.id === id);
+        const entry = slice?.entries.find(item => item.id === id);
         return entry ? [entry] : [];
       }),
-    [pinned, board],
+    [pinned, slice],
   );
 
   function list() {
@@ -142,6 +149,13 @@ export function ModelsPage() {
       );
     }
     if (board.entries.length === 0) return <BoardEmpty />;
+    if (slice !== undefined && slice.entries.length === 0) {
+      return (
+        <p className="rounded-md border border-line bg-surface px-4 py-3 text-ui text-fg-soft">
+          No model is available right now. Turn on the switch above to see the others.
+        </p>
+      );
+    }
     if (view.visible.length === 0) {
       return <NoMatch query={view.filters.query} onClear={view.clearFilters} />;
     }
@@ -173,7 +187,7 @@ export function ModelsPage() {
       <SkipLink />
       <SiteHeader />
       <main id="main" tabIndex={-1} className="outline-none">
-        <ModelsHero summary={board?.summary} />
+        <ModelsHero summary={slice?.summary} />
 
         <section
           aria-labelledby="directory-title"
@@ -186,22 +200,32 @@ export function ModelsPage() {
             <ModelsControls
               filters={view.filters}
               onFiltersChange={view.setFilters}
-              providers={board?.providers ?? []}
-              total={board?.summary.models ?? 0}
+              providers={slice?.providers ?? []}
+              total={slice?.summary.models ?? 0}
               layout={layout}
               onLayoutChange={setLayout}
               disabled={board === undefined}
             />
+            {board !== undefined ? (
+              <ScopeSwitch
+                checked={showAll}
+                onCheckedChange={setShowAll}
+                hidden={hidden}
+                label="Also show retired models and models that are not chat models"
+                description={`${hidden} ${hidden === 1 ? 'model is' : 'models are'} left out by default: models no longer served, and safety classifiers or adapter bases. Pick-only models stay in the list with their own label: you can choose them in Side by side, but they are never drawn for a blind battle.`}
+              />
+            ) : null}
             {board !== undefined && view.visible !== undefined && board.entries.length > 0 ? (
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <BoardStatus
                   shown={view.visible.length}
-                  total={board.entries.length}
+                  total={slice?.entries.length ?? 0}
                   updatedAt={query.dataUpdatedAt}
                   refreshing={query.isFetching}
                   refreshError={query.isRefetchError ? query.error : null}
                   onRefresh={() => void query.refetch()}
                   isMock={isMock}
+                  savedAt={board.savedAt}
                   className="w-full"
                 />
                 <SortToggle

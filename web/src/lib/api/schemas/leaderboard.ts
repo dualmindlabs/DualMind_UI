@@ -26,6 +26,8 @@ export const modelStatSchema = withAliases(
     winRate: numeric.pipe(z.number().min(0).max(100)).optional(),
     /** False for a model the Arena no longer serves; absent while the API does not send it. */
     active: z.boolean().optional(),
+    /** False for a model that is never drawn for a blind battle (pick-only); absent until the API sends it. */
+    blindEligible: z.boolean().optional(),
   }),
   {
     modelId: ['id'],
@@ -38,6 +40,7 @@ export const modelStatSchema = withAliases(
     totalTies: ['ties'],
     totalResponses: ['total_matches', 'matches'],
     active: ['isActive', 'is_active'],
+    blindEligible: ['isBlindEligible', 'is_blind_eligible', 'blind_eligible'],
   },
 ).transform(({ winRate, ...stat }) => ({
   ...stat,
@@ -67,6 +70,11 @@ export interface LeaderboardData {
   provisionalBelow: number;
   /** When the data last changed (v2 `meta.generatedAt`); null from the v1 fallback. */
   generatedAt: string | null;
+  /**
+   * Set only when the Worker served a saved copy because the DualMind API could not be reached:
+   * the last time the Worker confirmed the data with it. Absent on a current copy.
+   */
+  checkedAt?: string;
   /** Which route answered. `crowd` is the backend's leaderboard v2 (feature-detected). */
   source: 'crowd' | 'v2' | 'v1';
   /**
@@ -101,6 +109,7 @@ export const leaderboardV2Schema = leaderboardResponseSchema.transform((body): L
   })),
   provisionalBelow: body.meta.provisionalBelow,
   generatedAt: body.meta.generatedAt,
+  ...(body.meta.stale === true && body.meta.checkedAt ? { checkedAt: body.meta.checkedAt } : {}),
   source: 'v2',
 }));
 

@@ -76,10 +76,29 @@ const PREVIEW_COOKIE_ATTRIBUTES = 'Path=/; Secure; HttpOnly; SameSite=Lax';
 
 export default {
   async fetch(request, env, ctx) {
-    const response = await handleRequest(request, env, ctx);
+    let response;
+    try {
+      response = await handleRequest(request, env, ctx);
+    } catch (error) {
+      // Nothing may escape as a Workers exception (Cloudflare error 1101): that page carries none
+      // of the security headers and fills the error log. One log line, then a plain 500.
+      console.error(JSON.stringify({ event: 'worker_unhandled', method: request.method, error: String(error) }));
+      response = new Response('Internal Server Error', {
+        status: 500,
+        headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' },
+      });
+    }
     return withSecurityHeaders(request, env, response);
   },
 };
+
+// Pages and files are read-only: anything but GET and HEAD gets this 405 before a file is served.
+function methodNotAllowed(allow) {
+  return new Response('Method Not Allowed', {
+    status: 405,
+    headers: { Allow: allow, 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' },
+  });
+}
 
 // The pre-launch gate (see the comment at the top).
 async function handleRequest(request, env, ctx) {
@@ -145,6 +164,11 @@ const arena = {
     // Rate limits (server/rate-limit.js, BE-3) run first for every /api/ request, so a limited
     // caller costs no upstream call. Allowed responses carry RateLimit-Policy.
     if (pathname.startsWith('/api/')) {
+      // The API is same-origin only, so there is no CORS preflight to answer. Answering OPTIONS
+      // here (a 405 with Allow) keeps it from costing an upstream call, which the limiter never counts.
+      if (request.method === 'OPTIONS') {
+        return methodNotAllowed('GET, HEAD, POST, PUT, PATCH, DELETE');
+      }
       const gate = await checkRateLimit(request, env, { verifyUser: verifiedUserId, isCacheHit: isPublicCacheHit });
       if (gate.response) {
         return gate.response;
@@ -210,6 +234,10 @@ const arena = {
     }
 
     // 5. Serve static assets from ASSETS binding, with the caching table (server/caching.js)
+    // Only GET and HEAD: rebuilding a used POST body for the clean-URL fallbacks below throws.
+    if (request.method !== 'GET' && request.method !== 'HEAD') {
+      return methodNotAllowed('GET, HEAD');
+    }
     if (env?.ASSETS?.fetch) {
       let assetResponse = await env.ASSETS.fetch(request);
 
@@ -222,7 +250,7 @@ const arena = {
       if (!hasExtension && !pathname.endsWith('/')) {
         const htmlUrl = new URL(request.url);
         htmlUrl.pathname = pathname + '.html';
-        assetResponse = await env.ASSETS.fetch(new Request(htmlUrl, request));
+        assetResponse = await env.ASSETS.fetch(new Request(htmlUrl, { method: 'GET', headers: request.headers }));
         if (assetResponse && assetResponse.status !== 404) {
           return withCaching(request, env, assetResponse, htmlUrl.pathname);
         }
@@ -232,7 +260,7 @@ const arena = {
       if (pathname.endsWith('/') || !hasExtension) {
         const indexUrl = new URL(request.url);
         indexUrl.pathname = pathname.endsWith('/') ? pathname + 'index.html' : pathname + '/index.html';
-        assetResponse = await env.ASSETS.fetch(new Request(indexUrl, request));
+        assetResponse = await env.ASSETS.fetch(new Request(indexUrl, { method: 'GET', headers: request.headers }));
         if (assetResponse && assetResponse.status !== 404) {
           return withCaching(request, env, assetResponse, indexUrl.pathname);
         }

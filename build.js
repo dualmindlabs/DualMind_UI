@@ -362,6 +362,8 @@ ${[...new Set(sitemapPages)].map(url => `  <url><loc>${SITE_URL}${url}</loc><las
 </urlset>
 `;
 fs.writeFileSync(path.join(distDir, 'sitemap.xml'), sitemapXml);
+// No `Content-Signal` line here yet: Lighthouse reads it as an invalid robots.txt (SEO 92, and CI
+// asks for 100). The preference is written on /data/ and in /llms.txt instead.
 fs.writeFileSync(
     path.join(distDir, 'robots.txt'),
     `User-agent: *\nAllow: /\nDisallow: /api/\nAllow: /api/v2/leaderboard\nAllow: /api/v2/openapi.json\n\nSitemap: ${SITE_URL}/sitemap.xml\n`

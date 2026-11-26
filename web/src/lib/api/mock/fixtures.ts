@@ -170,7 +170,7 @@ function quote(prompt: string): string {
 export function demoAnswers(prompt: string): [string, string] {
   return [
     `${DEMO_NOTICE}\n\nYou asked: "${quote(prompt)}"\n\nIn a real battle two models answer this in parallel, without their names, and you pick the better answer.`,
-    `${DEMO_NOTICE}\n\n1. Your prompt arrived: "${quote(prompt)}"\n2. Two anonymous models would answer it side by side.\n3. You vote, then both names are revealed and the leaderboard moves.`,
+    `${DEMO_NOTICE}\n\n1. Your prompt arrived: "${quote(prompt)}"\n2. Two anonymous models would answer it side by side.\n3. You vote, then both names are revealed.`,
   ];
 }
 

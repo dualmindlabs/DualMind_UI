@@ -8,12 +8,12 @@ import { type RangeDomain, ratingRange } from '../lib/confidence';
 import { formatCount, formatElo, formatPercent } from '../lib/format';
 import type { Movement } from '../lib/movement';
 import type { LeaderboardEntry, SortKey, SortState } from '../types';
+import { AvailabilityBadge } from './availability-badge';
 import { RangeBar } from './range-bar';
 import { RankMovement } from './rank-movement';
 import { RankNumber } from './rank-number';
 import { RankRange } from './rank-range';
 import { RecordBar } from './record-bar';
-import { RetiredBadge } from './retired-badge';
 import { SortHeader } from './sort-header';
 
 export interface LeaderboardTableProps {
@@ -107,7 +107,7 @@ function Row({
               {entry.providerLabel}
               {entry.servedBy ? ` · ${entry.servedBy}` : ''}
             </span>
-            {entry.retired ? <RetiredBadge className="w-fit" /> : null}
+            <AvailabilityBadge availability={entry.availability} className="w-fit" />
           </div>
         </div>
       </th>

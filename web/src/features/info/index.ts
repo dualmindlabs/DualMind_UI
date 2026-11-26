@@ -13,6 +13,7 @@ import {
 export { AboutPage } from './components/about-page';
 export { CookiesPage } from './components/cookies-page';
 export { CreditsPage } from './components/credits-page';
+export { DataPage } from './components/data-page';
 export { FaqPage } from './components/faq-page';
 export { HowItWorksPage } from './components/how-it-works-page';
 export { NotFoundPage } from './components/not-found-page';
@@ -21,7 +22,7 @@ export { TermsPage } from './components/terms-page';
 export * from './content';
 export { infoMeta, notFoundMeta } from './lib/seo';
 
-/** Every editorial info and legal page, in navigation order (the Credits page is separate). */
+/** Every editorial info and legal page, in navigation order (the Credits and Data pages are separate). */
 export const infoPages: readonly PageContent[] = [
   aboutContent,
   howItWorksContent,

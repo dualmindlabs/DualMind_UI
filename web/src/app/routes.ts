@@ -25,6 +25,8 @@ export default [
   route('privacy', 'routes/privacy.tsx'),
   route('terms', 'routes/terms.tsx'),
   route('cookies', 'routes/cookies.tsx'),
+  // What may be done with the data: numbers CC BY, answers under the providers' terms (cycle 5).
+  route('data', 'routes/data.tsx'),
 
   // The API reference (BE-5), built from docs/api/openapi.v2.json at build time.
   route('developers', 'routes/developers.tsx'),

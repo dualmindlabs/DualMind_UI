@@ -6,6 +6,7 @@ import {
   IMMUTABLE_CACHE,
   LEGACY_NO_STORE,
   REVALIDATE,
+  ROOT_IMAGE_CACHE,
   SHARE_NO_STORE,
 } from '../../../server/caching.js';
 
@@ -32,7 +33,12 @@ const cases: Array<[path: string, webPage: boolean, expected: string | null]> = 
   ['/manifest.json', false, LEGACY_NO_STORE],
   // Images: a year, as before.
   ['/assets/logo.png', false, IMMUTABLE_CACHE],
-  ['/favicon.svg', false, IMMUTABLE_CACHE],
+  // Images at the root keep their names, so they are not immutable.
+  ['/favicon.svg', false, ROOT_IMAGE_CACHE],
+  ['/favicon.ico', false, ROOT_IMAGE_CACHE],
+  ['/og-default.png', false, ROOT_IMAGE_CACHE],
+  ['/icon-192.png', false, ROOT_IMAGE_CACHE],
+  ['/apple-touch-icon.png', false, ROOT_IMAGE_CACHE],
   // Share images: revalidated, not immutable.
   ['/og/landing-v2.png', false, REVALIDATE],
   // Anything else keeps the Workers static assets default.

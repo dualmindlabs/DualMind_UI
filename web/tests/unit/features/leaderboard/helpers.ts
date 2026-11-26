@@ -30,6 +30,7 @@ export function entry(overrides: Partial<LeaderboardEntry> = {}): LeaderboardEnt
     battles: 0,
     winRate: 0,
     provisional: true,
+    availability: 'blind',
     eloShare: 1,
     crowd: null,
     ...overrides,

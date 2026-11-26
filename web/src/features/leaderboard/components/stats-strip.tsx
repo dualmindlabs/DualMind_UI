@@ -17,6 +17,11 @@ export interface StatsStripProps {
   refreshing?: boolean;
   /** The last refresh failed; the numbers are from `updatedAt`. */
   stale?: boolean;
+  /**
+   * Set when the Worker served a saved copy (ISO): the last time it confirmed the numbers with the
+   * API. The cell then says so and shows this time instead of the browser's.
+   */
+  savedAt?: string | null | undefined;
   className?: string;
 }
 
@@ -42,9 +47,13 @@ export function StatsStrip({
   updatedAt,
   refreshing = false,
   stale = false,
+  savedAt = null,
   className,
 }: StatsStripProps) {
   const pending = <Skeleton className="h-8 w-16" />;
+  const savedMs = savedAt === null ? Number.NaN : Date.parse(savedAt);
+  const saved = Number.isFinite(savedMs);
+  const shownAt = saved ? savedMs : updatedAt;
 
   return (
     <dl
@@ -64,7 +73,7 @@ export function StatsStrip({
         {summary ? <CountUp to={summary.providers} duration={0.8} trigger="load" /> : pending}
       </Cell>
       <Cell
-        label="Updated"
+        label={saved ? 'Data as of' : 'Checked'}
         hint={
           summary ? (
             <span className="inline-flex items-center gap-1.5">
@@ -72,25 +81,31 @@ export function StatsStrip({
                 aria-hidden="true"
                 className={cn(
                   'size-1.5 rounded-full',
-                  stale ? 'bg-warn' : 'bg-ok',
+                  stale || saved ? 'bg-warn' : 'bg-ok',
                   refreshing && 'animate-pulse',
                 )}
               />
-              {stale ? 'Refresh failed' : refreshing ? 'Refreshing' : 'Live, every minute'}
+              {saved
+                ? 'Saved copy, the API is unreachable'
+                : stale
+                  ? 'Refresh failed'
+                  : refreshing
+                    ? 'Refreshing'
+                    : 'Your browser asks every minute'}
             </span>
           ) : (
             'Loading'
           )
         }
       >
-        {summary && updatedAt > 0 ? (
-          <time dateTime={new Date(updatedAt).toISOString()}>
-            {formatClock(updatedAt)}{' '}
+        {summary && shownAt > 0 ? (
+          <time dateTime={new Date(shownAt).toISOString()}>
+            {formatClock(shownAt)}{' '}
             <abbr
               title="Your time zone"
               className="text-caption font-normal text-muted no-underline"
             >
-              {formatZone(updatedAt)}
+              {formatZone(shownAt)}
             </abbr>
           </time>
         ) : (

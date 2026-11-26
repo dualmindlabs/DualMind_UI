@@ -36,6 +36,8 @@ describe('legacy redirects', () => {
   it('covers the rows the plan asks for', () => {
     expect(LEGACY_REDIRECTS.map(rule => [rule.from, rule.to])).toEqual([
       ['/index.html', '/'],
+      ['/og/landing.png', '/og/landing-v2.png'],
+      ['/og/leaderboard.png', '/og/leaderboard-v2.png'],
       ['/about/about', '/about/'],
       ['/how-it-works/how-it-works', '/how-it-works/'],
       ['/careers', '/about/'],

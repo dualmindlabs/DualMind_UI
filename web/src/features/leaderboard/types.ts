@@ -1,4 +1,8 @@
+import type { Availability } from '@contract/availability';
+
 import type { CrowdStat, LeaderboardData } from '@/lib/api';
+
+export type { Availability };
 
 /** One model on the board, normalised from a `model-stats` row (lib/entries.ts). */
 export interface LeaderboardEntry {
@@ -42,6 +46,13 @@ export interface LeaderboardEntry {
    * lib/retired.ts until the API sends it). Absent otherwise. Such a model cannot be met in a battle.
    */
   retired?: boolean;
+  /**
+   * What a visitor can do with this model: `blind` (drawn for blind battles), `pick-only` (can be
+   * chosen in Side by side, never drawn blind: its rating cannot move from blind votes),
+   * `retired` (no longer served) or `not-chat` (a safety classifier or adapter base). The API's
+   * `active` and `blindEligible` flags decide when they come; until then contract/availability.ts.
+   */
+  availability: Availability;
   /** Where the rating sits between the lowest and the highest on the board, 0 to 1. */
   eloShare: number;
   /**
@@ -80,7 +91,8 @@ export interface LeaderboardSummary {
   averageWinRate: number;
 }
 
-export interface Leaderboard {
+/** One cut of the board: its entries, and the numbers that belong to exactly those entries. */
+export interface BoardSlice {
   /** Ranked models in rank order, then rated ones without a rank claim, then those not yet rated. */
   entries: LeaderboardEntry[];
   /** The ranked models, in rank order: the podium, the ranking and the landing top five. */
@@ -89,6 +101,18 @@ export interface Leaderboard {
   unrated: LeaderboardEntry[];
   summary: LeaderboardSummary;
   providers: ProviderOption[];
+}
+
+/**
+ * The whole board (the fields of `BoardSlice`, every model the API lists), plus the two cuts the
+ * pages show by default. On the classic board each cut is ranked on its own; on the crowd board
+ * the API's ranks are kept as they are (its rank ranges belong to the whole fit).
+ */
+export interface Leaderboard extends BoardSlice {
+  /** Only the models a visitor can meet in a blind battle. The default view of every page. */
+  blind: BoardSlice;
+  /** Everything a visitor can use: blind and pick-only models, without retired and non-chat ones. */
+  usable: BoardSlice;
   /** Which route answered: `crowd` is the measured board, the others the classic one. */
   source: LeaderboardData['source'];
   /** Crowd board only: method id, votes the fit used, and whether it is a stale copy. */
@@ -97,6 +121,11 @@ export interface Leaderboard {
   category: string | null;
   /** The crowd board is down or failed and the classic board is shown instead; null otherwise. */
   fallback: LeaderboardData['fallback'] | null;
+  /**
+   * Set only when the API could not be reached and the Worker served a saved copy: the last time it
+   * confirmed the data (ISO). The page must say "saved copy" and show this time, never "live".
+   */
+  savedAt: string | null;
 }
 
 export type SortKey = 'rank' | 'name' | 'provider' | 'elo' | 'winRate' | 'battles';

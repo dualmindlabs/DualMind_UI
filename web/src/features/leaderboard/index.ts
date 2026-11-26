@@ -9,6 +9,7 @@ export { LeaderboardPage } from './components/leaderboard-page';
 export { MethodologyPage } from './components/methodology-page';
 
 // Shared components
+export { AvailabilityBadge } from './components/availability-badge';
 export { BoardControls, type BoardControlsProps } from './components/board-controls';
 export { BoardEmpty, BoardError, BoardNoMatch, BoardSkeleton } from './components/board-state';
 export { BoardStatus, type BoardStatusProps } from './components/board-status';
@@ -17,8 +18,10 @@ export { ModelDetails, type ModelDetailsProps } from './components/model-details
 export { ProviderBadge, type ProviderBadgeProps } from './components/provider-badge';
 export { RankNumber, type RankNumberProps } from './components/rank-number';
 export { RetiredBadge } from './components/retired-badge';
+export { ScopeSwitch } from './components/scope-switch';
 export { SortToggle, type SortToggleProps } from './components/sort-toggle';
 export { UnratedBadge } from './components/unrated-badge';
+export { readShowAll, SHOW_ALL_PARAM, useShowAll } from './hooks/use-show-all';
 
 // Hooks
 export { type BoardView, useBoardView } from './hooks/use-board-view';
@@ -76,6 +79,8 @@ export {
 } from './lib/format';
 export { ariaSort, DEFAULT_SORT, nextSort, SORT_COLUMNS, sortEntries } from './lib/sort';
 export type {
+  Availability,
+  BoardSlice,
   Leaderboard,
   LeaderboardEntry,
   LeaderboardFilters,

@@ -35,6 +35,8 @@ export type LeaderboardResult = {
   data: LeaderboardResponse;
   etag: string;
   generatedAt: string;
+  /** When the Worker last confirmed the data with the DualMind API (ISO). */
+  checkedAt: string;
   state: LeaderboardState;
   ageSeconds: number;
 };
@@ -199,6 +201,7 @@ export function createLeaderboardService(options: ServiceOptions = {}) {
       data: found.data,
       etag: found.etag,
       generatedAt: found.generatedAt,
+      checkedAt: new Date(found.storedAt).toISOString(),
       state,
       ageSeconds: Math.floor(ageOf(found)),
     });

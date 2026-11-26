@@ -412,7 +412,7 @@ test.describe('sign in', () => {
     expect(calls.find('/auth/v1/otp')).toBeUndefined();
   });
 
-  test('the OAuth buttons send the browser to the provider, returning to the bare origin', async ({
+  test('the OAuth buttons send the browser to the provider, returning to the callback page', async ({
     page,
     baseURL,
   }) => {
@@ -422,8 +422,9 @@ test.describe('sign in', () => {
     await page.waitForURL(`${SUPABASE}/auth/v1/authorize**`);
     const authorize = new URL(page.url());
     expect(authorize.searchParams.get('provider')).toBe('github');
-    expect(authorize.searchParams.get('redirect_to')).toBe(baseURL);
-    // Implicit flow: no PKCE challenge, so tokens come back in the hash to `/`.
+    // Tokens are read from the address only on the callback and reset pages (login CSRF).
+    expect(authorize.searchParams.get('redirect_to')).toBe(`${baseURL}/auth-callback.html`);
+    // Implicit flow: no PKCE challenge, so tokens come back in the hash to that page.
     expect(authorize.searchParams.get('code_challenge')).toBeNull();
 
     await page.goto('/login/');
@@ -623,6 +624,19 @@ const SCREENS: ReadonlyArray<{
 ];
 
 /**
+ * Opens a screen with no stored session. An earlier screen (the reset page) signs a session in, and
+ * a link with tokens that finds another account signed in now asks before it switches.
+ */
+async function openScreen(page: Page, url: string) {
+  try {
+    await page.evaluate(() => window.localStorage.clear());
+  } catch {
+    // The first screen: no page yet, so nothing is stored.
+  }
+  await page.goto(url);
+}
+
+/**
  * The callback page moves on after four seconds. Holding the next page's request (never
  * answered) keeps the callback page on screen for axe and the screenshots.
  */
@@ -637,7 +651,7 @@ test.describe('accessibility, layout and screenshots', () => {
       await holdRedirect(page);
       await storeTheme(page, theme);
       for (const screen of SCREENS) {
-        await page.goto(screen.url());
+        await openScreen(page, screen.url());
         await screen.ready(page);
         expect(await blockingViolations(page), `${screen.name} ${theme}`).toEqual([]);
       }
@@ -659,7 +673,7 @@ test.describe('accessibility, layout and screenshots', () => {
     expect(toggle?.height ?? 0).toBeGreaterThanOrEqual(44);
     expect(toggle?.width ?? 0).toBeGreaterThanOrEqual(44);
     for (const screen of SCREENS) {
-      await page.goto(screen.url());
+      await openScreen(page, screen.url());
       await screen.ready(page);
       expect(await overflowing(page), screen.name).toEqual([]);
     }
@@ -689,7 +703,7 @@ test.describe('accessibility, layout and screenshots', () => {
         await storeTheme(page, theme);
         await page.setViewportSize({ width: viewport.width, height: viewport.height });
         for (const screen of SCREENS) {
-          await page.goto(screen.url());
+          await openScreen(page, screen.url());
           await screen.ready(page);
           await settle(page, 1200);
           await fullPageShot(page, {

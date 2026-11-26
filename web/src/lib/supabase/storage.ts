@@ -27,6 +27,13 @@ export const PROFILE_CACHE_KEY = 'dm.profile.v1';
 /** sessionStorage: the legacy sign-in loop guard (js/ui/app.js, screen-inventory.md row 5). */
 export const AUTH_REDIRECT_GUARD_KEY = 'auth_redirect_attempted';
 
+/**
+ * sessionStorage, this tab: set after the `PASSWORD_RECOVERY` event, so a reload of a real reset
+ * link (the tokens are gone from the address by then) keeps the form. Holds `{ savedAt }` and
+ * expires with the email link (one hour). Cleared on sign-out.
+ */
+export const RECOVERY_MARK_KEY = 'dm.recovery.v1';
+
 export type KeyValueStorage = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
 export type ScannableStorage = KeyValueStorage & Pick<Storage, 'length' | 'key'>;
 
@@ -62,12 +69,16 @@ export function clearLegacyKeys(storage: KeyValueStorage | null): void {
   for (const key of LEGACY_AUTH_KEYS) attempt(() => storage.removeItem(key));
 }
 
-/** What sign-out leaves behind: nothing of the user's (legacy keys, vote queue, profile cache). */
+/** What sign-out leaves behind: nothing of the user's (legacy keys, vote queue, profile cache, the
+ * reset-form marker of this tab). */
 export function clearSignedOutData(
   local: KeyValueStorage | null,
   session: KeyValueStorage | null,
 ): void {
   clearLegacyKeys(local);
   if (local) attempt(() => local.removeItem(VOTE_QUEUE_STORAGE_KEY));
-  if (session) attempt(() => session.removeItem(PROFILE_CACHE_KEY));
+  if (session) {
+    attempt(() => session.removeItem(PROFILE_CACHE_KEY));
+    attempt(() => session.removeItem(RECOVERY_MARK_KEY));
+  }
 }

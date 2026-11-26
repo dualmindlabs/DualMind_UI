@@ -22,6 +22,8 @@ export const UPSTREAM_FIELDS = {
   totalTies: ['totalTies', 'total_ties', 'ties'],
   totalResponses: ['totalResponses', 'total_responses', 'total_matches', 'matches'],
   winRate: ['winRate', 'win_rate'],
+  active: ['active', 'isActive', 'is_active'],
+  blindEligible: ['blindEligible', 'blind_eligible', 'isBlindEligible', 'is_blind_eligible'],
 } as const;
 
 type Row = Record<string, unknown>;
@@ -48,4 +50,9 @@ export function readNumber(row: Row, field: keyof typeof UPSTREAM_FIELDS): numbe
 export function readCount(row: Row, field: keyof typeof UPSTREAM_FIELDS): number | undefined {
   const value = readNumber(row, field);
   return value !== undefined && Number.isInteger(value) && value >= 0 ? value : undefined;
+}
+
+export function readBoolean(row: Row, field: keyof typeof UPSTREAM_FIELDS): boolean | undefined {
+  const value = firstPresent(row, UPSTREAM_FIELDS[field]);
+  return typeof value === 'boolean' ? value : undefined;
 }

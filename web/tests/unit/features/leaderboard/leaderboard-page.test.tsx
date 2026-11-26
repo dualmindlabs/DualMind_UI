@@ -60,7 +60,18 @@ const rowNames = async () =>
     row => within(row).getByRole('rowheader').querySelector('button')?.textContent,
   );
 
+/** Turns on the switch that adds the models a visitor cannot meet in a blind battle. */
+async function showEverything(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(
+    await screen.findByRole('switch', {
+      name: /Also show models you cannot meet in a blind battle/,
+    }),
+  );
+}
+
 beforeEach(() => {
+  // The switch keeps its state in the address (?show=all): start every test from a clean one.
+  window.history.replaceState(null, '', '/');
   scenario = 'ok';
   wide = true;
   installMatchMedia();
@@ -81,8 +92,61 @@ describe('LeaderboardPage', () => {
     );
   });
 
-  it('loads the board without a sign-in: human names, rated models ranked, the rest apart', async () => {
+  it('shows only the models a visitor can meet in a blind battle by default, and says what is left out', async () => {
     renderPage();
+    // Of the seven models, two Cloudflare ones are pick-only and three are retired (Compound Mini
+    // and two Cloudflare models that left Cloudflare's catalogue).
+    expect(await rowNames()).toEqual(['Gemma 3n E2B IT', 'Gemma 3 1B IT']);
+    const toggle = screen.getByRole('switch', {
+      name: /Also show models you cannot meet in a blind battle/,
+    });
+    expect(toggle).not.toBeChecked();
+    expect(screen.getByTestId('scope-switch')).toHaveTextContent(
+      /5 models are left out by default/,
+    );
+    expect(screen.queryByText('Retired')).not.toBeInTheDocument();
+    expect(screen.queryByText('Pick-only')).not.toBeInTheDocument();
+  });
+
+  it('keeps the switch in the address, so a link to the wider board works', async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await table();
+    await showEverything(user);
+    expect(window.location.search).toBe('?show=all');
+    await user.click(screen.getByRole('switch', { name: /Also show models you cannot meet/ }));
+    expect(window.location.search).toBe('');
+  });
+
+  it('opens with every model when the address says ?show=all', async () => {
+    window.history.replaceState(null, '', '/leaderboard/?show=all');
+    renderPage();
+    expect(await bodyRows()).toHaveLength(7);
+    expect(screen.getByRole('switch', { name: /Also show models you cannot meet/ })).toBeChecked();
+  });
+
+  it('labels each model that is not in blind battles once the switch is on', async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await table();
+    await showEverything(user);
+    const rows = await bodyRows();
+    expect(rows).toHaveLength(7);
+    const labelOf = (name: string) =>
+      rows.find(row => within(row).queryByRole('button', { name }))?.textContent ?? '';
+    expect(labelOf('Compound Mini')).toContain('Retired');
+    expect(labelOf('Llama 3.3 70B Instruct (FP8, fast)')).toContain('Pick-only');
+    expect(labelOf('Gemma 3n E2B IT')).not.toMatch(/Retired|Pick-only/);
+    // Back to the default: the others go again.
+    await user.click(screen.getByRole('switch', { name: /Also show models you cannot meet/ }));
+    expect(await bodyRows()).toHaveLength(2);
+  });
+
+  it('loads the board without a sign-in: human names, rated models ranked, the rest apart', async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await table();
+    await showEverything(user);
     // All seven models have 5 battles or more, so every one is ranked.
     expect(await rowNames()).toEqual([
       'Llama 3.3 70B Instruct (FP8, fast)',
@@ -106,6 +170,7 @@ describe('LeaderboardPage', () => {
     const user = userEvent.setup();
     renderPage();
     await table();
+    await showEverything(user);
     const battles = screen.getByRole('button', { name: 'Battles' });
     const header = battles.closest('th');
     expect(header).toHaveAttribute('aria-sort', 'none');
@@ -127,6 +192,7 @@ describe('LeaderboardPage', () => {
     const user = userEvent.setup();
     renderPage();
     await table();
+    await showEverything(user);
     await user.type(screen.getByRole('searchbox', { name: 'Search models' }), 'gemma');
     await waitFor(async () => expect(await bodyRows()).toHaveLength(2));
     expect(screen.getByText(/Showing/)).toHaveTextContent('Showing 2 of 7 models');
@@ -144,6 +210,8 @@ describe('LeaderboardPage', () => {
   it('opens the details sheet from a row; Esc closes it and focus returns to the row', async () => {
     const user = userEvent.setup();
     renderPage();
+    await table();
+    await showEverything(user);
     const name = within(await table()).getByRole('button', { name: 'Compound Mini' });
     await user.click(name);
     const dialog = await screen.findByRole('dialog');
@@ -161,7 +229,10 @@ describe('LeaderboardPage', () => {
 
   it('shows a card list instead of the table on phones', async () => {
     wide = false;
+    const user = userEvent.setup();
     renderPage();
+    await screen.findByRole('list', { name: 'Models ranked by Elo' });
+    await showEverything(user);
     const list = await screen.findByRole('list', { name: 'Models ranked by Elo' });
     expect(within(list).getAllByRole('listitem')).toHaveLength(7);
     expect(screen.queryByRole('table')).not.toBeInTheDocument();
@@ -178,7 +249,7 @@ describe('LeaderboardPage', () => {
 
     scenario = 'ok';
     await user.click(within(alert).getByRole('button', { name: /Try again/ }));
-    expect(await bodyRows()).toHaveLength(7);
+    expect(await bodyRows()).toHaveLength(2);
   });
 
   it('says so when no model is ranked yet', async () => {
@@ -195,6 +266,6 @@ describe('LeaderboardPage', () => {
     await user.click(screen.getByRole('button', { name: /Refresh/ }));
     const warning = await screen.findByRole('alert');
     expect(warning).toHaveTextContent('These numbers may be out of date.');
-    expect(await bodyRows()).toHaveLength(7);
+    expect(await bodyRows()).toHaveLength(2);
   });
 });

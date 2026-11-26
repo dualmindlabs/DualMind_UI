@@ -1,7 +1,10 @@
+import { modelAvailability } from '@contract/availability';
+
 import type { LeaderboardData, ModelStat } from '@/lib/api';
 import { modelMaker, platformLabel, resolveDisplayName, servedBy } from '@/lib/models/display-name';
 
 import type {
+  BoardSlice,
   Leaderboard,
   LeaderboardEntry,
   LeaderboardSummary,
@@ -9,7 +12,6 @@ import type {
   RatedEntry,
 } from '../types';
 import { ELO_BAR_FLOOR, PROVISIONAL_BATTLES } from './constants';
-import { isRetiredModel } from './retired';
 
 /** The provisional rule (lib/constants.ts): fewer than PROVISIONAL_BATTLES battles. */
 export function isProvisional(battles: number): boolean {
@@ -70,6 +72,7 @@ export function toLeaderboardEntries(stats: readonly ModelStat[]): LeaderboardEn
       const provisional = stat.provisional;
       const made = modelMaker(stat.modelName, stat.providerName);
       const platform = platformLabel(stat.providerName);
+      const availability = modelAvailability(stat);
       return {
         id: stat.modelId,
         name: resolveDisplayName(stat.modelName, stat.displayName),
@@ -93,7 +96,8 @@ export function toLeaderboardEntries(stats: readonly ModelStat[]): LeaderboardEn
         provisional,
         eloShare: eloShare(stat.eloScore, lowest, highest),
         crowd: stat.crowd ?? null,
-        ...(isRetiredModel(stat.modelName, stat.active) ? { retired: true } : {}),
+        availability,
+        ...(availability === 'retired' ? { retired: true } : {}),
       };
     })
     .sort(byRank);
@@ -137,11 +141,7 @@ export function providerOptions(entries: readonly LeaderboardEntry[]): ProviderO
   );
 }
 
-/** Everything the pages need from one `model-stats` response (TanStack Query's `select`). */
-export function toLeaderboard(
-  stats: readonly ModelStat[],
-  meta: Pick<LeaderboardData, 'source' | 'crowd' | 'category' | 'fallback'> = { source: 'v2' },
-): Leaderboard {
+function toSlice(stats: readonly ModelStat[]): BoardSlice {
   const entries = toLeaderboardEntries(stats);
   return {
     entries,
@@ -149,9 +149,30 @@ export function toLeaderboard(
     unrated: entries.filter(entry => entry.provisional),
     summary: summarize(entries),
     providers: providerOptions(entries),
+  };
+}
+
+/** Everything the pages need from one `model-stats` response (TanStack Query's `select`). */
+export function toLeaderboard(
+  stats: readonly ModelStat[],
+  meta: Pick<LeaderboardData, 'source' | 'crowd' | 'category' | 'fallback' | 'checkedAt'> = {
+    source: 'v2',
+  },
+): Leaderboard {
+  const availabilityOf = (stat: ModelStat) => modelAvailability(stat);
+  return {
+    ...toSlice(stats),
+    blind: toSlice(stats.filter(stat => availabilityOf(stat) === 'blind')),
+    usable: toSlice(
+      stats.filter(stat => {
+        const availability = availabilityOf(stat);
+        return availability === 'blind' || availability === 'pick-only';
+      }),
+    ),
     source: meta.source,
     crowd: meta.crowd ?? null,
     category: meta.category ?? null,
     fallback: meta.fallback ?? null,
+    savedAt: meta.checkedAt ?? null,
   };
 }

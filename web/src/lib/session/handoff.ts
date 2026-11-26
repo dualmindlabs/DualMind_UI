@@ -98,13 +98,14 @@ export function landingView(
   } catch {
     signedIn = false;
   }
-  const auth = hasAuthParams(location.search, location.hash);
-  // The new app finishes sign-ins itself (supabase-js reads the tokens); a recovery link goes on
-  // to the new password page with its hash, like /auth-callback.html does.
+  // Tokens in the address never sign anyone in on `/` (cycle 5 P2-2, login CSRF): supabase-js
+  // reads them on the two auth pages only. A recovery link goes on to the new password page
+  // with its hash, like /auth-callback.html does; anything else changes nothing, so a link
+  // with someone else's tokens shows the visitor the landing page (or their own arena).
   if (RECOVERY_TYPE_RE.test(location.hash + location.search)) {
     return { kind: 'recovery', target: `${RECOVERY_PATH}${location.search}${location.hash}` };
   }
-  return auth || signedIn ? { kind: 'arena' } : { kind: 'landing' };
+  return signedIn ? { kind: 'arena' } : { kind: 'landing' };
 }
 
 /**
@@ -139,13 +140,12 @@ export const SESSION_HANDOFF_SCRIPT = [
   '(function(){try{',
   'var w=window,l=w.location,q=l.search,h=l.hash;',
   `if(l.pathname!==${JSON.stringify(HANDOFF_PATH)})return;`,
-  'var ',
-  `a=${AUTH_HASH_RE.toString()}.test(h)||${AUTH_QUERY_RE.toString()}.test(q)||${AUTH_TYPE_RE.toString()}.test(h+q),s=false;`,
+  'var s=false;',
   'try{var t=w.localStorage,v=function(x){return x!==null&&x!==""&&x!=="null"};',
   `s=v(t.getItem(${JSON.stringify(LEGACY_SESSION_KEY)}));`,
   `for(var i=0;!s&&i<t.length;i++){var k=t.key(i);s=k!==null&&${SUPABASE_SESSION_KEY_RE.toString()}.test(k)&&v(t.getItem(k))}`,
   '}catch(e){s=false}',
   `if(${RECOVERY_TYPE_RE.toString()}.test(h+q)){l.replace(${JSON.stringify(RECOVERY_PATH)}+q+h);return}`,
-  `if(a||s){w.document.documentElement.setAttribute(${JSON.stringify(ARENA_ATTRIBUTE)},"")}`,
+  `if(s){w.document.documentElement.setAttribute(${JSON.stringify(ARENA_ATTRIBUTE)},"")}`,
   '}catch(e){}})();',
 ].join('');

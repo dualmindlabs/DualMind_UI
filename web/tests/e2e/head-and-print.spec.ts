@@ -60,6 +60,7 @@ const PRERENDERED = [
   '/privacy/',
   '/terms/',
   '/cookies/',
+  '/data/',
   '/login/',
   '/signup/',
   '/forgot-password/',

@@ -190,10 +190,36 @@ test.describe('prerendered pages', () => {
 });
 
 test.describe('/leaderboard/ (desktop)', () => {
+  test('the default board holds only the models a visitor can meet in a blind battle', async ({
+    page,
+  }) => {
+    await mockStats(page);
+    await page.goto('/leaderboard/');
+    const everything = page.getByRole('switch', {
+      name: /Also show models you cannot meet in a blind battle/,
+    });
+    await expect(everything).not.toBeChecked();
+    // 10 of the 53 recorded models are in blind battles; 8 of them have enough battles for a rank.
+    await expect(bodyRows(page)).toHaveCount(8);
+    await expect(firstRowName(page)).toHaveText('Gemma 3n E2B IT');
+    await expect(
+      page.getByRole('list', { name: 'Top three models' }).getByRole('listitem').first(),
+    ).toContainText('Gemma 3n E2B IT');
+    await expect(page.getByTestId('scope-switch')).toContainText(
+      '43 models are left out by default',
+    );
+    await expect(table(page)).not.toContainText('Pick-only');
+    await everything.click();
+    await expect(bodyRows(page)).toHaveCount(RATED);
+    await expect(table(page)).toContainText('Pick-only');
+    await expect(table(page)).toContainText('Retired');
+    await expect(table(page)).toContainText('Not a chat model');
+  });
+
   test('loads the live board without a sign-in and without console errors', async ({ page }) => {
     const errors = collectErrors(page);
     await mockStats(page);
-    await page.goto('/leaderboard/');
+    await page.goto('/leaderboard/?show=all');
     await expect(bodyRows(page)).toHaveCount(RATED);
     const podium = page.getByRole('list', { name: 'Top three models' });
     await expect(podium.getByRole('listitem')).toHaveCount(3);
@@ -215,7 +241,7 @@ test.describe('/leaderboard/ (desktop)', () => {
     page,
   }) => {
     await mockStats(page);
-    await page.goto('/leaderboard/');
+    await page.goto('/leaderboard/?show=all');
     await expect(bodyRows(page)).toHaveCount(RATED);
     const labels = await page.locator('tbody th button').allTextContents();
     expect(labels).toHaveLength(RATED);
@@ -233,7 +259,7 @@ test.describe('/leaderboard/ (desktop)', () => {
     page,
   }) => {
     await mockStats(page);
-    await page.goto('/leaderboard/');
+    await page.goto('/leaderboard/?show=all');
     await expect(bodyRows(page)).toHaveCount(RATED);
     await expect(table(page)).toHaveCount(1);
 
@@ -251,7 +277,7 @@ test.describe('/leaderboard/ (desktop)', () => {
 
   test('column headers sort the table and update aria-sort', async ({ page }) => {
     await mockStats(page);
-    await page.goto('/leaderboard/');
+    await page.goto('/leaderboard/?show=all');
     await expect(bodyRows(page)).toHaveCount(RATED);
     const rankHeader = page.getByRole('columnheader', { name: 'Rank' });
     const battlesHeader = page.getByRole('columnheader', { name: 'Battles' });
@@ -277,7 +303,7 @@ test.describe('/leaderboard/ (desktop)', () => {
 
   test('search and the provider filter narrow the board', async ({ page }) => {
     await mockStats(page);
-    await page.goto('/leaderboard/');
+    await page.goto('/leaderboard/?show=all');
     await expect(bodyRows(page)).toHaveCount(RATED);
 
     // Ten Gemma builds, eight rated and two not yet: a search opens the unrated group by itself.
@@ -304,7 +330,7 @@ test.describe('/leaderboard/ (desktop)', () => {
   }) => {
     const errors = collectErrors(page);
     await mockStats(page);
-    await page.goto('/leaderboard/');
+    await page.goto('/leaderboard/?show=all');
     // The podium names the top three too, so look for the name inside the table.
     const name = table(page).getByRole('button', { name: 'Qwen QwQ 32B', exact: true });
     await name.focus();
@@ -342,7 +368,7 @@ test.describe('/leaderboard/ (desktop)', () => {
 
   test('the command palette opens a model', async ({ page }) => {
     await mockStats(page);
-    await page.goto('/leaderboard/');
+    await page.goto('/leaderboard/?show=all');
     await expect(bodyRows(page)).toHaveCount(RATED);
     await page.keyboard.press('Control+K');
     const palette = page.getByRole('dialog', { name: 'Command palette' });
@@ -357,7 +383,7 @@ test.describe('/leaderboard/ (desktop)', () => {
   test('an error explains itself and Try again loads the board', async ({ page }) => {
     let mode: Reply = 'error';
     await mockStats(page, () => mode);
-    await page.goto('/leaderboard/');
+    await page.goto('/leaderboard/?show=all');
     const alert = page.getByRole('alert').filter({ hasText: 'The leaderboard did not load.' });
     await expect(alert).toBeVisible({ timeout: 15_000 });
     await expect(page.getByRole('list', { name: 'Top three models' })).toHaveCount(0);
@@ -372,7 +398,7 @@ test.describe('/leaderboard/ (desktop)', () => {
   }) => {
     let mode: Reply = 'ok';
     await mockStats(page, () => mode);
-    await page.goto('/leaderboard/');
+    await page.goto('/leaderboard/?show=all');
     await expect(bodyRows(page)).toHaveCount(RATED);
     mode = 'error';
     await page.getByRole('button', { name: 'Refresh the leaderboard' }).click();
@@ -384,7 +410,7 @@ test.describe('/leaderboard/ (desktop)', () => {
 
   test('an empty board says so', async ({ page }) => {
     await mockStats(page, () => 'empty');
-    await page.goto('/leaderboard/');
+    await page.goto('/leaderboard/?show=all');
     await expect(page.getByText('No model is ranked yet.')).toBeVisible();
   });
 });
@@ -394,7 +420,7 @@ test.describe('/leaderboard/ (phone)', () => {
 
   test('shows a card list and opens a drawer', async ({ page }) => {
     await mockStats(page);
-    await page.goto('/leaderboard/');
+    await page.goto('/leaderboard/?show=all');
     const list = page.getByRole('list', { name: 'Models ranked by Elo' });
     await expect(list.getByRole('listitem')).toHaveCount(RATED);
     await expect(table(page)).toHaveCount(0);
@@ -419,7 +445,7 @@ test.describe('/models/', () => {
   test('lists every model and opens the shared sheet', async ({ page }) => {
     const errors = collectErrors(page);
     await mockStats(page);
-    await page.goto('/models/');
+    await page.goto('/models/?show=all');
     const grid = page.getByRole('list', { name: 'Models' });
     await expect(grid.getByRole('listitem')).toHaveCount(MODELS);
 
@@ -501,7 +527,7 @@ for (const page of ['leaderboard', 'models'] as const) {
         await tab.setViewportSize({ width: viewport.width, height: viewport.height });
         await tab.emulateMedia({ reducedMotion: mode.reducedMotion });
         await storeTheme(tab, mode.theme);
-        await tab.goto(`/${page}/`);
+        await tab.goto(`/${page}/?show=all`);
         await expect(tab.locator('[data-model-id]').first()).toBeVisible();
         await settle(tab, 3000);
         await tab.screenshot({
@@ -537,7 +563,7 @@ test('screenshot: leaderboard podium with the spotlight under the pointer', asyn
   await mockStats(page);
   await page.setViewportSize({ width: 1440, height: 900 });
   await storeTheme(page, 'dark');
-  await page.goto('/leaderboard/');
+  await page.goto('/leaderboard/?show=all');
   const leader = page.getByRole('list', { name: 'Top three models' }).getByRole('listitem').first();
   await expect(leader).toBeVisible();
   await settle(page, 2000);
@@ -551,7 +577,7 @@ test('screenshot: leaderboard podium with the spotlight under the pointer', asyn
 test.describe('models without a rank on the models page', () => {
   test('cards show "Not yet rated" instead of a rank', async ({ page }) => {
     await mockStats(page);
-    await page.goto('/models/');
+    await page.goto('/models/?show=all');
     await expect(page.locator('[data-model-id]').first()).toBeVisible();
     await expect(page.locator('[data-model-id]').locator('[data-unrated]')).toHaveCount(UNRATED);
     const top = page.locator('[data-model-id]').filter({ hasText: 'Llama 3.1 70B Instruct' });

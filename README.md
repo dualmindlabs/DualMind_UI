@@ -1,6 +1,6 @@
 # DualMind Arena — Web App
 
-**Blind, side-by-side AI model battles in the browser: ask once, compare two anonymous answers, vote, and watch the Elo leaderboard move.**
+**Blind, side-by-side AI model battles in the browser: ask once, compare two anonymous answers, vote, and then see which model wrote each one.**
 
 [![CI](https://github.com/dualmindlabs/DualMind_UI/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/dualmindlabs/DualMind_UI/actions/workflows/ci.yml)
 [![License: Proprietary](https://img.shields.io/badge/license-Proprietary-red.svg)](./LICENSE)

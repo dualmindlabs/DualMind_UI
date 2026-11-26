@@ -112,7 +112,7 @@ describe('toLeaderboardEntries (normalised model-stats to board entries)', () =>
 
   it('handles an empty board', () => {
     expect(toLeaderboardEntries([])).toEqual([]);
-    expect(toLeaderboard([])).toEqual({
+    const empty = {
       entries: [],
       rated: [],
       unrated: [],
@@ -128,6 +128,12 @@ describe('toLeaderboardEntries (normalised model-stats to board entries)', () =>
         bottomElo: 0,
         averageWinRate: 0,
       },
+    };
+    expect(toLeaderboard([])).toEqual({
+      ...empty,
+      blind: empty,
+      usable: empty,
+      savedAt: null,
       source: 'v2',
       crowd: null,
       category: null,
