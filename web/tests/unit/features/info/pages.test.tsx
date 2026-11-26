@@ -72,7 +72,7 @@ describe('info pages', () => {
   it('Privacy: summary box, last updated date and a table of contents', () => {
     renderWithShell(<PrivacyPage />, '/privacy/');
     expect(screen.getAllByRole('note')[0]).toHaveTextContent('We do not use analytics');
-    expect(screen.getByText('20 October 2026')).toHaveAttribute('datetime', '2026-10-20');
+    expect(screen.getByText('26 November 2026')).toHaveAttribute('datetime', '2026-11-26');
     const nav = screen.getAllByRole('navigation', { name: 'On this page' })[0] as HTMLElement;
     expect(within(nav).getAllByRole('link')).toHaveLength(privacyContent.sections.length - 1);
   });

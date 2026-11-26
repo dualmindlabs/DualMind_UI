@@ -4,6 +4,9 @@ import { describe, expect, it } from 'vitest';
 
 import { ApiProvider } from '@/components/layout/api-provider';
 import { AuthProvider } from '@/components/layout/auth-provider';
+import { CommandPaletteProvider } from '@/components/layout/command-palette-provider';
+import { MotionProvider } from '@/components/motion/motion-provider';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { PrivateArenaPage } from '@/features/private-arena';
 import { createApiClient, createQueryClient } from '@/lib/api';
 import { createAuthStore } from '@/lib/supabase';
@@ -20,7 +23,13 @@ describe('PrivateArenaPage with the flag off (the default)', () => {
           <AuthProvider
             store={createAuthStore({ config: null, loadClient: () => Promise.reject(new Error()) })}
           >
-            <PrivateArenaPage />
+            <MotionProvider>
+              <TooltipProvider>
+                <CommandPaletteProvider>
+                  <PrivateArenaPage />
+                </CommandPaletteProvider>
+              </TooltipProvider>
+            </MotionProvider>
           </AuthProvider>
         </ApiProvider>
       </MemoryRouter>,

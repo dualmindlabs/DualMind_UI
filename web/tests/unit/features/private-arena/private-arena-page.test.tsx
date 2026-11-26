@@ -5,6 +5,9 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { ApiProvider } from '@/components/layout/api-provider';
 import { AuthProvider } from '@/components/layout/auth-provider';
+import { CommandPaletteProvider } from '@/components/layout/command-palette-provider';
+import { MotionProvider } from '@/components/motion/motion-provider';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { PrivateArenaPage } from '@/features/private-arena';
 import { createApiClient, createQueryClient } from '@/lib/api';
 import { type AuthStore, createAuthStore } from '@/lib/supabase';
@@ -55,7 +58,13 @@ function renderPage(fetch: ReturnType<typeof scriptedFetch>['fetch']) {
         queryClient={createQueryClient()}
       >
         <AuthProvider store={signedInStore()}>
-          <PrivateArenaPage />
+          <MotionProvider>
+            <TooltipProvider>
+              <CommandPaletteProvider>
+                <PrivateArenaPage />
+              </CommandPaletteProvider>
+            </TooltipProvider>
+          </MotionProvider>
         </AuthProvider>
       </ApiProvider>
     </MemoryRouter>,
