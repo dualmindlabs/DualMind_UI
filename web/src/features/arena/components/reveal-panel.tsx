@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Kbd } from '@/components/ui/kbd';
 import { ModelMark } from '@/components/ui/model-mark';
 import { useShouldReduceMotion } from '@/hooks/use-should-reduce-motion';
-import { modelMaker, resolveDisplayName } from '@/lib/models/display-name';
+import { makerLine, resolveDisplayName } from '@/lib/models/display-name';
 import { cn } from '@/lib/utils/cn';
 
 import { useArena } from '../hooks/use-arena';
@@ -123,8 +123,8 @@ export function RevealPanel({ turn }: { turn: LiveTurn }) {
                 {nameOf(answer, namesPending)}
               </span>
               {answer?.model ? (
-                <span className="text-caption text-fg-soft">
-                  {modelMaker(answer.model.name, answer.model.provider ?? '').label}
+                <span className="text-caption text-fg-soft" data-testid="reveal-maker">
+                  {makerLine(answer.model.name, answer.model.provider)}
                 </span>
               ) : null}
               <ModelRating answer={answer} />

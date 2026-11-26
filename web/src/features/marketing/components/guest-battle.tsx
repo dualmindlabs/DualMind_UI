@@ -1,9 +1,12 @@
 import { useEffect, useId, useRef, useState } from 'react';
 
+import { BattlesLeft } from '@/components/ui/battles-left';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { LazyMarkdown } from '@/features/arena';
 import { useApiClient } from '@/hooks/use-api-client';
 import { useFeatures } from '@/hooks/use-features';
+import { useQuota } from '@/hooks/use-quota';
 import {
   type Battle,
   getUserMessage,
@@ -61,6 +64,7 @@ export function GuestBattle({
   const inputId = useId();
   const statusId = useId();
   const siteKey = features.turnstileSiteKey;
+  const quota = useQuota(features.guestBattle);
 
   // The check loads only once the visitor shows interest (focus), and only when the feature is on.
   useEffect(() => {
@@ -101,6 +105,7 @@ export function GuestBattle({
     } finally {
       // A Turnstile token works once.
       setToken(null);
+      quota.refresh();
       handle.current?.reset();
     }
   };
@@ -145,9 +150,7 @@ export function GuestBattle({
                   className="grid content-start gap-2 rounded-lg border border-line bg-surface p-4"
                 >
                   <h3 className="text-caption font-semibold text-fg-soft">Answer {label}</h3>
-                  <p dir="auto" className="text-ui-sm break-words whitespace-pre-wrap text-fg">
-                    {text}
-                  </p>
+                  <LazyMarkdown className="answer-prose text-ui-sm text-fg">{text}</LazyMarkdown>
                 </article>
               ))}
             </div>
@@ -193,6 +196,13 @@ export function GuestBattle({
               <span className="text-caption text-muted" aria-hidden="true">
                 {prompt.length} / {GUEST_PROMPT_MAX_CHARS}
               </span>
+              {quota.guest ? (
+                <BattlesLeft
+                  remaining={quota.guest.remaining}
+                  limit={quota.guest.limit}
+                  noun="free battles"
+                />
+              ) : null}
             </div>
             <p
               id={statusId}

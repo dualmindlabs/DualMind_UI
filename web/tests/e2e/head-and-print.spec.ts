@@ -83,7 +83,7 @@ test.describe('document head', () => {
       expect(metaValues(html, 'name', 'twitter:card')).toEqual(['summary_large_image']);
       const images = metaValues(html, 'property', 'og:image');
       expect(images).toHaveLength(1);
-      expect(images[0]).toMatch(new RegExp(`^${SITE}/(og/[a-z-]+|og-default)\\.png$`));
+      expect(images[0]).toMatch(new RegExp(`^${SITE}/(og/[a-z0-9-]+|og-default)\\.png$`));
       expect(metaValues(html, 'property', 'og:image:alt')[0]?.length ?? 0).toBeGreaterThan(10);
       expect(metaValues(html, 'name', 'twitter:image')).toEqual(images);
 
@@ -150,7 +150,9 @@ test.describe('icons and the web app manifest', () => {
     };
     expect(manifest.name).toBe('DualMind Arena');
     expect(manifest.short_name).toBe('DualMind');
-    expect(manifest.description).toBe('Blind battles between AI models, ranked by votes.');
+    expect(manifest.description).toBe(
+      'Blind battles between AI models, with a public leaderboard.',
+    );
     expect(manifest.start_url).toBe('/');
     expect(manifest.display).toBe('standalone');
     expect(manifest.background_color).toBe('#08090B');

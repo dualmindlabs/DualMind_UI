@@ -7,6 +7,7 @@ import { useShouldReduceMotion } from '@/hooks/use-should-reduce-motion';
 import { resolveDisplayName } from '@/lib/models/display-name';
 
 import { useArena } from '../hooks/use-arena';
+import { useDraft } from '../hooks/use-draft';
 import { useRevealText } from '../hooks/use-reveal-text';
 import { type LiveAnswer, type LiveTurn, namesShown } from '../lib/battle-machine';
 import { UNRATED_NOTES } from '../lib/battle-notes';
@@ -146,7 +147,8 @@ export function LiveTurnView({
   latest?: boolean;
 }) {
   const promptId = useId();
-  const { battle, newBattle, shortcutsEnabled } = useArena();
+  const { battle, newBattle, shortcutsEnabled, focusComposer } = useArena();
+  const { setDraft } = useDraft();
   const optional = turn.mode === 'side';
   const showVote =
     turn.mode !== 'direct' && (turn.phase === 'awaiting_vote' || turn.phase === 'voting');
@@ -234,6 +236,10 @@ export function LiveTurnView({
           kind={turn.errorKind}
           message={turn.error}
           onNewBattle={newBattle}
+          onRestorePrompt={() => {
+            setDraft(turn.prompt);
+            focusComposer();
+          }}
           onRetry={() => battle.send(turn.prompt, { mode: turn.mode, pair: null })}
         />
       ) : null}

@@ -15,7 +15,7 @@ name: Web app
 
 on:
   pull_request:
-    branches: [main, master, feat/arena-cutover, cycle2/launch-gaps]
+    branches: [main, master, feat/arena-cutover, cycle2/launch-gaps, cycle3/truth-and-trust]
     paths:
       - 'web/**'
       - 'server/**'
@@ -182,11 +182,11 @@ jobs:
           ! grep -q 'data-spa-fallback' dist/index.html
           ! grep -q 'noindex' dist/index.html
           grep -q 'data-spa-fallback' dist/__spa-fallback.html
-          test -f dist/og/landing.png
-          test -f dist/og/leaderboard.png
+          test -f dist/og/landing-v2.png
+          test -f dist/og/leaderboard-v2.png
           test -f dist/og/models.png
           # Slice S7: the web app's leaderboard and models pages replace the legacy files.
-          grep -q 'blind votes' dist/leaderboard/index.html
+          grep -q 'public board' dist/leaderboard/index.html
           ! grep -q 'leaderboardPage.js' dist/leaderboard/index.html
           grep -q 'Every model in' dist/models/index.html
           ! grep -q 'AI Models Comparison' dist/models/index.html

@@ -19,6 +19,8 @@ import {
   privateVoteSchema,
   type PublicConfig,
   publicConfigSchema,
+  type Quota,
+  quotaSchema,
 } from '../schemas/launch';
 import { compact, oneOf, requireText } from './input';
 
@@ -48,6 +50,8 @@ export interface PrivateArenaInput {
 export interface LaunchEndpoints {
   /** `GET /api/config/public`. Public. 404 on a backend without it (the caller treats it as off). */
   getPublicConfig: (options?: CallOptions) => Promise<PublicConfig>;
+  /** `GET /api/arena/quota`: battles left today. 404 while the backend flag is off. */
+  getQuota: (options?: CallOptions) => Promise<Quota>;
   /**
    * `POST /api/arena/guest-battle`: one battle without an account (backend flag; 404 while off).
    * Never sends a token. 403 `TURNSTILE_FAILED` when the check fails, 429 after the daily limit.
@@ -84,6 +88,12 @@ export function createLaunchEndpoints(transport: Transport): LaunchEndpoints {
     getPublicConfig: async options =>
       await transport.json(
         { method: 'GET', path: '/api/config/public', auth: 'none', schema: publicConfigSchema },
+        options,
+      ),
+
+    getQuota: async options =>
+      await transport.json(
+        { method: 'GET', path: '/api/arena/quota', auth: 'optional', schema: quotaSchema },
         options,
       ),
 

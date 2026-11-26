@@ -160,7 +160,12 @@ function SharedView({ threadId, shared }: { threadId: string; shared: SharedThre
         <p className="mt-8 text-ui-sm text-muted print:hidden" data-testid="share-ai-notice">
           These answers were written by AI models and have not been reviewed. A person chose to
           share this page.{' '}
-          <a href={reportShareHref(threadId, shareUrl(threadId))}>Report this page</a>
+          <a
+            href={reportShareHref(threadId, shareUrl(threadId))}
+            className="text-mind-a underline underline-offset-4"
+          >
+            Report this page
+          </a>
         </p>
       </PageContainer>
 

@@ -85,9 +85,39 @@ export const cookiesContent: PageContent = {
                 'A short-lived marker that stops a redirect loop between the app and the sign-in page. It is cleared when you close the tab.',
             },
             {
-              term: 'Sign-in handoff (local storage)',
+              term: 'Sign-in handoff (session storage)',
               description:
-                'When you leave to sign up or sign in, the prompt you typed and the page you wanted are kept here for up to an hour, so a confirmation link opened in another tab can bring you back to them. It is read once and then deleted.',
+                'When you leave to sign up or sign in, the prompt you typed on the landing page and the page you wanted are kept in this tab for up to an hour, so you land back on them after signing in. It is read once and then deleted, and it is gone when you close the tab.',
+            },
+            {
+              term: 'Profile copy (session storage)',
+              description:
+                'Your account profile from the DualMind API, cached for this tab so it is not fetched on every page. Removed when you sign out or close the tab.',
+            },
+            {
+              term: 'Rank memory (local storage)',
+              description:
+                'The ranks you last saw on the leaderboard, so the page can show which models moved. It never leaves your device.',
+            },
+            {
+              term: 'Your compare results (local storage)',
+              description:
+                'The ids of the compare results you made, so the page knows which ones are yours to share or delete.',
+            },
+            {
+              term: 'Sign-in notice marker (local and session storage)',
+              description:
+                'When the sign-in notice email was last sent for your account, and whether the welcome email was already sent in this tab, so you are not emailed twice.',
+            },
+            {
+              term: 'Visit counting memory (session storage)',
+              description:
+                'Only when optional visit counting is on and you accepted: which steps this tab already counted, so none is counted twice.',
+            },
+            {
+              term: 'Old sign-in copy (local storage)',
+              description:
+                'An earlier version of the app kept a second copy of your session under another name. It is read once to carry you over and is removed when you sign out.',
             },
             {
               term: 'Analytics choice (local storage)',
@@ -145,6 +175,10 @@ export const cookiesContent: PageContent = {
       id: 'third-parties',
       heading: 'Third parties',
       blocks: [
+        {
+          type: 'paragraph',
+          text: 'The free battle, when it is switched on, loads Cloudflare Turnstile (a script and a frame from challenges.cloudflare.com) to tell people from bots. Turnstile reads signals from your browser and may set its own storage. It loads only after you click into the free battle box.',
+        },
         {
           type: 'paragraph',
           text: 'The Arena serves its own fonts and scripts, so its pages do not load them from third-party content delivery networks. When you choose a password, your browser checks it against the Pwned Passwords service of Have I Been Pwned, sending only the first five characters of a hash, never the password. The Privacy Policy covers the providers that handle your data.',

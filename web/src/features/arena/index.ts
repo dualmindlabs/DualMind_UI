@@ -7,6 +7,7 @@ export { AccountMenu } from './components/account-menu';
 export { AnswerPane } from './components/answer-pane';
 export { ArenaBoot } from './components/arena-boot';
 export { LazyArenaApp } from './components/lazy-arena-app';
+export { LazyMarkdown } from './components/lazy-markdown';
 export { ThreadTranscript, type ThreadTranscriptProps } from './components/thread-transcript';
 export { type HomeView, useHomeView } from './hooks/use-home-view';
 export { type ModelOption, useModelOptions } from './hooks/use-model-options';

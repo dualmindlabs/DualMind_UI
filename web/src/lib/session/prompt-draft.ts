@@ -14,10 +14,12 @@
  * - Blocked or full storage: nothing is kept, and the visitor simply signs in.
  */
 
+import { MAX_PROMPT_CHARS } from '@/lib/api';
+
 export const PROMPT_DRAFT_KEY = 'dm.promptDraft.v1';
 
-/** Longer prompts are cut here (the arena's own limit is far above any typed hero prompt). */
-export const PROMPT_DRAFT_MAX_CHARS = 4_000;
+/** Longer prompts are cut here: the arena's own limit, so the handoff never cuts text the hero composer allowed. */
+export const PROMPT_DRAFT_MAX_CHARS = MAX_PROMPT_CHARS;
 
 /** A draft older than this is dropped instead of prefilled. */
 export const PROMPT_DRAFT_TTL_MS = 60 * 60 * 1000;

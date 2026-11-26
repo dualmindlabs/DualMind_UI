@@ -222,3 +222,13 @@ export function servedBy(maker: ModelMaker, platform: string): string | null {
   if (platformName === makerName || platformName.startsWith(`${makerName} `)) return null;
   return `via ${platform}`;
 }
+
+/**
+ * "Meta · via Groq": the maker, and the platform that served the model when the API says which
+ * (the vote response carries `provider`; an older backend does not, and then only the maker shows).
+ */
+export function makerLine(modelName: string, provider: string | null | undefined): string {
+  const maker = modelMaker(modelName, provider ?? '');
+  const via = provider ? servedBy(maker, platformLabel(provider)) : null;
+  return via === null ? maker.label : `${maker.label} · ${via}`;
+}

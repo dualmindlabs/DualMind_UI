@@ -16,6 +16,7 @@ export { EloBar, type EloBarProps } from './components/elo-bar';
 export { ModelDetails, type ModelDetailsProps } from './components/model-details';
 export { ProviderBadge, type ProviderBadgeProps } from './components/provider-badge';
 export { RankNumber, type RankNumberProps } from './components/rank-number';
+export { RetiredBadge } from './components/retired-badge';
 export { SortToggle, type SortToggleProps } from './components/sort-toggle';
 export { UnratedBadge } from './components/unrated-badge';
 

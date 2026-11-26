@@ -60,7 +60,7 @@ test('/ is prerendered: headline, demo answers, SEO tags and the hand-off script
   expect(head).toMatch(/<meta name="description" content="Ask one prompt, compare two anonymous/);
   expect(head).toContain('<link rel="canonical" href="https://arena.dualmindlab.tech/"');
   expect(head).toContain(
-    'property="og:image" content="https://arena.dualmindlab.tech/og/landing.png"',
+    'property="og:image" content="https://arena.dualmindlab.tech/og/landing-v2.png"',
   );
   expect(head).toContain('name="twitter:card" content="summary_large_image"');
   expect(head).toContain('"@type":"WebSite"');
@@ -83,7 +83,7 @@ test('/ is prerendered: headline, demo answers, SEO tags and the hand-off script
   expect(html).toContain('Recorded demo, answers written for illustration');
   expect(html).toContain('Test questions leak into training data');
 
-  const og = await request.get('/og/landing.png', { headers: { Cookie: PREVIEW_COOKIE } });
+  const og = await request.get('/og/landing-v2.png', { headers: { Cookie: PREVIEW_COOKIE } });
   expect(og.status()).toBe(200);
   expect(og.headers()['content-type']).toBe('image/png');
 });
@@ -129,7 +129,7 @@ test('the live strip shows the leaderboard numbers and the #1', async ({ page })
   await expect(strip).toContainText('Llama 3.3 70B Instruct');
   await expect(strip).toContainText('1150 Elo · Meta');
   await expect(strip).toContainText('Live from the public leaderboard');
-  await expect(page.getByTestId('model-strip-source')).toHaveText('Live · 53 models');
+  await expect(page.getByTestId('model-strip-source')).toHaveText('Live · 49 models');
 });
 
 for (const failure of ['server error', 'network error'] as const) {

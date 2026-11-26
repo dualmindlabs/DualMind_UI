@@ -7,12 +7,12 @@ name: Waitlist page
 
 on:
   pull_request:
-    branches: [main, master]
+    branches: [main, master, cycle3/truth-and-trust]
     paths:
       - 'waitlist-worker/**'
       - '.github/workflows/waitlist.yml'
   push:
-    branches: [main, master]
+    branches: [main, master, cycle3/truth-and-trust]
     paths:
       - 'waitlist-worker/**'
       - '.github/workflows/waitlist.yml'

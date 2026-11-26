@@ -30,7 +30,7 @@ export function Leaderboard({ stats }: { stats: ArenaStatsState }) {
         id="leaderboard-title"
         index="03"
         label="Live from the Arena"
-        lede="Read from the Arena’s public API as this page loaded. Every model starts at 1000 ELO; beating a stronger model earns more points than beating a weaker one."
+        lede="Read from the Arena’s public API as this page loaded. Ratings are under audit while we check how they are computed, so treat the order as provisional."
       >
         The leaderboard, <span className="human">right now.</span>
       </SectionHeading>

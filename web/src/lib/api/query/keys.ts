@@ -19,6 +19,7 @@ const PRIVATE_ARENAS = [ROOT, 'private-arenas'] as const;
 export const apiKeys = {
   all: [ROOT] as const,
   publicConfig: () => [...CONFIG, 'public'] as const,
+  quota: () => [...CONFIG, 'quota'] as const,
   privateArenas: {
     all: PRIVATE_ARENAS,
     list: () => [...PRIVATE_ARENAS, 'list'] as const,

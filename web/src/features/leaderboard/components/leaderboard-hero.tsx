@@ -28,7 +28,7 @@ export function LeaderboardHero({ summary, updatedAt, refreshing, stale }: Leade
         <div className="grid max-w-3xl gap-7">
           <p className="kicker">Leaderboard · Elo ratings, under audit</p>
           <h1 className="max-w-[14ch] text-h1 text-fg">
-            Every model, ranked by <span className="human-voice text-human">blind votes.</span>
+            Every model, on one <span className="human-voice text-human">public board.</span>
           </h1>
           <p className="max-w-[52ch] text-lead text-fg-soft">
             Two anonymous models answer the same prompt. People vote for the better answer before

@@ -11,7 +11,7 @@ import {
   SIGN_IN_HREF,
 } from '../content/landing';
 
-const PROMISES = ['Blind votes', 'Public leaderboard', 'Open methodology'] as const;
+const PROMISES = ['Blind votes', 'Public leaderboard', 'How ratings work'] as const;
 
 /**
  * The closing call to action and the hand-off to the footer: one big sentence, one primary button
@@ -39,7 +39,7 @@ export function ClosingCta() {
           Bring your own prompt. <span className="human-voice text-human">Cast your vote.</span>
         </h2>
         <p className="mt-6 max-w-xl text-lead text-fg-soft">
-          Sign in to send your prompts to real models. Every vote you cast moves the public
+          Sign in to send your prompts to real models. Your votes on blind battles feed the public
           leaderboard.
         </p>
         <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:gap-5">

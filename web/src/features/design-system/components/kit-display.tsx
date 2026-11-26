@@ -44,7 +44,7 @@ const faq = [
   {
     question: 'Does one vote change the leaderboard?',
     answer:
-      'Yes, a little. Each vote updates both models’ Elo ratings; new models stay provisional until they have enough battles.',
+      'Votes feed the public leaderboard. Ratings are under audit, and new models stay provisional until they have enough battles.',
   },
   {
     question: 'Can I take a vote back?',

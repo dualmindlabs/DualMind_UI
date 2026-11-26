@@ -46,7 +46,7 @@ export const typeScale: ReadonlyArray<{
     spec: 'Geist 400, 1rem / 1.65, max 72ch',
     use: 'Answers and prose, 16px on phones too',
     sample:
-      'Two models answer the same prompt side by side. You read both, pick the better one, and only then see which model wrote which answer. Every vote moves the public leaderboard.',
+      'Two models answer the same prompt side by side. You read both, pick the better one, and only then see which model wrote which answer. Votes feed the public leaderboard.',
     className: 'text-body max-w-[72ch]',
   },
   {

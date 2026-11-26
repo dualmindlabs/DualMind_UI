@@ -61,7 +61,7 @@ export const OG_TEMPLATE = `
   <div style="position: absolute; left: 72px; bottom: 60px; display: flex; align-items: center; gap: 18px; font: 500 15px var(--font-mono); letter-spacing: 0.2em; text-transform: uppercase; color: var(--fg-soft)">
     <span>arena.dualmindlab.tech</span>
     <span style="width: 1px; height: 16px; background: var(--line-strong)"></span>
-    <span style="color: var(--muted)">Blind battles · public Elo</span>
+    <span style="color: var(--muted)">Blind battles · public board</span>
   </div>
 
   <div style="position: absolute; right: 72px; top: 150px; width: 380px; display: grid; gap: 18px">

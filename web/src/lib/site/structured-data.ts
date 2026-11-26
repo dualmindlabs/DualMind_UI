@@ -16,7 +16,7 @@ export function webApplicationJsonLd(): Exclude<JsonLd, unknown[]> {
     inLanguage: 'en',
     isAccessibleForFree: true,
     description:
-      'Compare AI models blind: one prompt, two anonymous answers, and your vote feeds a public Elo leaderboard.',
+      'Compare AI models blind: one prompt, two anonymous answers, and the results go into a public model leaderboard.',
     publisher: { '@id': `${absoluteUrl('/')}#organization` },
     offers: {
       '@type': 'Offer',

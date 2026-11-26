@@ -33,6 +33,8 @@ const cases: Array<[path: string, webPage: boolean, expected: string | null]> = 
   // Images: a year, as before.
   ['/assets/logo.png', false, IMMUTABLE_CACHE],
   ['/favicon.svg', false, IMMUTABLE_CACHE],
+  // Share images: revalidated, not immutable.
+  ['/og/landing-v2.png', false, REVALIDATE],
   // Anything else keeps the Workers static assets default.
   ['/robots.txt', false, null],
   ['/design', false, null],

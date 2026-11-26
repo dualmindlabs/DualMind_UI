@@ -140,14 +140,17 @@ describe('info page content', () => {
     }
   });
 
-  it('names the Grievance Officer slot and the complaint address in the Terms', () => {
+  it('prints the complaint address, and the Grievance Officer line only for a real name', () => {
     const terms = infoPages.find(page => page.slug === 'terms');
     const text = terms ? allText(terms).join('\n') : '';
-    expect(text).toContain('Grievance Officer');
     expect(text).toContain(GRIEVANCE_EMAIL);
-    // No invented person: until the owner names one, the name is a marked placeholder.
-    expect(GRIEVANCE_OFFICER_NAME).toMatch(/^\[.+\]$/);
-    expect(text).toContain(GRIEVANCE_OFFICER_NAME);
+    // No invented person and no visible placeholder: a real name, or no line.
+    expect(GRIEVANCE_OFFICER_NAME).not.toMatch(/[[\]]/);
+    if (GRIEVANCE_OFFICER_NAME.trim() === '') {
+      expect(text).not.toContain('Grievance Officer:');
+    } else {
+      expect(text).toContain(`Grievance Officer: ${GRIEVANCE_OFFICER_NAME}`);
+    }
   });
 
   it('says in the privacy page that providers set their own rules for prompts', () => {

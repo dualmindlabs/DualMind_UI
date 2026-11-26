@@ -43,7 +43,10 @@ describe('the arena prompt box limit', () => {
 
   it('says it is too long and turns Send off beyond the limit', () => {
     renderComposer('a'.repeat(MAX_PROMPT_CHARS + 1));
-    expect(screen.getByRole('alert')).toHaveTextContent('Too long to send');
+    expect(screen.getByTestId('prompt-count')).toHaveTextContent('Too long to send');
+    // The live region speaks once, with text that does not change per keystroke; no alert role.
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(screen.getByRole('status')).toHaveTextContent('Too long to send. Shorten your prompt');
     expect(screen.getByTestId('composer-send')).toBeDisabled();
   });
 });

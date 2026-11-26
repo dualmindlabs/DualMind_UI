@@ -13,11 +13,12 @@ import { useApiClient } from '@/hooks/use-api-client';
 import { useAuth } from '@/hooks/use-auth';
 import { useRequireAuth } from '@/hooks/use-require-auth';
 import { type CompareInput, type CompareResult, isApiError, isCompareShareId } from '@/lib/api';
+import { reportShareHref } from '@/lib/site/links';
 import { loginUrl } from '@/lib/supabase';
 
 import { useCompareAvailable } from '../hooks/use-compare-available';
 import { compareErrorMessage, isCompareOff } from '../lib/errors';
-import { formatDay } from '../lib/format';
+import { compareUrl, formatDay } from '../lib/format';
 import { forgetOwned, isOwned, rememberOwned } from '../lib/owned';
 import { CompareAnswers, CompareAnswersLoading } from './compare-answers';
 import { CompareForm } from './compare-form';
@@ -262,6 +263,15 @@ function SharedView({ shareId }: { shareId: string }) {
           A compare is two named models answering one prompt. It is not a blind vote and it does not
           change the leaderboard.
           {expires ? ` This result is deleted after ${expires}.` : ''}
+        </p>
+        <p className="text-ui-sm text-muted print:hidden" data-testid="compare-ai-notice">
+          These answers were written by AI models and have not been reviewed.{' '}
+          <a
+            href={reportShareHref(shareId, compareUrl(shareId))}
+            className="text-mind-a underline underline-offset-4"
+          >
+            Report this page
+          </a>
         </p>
       </div>
     );

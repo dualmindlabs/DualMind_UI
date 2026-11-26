@@ -26,7 +26,7 @@
 
 ## What is this?
 
-This repository is the front-end of **DualMind Arena**, the model comparison app built by DualMind Labs. You type a prompt, two models answer it side by side without their names, and you vote for the better answer. Votes feed an Elo rating system that powers a public leaderboard.
+This repository is the front-end of **DualMind Arena**, the model comparison app built by DualMind Labs. You type a prompt, two models answer it side by side without their names, and you vote for the better answer. The leaderboard shows an Elo rating per model; how those ratings are computed is under audit.
 
 The app is a React 19 single-page app built with React Router in framework mode: every public page is prerendered to static HTML at build time and hydrates in the browser, so there is no server-side rendering at runtime. A Cloudflare Worker (`dualmind-arena`) serves the build at [arena.dualmindlab.tech](https://arena.dualmindlab.tech), proxies the API and sets the security headers. Users sign in with Supabase Auth, and all chat, vote, thread and leaderboard data comes from the DualMind API ([DualMind_Back](https://github.com/dualmindlabs/DualMind_Back)) at `api.dualmindlab.tech`.
 

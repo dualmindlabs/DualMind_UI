@@ -23,6 +23,19 @@ vi.mock('@/hooks/use-features', () => ({
   }),
 }));
 
+// "Battles left today" has its own tests (tests/unit/lib/api/launch.test.ts, use-quota.test.tsx);
+// here it is a controllable stub so the scripted replies below stay in call order.
+interface QuotaStub {
+  guest: { enabled: boolean; limit: number; remaining: number } | null;
+  privateArena: null;
+  refresh: () => void;
+}
+const quotaState = vi.hoisted(() => {
+  const value: QuotaStub = { guest: null, privateArena: null, refresh: () => {} };
+  return { value };
+});
+vi.mock('@/hooks/use-quota', () => ({ useQuota: () => quotaState.value }));
+
 vi.mock('@/lib/turnstile', () => ({
   renderTurnstile: vi.fn(
     (_container: HTMLElement, _key: string, onToken: (t: string | null) => void) => {
@@ -38,6 +51,7 @@ beforeEach(() => {
   vi.mocked(renderTurnstile).mockClear();
   assign.mockClear();
   window.sessionStorage.clear();
+  quotaState.value = { guest: null, privateArena: null, refresh: () => {} };
 });
 
 function renderGuest(...replies: Parameters<typeof scriptedFetch>) {
@@ -53,6 +67,21 @@ function renderGuest(...replies: Parameters<typeof scriptedFetch>) {
 }
 
 describe('GuestBattle', () => {
+  it('shows no counter without the quota endpoint, and the count when it answers', () => {
+    renderGuest(jsonResponse({}));
+    expect(screen.queryByTestId('battles-left')).toBeNull();
+  });
+
+  it('shows "battles left today" from the quota', () => {
+    quotaState.value = {
+      guest: { enabled: true, limit: 3, remaining: 2 },
+      privateArena: null,
+      refresh: () => {},
+    };
+    renderGuest(jsonResponse({}));
+    expect(screen.getByTestId('battles-left')).toHaveTextContent('2 of 3 free battles left today');
+  });
+
   it('loads the Turnstile check only when the visitor shows interest', async () => {
     renderGuest(jsonResponse({}));
     expect(renderTurnstile).not.toHaveBeenCalled();

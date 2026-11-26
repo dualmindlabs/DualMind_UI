@@ -37,7 +37,7 @@ What the user should feel on each core moment:
 | Line | Text | Use it for |
 | --- | --- | --- |
 | Primary | **Two models. One prompt. You decide.** | The landing H1, the arena and sign-up pages' headline or subhead, share and social cards. The one line people should remember. |
-| Supporting | Blind battles between AI models, ranked by votes. | Short descriptions where a headline would be too loud: the footer, meta descriptions, link previews, the About intro. It is factual and says what the product does. |
+| Supporting | Blind battles between AI models, with a public leaderboard. | Short descriptions where a headline would be too loud: the footer, meta descriptions, link previews, the About intro. It is factual and says what the product does. |
 
 Both live in `web/src/content/brand.ts` (`BRAND_PRIMARY`, `BRAND_SUPPORTING`); import them instead of retyping. The north-star phrase "Two minds, one verdict" above is a design intent for the team, not user-facing copy: do not ship it, and do not write new taglines ("Two minds. Your verdict.", "Two minds, one verdict"). Page headings stay free to use their own editorial line (About: "Compare AI models, blind."); that is a heading, not a tagline.
 

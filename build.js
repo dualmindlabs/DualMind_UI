@@ -364,7 +364,7 @@ ${[...new Set(sitemapPages)].map(url => `  <url><loc>${SITE_URL}${url}</loc><las
 fs.writeFileSync(path.join(distDir, 'sitemap.xml'), sitemapXml);
 fs.writeFileSync(
     path.join(distDir, 'robots.txt'),
-    `User-agent: *\nAllow: /\nDisallow: /api/\n\nSitemap: ${SITE_URL}/sitemap.xml\n`
+    `User-agent: *\nAllow: /\nDisallow: /api/\nAllow: /api/v2/leaderboard\nAllow: /api/v2/openapi.json\n\nSitemap: ${SITE_URL}/sitemap.xml\n`
 );
 
 // 6. Check the composed output.

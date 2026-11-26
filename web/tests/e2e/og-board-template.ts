@@ -84,8 +84,8 @@ function modelTile(width: number, tone: string) {
 
 export const OG_LEADERBOARD_TEMPLATE = frame(
   'Leaderboard',
-  ['Ranked by blind votes.', 'Elo, not opinion.'],
-  'Public Elo · Live',
+  ['Blind battles.', 'A public board.'],
+  'Public board · Live',
   `<div style="position: absolute; right: 72px; top: 132px; width: 400px; display: grid; gap: 18px">
     ${rankRow('01', 88, true)}
     ${rankRow('02', 74, false)}

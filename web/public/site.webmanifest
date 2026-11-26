@@ -1,7 +1,7 @@
 {
   "name": "DualMind Arena",
   "short_name": "DualMind",
-  "description": "Blind battles between AI models, ranked by votes.",
+  "description": "Blind battles between AI models, with a public leaderboard.",
   "id": "/",
   "start_url": "/",
   "scope": "/",

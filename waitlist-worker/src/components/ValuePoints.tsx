@@ -23,8 +23,8 @@ const POINTS: Point[] = [
   {
     Icon: Rating,
     title: 'Your vote is the benchmark',
-    body: 'Pick A, B, a tie or both bad. Each vote updates ELO ratings that weigh who a model beat, so one lucky win doesn’t crown a champion.',
-    tag: 'ELO · the chess rating system',
+    body: 'Pick A, B, a tie or both bad. Votes are recorded on blind battles and feed the public leaderboard. The ratings are under audit while we check them against the recorded votes.',
+    tag: 'Ratings · under audit',
     glow: 'rgb(167 139 250 / 0.9)',
   },
   {

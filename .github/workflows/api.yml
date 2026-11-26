@@ -12,7 +12,7 @@ name: API (v2)
 
 on:
   pull_request:
-    branches: [main, master, cycle2/launch-gaps]
+    branches: [main, master, cycle2/launch-gaps, cycle3/truth-and-trust]
     paths:
       - 'server/**'
       - 'contract/**'

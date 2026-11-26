@@ -30,6 +30,7 @@ const ENDPOINT_FUNCTIONS = [
   'getPrivateArena',
   'getPrivateBoard',
   'getPublicConfig',
+  'getQuota',
   'getSharedThread',
   'getThread',
   'isCompareAvailable',

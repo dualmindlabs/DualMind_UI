@@ -172,12 +172,14 @@ export const termsContent: PageContent = {
       blocks: [
         {
           type: 'paragraph',
-          text: 'To report a shared page, an answer or any other content that breaks these terms or the law, write to the Grievance Officer below. Every shared page has a "Report this page" link that fills in the address of the page for you.',
+          text: 'To report a shared page, an answer or any other content that breaks these terms or the law, write to the complaints address below. Every shared page has a "Report this page" link that fills in the address of the page for you.',
         },
         {
           type: 'list',
           items: [
-            `Grievance Officer: ${GRIEVANCE_OFFICER_NAME}`,
+            ...(GRIEVANCE_OFFICER_NAME.trim() === ''
+              ? []
+              : [`Grievance Officer: ${GRIEVANCE_OFFICER_NAME}`]),
             `Email: ${GRIEVANCE_EMAIL}`,
             'We aim to acknowledge a complaint within 24 hours and to resolve it within 15 days.',
           ],
