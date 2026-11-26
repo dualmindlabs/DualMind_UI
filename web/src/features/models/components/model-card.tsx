@@ -54,7 +54,7 @@ function Rank({ entry, className }: { entry: LeaderboardEntry; className?: strin
     return (
       <span className="inline-flex flex-wrap items-center gap-2">
         <AvailabilityBadge availability={entry.availability} />
-        {entry.rank === null ? null : <RankNumber rank={entry.rank} className={className} />}
+        <RankNumber rank={entry.rank} className={className} />
       </span>
     );
   }
