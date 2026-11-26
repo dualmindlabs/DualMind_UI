@@ -8,8 +8,8 @@ import {
   PromptInputTextarea,
 } from '@/components/vendor/prompt-kit/prompt-input';
 import { PROMPT_DATA_WARNING } from '@/content/prompt-warning';
-import { MAX_PROMPT_CHARS } from '@/lib/api';
 import { useModifierKey } from '@/hooks/use-modifier-key';
+import { MAX_PROMPT_CHARS } from '@/lib/api';
 import { cn } from '@/lib/utils/cn';
 
 import { useArena } from '../hooks/use-arena';
