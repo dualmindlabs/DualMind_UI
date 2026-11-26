@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
 import { readCallbackUrl, recoveryForward } from '@/features/auth';
+import {
+  readRecoveryMark,
+  RECOVERY_MARK_TTL_MS,
+  writeRecoveryMark,
+} from '@/features/auth/lib/callback-url';
+import { clearSignedOutData } from '@/lib/supabase';
+
+import { memoryStorage } from '../../lib/supabase/helpers';
 
 describe('readCallbackUrl', () => {
   it('reads tokens and the type from the hash', () => {
@@ -60,5 +68,24 @@ describe('recoveryForward', () => {
     expect(
       recoveryForward({ pathname: '/update-password.html', search: '', hash: '#type=recovery' }),
     ).toBeNull();
+  });
+});
+
+describe('the recovery marker', () => {
+  it('holds for an hour from the event, no longer', () => {
+    const tab = memoryStorage();
+    writeRecoveryMark(tab, true, 1_000);
+    expect(readRecoveryMark(tab, 1_000)).toBe(true);
+    expect(readRecoveryMark(tab, 1_000 + RECOVERY_MARK_TTL_MS - 1)).toBe(true);
+    expect(readRecoveryMark(tab, 1_000 + RECOVERY_MARK_TTL_MS)).toBe(false);
+    writeRecoveryMark(tab, false);
+    expect(readRecoveryMark(tab)).toBe(false);
+  });
+
+  it('is cleared on sign-out', () => {
+    const tab = memoryStorage();
+    writeRecoveryMark(tab, true);
+    clearSignedOutData(memoryStorage(), tab);
+    expect(readRecoveryMark(tab)).toBe(false);
   });
 });

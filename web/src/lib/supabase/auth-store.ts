@@ -29,6 +29,7 @@ import {
   type KeyValueStorage,
   type ScannableStorage,
 } from './storage';
+import { accountSwitchPending, readsUrlTokens } from './url-tokens';
 
 export type AuthStatus = 'loading' | 'signed-in' | 'signed-out' | 'unavailable';
 
@@ -100,7 +101,7 @@ export interface AuthStoreOptions {
   /** Default: window.sessionStorage (null when blocked). */
   sessionStorage?: KeyValueStorage | null | undefined;
   /** Default: the URL the page loaded with (landing-url.ts). */
-  getLocation?: (() => Pick<Location, 'search' | 'hash'>) | undefined;
+  getLocation?: (() => Pick<Location, 'search' | 'hash'> & { pathname?: string }) | undefined;
   /**
    * Removes tokens or link errors from the address bar once they are read, so they do not stay
    * in the history or get copied with the URL. Default: history.replaceState without the hash.
@@ -289,6 +290,15 @@ export function createAuthStore(options: AuthStoreOptions): AuthStore {
     dispatch({ type: 'session', session: null, event });
   };
 
+  // Auth parameters count only where supabase-js reads them. A location without a pathname (unit
+  // tests, callers that only know the query and hash) keeps the plain check.
+  const urlCarriesTokens = (location: { pathname?: string; search: string; hash: string }) =>
+    hasAuthParams(location.search, location.hash) &&
+    (location.pathname === undefined || readsUrlTokens(location.pathname));
+  const switchPending = (location: { pathname?: string; search: string; hash: string }) =>
+    location.pathname !== undefined &&
+    accountSwitchPending({ ...location, pathname: location.pathname }, local, tab);
+
   const connect = (): Promise<AuthClient> => {
     if (!config) return Promise.reject(new SupabaseUnavailableError());
     connecting ??= options.loadClient().then(client => {
@@ -315,7 +325,7 @@ export function createAuthStore(options: AuthStoreOptions): AuthStore {
     let session: Session | null = null;
     let offlineFailure = false;
     const location = getLocation();
-    const fromUrl = hasAuthParams(location.search, location.hash);
+    const fromUrl = urlCarriesTokens(location);
     if (config && !fromUrl && isOffline() && readStoredSession(local, config.storageKey)) {
       // No network at all: do not wait for a refresh that cannot happen.
       offlineFailure = true;
@@ -351,7 +361,8 @@ export function createAuthStore(options: AuthStoreOptions): AuthStore {
       if (session) cancelRecheck = onceOnline(() => void readSession());
     }
     ready = true;
-    clearUrlTokens();
+    // Tokens wait in the address while the callback page asks about switching accounts.
+    if (!switchPending(getLocation())) clearUrlTokens();
     applySession(session, pendingEvent);
     pendingEvent = null;
   };
@@ -370,10 +381,12 @@ export function createAuthStore(options: AuthStoreOptions): AuthStore {
         return;
       }
       const location = getLocation();
-      if (safeHasStoredSession(local) || hasAuthParams(location.search, location.hash)) {
+      if (safeHasStoredSession(local) || urlCarriesTokens(location)) {
         void readSession();
         return;
       }
+      // Tokens on any other page are never read (url-tokens.ts): drop them from the address.
+      if (hasAuthParams(location.search, location.hash)) clearUrlTokens();
       ready = true;
       dispatch({ type: 'session', session: null });
     },

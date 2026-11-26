@@ -74,9 +74,13 @@ describe('LandingPage', () => {
     renderLanding();
     const strip = screen.getByTestId('live-strip');
     await waitFor(() => expect(strip).toHaveAttribute('data-state', 'ready'));
-    expect(within(strip).getByText('Llama 3.3 70B Instruct (FP8, fast)')).toBeInTheDocument();
+    // The leader is the best model a visitor can meet in a blind battle, not a pick-only one.
+    expect(within(strip).getByText('Gemma 3n E2B IT')).toBeInTheDocument();
+    expect(within(strip).queryByText('Llama 3.3 70B Instruct (FP8, fast)')).not.toBeInTheDocument();
     expect(within(strip).getByText(/Live from the public leaderboard/)).toBeInTheDocument();
-    expect(screen.getByTestId('model-strip-source')).toHaveTextContent('Live · 49 models');
+    expect(screen.getByTestId('model-strip-source')).toHaveTextContent(
+      '10 models in blind battles',
+    );
     const preview = screen.getByTestId('leaderboard-preview');
     expect(within(preview).getByText('#1 right now')).toBeInTheDocument();
     expect(within(preview).getAllByRole('listitem')).toHaveLength(4);

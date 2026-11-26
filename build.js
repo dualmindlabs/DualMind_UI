@@ -362,9 +362,12 @@ ${[...new Set(sitemapPages)].map(url => `  <url><loc>${SITE_URL}${url}</loc><las
 </urlset>
 `;
 fs.writeFileSync(path.join(distDir, 'sitemap.xml'), sitemapXml);
+// Cloudflare's Content-Signal: search and AI answers are welcome, training is not (a request, not
+// a block). Said in words on /data/; web/tests/unit/features/info/data-page.test.tsx pins both.
+const CONTENT_SIGNAL = 'search=yes, ai-input=yes, ai-train=no';
 fs.writeFileSync(
     path.join(distDir, 'robots.txt'),
-    `User-agent: *\nAllow: /\nDisallow: /api/\nAllow: /api/v2/leaderboard\nAllow: /api/v2/openapi.json\n\nSitemap: ${SITE_URL}/sitemap.xml\n`
+    `User-agent: *\nContent-Signal: ${CONTENT_SIGNAL}\nAllow: /\nDisallow: /api/\nAllow: /api/v2/leaderboard\nAllow: /api/v2/openapi.json\n\nSitemap: ${SITE_URL}/sitemap.xml\n`
 );
 
 // 6. Check the composed output.

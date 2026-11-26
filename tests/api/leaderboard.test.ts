@@ -186,6 +186,29 @@ describe('GET /api/v2/leaderboard', () => {
     expectMatchesOpenApi(response);
   });
 
+  it('says in the body that a saved copy is a saved copy, with when it was last confirmed, and tags it apart', async () => {
+    const fetchSpy = upstream();
+    const fresh = await call();
+    const freshBody = leaderboardResponseSchema.parse(await fresh.json());
+    expect(freshBody.meta.stale).toBeUndefined();
+    expect(freshBody.meta.checkedAt).toBeUndefined();
+    const confirmedAt = new Date(clock).toISOString();
+    clock += (STALE_SECONDS + 5) * 1000;
+    fetchSpy.mockImplementation(async () => json({ error: 'down' }, 500));
+    const saved = await call();
+    expect(saved.status).toBe(200);
+    const body = leaderboardResponseSchema.parse(await saved.json());
+    expect(body.meta.stale).toBe(true);
+    expect(body.meta.checkedAt).toBe(confirmedAt);
+    expect(body.items).toEqual(freshBody.items);
+    expect(saved.headers.get('etag')).toBe(`${fresh.headers.get('etag')!.slice(0, -1)}-saved"`);
+    // The current copy's tag does not validate the saved one, and the saved tag validates itself.
+    const revalidated = await call({ headers: { 'If-None-Match': saved.headers.get('etag')! } });
+    expect(revalidated.status).toBe(304);
+    const mismatch = await call({ headers: { 'If-None-Match': fresh.headers.get('etag')! } });
+    expect(mismatch.status).toBe(200);
+  });
+
   it('ignores a copy older than 24 hours and answers 502 when the upstream is down', async () => {
     const fetchSpy = upstream();
     await call();
@@ -244,7 +267,7 @@ describe('GET /api/v2/leaderboard', () => {
     fetchSpy.mockImplementation(async () => json({ success: true, items: [] }));
     const second = await call();
     expect(second.status).toBe(200);
-    expect(second.headers.get('etag')).toBe(first.headers.get('etag'));
+    expect(second.headers.get('etag')).toBe(`${first.headers.get('etag')!.slice(0, -1)}-saved"`);
     expect(second.headers.get('cache-status')).toContain('upstream-error');
   });
 

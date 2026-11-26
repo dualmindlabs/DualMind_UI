@@ -14,7 +14,7 @@ export type LiveStatsState =
  */
 export function useLiveStats(): LiveStatsState {
   const query = useLeaderboard();
-  if (query.data && query.data.entries.length > 0) {
+  if (query.data && query.data.blind.entries.length > 0) {
     return { status: 'ready', stats: toLiveStats(query.data) };
   }
   if (query.isError || query.isSuccess) return { status: 'error' };

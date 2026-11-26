@@ -6,9 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Cycle 5 truth and auth ([#138](https://github.com/dualmindlabs/DualMind_UI/issues/138))
+
+- **Models you can meet**: the leaderboard, the Models page and "In the arena now" no longer present every row as a model for blind battles. Pick-only models (the `cloudflare` provider is never drawn for a blind battle), retired models (15 Cloudflare ones gone from its catalogue, more Groq and Google ones) and non-chat models (Llama Guard, SQLCoder, phi-2, the LoRA bases) are labelled, and left out by default. A switch on both pages (`?show=all`) adds them. The API's `active` and `blindEligible` flags decide as soon as they are sent; until then `contract/availability.ts` holds the lists. `/leaderboard.md` has the same words in its Status column.
+- **Saved copies**: when the DualMind API cannot be reached the Worker serves its last copy with `meta.stale` and `meta.checkedAt`; the pages say "Showing a saved copy" and "Data as of <time>". "Live, every minute" is gone: the page says when your browser last checked.
+- **Passwords**: the reset form shows only after the `PASSWORD_RECOVERY` event (or a tab marker written from it, valid for one hour and cleared on sign-out). Made-up tokens in the address no longer count.
+- **Sign-in links**: tokens in the address are read only on `/auth-callback.html` and `/update-password.html`, never on `/` or another page, and the callback page asks before it replaces the account that is signed in. OAuth now returns to `/auth-callback.html`.
+- **Worker**: any method but GET and HEAD on a page or file path answers 405 (it used to throw, Cloudflare error 1101), a catch-all turns any exception into a plain 500 with the security headers, OPTIONS under `/api/` answers 405, and the limiter keys IPv6 visitors by their /64.
+- **Caching**: `/og/landing.png` and `/og/leaderboard.png` redirect to the renamed `-v2` cards; root images (`/og-default.png`, favicons, app icons) are cached for a day, not a year.
+- **Data licence**: `/data/` says what may be done with the data (leaderboard numbers CC BY 4.0, answers under each provider's terms, no prompts published). `robots.txt` carries a `Content-Signal` line and `/llms.txt` links the page.
+- **Copy**: the README's first line, the FAQ answer on accounts, and the "battles left today" counter, which is now a live region and says when the day ends.
+
 ### Cycle 4 trust sweep ([#136](https://github.com/dualmindlabs/DualMind_UI/issues/136))
 
-- **Rating claims**: the live waitlist (hero, value points, leaderboard note, `og:description`), the landing closing call to action, the leaderboard heading, the footer line and web manifest, the sign-up and how-it-works descriptions, the methodology intro, the README and the design kit no longer say that votes move a public Elo board. A guard test scans `web/src`, `waitlist-worker`, `server` and the README. The landing and leaderboard share images are `/og/landing-v2.png` and `/og/leaderboard-v2.png` (new names, so unfurlers refetch); `/og/*` is revalidated, not immutable.
+- **Rating claims**: the live waitlist (hero, value points, leaderboard note, `og:description`), the landing closing call to action, the leaderboard heading, the footer line and web manifest, the sign-up and how-it-works descriptions, the methodology intro, the README and the design kit no longer say that votes change a public board of ratings. A guard test scans `web/src`, `waitlist-worker`, `server` and the README. The landing and leaderboard share images are `/og/landing-v2.png` and `/og/leaderboard-v2.png` (new names, so unfurlers refetch); `/og/*` is revalidated, not immutable.
 - **Passwords**: the reset form needs the recovery tokens, the `PASSWORD_RECOVERY` event or a tab marker set after one of them, not `?type=recovery`; a reload of a real reset link keeps working. Settings offers "Email me a code instead" for accounts made with the email-code tab.
 - **Retired models**: "In the arena now" skips them; the leaderboard and models pages badge them "Retired" (the API's `active` flag, or a short named list until the API sends it); the snapshot is dated 26 Nov 2026.
 - **Win odds** after a vote are hidden while the ratings are under audit (`RATINGS_UNDER_AUDIT`).
@@ -22,7 +33,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Cycle 3 truth and trust ([#134](https://github.com/dualmindlabs/DualMind_UI/issues/134))
 
-- **Rating copy**: no page, preview tag, `/leaderboard.md`, `/llms.txt` or crawler table says that every vote moves an Elo rating; they say the ratings are computed by the leaderboard service and are under audit.
+- **Rating copy**: no page, preview tag, `/leaderboard.md`, `/llms.txt` or crawler table says that votes change the ratings; they say the ratings are computed by the leaderboard service and are under audit.
 - **Guest battle**: the button and the line under the answers say the visitor signs up to run the prompt again as a rated battle (a guest battle has no owner, so it cannot be voted on).
 - **Public shares**: an AI-generated notice and a "Report this page" link on every shared page; Terms have a "Complaints and reports" section with a Grievance Officer slot (name is a placeholder, see KNOWN_ISSUES).
 - **Passwords**: Settings asks for the current password (or an emailed code for an account without one) before it saves a new one; `/update-password.html` shows its form only for a reset link.

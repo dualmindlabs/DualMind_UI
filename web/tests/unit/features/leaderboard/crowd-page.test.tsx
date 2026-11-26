@@ -21,6 +21,8 @@ const down = (status: number) =>
   jsonResponse({ success: false, error: 'Down', code: 'E' }, { status });
 
 beforeEach(() => {
+  // The switch for models outside blind battles keeps its state in the address (?show=all).
+  window.history.replaceState(null, '', '/');
   Object.defineProperty(window, 'matchMedia', {
     configurable: true,
     writable: true,
@@ -60,6 +62,8 @@ function renderWith(routes: Record<string, () => Response>) {
 
 describe('LeaderboardPage on the crowd board', () => {
   it('shows a rated model without a rank claim with no number, and "by rating"', async () => {
+    // The unranked rows of the recorded crowd board are among the models outside blind battles.
+    window.history.replaceState(null, '', '/leaderboard/?show=all');
     renderWith({ '/api/leaderboard': () => jsonResponse(board) });
     const table = await screen.findByRole('table');
     const rows = within(table).getAllByRole('row').slice(1);

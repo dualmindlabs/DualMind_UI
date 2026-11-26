@@ -3,7 +3,7 @@ import { type ComponentType, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/use-auth';
 import { saveAuthHandoff } from '@/lib/session/auth-handoff';
-import { authErrorMessage } from '@/lib/supabase';
+import { authErrorMessage, callbackUrl } from '@/lib/supabase';
 import { copyText } from '@/lib/utils/clipboard';
 import { detectInAppBrowser } from '@/lib/utils/in-app-browser';
 
@@ -83,7 +83,9 @@ export function OAuthButtons({
       const supabase = await client();
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
-        options: { redirectTo: window.location.origin },
+        // The callback page is the only page besides the reset page that reads tokens from the
+        // address (login CSRF, cycle 5 P2-2); it also asks before replacing a signed-in account.
+        options: { redirectTo: callbackUrl(window.location.origin) },
       });
       if (error) throw error;
       // The browser is leaving for the provider; keep the spinner until it does.

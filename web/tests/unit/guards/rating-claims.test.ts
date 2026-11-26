@@ -34,6 +34,8 @@ const CLAIMS: readonly RegExp[] = [
   /\bElo, not opinion\b/i,
   /\bwritten down for anyone to check\b/i,
   /\bhow votes turn into\b/i,
+  // "watch the Elo leaderboard move" (the first line of the README, cycle 5).
+  /\b(?:elo|leaderboard) (?:moves?|moving)\b/i,
 ];
 
 describe('rating claims', () => {
@@ -44,12 +46,24 @@ describe('rating claims', () => {
     path.join(repo, 'waitlist-worker', 'index.html'),
     path.join(repo, 'server'),
     path.join(repo, 'README.md'),
+    // Public too: the repository's front page and its change log.
+    path.join(repo, 'CHANGELOG.md'),
   ].flatMap(walk);
 
   it('scans the sources it is meant to scan', () => {
     expect(files.length).toBeGreaterThan(100);
     expect(files.some(file => file.endsWith('Hero.tsx'))).toBe(true);
     expect(files.some(file => file.endsWith('README.md'))).toBe(true);
+    expect(files.some(file => file.endsWith('CHANGELOG.md'))).toBe(true);
+  });
+
+  it('the README line that promised a moving leaderboard is caught by the guard', () => {
+    expect(CLAIMS.some(claim => claim.test('vote, and watch the Elo leaderboard move.'))).toBe(
+      true,
+    );
+    expect(CLAIMS.some(claim => claim.test('vote, and then see which model wrote each one.'))).toBe(
+      false,
+    );
   });
 
   it('no visitor-facing source claims that votes move the ratings', () => {

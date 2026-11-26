@@ -1,31 +1,23 @@
 /**
- * Models of the public leaderboard as listed on 2026-10-20, edited on 2026-11-26 to leave out four Groq
- * models that Groq has since shut down (names and providers only,
- * from `GET https://api.dualmindlab.tech/api/arena/model-stats`). The model strip starts with this
+ * Models a visitor can meet in a blind battle, from the public leaderboard as listed on
+ * 2026-10-20 and edited on 2026-11-26: models Groq, Google and Cloudflare have since shut down are
+ * gone, and so are the Cloudflare models, which are pick-only (never drawn for a blind battle; see
+ * contract/availability.ts). Names and providers only, from
+ * `GET https://api.dualmindlab.tech/api/arena/model-stats`. The model strip starts with this
  * list so the prerendered page is not empty, labels it with its date, and swaps in the live list
  * as soon as the API answers. No numbers come from here.
  */
 export const MODEL_SNAPSHOT_DATE = '26 Nov 2026';
 
 export const MODEL_SNAPSHOT: ReadonlyArray<{ name: string; providerId: string }> = [
-  { name: 'llama-3.3-70b-instruct-fp8-fast', providerId: 'cloudflare' },
-  { name: 'llama-3.1-70b-instruct', providerId: 'cloudflare' },
-  { name: 'deepseek-r1-distill-qwen-32b', providerId: 'cloudflare' },
-  { name: 'qwq-32b', providerId: 'cloudflare' },
-  { name: 'qwen2.5-coder-32b-instruct', providerId: 'cloudflare' },
-  { name: 'qwen3-30b-a3b-fp8', providerId: 'cloudflare' },
-  { name: 'nemotron-3-120b-a12b', providerId: 'cloudflare' },
-  { name: 'mistral-small-3.1-24b-instruct', providerId: 'cloudflare' },
-  { name: 'llama-3.1-8b-instruct-fast', providerId: 'cloudflare' },
-  { name: 'meta-llama-3-8b-instruct', providerId: 'cloudflare' },
-  { name: 'gemma-sea-lion-v4-27b-it', providerId: 'cloudflare' },
-  { name: 'mistral-7b-instruct-v0.2', providerId: 'cloudflare' },
   { name: 'Gemma 3n E2B IT', providerId: 'google' },
   { name: 'Gemma 3n E4B IT', providerId: 'google' },
-  { name: 'llama-3.2-11b-vision-instruct', providerId: 'cloudflare' },
-  { name: 'hermes-2-pro-mistral-7b', providerId: 'cloudflare' },
-  { name: 'llama-3.1-8b-instruct-fp8', providerId: 'cloudflare' },
-  { name: 'llama-3.1-8b-instruct-awq', providerId: 'cloudflare' },
-  { name: 'mistral-7b-instruct-v0.1', providerId: 'cloudflare' },
-  { name: 'glm-4.7-flash', providerId: 'cloudflare' },
+  { name: 'gemini-2.5-pro', providerId: 'google' },
+  { name: 'gemma-3-1b-it', providerId: 'google' },
+  { name: 'gemma-3-4b-it', providerId: 'google' },
+  { name: 'gemini-2.5-flash', providerId: 'google' },
+  { name: 'openai/gpt-oss-120b', providerId: 'groq' },
+  { name: 'gemma-3-27b-it', providerId: 'google' },
+  { name: 'gemma-3-12b-it', providerId: 'google' },
+  { name: 'openai/gpt-oss-20b', providerId: 'groq' },
 ];

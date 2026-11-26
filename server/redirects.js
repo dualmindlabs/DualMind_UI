@@ -15,6 +15,15 @@
 /** @type {readonly RedirectRule[]} */
 export const LEGACY_REDIRECTS = [
   { from: '/index.html', match: 'exact', to: '/', reason: 'One URL for the home page' },
+  // Cycle 4 renamed the share cards so a corrected image reaches unfurlers; links already cached
+  // by X, LinkedIn or Slack keep working.
+  { from: '/og/landing.png', match: 'exact', to: '/og/landing-v2.png', reason: 'Share card renamed (cycle 4)' },
+  {
+    from: '/og/leaderboard.png',
+    match: 'exact',
+    to: '/og/leaderboard-v2.png',
+    reason: 'Share card renamed (cycle 4)',
+  },
   {
     from: '/about/about',
     match: 'folder',

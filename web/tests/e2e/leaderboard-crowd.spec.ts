@@ -59,7 +59,7 @@ test('a rated model without a rank claim shows no rank number, and "by rating"',
   page,
 }) => {
   await mockApi(page, { '/api/leaderboard': ok(CROWD) });
-  await page.goto('/leaderboard/');
+  await page.goto('/leaderboard/?show=all');
   const rows = page.getByRole('table').locator('tbody tr');
   await expect(rows.first()).toBeVisible();
   const unranked = rows.filter({ has: page.locator('[data-rank-claim="none"]') });
@@ -80,7 +80,7 @@ test('a rated model without a rank claim shows no rank number, and "by rating"',
 test('on a phone, an unranked row says "by rating" in its card', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await mockApi(page, { '/api/leaderboard': ok(CROWD) });
-  await page.goto('/leaderboard/');
+  await page.goto('/leaderboard/?show=all');
   const claim = page.locator('[data-model-id] [data-rank-claim="none"]').first();
   await expect(claim).toBeVisible();
   await expect(claim).toContainText('by rating');
@@ -92,7 +92,7 @@ test('the backend warnings are rendered', async ({ page }) => {
       JSON.stringify({ ...JSON.parse(CROWD), warnings: ['Showing the top 100 models only'] }),
     ),
   });
-  await page.goto('/leaderboard/');
+  await page.goto('/leaderboard/?show=all');
   await expect(page.getByTestId('crowd-warnings')).toContainText('Showing the top 100 models only');
 });
 
@@ -104,7 +104,7 @@ for (const [status, text] of [
     page,
   }) => {
     await mockApi(page, { '/api/leaderboard': err(status) });
-    await page.goto('/leaderboard/');
+    await page.goto('/leaderboard/?show=all');
     await expect(page.getByTestId('board-fallback')).toContainText(text);
     await expect(page.getByRole('table').locator('tbody tr').first()).toBeVisible();
     await expect(page.getByTestId('crowd-note')).toHaveCount(0);
@@ -118,7 +118,7 @@ test('a category that cannot be served falls back without claiming its name', as
     '/api/leaderboard/categories': ok(CATEGORIES),
     '/api/leaderboard/categories/math': err(500),
   });
-  await page.goto('/leaderboard/');
+  await page.goto('/leaderboard/?show=all');
   await page.getByRole('tab', { name: 'Math' }).click();
   await expect(page.getByTestId('category-fallback')).toBeVisible();
   await expect(page.getByTestId('crowd-note')).not.toContainText('in Math');
@@ -126,7 +126,7 @@ test('a category that cannot be served falls back without claiming its name', as
 
 test('a seeded model is tagged as seeded in its details, without an interval', async ({ page }) => {
   await mockApi(page, { '/api/leaderboard': ok(CROWD) });
-  await page.goto('/leaderboard/');
+  await page.goto('/leaderboard/?show=all');
   await page.getByRole('button', { name: /^Show \d+ models$/ }).click();
   await page.locator('#unrated-list button[aria-haspopup="dialog"]').first().click();
   const dialog = page.getByRole('dialog');
@@ -143,7 +143,7 @@ for (const theme of ['dark', 'light'] as const) {
         JSON.stringify({ ...JSON.parse(CROWD), warnings: ['Showing the top 100 models only'] }),
       ),
     });
-    await page.goto('/leaderboard/');
+    await page.goto('/leaderboard/?show=all');
     await expect(page.getByTestId('crowd-warnings')).toBeVisible();
     await page.getByRole('button', { name: /^Show \d+ models$/ }).click();
     expect(await blockingViolations(page)).toEqual([]);
@@ -152,7 +152,7 @@ for (const theme of ['dark', 'light'] as const) {
   test(`axe finds no serious violation on the fallback notice (${theme})`, async ({ page }) => {
     await storeTheme(page, theme);
     await mockApi(page, { '/api/leaderboard': err(503) });
-    await page.goto('/leaderboard/');
+    await page.goto('/leaderboard/?show=all');
     await expect(page.getByTestId('board-fallback')).toBeVisible();
     expect(await blockingViolations(page)).toEqual([]);
   });

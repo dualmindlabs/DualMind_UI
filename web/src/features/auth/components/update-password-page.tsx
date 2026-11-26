@@ -14,7 +14,6 @@ import { useBreachCheck } from '../hooks/use-breach-check';
 import {
   callbackErrorMessage,
   type CallbackUrl,
-  isRecoveryLink,
   readRecoveryMark,
   writeRecoveryMark,
 } from '../lib/callback-url';
@@ -46,20 +45,24 @@ function tabStorage(): Storage | null {
  * `/update-password.html`, the target of the reset email (unchanged address). supabase-js turns
  * the recovery tokens in the #hash into a session; this page then sets the new password. An
  * expired or used link, or a visit without one, gets a plain explanation and a new-link button.
- * The form shows only with proof of a reset link: the recovery tokens in this visit's URL, the
- * `PASSWORD_RECOVERY` event, or a marker this tab set after one of those (so a reload, after
- * supabase-js has removed the tokens, does not burn the link). `?type=recovery` alone proves
- * nothing: a signed-in visitor who opens the page directly cannot change the password this way
+ * The form shows only with proof of a reset link: the `PASSWORD_RECOVERY` event, which supabase-js
+ * emits after it has validated the tokens, or a marker this tab wrote after that event less than
+ * an hour ago (so a reload, after supabase-js has removed the tokens, does not burn the link).
+ * Nothing in the URL proves it: `?type=recovery` and made-up tokens in the hash are typed by
+ * anyone, and a failed URL login leaves the existing session in place. A signed-in visitor who
+ * opens the page directly cannot change the password this way
  * (Settings asks for the current password). The real control is server-side, Supabase "Secure
  * password change" (KNOWN_ISSUES.md): every client check can be skipped from devtools.
  */
 export function UpdatePasswordPage({ link }: { link: CallbackUrl }) {
   const { status: authStatus, user, client, lastEvent } = useAuth();
-  const proven =
-    isRecoveryLink(link) || lastEvent === 'PASSWORD_RECOVERY' || readRecoveryMark(tabStorage());
+  // Only the event proves a reset link. The marker is written from the event alone, so a reload
+  // keeps the form for an hour; it never comes from the URL (cycle 5 P2-1).
+  const recovered = lastEvent === 'PASSWORD_RECOVERY';
+  const proven = recovered || readRecoveryMark(tabStorage());
   useEffect(() => {
-    if (proven && !link.error) writeRecoveryMark(tabStorage(), true);
-  }, [proven, link.error]);
+    if (recovered && !link.error) writeRecoveryMark(tabStorage(), true);
+  }, [recovered, link.error]);
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [passwordError, setPasswordError] = useState<string | null>(null);

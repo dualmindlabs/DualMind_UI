@@ -16,7 +16,10 @@ export { EloBar, type EloBarProps } from './components/elo-bar';
 export { ModelDetails, type ModelDetailsProps } from './components/model-details';
 export { ProviderBadge, type ProviderBadgeProps } from './components/provider-badge';
 export { RankNumber, type RankNumberProps } from './components/rank-number';
+export { AvailabilityBadge } from './components/availability-badge';
 export { RetiredBadge } from './components/retired-badge';
+export { ScopeSwitch } from './components/scope-switch';
+export { readShowAll, SHOW_ALL_PARAM, useShowAll } from './hooks/use-show-all';
 export { SortToggle, type SortToggleProps } from './components/sort-toggle';
 export { UnratedBadge } from './components/unrated-badge';
 
@@ -76,6 +79,8 @@ export {
 } from './lib/format';
 export { ariaSort, DEFAULT_SORT, nextSort, SORT_COLUMNS, sortEntries } from './lib/sort';
 export type {
+  Availability,
+  BoardSlice,
   Leaderboard,
   LeaderboardEntry,
   LeaderboardFilters,

@@ -5,7 +5,7 @@
  * Supabase puts the result in the #hash with the implicit flow: tokens and `type` on success,
  * `error`, `error_code` and `error_description` on failure (older links put errors in the query).
  */
-import { AUTH_CALLBACK_PATH, UPDATE_PASSWORD_PATH } from '@/lib/supabase';
+import { AUTH_CALLBACK_PATH, RECOVERY_MARK_KEY, UPDATE_PASSWORD_PATH } from '@/lib/supabase';
 
 export type CallbackType =
   'signup' | 'email_confirmation' | 'recovery' | 'magiclink' | 'invite' | 'email_change' | 'other';
@@ -76,21 +76,29 @@ export function callbackErrorMessage(error: CallbackUrl['error']): string {
   return 'This link did not work. Ask for a new one and try again.';
 }
 
-/** Tab-scoped marker: this tab arrived from a real reset link (see `isRecoveryProven`). */
-export const RECOVERY_MARK_KEY = 'dm.recovery.v1';
+/** Tab-scoped marker: this tab saw a real `PASSWORD_RECOVERY` event, less than an hour ago. */
+export { RECOVERY_MARK_KEY };
+
+/** How long the marker holds: as long as the email link does. */
+export const RECOVERY_MARK_TTL_MS = 60 * 60 * 1000;
 
 /**
- * Whether the URL snapshot proves a password-reset link: the recovery tokens, not just
- * `?type=recovery` (anyone can type that). Without tokens a signed-in visitor cannot reach the
- * reset form, so a session alone never lets them change the password without the current one.
+ * Whether the tab marker is a fresh one. The marker is `{"savedAt": <ms>}`; anything else (the
+ * old bare "1", broken JSON, a time in the future, older than the link's hour) is not proof.
+ * Proof of a reset link is only ever the `PASSWORD_RECOVERY` event, which supabase-js emits after
+ * it has checked the tokens and saved the recovery session. The URL says nothing: `type=recovery`
+ * and two made-up tokens in the hash can be typed by anyone, and supabase-js keeps the existing
+ * session when the URL login fails.
  */
-export function isRecoveryLink(link: Pick<CallbackUrl, 'type' | 'hasTokens'>): boolean {
-  return link.type === 'recovery' && link.hasTokens;
-}
-
-export function readRecoveryMark(storage: Pick<Storage, 'getItem'> | null): boolean {
+export function readRecoveryMark(
+  storage: Pick<Storage, 'getItem'> | null,
+  now: number = Date.now(),
+): boolean {
   try {
-    return storage?.getItem(RECOVERY_MARK_KEY) === '1';
+    const raw = storage?.getItem(RECOVERY_MARK_KEY);
+    if (!raw) return false;
+    const savedAt = (JSON.parse(raw) as { savedAt?: unknown } | null)?.savedAt;
+    return typeof savedAt === 'number' && savedAt <= now && now - savedAt < RECOVERY_MARK_TTL_MS;
   } catch {
     return false;
   }
@@ -99,9 +107,10 @@ export function readRecoveryMark(storage: Pick<Storage, 'getItem'> | null): bool
 export function writeRecoveryMark(
   storage: Pick<Storage, 'setItem' | 'removeItem'> | null,
   on: boolean,
+  now: number = Date.now(),
 ) {
   try {
-    if (on) storage?.setItem(RECOVERY_MARK_KEY, '1');
+    if (on) storage?.setItem(RECOVERY_MARK_KEY, JSON.stringify({ savedAt: now }));
     else storage?.removeItem(RECOVERY_MARK_KEY);
   } catch {
     // Private mode: a reload then needs a new link, as before.

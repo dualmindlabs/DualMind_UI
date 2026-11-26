@@ -20,6 +20,8 @@ export interface BoardStatusProps {
   onRefresh: () => void;
   /** The data comes from the mock adapter (demo mode). */
   isMock: boolean;
+  /** Saved copy (ISO): the last time the Worker confirmed the data with the API, else null. */
+  savedAt?: string | null | undefined;
   className?: string;
 }
 
@@ -37,9 +39,12 @@ export function BoardStatus({
   refreshError,
   onRefresh,
   isMock,
+  savedAt = null,
   className,
 }: BoardStatusProps) {
   const stale = refreshError !== null && refreshError !== undefined;
+  const savedMs = savedAt === null ? Number.NaN : Date.parse(savedAt);
+  const saved = Number.isFinite(savedMs);
 
   return (
     <div className={cn('grid gap-3', className)}>
@@ -61,15 +66,21 @@ export function BoardStatus({
           )}
           {updatedAt > 0 ? (
             <span className="text-muted" data-testid="board-updated">
-              {' · '}Updated{' '}
-              <time dateTime={new Date(updatedAt).toISOString()}>
-                {formatClockWithZone(updatedAt)}
+              {' · '}
+              {saved ? 'Data as of' : 'Checked'}{' '}
+              <time dateTime={new Date(saved ? savedMs : updatedAt).toISOString()}>
+                {formatClockWithZone(saved ? savedMs : updatedAt)}
               </time>
             </span>
           ) : null}
         </p>
         <div className="flex items-center gap-2">
           {isMock ? <Badge variant="warn">Demo data</Badge> : null}
+          {saved ? (
+            <Badge variant="warn" data-testid="board-saved-copy">
+              Showing a saved copy
+            </Badge>
+          ) : null}
           <Button
             variant="ghost"
             size="sm"

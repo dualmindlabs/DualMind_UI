@@ -1,3 +1,4 @@
+import { modelAvailability } from '@contract/availability';
 import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
@@ -17,6 +18,15 @@ describe('the model strip snapshot', () => {
       'Kimi K2 Instruct',
     ]) {
       expect(names).not.toContain(gone);
+    }
+  });
+
+  it('lists only models a visitor can meet in a blind battle', () => {
+    for (const model of MODEL_SNAPSHOT) {
+      expect(
+        modelAvailability({ modelName: model.name, providerName: model.providerId }),
+        model.name,
+      ).toBe('blind');
     }
   });
 

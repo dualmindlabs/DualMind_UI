@@ -46,8 +46,12 @@ function setup({
   local = memoryStorage(),
   tab = memoryStorage(),
   hash = '',
+  pathname,
+  clearUrlTokens,
   syncProfile,
 }: {
+  pathname?: string;
+  clearUrlTokens?: () => void;
   initial?: Session | null;
   local?: ReturnType<typeof memoryStorage>;
   tab?: ReturnType<typeof memoryStorage>;
@@ -62,7 +66,9 @@ function setup({
     syncProfile: syncProfile as never,
     localStorage: local,
     sessionStorage: tab,
-    getLocation: () => ({ search: '', hash }),
+    getLocation: () =>
+      pathname === undefined ? { search: '', hash } : { pathname, search: '', hash },
+    ...(clearUrlTokens ? { clearUrlTokens } : {}),
     defer: task => task(),
   });
   return { store, loadClient, local, tab, ...fake };
@@ -205,6 +211,85 @@ describe('createAuthStore', () => {
     expect(store.getState()).toMatchObject({
       status: 'signed-in',
       lastEvent: 'PASSWORD_RECOVERY',
+    });
+  });
+
+  describe('tokens in the address (login CSRF, cycle 5 P2-2)', () => {
+    const TOKENS = '#access_token=a&refresh_token=b&expires_in=3600&token_type=bearer';
+    const SESSION = '{"access_token":"x"}';
+
+    it('ignores them on every page but the two auth pages: no client, no session, address cleaned', () => {
+      for (const pathname of ['/', '/leaderboard/', '/share/abc', '/login/']) {
+        const clearUrlTokens = vi.fn();
+        const { store, loadClient } = setup({ hash: TOKENS, pathname, clearUrlTokens });
+        store.start();
+        expect(store.getState().status, pathname).toBe('signed-out');
+        expect(loadClient, pathname).not.toHaveBeenCalled();
+        expect(clearUrlTokens, pathname).toHaveBeenCalledTimes(1);
+      }
+    });
+
+    it('keeps a signed-in visitor in their own session when a link on / carries other tokens', async () => {
+      const own = fakeSession();
+      const clearUrlTokens = vi.fn();
+      const { store, auth } = setup({
+        initial: own,
+        local: memoryStorage({ [CONFIG.storageKey]: SESSION }),
+        hash: TOKENS,
+        pathname: '/',
+        clearUrlTokens,
+      });
+      store.start();
+      await settled();
+      // The stored session is read as before; the URL is not what signs anyone in.
+      expect(store.getState().user?.id).toBe(own.user.id);
+      expect(auth.setSession).not.toHaveBeenCalled();
+    });
+
+    it.each(['/auth-callback.html', '/update-password.html'])(
+      'reads them on %s',
+      async pathname => {
+        const clearUrlTokens = vi.fn();
+        const { store, loadClient } = setup({
+          initial: fakeSession(),
+          hash: TOKENS,
+          pathname,
+          clearUrlTokens,
+        });
+        store.start();
+        await settled();
+        expect(loadClient).toHaveBeenCalledTimes(1);
+        expect(clearUrlTokens).toHaveBeenCalledTimes(1);
+      },
+    );
+
+    it('leaves the tokens in the address while the callback page asks about switching accounts', async () => {
+      const clearUrlTokens = vi.fn();
+      const { store } = setup({
+        initial: fakeSession(),
+        local: memoryStorage({ [CONFIG.storageKey]: SESSION }),
+        hash: TOKENS,
+        pathname: '/auth-callback.html',
+        clearUrlTokens,
+      });
+      store.start();
+      await settled();
+      expect(clearUrlTokens).not.toHaveBeenCalled();
+    });
+
+    it('cleans the address once the visitor has said "switch"', async () => {
+      const clearUrlTokens = vi.fn();
+      const { store } = setup({
+        initial: fakeSession(),
+        local: memoryStorage({ [CONFIG.storageKey]: SESSION }),
+        tab: memoryStorage({ 'dm.switch.v1': '1' }),
+        hash: TOKENS,
+        pathname: '/auth-callback.html',
+        clearUrlTokens,
+      });
+      store.start();
+      await settled();
+      expect(clearUrlTokens).toHaveBeenCalledTimes(1);
     });
   });
 

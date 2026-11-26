@@ -1,6 +1,7 @@
 export { aboutContent } from './about';
 export { cookiesContent } from './cookies';
 export { creditsContent } from './credits';
+export { dataContent } from './data';
 export { faqContent } from './faq';
 export { howItWorksContent } from './how-it-works';
 export { privacyContent } from './privacy';

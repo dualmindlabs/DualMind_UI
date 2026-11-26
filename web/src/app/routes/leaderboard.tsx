@@ -7,7 +7,7 @@ export const meta: Route.MetaFunction = () =>
   pageMeta({
     title: 'AI model leaderboard: Elo ratings, under audit · DualMind Arena',
     description:
-      'Live rankings of AI language models from blind, side-by-side battles: Elo ratings, win rates and battle counts, refreshed every minute.',
+      'Rankings of AI language models from blind, side-by-side battles: Elo ratings, win rates and battle counts. The ratings are under audit, and each model says whether you can meet it in a blind battle.',
     path: '/leaderboard/',
     image: {
       url: '/og/leaderboard-v2.png',

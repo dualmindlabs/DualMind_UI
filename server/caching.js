@@ -8,6 +8,8 @@ import { isHashedAsset, SPA_FALLBACK_PATH } from './routing.js';
 export const IMMUTABLE_CACHE = 'public, max-age=31536000, immutable';
 export const LEGACY_NO_STORE = 'no-store, no-cache, must-revalidate, max-age=0';
 export const SHARE_NO_STORE = 'no-store, no-cache, must-revalidate';
+/** Fixed-name root images (favicons, app icons, the default share card): a day, never immutable. */
+export const ROOT_IMAGE_CACHE = 'public, max-age=86400, stale-while-revalidate=604800';
 /** Revalidate on every visit; cheap, because Workers static assets answer with an ETag. */
 export const REVALIDATE = 'no-cache';
 
@@ -56,6 +58,13 @@ export const CACHE_RULES = [
       '/og/* share images: revalidated, never immutable, so a corrected image can reach unfurlers (a changed picture also gets a new file name)',
     cacheControl: REVALIDATE,
     test: ({ pathname }) => pathname.startsWith('/og/'),
+  },
+  {
+    name: 'root-image',
+    applies:
+      'Images at the site root (/og-default.png, /favicon.ico, /icon-*.png): the name never changes, so a corrected image must be able to reach browsers and unfurlers within a day',
+    cacheControl: ROOT_IMAGE_CACHE,
+    test: ({ pathname }) => /^\/[^/]+$/.test(pathname) && IMAGE_RE.test(pathname.toLowerCase()),
   },
   {
     name: 'image',

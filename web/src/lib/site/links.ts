@@ -81,6 +81,7 @@ export const footerColumns: readonly FooterColumn[] = [
       { label: 'Privacy', href: '/privacy/' },
       { label: 'Terms', href: '/terms/' },
       { label: 'Cookies', href: '/cookies/' },
+      { label: 'Data licence', href: '/data/' },
     ],
   },
   // No Status link until a status page exists.

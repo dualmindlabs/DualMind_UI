@@ -2,7 +2,7 @@
 // Pure: no I/O, no clock.
 
 import { PROVISIONAL_BELOW, type LeaderboardItem } from '../../../contract/leaderboard.ts';
-import { readCount, readNumber, readText, upstreamRowSchema } from '../../../contract/leaderboard-upstream.ts';
+import { readBoolean, readCount, readNumber, readText, upstreamRowSchema } from '../../../contract/leaderboard-upstream.ts';
 
 export type NormaliseResult = { items: LeaderboardItem[]; dropped: number };
 
@@ -52,6 +52,8 @@ function toDraft(raw: unknown, provisionalBelow: number): Draft | null {
         : Math.min(100, round2((totalWins / totalResponses) * 100));
 
   const upstreamRank = readCount(row, 'eloRank');
+  const active = readBoolean(row, 'active');
+  const blindEligible = readBoolean(row, 'blindEligible');
   return {
     modelId,
     modelName,
@@ -64,6 +66,8 @@ function toDraft(raw: unknown, provisionalBelow: number): Draft | null {
     totalResponses,
     winRate,
     provisional: totalResponses < provisionalBelow,
+    ...(active === undefined ? {} : { active }),
+    ...(blindEligible === undefined ? {} : { blindEligible }),
     upstreamRank: upstreamRank !== undefined && upstreamRank >= 1 ? upstreamRank : undefined,
   };
 }

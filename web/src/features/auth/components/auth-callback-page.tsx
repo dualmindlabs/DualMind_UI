@@ -1,11 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { buttonVariants } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { config } from '@/config/env';
 import { supabaseConfig } from '@/config/supabase';
 import { useAuth } from '@/hooks/use-auth';
 import { claimAuthHandoff } from '@/lib/session/auth-handoff';
-import { browserSessionStorage, LOGIN_PATH, safeRedirect, sendWelcomeOnce } from '@/lib/supabase';
+import {
+  browserSessionStorage,
+  LOGIN_PATH,
+  safeRedirect,
+  sendWelcomeOnce,
+  writeSwitchConfirmed,
+} from '@/lib/supabase';
 import { cn } from '@/lib/utils/cn';
 
 import { CALLBACK_REDIRECT_SECONDS } from '../content/copy';
@@ -17,6 +23,7 @@ import {
   wantsWelcome,
 } from '../lib/callback-url';
 import { NewLinkForm } from './new-link-form';
+import { accountLabel } from './signed-in-notice';
 import { StatusCard } from './status-card';
 import { StatusShell } from './status-shell';
 
@@ -54,16 +61,36 @@ function NewLinkActions({ link }: { link: CallbackUrl }) {
  * and moves on to `?redirect` or `/` after a few seconds. Recovery links never render here: the
  * route forwards them to /update-password.html with the hash.
  */
-export function AuthCallbackPage({ link }: { link: CallbackUrl }) {
-  const { status, session } = useAuth();
+export function AuthCallbackPage({
+  link,
+  switchPending = false,
+  reload = () => window.location.reload(),
+}: {
+  link: CallbackUrl;
+  /**
+   * The page opened with tokens while another account was already signed in, and nobody has said
+   * "switch" yet. supabase-js has not read the tokens: they would replace the account silently
+   * (login CSRF). The route works this out before anything runs (accountSwitchPending).
+   */
+  switchPending?: boolean;
+  /** Reloads the page, tokens still in the address (injected in tests). */
+  reload?: () => void;
+}) {
+  const { status, session, user } = useAuth();
   const welcomed = useRef(false);
-  const signedIn = !link.error && status === 'signed-in' && session !== null;
+  const asking = switchPending && !link.error;
+  const signedIn = !asking && !link.error && status === 'signed-in' && session !== null;
   // A new tab after email confirmation has no `?redirect=` when the link lost it; the record the
   // sign-up page left in localStorage restores both the destination and the prompt draft.
   const [handoffRedirect] = useState(() => claimAuthHandoff(config.siteUrl)?.redirect ?? '/');
   const linkTarget = safeRedirect(link.redirect, config.siteUrl);
   const target = linkTarget === '/' ? handoffRedirect : linkTarget;
   const progress = useAutoRedirect(signedIn ? target : null, CALLBACK_REDIRECT_SECONDS);
+
+  // The "switch" answer is for this one link: forget it once the new account is in.
+  useEffect(() => {
+    if (signedIn) writeSwitchConfirmed(browserSessionStorage(), false);
+  }, [signedIn]);
 
   useEffect(() => {
     if (!signedIn || !session || !supabaseConfig || welcomed.current || !wantsWelcome(link)) {
@@ -101,6 +128,48 @@ export function AuthCallbackPage({ link }: { link: CallbackUrl }) {
     content = (
       <StatusCard tone="working" title="Confirming your link">
         This takes a moment.
+      </StatusCard>
+    );
+  } else if (asking) {
+    const current = user ? accountLabel(user) : null;
+    content = (
+      <StatusCard
+        tone="error"
+        title="Switch to another account?"
+        action={
+          <>
+            <Button
+              type="button"
+              className="w-full"
+              onClick={() => {
+                // The tokens are still in the address: a reload lets supabase-js read them now.
+                writeSwitchConfirmed(browserSessionStorage(), true);
+                reload();
+              }}
+            >
+              Switch account
+            </Button>
+            <a
+              href="/"
+              className={cn(buttonVariants({ variant: 'ghost' }), 'w-full')}
+              onClick={() => {
+                // Drop the other account's tokens from this history entry before leaving.
+                try {
+                  const { pathname, search } = window.location;
+                  window.history.replaceState(window.history.state, '', `${pathname}${search}`);
+                } catch {
+                  // No history to write to: the link still leaves the page.
+                }
+              }}
+            >
+              {current ? `Stay signed in as ${current}` : 'Not now'}
+            </a>
+          </>
+        }
+      >
+        {current ? `You are signed in as ${current}. ` : ''}
+        This link signs in to a different account. Switch only if you asked for this link. If
+        someone sent it to you, stay where you are.
       </StatusCard>
     );
   } else if (signedIn) {

@@ -16,6 +16,7 @@ export const leaderboardRoute = createRoute({
   description:
     'Every ranked model with its Elo, record and win rate, served from the edge cache (HEAD works too). No sign-in. `winRate` is a percent from 0 to 100 and counts ties as non-wins. ' +
     '`provisional` is true while `totalResponses` is below `meta.provisionalBelow`. `meta.generatedAt` is when the data last changed, not when it was served. ' +
+    'While a saved copy is served because the DualMind API cannot be reached, `meta.stale` is true and `meta.checkedAt` is the last time the Worker confirmed the data. ' +
     'The list is small and returned whole, so there is no `nextCursor`. Send `If-None-Match` with the last `ETag` to get `304`. During an outage of the DualMind API the last good copy (up to 24 hours old) is served.',
   tags: ['leaderboard'],
   responses: {
@@ -52,15 +53,23 @@ export function registerLeaderboard(app: OpenAPIHono<AppEnv>) {
       log({ event: 'leaderboard', requestId, state: 'error', ageSeconds: null, etag: null, status: error instanceof Error && 'slug' in error && error.slug === 'gateway_timeout' ? 504 : 502 });
       throw error;
     }
+    // A saved copy served because the DualMind API cannot be reached says so in its body, with the
+    // time the Worker last confirmed it, so a page never shows it as live. That body differs from
+    // the current one, so it has its own tag.
+    const saved = result.state === 'stale-error';
+    const text = saved
+      ? JSON.stringify({ ...result.data, meta: { ...result.data.meta, stale: true, checkedAt: result.checkedAt } })
+      : result.text;
+    const etag = saved ? `${result.etag.slice(0, -1)}-saved"` : result.etag;
     const headers: Record<string, string> = {
       'Cache-Control': CACHE_CONTROL,
-      ETag: result.etag,
+      ETag: etag,
       'Cache-Status': cacheStatus(result),
     };
-    const notModified = ifNoneMatchHits(c.req.header('if-none-match'), result.etag);
+    const notModified = ifNoneMatchHits(c.req.header('if-none-match'), etag);
     const status = notModified ? 304 : 200;
-    log({ event: 'leaderboard', requestId, state: result.state, ageSeconds: result.ageSeconds, etag: result.etag, status });
+    log({ event: 'leaderboard', requestId, state: result.state, ageSeconds: result.ageSeconds, etag, status });
     if (notModified) return c.body(null, 304, headers);
-    return c.body(result.text, 200, { ...headers, 'Content-Type': 'application/json; charset=utf-8' });
+    return c.body(text, 200, { ...headers, 'Content-Type': 'application/json; charset=utf-8' });
   });
 }

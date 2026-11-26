@@ -51,7 +51,9 @@ export function ModelStrip({ stats }: { stats: LiveStatsState }) {
             In the arena now
           </h2>
           <p className="font-mono text-caption text-muted" data-testid="model-strip-source">
-            {live ? `Live · ${active.length} models` : `List as of ${MODEL_SNAPSHOT_DATE}`}
+            {live
+              ? `${active.length} models in blind battles`
+              : `List as of ${MODEL_SNAPSHOT_DATE}`}
           </p>
         </div>
         <div className="flex min-w-0 flex-1 items-center gap-3">

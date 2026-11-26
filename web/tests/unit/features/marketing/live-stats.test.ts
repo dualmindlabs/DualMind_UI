@@ -25,31 +25,35 @@ describe('live stats from the public leaderboard', () => {
       (sum, row) => sum + row.totalWins + row.totalLosses + row.totalTies,
       0,
     );
-    expect(stats.models).toBe(rows.length);
+    // Only the two Google models are in blind battles: four Cloudflare models are pick-only and
+    // Compound Mini is retired. Battles and votes stay whole-board facts.
+    expect(stats.models).toBe(2);
     expect(stats.battles).toBe(Math.round(responses / 2));
     expect(stats.votes).toBe(Math.round(outcomes / 2));
-    expect(stats.providers).toEqual(['Cloudflare Workers AI', 'Groq', 'Google AI']);
+    expect(stats.providers).toEqual(['Google AI']);
   });
 
   it('keeps the board order: best rank first, shared ranks in the API order', () => {
     const stats = toLiveStats(toLeaderboard(recorded('model-stats.recorded.json')));
-    expect(stats.ranked.map(model => model.rank)).toEqual([1, 2, 3, 4, 5, 5, 7]);
-    expect(stats.top.map(model => model.rank)).toEqual([1, 2, 3, 4, 5, 5, 7]);
+    expect(stats.ranked.map(model => model.rank)).toEqual([1, 2]);
+    expect(stats.top.map(model => model.rank)).toEqual([1, 2]);
     expect(stats.ranked[1]).toMatchObject({
-      name: 'Llama 3.1 70B Instruct',
-      providerLabel: 'Meta',
-      platformLabel: 'Cloudflare Workers AI',
-      elo: 1140,
-      battles: 250,
+      name: 'Gemma 3 1B IT',
+      platformLabel: 'Google AI',
+      elo: 1000,
+      battles: 8,
     });
   });
 
   it('reads the full recorded board used by the end-to-end tests', () => {
     const stats = toLiveStats(toLeaderboard(recorded('model-stats.board.recorded.json')));
-    expect(stats.models).toBe(53);
-    expect(stats.ranked.slice(0, 5).map(model => model.rank)).toEqual([1, 2, 3, 4, 5]);
+    // 10 of the 53 models are in blind battles: the rest are pick-only (Cloudflare), retired or
+    // not chat models.
+    expect(stats.models).toBe(10);
+    expect(stats.ranked.slice(0, 5).map(model => model.rank)).toEqual([1, 2, 3, 3, 5]);
+    expect(stats.ranked.every(model => model.availability === 'blind')).toBe(true);
     // The top five never includes a model that is not yet rated.
-    expect(stats.top).toHaveLength(49);
+    expect(stats.top).toHaveLength(8);
     expect(stats.top.some(model => model.provisional)).toBe(false);
     expect(stats.votes).toBeGreaterThan(0);
   });

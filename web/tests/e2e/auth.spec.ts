@@ -412,7 +412,7 @@ test.describe('sign in', () => {
     expect(calls.find('/auth/v1/otp')).toBeUndefined();
   });
 
-  test('the OAuth buttons send the browser to the provider, returning to the bare origin', async ({
+  test('the OAuth buttons send the browser to the provider, returning to the callback page', async ({
     page,
     baseURL,
   }) => {
@@ -422,8 +422,9 @@ test.describe('sign in', () => {
     await page.waitForURL(`${SUPABASE}/auth/v1/authorize**`);
     const authorize = new URL(page.url());
     expect(authorize.searchParams.get('provider')).toBe('github');
-    expect(authorize.searchParams.get('redirect_to')).toBe(baseURL);
-    // Implicit flow: no PKCE challenge, so tokens come back in the hash to `/`.
+    // Tokens are read from the address only on the callback and reset pages (login CSRF).
+    expect(authorize.searchParams.get('redirect_to')).toBe(`${baseURL}/auth-callback.html`);
+    // Implicit flow: no PKCE challenge, so tokens come back in the hash to that page.
     expect(authorize.searchParams.get('code_challenge')).toBeNull();
 
     await page.goto('/login/');

@@ -7,7 +7,7 @@ export const meta: Route.MetaFunction = () =>
   pageMeta({
     title: 'AI models in the Arena · DualMind Arena',
     description:
-      "Every AI model in DualMind Arena's blind battles, with its maker, live Elo rating, rank, win rate and battle count.",
+      'Every AI model on the DualMind Arena board, with its maker, Elo rating, rank, win rate and battle count, and whether you can meet it in a blind battle.',
     path: '/models/',
     image: {
       url: '/og/models.png',

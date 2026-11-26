@@ -69,6 +69,13 @@ const pages: PageSpec[] = [
     h1: 'Cookies, almost none.',
     text: 'Browser storage we use instead',
   },
+  {
+    slug: 'data',
+    path: '/data/',
+    title: 'Data licence · DualMind Arena',
+    h1: 'Our data, and what you may do with it.',
+    text: 'Not CC BY',
+  },
 ];
 
 test.beforeEach(async ({ context, baseURL }) => {
@@ -634,6 +641,7 @@ test.describe('sitemap.xml and robots.txt', () => {
     const text = await robots.text();
     expect(text).toContain('Sitemap: https://arena.dualmindlab.tech/sitemap.xml');
     expect(text).toContain('Disallow: /api/');
+    expect(text).toContain('Content-Signal: search=yes, ai-input=yes, ai-train=no');
     // llms.txt points crawlers at these two, so robots.txt lets them in.
     expect(text).toContain('Allow: /api/v2/leaderboard');
     expect(text).toContain('Allow: /api/v2/openapi.json');

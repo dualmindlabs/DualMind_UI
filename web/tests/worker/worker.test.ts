@@ -438,3 +438,41 @@ describe('routing helpers (server/routing.js)', () => {
     expect(isNoindexPath('/')).toBe(false);
   });
 });
+
+describe('methods other than GET and HEAD on page and file paths', () => {
+  it.each(['POST', 'PUT', 'PATCH', 'DELETE'])(
+    '%s gets a 405 with Allow, with no file served',
+    async method => {
+      for (const path of ['/nonexistent', '/settings', '/compare/abc', '/about/', '/og/x.png']) {
+        assets.requested.length = 0;
+        const response = await preview(path, { method });
+        expect(response.status, `${method} ${path}`).toBe(405);
+        expect(response.headers.get('allow'), `${method} ${path}`).toBe('GET, HEAD');
+        expect(assets.requested, `${method} ${path}`).toEqual([]);
+        // The error answer leaves with the security headers like every other response.
+        expect(response.headers.get('x-content-type-options')).toBe('nosniff');
+      }
+    },
+  );
+
+  it('still serves GET and HEAD on an unknown path with the 404 page', async () => {
+    expect((await preview('/nonexistent')).status).toBe(404);
+    expect((await preview('/nonexistent', { method: 'HEAD' })).status).toBe(404);
+  });
+
+  it('turns an exception into a plain 500 with the security headers, never an unhandled throw', async () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const broken = { fetch: () => Promise.reject(new Error('assets down')) };
+      const request = new Request(`${ORIGIN}/about/`, { headers: { Cookie: 'dm_preview=1' } });
+      const response = await worker.fetch(request, { ASSETS: broken });
+      expect(response.status).toBe(500);
+      expect(response.headers.get('x-content-type-options')).toBe('nosniff');
+      expect(await response.text()).toBe('Internal Server Error');
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(String(spy.mock.calls[0]?.[0])).toContain('worker_unhandled');
+    } finally {
+      spy.mockRestore();
+    }
+  });
+});

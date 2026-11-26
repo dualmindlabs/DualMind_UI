@@ -583,6 +583,28 @@ describe('through the Worker', () => {
     expect(response.headers.get('access-control-allow-origin')).toBeNull();
   });
 
+  it('answers OPTIONS under /api itself with a 405 and Allow, without an upstream call', async () => {
+    const fetchSpy = vi.fn(() => Promise.resolve(new Response('{}')));
+    vi.stubGlobal('fetch', fetchSpy);
+    try {
+      for (const path of ['/api/arena/dualchat', '/api/v2/leaderboard']) {
+        const response = await worker.fetch(
+          new Request(`${ORIGIN}${path}`, {
+            method: 'OPTIONS',
+            headers: { Cookie: 'dm_preview=1' },
+          }),
+          { ASSETS: fakeAssets(DIST) },
+        );
+        expect(response.status, path).toBe(405);
+        expect(response.headers.get('allow'), path).toBe('GET, HEAD, POST, PUT, PATCH, DELETE');
+        expect(response.headers.get('access-control-allow-origin'), path).toBeNull();
+      }
+      expect(fetchSpy).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('OPTIONS outside /api no longer gets a blanket CORS 204', async () => {
     const response = await worker.fetch(
       new Request(`${ORIGIN}/leaderboard/`, {

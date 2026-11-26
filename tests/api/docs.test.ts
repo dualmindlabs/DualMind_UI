@@ -100,7 +100,7 @@ describe('GET /llms.txt', () => {
     const text = await response.text();
     expect(text).toBe(renderLlmsTxt(`https://${host}`));
     expect(text.startsWith('# DualMind Arena\n')).toBe(true);
-    for (const path of ['/leaderboard.md', '/api/v2/leaderboard', '/api/v2/openapi.json', '/developers/', '/problems/']) {
+    for (const path of ['/leaderboard.md', '/api/v2/leaderboard', '/api/v2/openapi.json', '/developers/', '/problems/', '/data/', '/methodology/']) {
       expect(text).toContain(`https://${host}${path}`);
     }
   });
@@ -126,7 +126,7 @@ describe('GET /llms.txt', () => {
     upstream();
     const text = await (await call('/llms.txt')).text();
     const links = [...text.matchAll(/\]\((https?:\/\/[^)\s]+)\)/g)].map(match => new URL(match[1]!));
-    expect(links.length).toBeGreaterThanOrEqual(7);
+    expect(links.length).toBeGreaterThanOrEqual(9);
     for (const link of links) {
       if (link.host === host) {
         const response = await call(link.pathname + link.search, { redirect: 'manual' });
@@ -283,6 +283,19 @@ describe('renderLeaderboardMarkdown', () => {
     expect(text).not.toContain('| 17 |');
     expect(text).toContain('under audit');
     expect(text).not.toContain('from blind head-to-head votes');
+  });
+
+  it('says in the Status column what a visitor can do with the model', () => {
+    const row = (overrides: Partial<LeaderboardResponse['items'][number]>) => {
+      const lines = renderLeaderboardMarkdown(data(overrides), 'https://x.test').split('\n');
+      return lines[lines.findIndex(line => line.startsWith('| ---')) + 1]!;
+    };
+    expect(row({ modelName: 'gemma-3-27b-it', providerName: 'google', provisional: false })).toMatch(/\|  \|$/);
+    expect(row({ modelName: 'groq/compound-mini', providerName: 'groq' })).toContain('| retired |');
+    expect(row({ modelName: '@cf/meta/llama-3.3-70b-instruct-fp8-fast', providerName: 'cloudflare' })).toContain('| pick-only |');
+    expect(row({ modelName: '@cf/meta/llama-guard-3-8b', providerName: 'cloudflare' })).toContain('| not a chat model |');
+    expect(row({ modelName: 'gemma-3-27b-it', providerName: 'google', provisional: true, active: false })).toContain('| preliminary, retired |');
+    expect(row({ modelName: '@cf/meta/llama-3.3-70b-instruct-fp8-fast', providerName: 'cloudflare', blindEligible: true })).not.toContain('pick-only');
   });
 
   it('marks provisional models as preliminary and handles an empty list', () => {

@@ -33,6 +33,7 @@ export default {
     '/privacy',
     '/terms',
     '/cookies',
+    '/data',
     // The API reference (BE-5), rendered from docs/api/openapi.v2.json.
     '/developers',
     // Sign-in (slice S6). /update-password.html and /auth-callback.html are client-only.

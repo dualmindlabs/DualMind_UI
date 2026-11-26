@@ -24,11 +24,15 @@ const CONFIG = {
 };
 const STRONG = 'Tabs&Spaces-2026';
 
-function makeAuth(signInError: unknown = null) {
+function makeAuth(signInError: unknown = null, event: string | null = null) {
   const session = fakeSession();
   return {
     getSession: vi.fn(() => Promise.resolve({ data: { session }, error: null })),
-    onAuthStateChange: vi.fn(() => ({ data: { subscription: { unsubscribe: () => {} } } })),
+    // supabase-js fires PASSWORD_RECOVERY itself once it has validated the link's tokens.
+    onAuthStateChange: vi.fn((callback: (event: string, session: unknown) => void) => {
+      if (event) queueMicrotask(() => callback(event, session));
+      return { data: { subscription: { unsubscribe: () => {} } } };
+    }),
     signInWithPassword: vi.fn((_credentials: unknown) =>
       Promise.resolve({ data: { session }, error: signInError }),
     ),
@@ -164,8 +168,11 @@ describe('UpdatePasswordPage', () => {
     expect(screen.queryByLabelText('New password', { exact: true })).toBeNull();
   });
 
-  it('keeps the form after a reload of a real reset link (tab marker), and clears it when done', async () => {
-    window.sessionStorage.setItem('dm.recovery.v1', '1');
+  it('keeps the form after a reload of a real reset link (fresh tab marker), and clears it when done', async () => {
+    window.sessionStorage.setItem(
+      'dm.recovery.v1',
+      JSON.stringify({ savedAt: Date.now() - 60_000 }),
+    );
     try {
       const auth = makeAuth();
       renderWith(auth, <UpdatePasswordPage link={link({})} />);
@@ -179,24 +186,65 @@ describe('UpdatePasswordPage', () => {
     }
   });
 
-  it('marks the tab after a real recovery link', async () => {
+  it.each([
+    ['an old bare marker', '1'],
+    [
+      'a marker older than the link (one hour)',
+      JSON.stringify({ savedAt: Date.now() - 61 * 60_000 }),
+    ],
+    ['a marker from the future', JSON.stringify({ savedAt: Date.now() + 60_000 })],
+    ['a broken marker', '{not json'],
+  ])('does not accept %s', async (_name, value) => {
+    window.sessionStorage.setItem('dm.recovery.v1', value);
     try {
-      renderWith(
-        makeAuth(),
-        <UpdatePasswordPage link={link({ type: 'recovery', hasTokens: true })} />,
-      );
-      await screen.findByRole('heading', { name: 'Choose a new password' });
-      expect(window.sessionStorage.getItem('dm.recovery.v1')).toBe('1');
+      renderWith(makeAuth(), <UpdatePasswordPage link={link({})} />);
+      expect(
+        await screen.findByRole('heading', { name: 'Open the link from your email' }),
+      ).toBeVisible();
+      expect(screen.queryByLabelText('New password', { exact: true })).toBeNull();
     } finally {
       window.sessionStorage.removeItem('dm.recovery.v1');
     }
   });
 
-  it('shows the form for a recovery link', async () => {
+  it('writes the tab marker from the PASSWORD_RECOVERY event', async () => {
+    try {
+      renderWith(
+        makeAuth(null, 'PASSWORD_RECOVERY'),
+        <UpdatePasswordPage link={link({ type: 'recovery', hasTokens: true })} />,
+      );
+      await screen.findByRole('heading', { name: 'Choose a new password' });
+      const mark = JSON.parse(window.sessionStorage.getItem('dm.recovery.v1') ?? 'null') as {
+        savedAt: number;
+      };
+      expect(Date.now() - mark.savedAt).toBeLessThan(60_000);
+    } finally {
+      window.sessionStorage.removeItem('dm.recovery.v1');
+    }
+  });
+
+  it('shows the form once supabase-js has validated the link (PASSWORD_RECOVERY)', async () => {
     renderWith(
-      makeAuth(),
+      makeAuth(null, 'PASSWORD_RECOVERY'),
       <UpdatePasswordPage link={link({ type: 'recovery', hasTokens: true })} />,
     );
     expect(await screen.findByRole('heading', { name: 'Choose a new password' })).toBeVisible();
+  });
+
+  it('does NOT show the form to a signed-in visitor for a hash with made-up tokens', async () => {
+    // /update-password.html#access_token=x&refresh_token=x&type=recovery: supabase-js rejects the
+    // tokens, keeps the existing session and fires no PASSWORD_RECOVERY (cycle 5 P2-1).
+    try {
+      const auth = makeAuth();
+      renderWith(auth, <UpdatePasswordPage link={link({ type: 'recovery', hasTokens: true })} />);
+      expect(
+        await screen.findByRole('heading', { name: 'Open the link from your email' }),
+      ).toBeVisible();
+      expect(screen.queryByLabelText('New password', { exact: true })).toBeNull();
+      expect(window.sessionStorage.getItem('dm.recovery.v1')).toBeNull();
+      expect(auth.updateUser).not.toHaveBeenCalled();
+    } finally {
+      window.sessionStorage.removeItem('dm.recovery.v1');
+    }
   });
 });

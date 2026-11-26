@@ -25,7 +25,7 @@ export const faqContent: PageContent = {
           type: 'faq',
           question: 'Do I need an account?',
           answer: [
-            'Yes, to battle and to vote. Signing up needs an email address; a name and a phone number are optional. With an account you can keep a history of your conversations, share a thread, and have your votes count toward the leaderboard.',
+            'To vote and to keep a history, yes. Signing up needs an email address; a name and a phone number are optional. With an account you can keep a history of your conversations, share a thread, and have your votes count toward the leaderboard. Some visitors can also try a few battles without an account, when guest battles are switched on; those battles are limited and are not saved to a history.',
           ],
         },
         {
@@ -39,7 +39,7 @@ export const faqContent: PageContent = {
           type: 'faq',
           question: 'Which models can I compare?',
           answer: [
-            'The model picker shows the models available right now, and the Models page lists them. The list changes as models are added or retired, so we do not keep a fixed list here.',
+            'The model picker shows the models available right now, and the Models page lists them. Not every model can be met in a blind battle: some can only be chosen yourself in Side by side, and the Models page labels them "Pick-only". The list changes as models are added or retired, so we do not keep a fixed list here.',
             'You can suggest a model by writing to support@dualmindlab.tech. We cannot promise to add it: it depends on whether we can get reliable access to it.',
           ],
         },
