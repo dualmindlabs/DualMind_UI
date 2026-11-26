@@ -20,12 +20,12 @@ export const SUPPORT_EMAIL = 'support@dualmindlab.tech';
 
 /**
  * The Grievance Officer contact that India's IT Rules 2021 (rule 3(2)) ask an intermediary to
- * publish. OWNER TO CONFIRM: no officer has been named yet and the mailbox may not exist. The
- * name is an empty string until the owner sets a real one: the Terms then print no officer line
- * (never a made-up person, never a visible placeholder). Set it before launch.
+ * publish. The owner (Harsh Bhanushali, GitHub harshbhx) is the officer. The mailbox is
+ * grievance@dualmindlab.tech, the address the site already used; the owner still has to confirm it
+ * receives mail. Leave the name empty to hide the officer line.
  */
 export const GRIEVANCE_EMAIL = 'grievance@dualmindlab.tech';
-export const GRIEVANCE_OFFICER_NAME = '' as string;
+export const GRIEVANCE_OFFICER_NAME = 'Harsh Bhanushali' as string;
 
 /** A mailto link that reports one shared page; the share id goes into the subject and body. */
 export function reportShareHref(shareId: string, pageUrl: string): string {

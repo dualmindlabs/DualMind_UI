@@ -133,6 +133,15 @@ export function AnswerPane({
                 )}
               />
             ) : null}
+            {!streaming && text.trim() !== '' ? (
+              <p
+                data-testid="ai-label"
+                className="mt-4 text-caption text-muted"
+                title="This answer was written by an AI model (EU AI Act, Article 50)."
+              >
+                AI-generated
+              </p>
+            ) : null}
           </>
         )}
       </div>
