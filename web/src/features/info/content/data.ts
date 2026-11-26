@@ -4,7 +4,8 @@ import type { PageContent } from './types';
  * /data/: what a reader, a researcher or a crawler may do with DualMind Arena data. The rule that
  * matters: the license is split. Aggregate numbers are ours to license; model answers are not
  * (they are the providers' output, under the providers' terms), so no page here says CC BY for
- * them. The Content-Signal values are the ones build.js writes into robots.txt (a test pins both).
+ * them. The Content Signals values are Harsh's to confirm; they are not in robots.txt yet, because
+ * Lighthouse reads that line as an invalid robots.txt.
  */
 export const dataContent: PageContent = {
   slug: 'data',
@@ -83,7 +84,7 @@ export const dataContent: PageContent = {
       blocks: [
         {
           type: 'paragraph',
-          text: 'Our robots.txt carries a Content-Signal line: search=yes, ai-input=yes, ai-train=no. That means indexing for search and quoting in an AI answer are welcome, and using the site to train AI models is not. A signal is a request that well-behaved crawlers follow. It is not a technical block and it does not change the licenses above.',
+          text: 'Our preference, in the Content Signals vocabulary: search=yes, ai-input=yes, ai-train=no. Indexing for search and quoting in an AI answer are welcome, and using the site to train AI models is not. It is a request, not a technical block, and it does not change the licenses above. We have not put it in robots.txt yet, because common checkers still read that line as an error.',
         },
         {
           type: 'paragraph',

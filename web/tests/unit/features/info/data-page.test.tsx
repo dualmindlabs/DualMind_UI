@@ -71,14 +71,12 @@ describe('data license content', () => {
     expect(prompts).toMatch(/opted in/i);
   });
 
-  it('states the same Content-Signal that robots.txt carries', () => {
-    expect(sectionText('ai-use')).toContain(`Content-Signal line: ${SIGNAL}`);
-    expect(readFileSync(path.join(repo, 'build.js'), 'utf8')).toContain(
-      `const CONTENT_SIGNAL = '${SIGNAL}'`,
-    );
-    expect(readFileSync(path.join(repo, 'waitlist-worker/public/robots.txt'), 'utf8')).toContain(
-      `Content-Signal: ${SIGNAL}`,
-    );
+  it('states the Content Signals preference, and robots.txt stays free of it for Lighthouse', () => {
+    expect(sectionText('ai-use')).toContain(SIGNAL);
+    expect(readFileSync(path.join(repo, 'build.js'), 'utf8')).not.toMatch(/Content-Signal:/);
+    expect(
+      readFileSync(path.join(repo, 'waitlist-worker/public/robots.txt'), 'utf8'),
+    ).not.toContain('Content-Signal');
   });
 
   it('is indexable, with the canonical URL /data/', () => {

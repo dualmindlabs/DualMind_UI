@@ -14,7 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Sign-in links**: tokens in the address are read only on `/auth-callback.html` and `/update-password.html`, never on `/` or another page, and the callback page asks before it replaces the account that is signed in. OAuth now returns to `/auth-callback.html`.
 - **Worker**: any method but GET and HEAD on a page or file path answers 405 (it used to throw, Cloudflare error 1101), a catch-all turns any exception into a plain 500 with the security headers, OPTIONS under `/api/` answers 405, and the limiter keys IPv6 visitors by their /64.
 - **Caching**: `/og/landing.png` and `/og/leaderboard.png` redirect to the renamed `-v2` cards; root images (`/og-default.png`, favicons, app icons) are cached for a day, not a year.
-- **Data license**: `/data/` says what may be done with the data (leaderboard numbers CC BY 4.0, answers under each provider's terms, no prompts published). `robots.txt` carries a `Content-Signal` line and `/llms.txt` links the page.
+- **Data license**: `/data/` says what may be done with the data (leaderboard numbers CC BY 4.0, answers under each provider's terms, no prompts published). `/llms.txt` links the page. The Content Signals preference is written on the page, not in `robots.txt`, where Lighthouse reads it as an error.
 - **Copy**: the README's first line, the FAQ answer on accounts, and the "battles left today" counter, which is now a live region and says when the day ends.
 
 ### Cycle 4 trust sweep ([#136](https://github.com/dualmindlabs/DualMind_UI/issues/136))
