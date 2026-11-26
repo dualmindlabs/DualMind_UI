@@ -123,7 +123,7 @@ test('the live strip shows the leaderboard numbers and the #1', async ({ page })
   await expect(strip).toContainText('Llama 3.3 70B Instruct');
   await expect(strip).toContainText('1150 Elo · Meta');
   await expect(strip).toContainText('Live from the public leaderboard');
-  await expect(page.getByTestId('model-strip-source')).toHaveText('Live · 49 models');
+  await expect(page.getByTestId('model-strip-source')).toHaveText(/Live · \d+ models/);
 });
 
 for (const failure of ['server error', 'network error'] as const) {

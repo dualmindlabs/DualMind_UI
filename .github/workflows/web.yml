@@ -15,7 +15,7 @@ name: Web app
 
 on:
   pull_request:
-    branches: [main, master, feat/arena-cutover, cycle2/launch-gaps, cycle3/truth-and-trust]
+    branches: [main, master, feat/arena-cutover, cycle2/launch-gaps, cycle3/truth-and-trust, cycle4/trust-sweep]
     paths:
       - 'web/**'
       - 'server/**'
