@@ -2,6 +2,7 @@ import { motion } from 'motion/react';
 import { useContext } from 'react';
 
 import { NumberTicker } from '@/components/vendor/magicui/number-ticker';
+import { RATINGS_UNDER_AUDIT } from '@/content/brand';
 import { useLeaderboard } from '@/features/leaderboard';
 import { ApiClientContext } from '@/hooks/use-api-client';
 import { useShouldReduceMotion } from '@/hooks/use-should-reduce-motion';
@@ -101,10 +102,10 @@ function LiveOdds({ a, b }: { a: LiveAnswer; b: LiveAnswer }) {
 /**
  * Who would win a fresh duel, from the two ratings on the public board: a tug-of-war bar in the
  * two corner colours that settles on the Elo expectation. Renders nothing without the API or when
- * the board lacks either model.
+ * the board lacks either model. Hidden while the ratings are under audit (RATINGS_UNDER_AUDIT).
  */
 export function RatingOdds({ a, b }: { a: LiveAnswer | null; b: LiveAnswer | null }) {
   const api = useContext(ApiClientContext);
-  if (!api || !a || !b) return null;
+  if (RATINGS_UNDER_AUDIT || !api || !a || !b) return null;
   return <LiveOdds a={a} b={b} />;
 }

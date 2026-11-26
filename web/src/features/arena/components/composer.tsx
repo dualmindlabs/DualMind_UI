@@ -238,7 +238,6 @@ export function Composer({
       {showCount ? (
         <p
           data-testid="prompt-count"
-          role={tooLong ? 'alert' : undefined}
           className={cn(
             'mt-2 px-2 font-mono text-caption tabular-nums',
             tooLong ? 'text-bad' : 'text-muted',
@@ -250,6 +249,10 @@ export function Composer({
             : `${draft.length.toLocaleString('en-US')} / ${MAX_PROMPT_CHARS.toLocaleString('en-US')}`}
         </p>
       ) : null}
+      {/* One always-mounted polite region: it speaks once, when the limit is crossed, not on each key. */}
+      <p role="status" aria-live="polite" className="sr-only" data-testid="prompt-limit-status">
+        {tooLong ? `Too long to send. Shorten your prompt to ${MAX_PROMPT_CHARS.toLocaleString('en-US')} characters.` : ''}
+      </p>
       <p
         data-testid="prompt-data-warning"
         className={cn('mt-2 px-2 text-caption text-muted', hero && 'text-center')}

@@ -33,7 +33,7 @@ export const SEO = {
   signup: {
     title: 'Create your account · DualMind Arena',
     description:
-      'Create a free DualMind Arena account: ask once, compare two anonymous AI models side by side, and vote to move the leaderboard.',
+      'Create a free DualMind Arena account: ask once, compare two anonymous AI models side by side, and vote for the better answer.',
   },
   forgotPassword: {
     title: 'Reset your password · DualMind Arena',

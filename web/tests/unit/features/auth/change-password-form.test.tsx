@@ -102,6 +102,23 @@ describe('ChangePasswordForm', () => {
     expect(auth.updateUser).not.toHaveBeenCalled();
   });
 
+  it('lets a password-less email account switch to the emailed code', async () => {
+    const auth = makeAuth();
+    const onChanged = vi.fn();
+    renderWith(auth, <ChangePasswordForm onChanged={onChanged} onCancel={() => {}} />);
+    await userEvent.click(
+      await screen.findByRole('button', { name: /Email me a code instead/ }),
+    );
+    expect(screen.queryByLabelText('Current password')).toBeNull();
+    await userEvent.click(screen.getByRole('button', { name: 'Email me a code' }));
+    await userEvent.type(await screen.findByLabelText('Code from the email'), '654321');
+    await fillNewPassword();
+    await userEvent.click(screen.getByRole('button', { name: 'Save new password' }));
+    await waitFor(() => expect(onChanged).toHaveBeenCalledTimes(1));
+    expect(auth.signInWithPassword).not.toHaveBeenCalled();
+    expect(auth.updateUser).toHaveBeenCalledWith({ password: STRONG, nonce: '654321' });
+  });
+
   it('uses an emailed code for an account that has no password yet', async () => {
     const auth = makeAuth();
     const onChanged = vi.fn();
@@ -139,6 +156,39 @@ describe('UpdatePasswordPage', () => {
       await screen.findByRole('heading', { name: 'Open the link from your email' }),
     ).toBeVisible();
     expect(screen.queryByLabelText('New password', { exact: true })).toBeNull();
+  });
+
+  it('does not show the form for ?type=recovery without the recovery tokens', async () => {
+    renderWith(makeAuth(), <UpdatePasswordPage link={link({ type: 'recovery' })} />);
+    expect(
+      await screen.findByRole('heading', { name: 'Open the link from your email' }),
+    ).toBeVisible();
+    expect(screen.queryByLabelText('New password', { exact: true })).toBeNull();
+  });
+
+  it('keeps the form after a reload of a real reset link (tab marker), and clears it when done', async () => {
+    window.sessionStorage.setItem('dm.recovery.v1', '1');
+    try {
+      const auth = makeAuth();
+      renderWith(auth, <UpdatePasswordPage link={link({})} />);
+      expect(await screen.findByRole('heading', { name: 'Choose a new password' })).toBeVisible();
+      await fillNewPassword();
+      await userEvent.click(screen.getByRole('button', { name: 'Save new password' }));
+      await waitFor(() => expect(auth.updateUser).toHaveBeenCalledWith({ password: STRONG }));
+      await waitFor(() => expect(window.sessionStorage.getItem('dm.recovery.v1')).toBeNull());
+    } finally {
+      window.sessionStorage.removeItem('dm.recovery.v1');
+    }
+  });
+
+  it('marks the tab after a real recovery link', async () => {
+    try {
+      renderWith(makeAuth(), <UpdatePasswordPage link={link({ type: 'recovery', hasTokens: true })} />);
+      await screen.findByRole('heading', { name: 'Choose a new password' });
+      expect(window.sessionStorage.getItem('dm.recovery.v1')).toBe('1');
+    } finally {
+      window.sessionStorage.removeItem('dm.recovery.v1');
+    }
   });
 
   it('shows the form for a recovery link', async () => {

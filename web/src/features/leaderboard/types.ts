@@ -37,6 +37,11 @@ export interface LeaderboardEntry {
    * listed as "Not yet rated" without a rank.
    */
   provisional: boolean;
+  /**
+   * True for a model the Arena no longer serves (the API's `active: false`, or the static list in
+   * lib/retired.ts until the API sends it). Absent otherwise. Such a model cannot be met in a battle.
+   */
+  retired?: boolean;
   /** Where the rating sits between the lowest and the highest on the board, 0 to 1. */
   eloShare: number;
   /**

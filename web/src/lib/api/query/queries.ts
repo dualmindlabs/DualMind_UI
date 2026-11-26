@@ -153,6 +153,25 @@ export function publicConfigQuery(api: ApiClient) {
   });
 }
 
+/**
+ * "Battles left today" (`GET /api/arena/quota`). Any failure (the backend flag is off and the
+ * route answers 404, an older backend, a network error) means no counter: null, never an error.
+ */
+export function quotaQuery(api: ApiClient) {
+  return queryOptions({
+    queryKey: apiKeys.quota(),
+    queryFn: async ({ signal }) => {
+      try {
+        return await api.getQuota(viaQuery(signal));
+      } catch {
+        return null;
+      }
+    },
+    staleTime: 0,
+    retry: false,
+  });
+}
+
 export function privateArenasQuery(api: ApiClient) {
   return queryOptions({
     queryKey: apiKeys.privateArenas.list(),

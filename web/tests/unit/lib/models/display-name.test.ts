@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   CURATED_NAMES,
   isHumanName,
+  makerLine,
   modelMaker,
   modelSlug,
   platformLabel,
@@ -475,5 +476,19 @@ describe('modelMaker and platformLabel', () => {
     expect(servedBy(meta, 'Cloudflare Workers AI')).toBe('via Cloudflare Workers AI');
     expect(servedBy({ key: 'google', label: 'Google' }, 'Google AI')).toBeNull();
     expect(servedBy({ key: 'groq', label: 'Groq' }, 'Groq')).toBeNull();
+  });
+});
+
+describe('makerLine', () => {
+  it('adds the serving platform when the API names one', () => {
+    expect(makerLine('@cf/meta/llama-3.3-70b-instruct-fp8-fast', 'cloudflare')).toBe(
+      'Meta · via Cloudflare Workers AI',
+    );
+  });
+
+  it('shows only the maker without a provider, or when the maker serves it', () => {
+    expect(makerLine('@cf/meta/llama-3.3-70b-instruct-fp8-fast', undefined)).toBe('Meta');
+    expect(makerLine('@cf/meta/llama-3.3-70b-instruct-fp8-fast', null)).toBe('Meta');
+    expect(makerLine('groq/compound-mini', 'groq')).toBe('Groq');
   });
 });

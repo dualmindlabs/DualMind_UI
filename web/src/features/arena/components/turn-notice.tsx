@@ -98,11 +98,14 @@ export function TurnError({
   message,
   onRetry,
   onNewBattle,
+  onRestorePrompt,
 }: {
   kind: TurnErrorKind | null;
   message: string | null;
   onRetry: () => void;
   onNewBattle: () => void;
+  /** Puts the prompt that was sent back into the (already cleared) composer. */
+  onRestorePrompt?: () => void;
 }) {
   const online = useOnlineStatus();
 
@@ -150,6 +153,14 @@ export function TurnError({
         icon={PencilLine}
         title="Edit your prompt"
         testId="turn-validation"
+        action={
+          onRestorePrompt ? (
+            <Button variant="secondary" size="sm" onClick={onRestorePrompt}>
+              <PencilLine aria-hidden="true" strokeWidth={1.75} />
+              Put the prompt back
+            </Button>
+          ) : undefined
+        }
       >
         {message}
       </Callout>

@@ -76,7 +76,7 @@ describe('LandingPage', () => {
     await waitFor(() => expect(strip).toHaveAttribute('data-state', 'ready'));
     expect(within(strip).getByText('Llama 3.3 70B Instruct (FP8, fast)')).toBeInTheDocument();
     expect(within(strip).getByText(/Live from the public leaderboard/)).toBeInTheDocument();
-    expect(screen.getByTestId('model-strip-source')).toHaveTextContent('Live · 53 models');
+    expect(screen.getByTestId('model-strip-source')).toHaveTextContent('Live · 49 models');
     const preview = screen.getByTestId('leaderboard-preview');
     expect(within(preview).getByText('#1 right now')).toBeInTheDocument();
     expect(within(preview).getAllByRole('listitem')).toHaveLength(4);
@@ -99,7 +99,7 @@ describe('LandingPage', () => {
     expect(screen.getByTestId('leaderboard-preview')).toHaveTextContent(
       'The live leaderboard is not answering right now.',
     );
-    expect(screen.getByTestId('model-strip-source')).toHaveTextContent('List as of 20 Oct 2026');
+    expect(screen.getByTestId('model-strip-source')).toHaveTextContent('List as of 26 Nov 2026');
   });
 
   it('plays the demo with the keyboard: vote, reveal, announce, next', async () => {

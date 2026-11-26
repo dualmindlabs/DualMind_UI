@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { guestBattleMessage } from '@/features/marketing/components/guest-battle';
-import { ApiError, createApiClient, NO_PUBLIC_CONFIG } from '@/lib/api';
+import { ApiError, createApiClient, NO_PUBLIC_CONFIG, quotaQuery } from '@/lib/api';
 
 import { jsonResponse, scriptedFetch } from './helpers';
 
@@ -33,6 +33,36 @@ describe('getPublicConfig', () => {
     expect(calls[0]?.headers.get('authorization')).toBeNull();
     const empty = client(jsonResponse({}));
     await expect(empty.api.getPublicConfig()).resolves.toEqual(NO_PUBLIC_CONFIG);
+  });
+});
+
+describe('getQuota', () => {
+  it('reads the counters, and treats a missing part as absent', async () => {
+    const { api, calls } = client(
+      jsonResponse({
+        signedIn: true,
+        guest: { enabled: true, limit: 3, remaining: 2 },
+        privateArena: { enabled: false, limit: 10, remaining: 0 },
+      }),
+    );
+    await expect(api.getQuota()).resolves.toEqual({
+      signedIn: true,
+      guest: { enabled: true, limit: 3, remaining: 2 },
+      privateArena: { enabled: false, limit: 10, remaining: 0 },
+    });
+    expect(calls[0]?.url).toBe('/api/arena/quota');
+    const guestOnly = client(jsonResponse({ signedIn: false, guest: { limit: 3, remaining: 1 } }));
+    await expect(guestOnly.api.getQuota()).resolves.toEqual({
+      signedIn: false,
+      guest: { enabled: false, limit: 3, remaining: 1 },
+    });
+  });
+
+  it('quotaQuery answers null when the endpoint is absent (404)', async () => {
+    const { api } = client(jsonResponse({ code: 'NOT_FOUND' }, { status: 404 }));
+    const options = quotaQuery(api);
+    const queryFn = options.queryFn as (context: { signal: AbortSignal }) => Promise<unknown>;
+    await expect(queryFn({ signal: new AbortController().signal })).resolves.toBeNull();
   });
 });
 

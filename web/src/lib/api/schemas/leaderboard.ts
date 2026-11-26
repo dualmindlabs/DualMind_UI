@@ -24,6 +24,8 @@ export const modelStatSchema = withAliases(
     totalTies: count,
     totalResponses: count,
     winRate: numeric.pipe(z.number().min(0).max(100)).optional(),
+    /** False for a model the Arena no longer serves; absent while the API does not send it. */
+    active: z.boolean().optional(),
   }),
   {
     modelId: ['id'],
@@ -35,6 +37,7 @@ export const modelStatSchema = withAliases(
     totalLosses: ['losses'],
     totalTies: ['ties'],
     totalResponses: ['total_matches', 'matches'],
+    active: ['isActive', 'is_active'],
   },
 ).transform(({ winRate, ...stat }) => ({
   ...stat,

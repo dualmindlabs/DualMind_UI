@@ -122,8 +122,18 @@ Still open, by design or because it needs an owner:
 - **A vote queued offline** on a masked battle shows the names only after a reload of the thread: the queue flush does not feed the open turn.
 - **The rating copy** no longer says that every vote moves an Elo rating: the live ratings were found not to follow from the recorded votes (cycle 3 red-team), so every page says they are "under audit". Remove that wording once the backend commits the `v_leaderboard` definition and the ratings are recomputed or the crowd board (Bradley-Terry) is on.
 - **Sign-in notice emails** are throttled only in the browser: confirm the `email-wel-safe` function has its own per-user limit.
-- **Grievance Officer** (Terms, "Complaints and reports"): no officer is named yet. `web/src/lib/site/links.ts` holds a marked placeholder name and `grievance@dualmindlab.tech` as configurable text; the owner must name a person and confirm that the mailbox exists before launch. The minimum age (13) is unchanged: that is the owner's decision.
+- **Grievance Officer** (Terms, "Complaints and reports"): no officer is named yet. `web/src/lib/site/links.ts` holds an empty name (the Terms print no officer line until it is set) and `grievance@dualmindlab.tech` as configurable text; the owner must name a person and confirm that the mailbox exists before launch. The minimum age (13) is unchanged: that is the owner's decision.
 - **Review URL after the cycle 2 PR merges**: `workers_dev` stays off (the zone rules matter more), so the live preview host `dualmind-arena.creharsh.workers.dev` goes away. Review on `https://arena.dualmindlab.tech/?preview=dualmind-preview` (sets the cookie once) or on a branch alias `https://<branch-slug>-dualmind-arena.creharsh.workers.dev`.
+
+## Cycle 4 trust sweep (2026-11-26)
+
+Fixed in the cycle 4 PR for [#136](https://github.com/dualmindlabs/DualMind_UI/issues/136). Still open:
+
+- **The only real control for a password change is server-side**: Supabase "Secure password change" must be on (owner). Every check in the page can be skipped by calling `updateUser` from devtools.
+- **The waitlist share image** (`waitlist-worker/public/og.jpg`) still shows an "Enter the arena" button on a page where nobody can enter; the picture needs a new file name when it is redrawn.
+- **Retired models**: until the API sends `active` on every row, `web/src/features/leaderboard/lib/retired.ts` names them by hand.
+- **Ranks differ** between the page (rated models only) and `/leaderboard.md`, the crawler table and the ItemList (the API's `eloRank`); the fix belongs in the leaderboard service.
+- **The cookie list** now covers every key the app writes; add a new key there when you add one.
 
 ## Related issues in the other repo
 

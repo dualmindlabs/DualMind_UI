@@ -23,7 +23,7 @@ function find(meta: readonly MetaDescriptor[], key: string, value: string): Tag 
 
 const base = {
   title: 'Leaderboard · DualMind Arena',
-  description: 'Every model, ranked by blind votes.',
+  description: 'Every model, on one public board.',
   path: '/leaderboard/',
 };
 
@@ -39,7 +39,7 @@ describe('pageMeta', () => {
   it('sets the title, the description and a canonical URL on the site origin', () => {
     const meta = pageMeta(base);
     expect(meta[0]).toEqual({ title: 'Leaderboard · DualMind Arena' });
-    expect(find(meta, 'name', 'description')?.content).toBe('Every model, ranked by blind votes.');
+    expect(find(meta, 'name', 'description')?.content).toBe('Every model, on one public board.');
     expect(find(meta, 'rel', 'canonical')).toEqual({
       tagName: 'link',
       rel: 'canonical',

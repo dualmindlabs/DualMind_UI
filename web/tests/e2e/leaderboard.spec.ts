@@ -130,9 +130,9 @@ test.describe('prerendered pages', () => {
     {
       url: '/leaderboard/',
       title: 'AI model leaderboard: Elo ratings, under audit · DualMind Arena',
-      h1: 'blind votes.',
+      h1: 'public board.',
       text: 'How to read',
-      image: 'leaderboard',
+      image: 'leaderboard-v2',
     },
     {
       url: '/models/',
@@ -175,7 +175,7 @@ test.describe('prerendered pages', () => {
     });
   }
 
-  for (const image of ['leaderboard', 'models']) {
+  for (const image of ['leaderboard-v2', 'models']) {
     test(`/og/${image}.png is served as a PNG`, async ({ request }) => {
       const response = await request.get(`/og/${image}.png`, withCookie);
       expect(response.status()).toBe(200);

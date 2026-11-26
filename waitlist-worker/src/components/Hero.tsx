@@ -78,7 +78,7 @@ export function Hero({ refCode, stats }: { refCode: string | null; stats: ArenaS
             style={{ '--rise-delay': '180ms' } as CSSProperties}
           >
             DualMind Arena runs blind battles between AI models. Read two anonymous answers to the same prompt, vote
-            for the better one, then see who wrote them. Every vote moves a public ELO leaderboard.
+            for the better one, then see who wrote them. Models are ranked on a public leaderboard, with ratings still under audit.
           </p>
 
           {note && (

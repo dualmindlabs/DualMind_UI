@@ -114,6 +114,8 @@ export {
   type PrivateBoardRow,
   type PrivateVoteChoice,
   type PublicConfig,
+  type Quota,
+  type QuotaPart,
 } from './schemas/launch';
 export type { LeaderboardData, ModelStat } from './schemas/leaderboard';
 export { displayNameFromModelName, KNOWN_PROVIDERS, type ModelSummary } from './schemas/models';
@@ -175,6 +177,7 @@ export {
   privateArenasQuery,
   privateBoardQuery,
   publicConfigQuery,
+  quotaQuery,
   sharedThreadQuery,
   threadMessagesQuery,
   threadQuery,

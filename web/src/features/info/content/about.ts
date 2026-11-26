@@ -93,7 +93,7 @@ export const aboutContent: PageContent = {
                 'Model names stay hidden until you have voted, and the order of the two answers is random. Only votes cast on anonymous battles count toward the leaderboard.',
             },
             {
-              term: 'Open methodology',
+              term: 'Methodology',
               description:
                 'The rating formula, what counts as a fair vote and the known limits of the method are written down on the [How it works](/how-it-works/#rating) page. We change them in public, not quietly.',
             },
@@ -113,7 +113,7 @@ export const aboutContent: PageContent = {
       blocks: [
         {
           type: 'paragraph',
-          text: 'The source code of this web app is public on [GitHub](https://github.com/dualmindlabs/DualMind_UI). You can read how the Arena is built, report a problem or suggest a change there.',
+          text: 'The source code of this web app is public on [GitHub](https://github.com/dualmindlabs/DualMind_UI) (source-available: all rights reserved, see the LICENSE file). You can read how the Arena is built, report a problem or suggest a change there.',
         },
         {
           type: 'paragraph',

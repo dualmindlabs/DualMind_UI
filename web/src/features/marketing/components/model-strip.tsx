@@ -19,8 +19,10 @@ const STRIP_SIZE = 24;
 export function ModelStrip({ stats }: { stats: LiveStatsState }) {
   const [paused, setPaused] = useState(false);
   const live = stats.status === 'ready';
+  // Retired models stay on the leaderboard with their record, but cannot be met in a battle.
+  const active = live ? stats.stats.ranked.filter(model => !model.retired) : [];
   const models = live
-    ? stats.stats.ranked.slice(0, STRIP_SIZE).map(model => ({
+    ? active.slice(0, STRIP_SIZE).map(model => ({
         name: model.name,
         maker: model.providerLabel,
       }))
@@ -49,7 +51,7 @@ export function ModelStrip({ stats }: { stats: LiveStatsState }) {
             In the arena now
           </h2>
           <p className="font-mono text-caption text-muted" data-testid="model-strip-source">
-            {live ? `Live · ${stats.stats.models} models` : `List as of ${MODEL_SNAPSHOT_DATE}`}
+            {live ? `Live · ${active.length} models` : `List as of ${MODEL_SNAPSHOT_DATE}`}
           </p>
         </div>
         <div className="flex min-w-0 flex-1 items-center gap-3">

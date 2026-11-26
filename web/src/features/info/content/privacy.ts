@@ -48,6 +48,11 @@ export const privacyContent: PageContent = {
                 'Your vote on each battle (A better, B better, tie or both bad), the models involved and how long you took to vote.',
             },
             {
+              term: 'Trying a battle without an account',
+              description:
+                'If the free battle is switched on and you use it, the prompt you type (up to 500 characters) and the two answers are processed by the DualMind API and the model providers. They are stored without an account or user id, so we cannot link them to you or show them to you again, and you cannot vote on them. The check that stops bots is Cloudflare Turnstile: it loads a script from challenges.cloudflare.com and Cloudflare reads signals from your browser to decide whether you are a person. Your IP address is used for a daily limit per address.',
+            },
+            {
               term: 'Shared threads',
               description:
                 'If you make a conversation viewable by link, the people who have the link can read it. Conversations are private until you share them.',
@@ -140,6 +145,11 @@ export const privacyContent: PageContent = {
             {
               term: 'Microsoft Azure',
               description: 'Hosting for the DualMind API, which stores threads, answers and votes.',
+            },
+            {
+              term: 'Cloudflare Turnstile',
+              description:
+                'Only on the free battle, when it is switched on: a bot check that runs in your browser and sends browser signals to Cloudflare. It is not loaded anywhere else.',
             },
             {
               term: 'AI model providers',

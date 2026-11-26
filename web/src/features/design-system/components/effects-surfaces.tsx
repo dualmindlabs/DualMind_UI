@@ -105,7 +105,7 @@ const features = [
   },
   {
     title: 'Live ratings',
-    description: 'Elo moves with every vote.',
+    description: 'Ratings are under audit.',
     icon: <Gauge aria-hidden="true" className={iconClass} strokeWidth={1.75} />,
     header: ratingArt,
     className: 'md:col-span-2',

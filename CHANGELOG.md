@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Cycle 4 trust sweep ([#136](https://github.com/dualmindlabs/DualMind_UI/issues/136))
+
+- **Rating claims**: the live waitlist (hero, value points, leaderboard note, `og:description`), the landing closing call to action, the leaderboard heading, the footer line and web manifest, the sign-up and how-it-works descriptions, the methodology intro, the README and the design kit no longer say that votes move a public Elo board. A guard test scans `web/src`, `waitlist-worker`, `server` and the README. The landing and leaderboard share images are `/og/landing-v2.png` and `/og/leaderboard-v2.png` (new names, so unfurlers refetch); `/og/*` is revalidated, not immutable.
+- **Passwords**: the reset form needs the recovery tokens, the `PASSWORD_RECOVERY` event or a tab marker set after one of them, not `?type=recovery`; a reload of a real reset link keeps working. Settings offers "Email me a code instead" for accounts made with the email-code tab.
+- **Retired models**: "In the arena now" skips them; the leaderboard and models pages badge them "Retired" (the API's `active` flag, or a short named list until the API sends it); the snapshot is dated 26 Nov 2026.
+- **Win odds** after a vote are hidden while the ratings are under audit (`RATINGS_UNDER_AUDIT`).
+- **Share pages**: the "Report this page" link is underlined and coloured; compare results carry the AI notice and the link too.
+- **Terms**: the Grievance Officer line prints only for a real name.
+- **Guest battle and private arena** render answers as Markdown (the hardened renderer, loaded as its own chunk); the privacy and cookie pages cover guest prompts, Turnstile and the storage keys they had left out.
+- **Product**: "battles left today" counters (hidden when `GET /api/arena/quota` is absent), an "Updated" time on the leaderboard and models pages, "via platform" next to the maker in the vote reveal when the API sends `provider`.
+- **Small fixes**: the prompt counter announces once, the landing handoff keeps up to 8,000 characters, only prompt errors say "Edit your prompt" (with "Put the prompt back"), "Receipts are off today" on the methodology page, `robots.txt` lets crawlers read `/api/v2/leaderboard` and `/api/v2/openapi.json`, the About page says the source is source-available.
+- **CI** also runs for pull requests whose base is `cycle3/truth-and-trust`.
+
 ### Cycle 3 truth and trust ([#134](https://github.com/dualmindlabs/DualMind_UI/issues/134))
 
 - **Rating copy**: no page, preview tag, `/leaderboard.md`, `/llms.txt` or crawler table says that every vote moves an Elo rating; they say the ratings are computed by the leaderboard service and are under audit.

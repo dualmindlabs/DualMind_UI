@@ -4,7 +4,7 @@ export const howItWorksContent: PageContent = {
   slug: 'how-it-works',
   title: 'How DualMind Arena works',
   description:
-    'Ask once, compare two anonymous answers and vote. See how votes turn into an Elo rating, what stays hidden until you vote, and what counts as a fair vote.',
+    'Ask once, compare two anonymous answers and vote. See how the Elo rating works, what stays hidden until you vote, and what counts as a fair vote.',
   eyebrow: 'How it works',
   heading: { text: 'Ask. Compare.', human: 'You decide.' },
   intro:

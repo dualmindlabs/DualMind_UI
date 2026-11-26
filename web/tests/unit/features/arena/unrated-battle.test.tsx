@@ -44,9 +44,9 @@ const turn = (overrides: Partial<LiveTurn> = {}): LiveTurn => ({
   ...overrides,
 });
 
-function view(live: LiveTurn, newBattle = vi.fn()) {
+function view(live: LiveTurn, newBattle = vi.fn(), setDraft: (draft: string) => void = () => {}) {
   return render(
-    <FakeArena overrides={{ battle: fakeBattle([live]), newBattle }}>
+    <FakeArena overrides={{ battle: fakeBattle([live]), newBattle }} setDraft={setDraft}>
       <LiveTurnView turn={live} number={1} />
     </FakeArena>,
   );
@@ -121,6 +121,17 @@ describe('a turn that failed, by the kind of failure', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('Edit your prompt');
     expect(screen.getByRole('alert')).toHaveTextContent('Prompt is too long');
     expect(screen.queryByRole('button', { name: /Try again/ })).toBeNull();
+  });
+
+  it('puts the prompt back into the composer on request', async () => {
+    const setDraft = vi.fn();
+    view(
+      failed({ error: 'Prompt is too long.', errorKind: 'validation' }),
+      vi.fn(),
+      setDraft,
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Put the prompt back' }));
+    expect(setDraft).toHaveBeenCalledWith('Explain recursion');
   });
 
   it('says slow down for a rate limit, whatever the words in the message', () => {

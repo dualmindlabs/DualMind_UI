@@ -75,3 +75,32 @@ export function callbackErrorMessage(error: CallbackUrl['error']): string {
   }
   return 'This link did not work. Ask for a new one and try again.';
 }
+
+/** Tab-scoped marker: this tab arrived from a real reset link (see `isRecoveryProven`). */
+export const RECOVERY_MARK_KEY = 'dm.recovery.v1';
+
+/**
+ * Whether the URL snapshot proves a password-reset link: the recovery tokens, not just
+ * `?type=recovery` (anyone can type that). Without tokens a signed-in visitor cannot reach the
+ * reset form, so a session alone never lets them change the password without the current one.
+ */
+export function isRecoveryLink(link: Pick<CallbackUrl, 'type' | 'hasTokens'>): boolean {
+  return link.type === 'recovery' && link.hasTokens;
+}
+
+export function readRecoveryMark(storage: Pick<Storage, 'getItem'> | null): boolean {
+  try {
+    return storage?.getItem(RECOVERY_MARK_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+export function writeRecoveryMark(storage: Pick<Storage, 'setItem' | 'removeItem'> | null, on: boolean) {
+  try {
+    if (on) storage?.setItem(RECOVERY_MARK_KEY, '1');
+    else storage?.removeItem(RECOVERY_MARK_KEY);
+  } catch {
+    // Private mode: a reload then needs a new link, as before.
+  }
+}

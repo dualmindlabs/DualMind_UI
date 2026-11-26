@@ -69,6 +69,10 @@ function ReceiptsSection() {
         answer text and no account. After you vote you get the hash of your entry as a receipt;
         anyone can download the log, recompute every hash and refit the board.
       </p>
+      <p className="text-ui text-fg-soft" data-testid="receipts-off">
+        Receipts are off today, so there is no log to download yet. This page will link it when
+        receipts are on.
+      </p>
     </section>
   );
 }
@@ -95,7 +99,7 @@ export function MethodologyPage() {
               How the board is <span className="human-voice text-human">built.</span>
             </h1>
             <p className="max-w-[52ch] text-lead text-fg-soft">
-              The ratings, the intervals and the ranks, explained the way the API computes them.
+              The ratings, the intervals and the ranks, as the leaderboard service reports them. The computation is under audit.
             </p>
           </div>
         </PageHero>

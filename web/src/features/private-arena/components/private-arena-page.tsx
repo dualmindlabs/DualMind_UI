@@ -5,15 +5,17 @@ import { PageContainer } from '@/components/layout/page-container';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteHeader } from '@/components/layout/site-header';
 import { SkipLink } from '@/components/layout/skip-link';
+import { BattlesLeft } from '@/components/ui/battles-left';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
-import { AccountMenu } from '@/features/arena';
+import { AccountMenu, LazyMarkdown } from '@/features/arena';
 import { useApiClient } from '@/hooks/use-api-client';
 import { useAuth } from '@/hooks/use-auth';
 import { useFeatures } from '@/hooks/use-features';
+import { useQuota } from '@/hooks/use-quota';
 import { useRequireAuth } from '@/hooks/use-require-auth';
 import {
   apiKeys,
@@ -188,6 +190,7 @@ function Runner({ arena, onDeleted }: { arena: PrivateArena; onDeleted: () => vo
   const [done, setDone] = useState(arena.battlesDone);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const next = nextPromptIndex(done, arena.promptCount);
+  const quota = useQuota(true);
 
   const start = async () => {
     if (next === null || round.kind === 'loading') return;
@@ -195,6 +198,7 @@ function Runner({ arena, onDeleted }: { arena: PrivateArena; onDeleted: () => vo
     try {
       const battle = await api.startPrivateBattle(arena.id, next);
       setRound({ kind: 'voting', battle, index: next });
+      quota.refresh();
     } catch (error) {
       setRound({ kind: 'error', message: getUserMessage(error) });
     }
@@ -265,9 +269,7 @@ function Runner({ arena, onDeleted }: { arena: PrivateArena; onDeleted: () => vo
                   Answer {label}
                   {model === null ? null : <span className="text-fg"> · {model}</span>}
                 </h3>
-                <p dir="auto" className="text-ui-sm break-words whitespace-pre-wrap text-fg">
-                  {text}
-                </p>
+                <LazyMarkdown className="answer-prose text-ui-sm text-fg">{text}</LazyMarkdown>
               </article>
             ))}
           </div>
@@ -305,6 +307,13 @@ function Runner({ arena, onDeleted }: { arena: PrivateArena; onDeleted: () => vo
           </Button>
           {next === null ? (
             <span className="text-ui-sm text-fg-soft">Every prompt has been judged.</span>
+          ) : null}
+          {quota.privateArena ? (
+            <BattlesLeft
+              remaining={quota.privateArena.remaining}
+              limit={quota.privateArena.limit}
+              noun="private battles"
+            />
           ) : null}
         </div>
       )}

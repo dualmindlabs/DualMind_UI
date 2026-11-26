@@ -1,6 +1,7 @@
 import { type ReactNode, useRef, useState } from 'react';
 import { vi } from 'vitest';
 
+import { DraftContext } from '@/features/arena/hooks/use-draft';
 import { ArenaContext, type ArenaState } from '@/features/arena/hooks/use-arena';
 import type { BattleApi } from '@/features/arena/hooks/use-battle';
 import type { LiveTurn } from '@/features/arena/lib/battle-machine';
@@ -28,9 +29,12 @@ export function fakeBattle(turns: LiveTurn[] = []): BattleApi {
 export function FakeArena({
   children,
   overrides = {},
+  setDraft = () => {},
 }: {
   children: ReactNode;
   overrides?: Partial<ArenaState>;
+  /** Spy for the composer's draft (the prompt box content). */
+  setDraft?: (draft: string) => void;
 }) {
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [shortcutsEnabled, setShortcutsEnabled] = useState(true);
@@ -73,5 +77,9 @@ export function FakeArena({
     ...overrides,
   };
 
-  return <ArenaContext.Provider value={value}>{children}</ArenaContext.Provider>;
+  return (
+    <ArenaContext.Provider value={value}>
+      <DraftContext.Provider value={{ draft: '', setDraft }}>{children}</DraftContext.Provider>
+    </ArenaContext.Provider>
+  );
 }

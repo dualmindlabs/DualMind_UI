@@ -303,7 +303,7 @@ test.describe('Footer', () => {
     );
     await expect(footer.getByRole('link', { name: 'Status' })).toHaveCount(0);
     await expect(footer).not.toContainText('one verdict');
-    await expect(footer).toContainText('Blind battles between AI models, ranked by votes.');
+    await expect(footer).toContainText('Blind battles between AI models, with a public leaderboard.');
   });
 
   for (const viewport of [
@@ -632,5 +632,8 @@ test.describe('sitemap.xml and robots.txt', () => {
     const text = await robots.text();
     expect(text).toContain('Sitemap: https://arena.dualmindlab.tech/sitemap.xml');
     expect(text).toContain('Disallow: /api/');
+    // llms.txt points crawlers at these two, so robots.txt lets them in.
+    expect(text).toContain('Allow: /api/v2/leaderboard');
+    expect(text).toContain('Allow: /api/v2/openapi.json');
   });
 });

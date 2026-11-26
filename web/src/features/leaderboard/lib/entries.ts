@@ -9,6 +9,7 @@ import type {
   RatedEntry,
 } from '../types';
 import { ELO_BAR_FLOOR, PROVISIONAL_BATTLES } from './constants';
+import { isRetiredModel } from './retired';
 
 /** The provisional rule (lib/constants.ts): fewer than PROVISIONAL_BATTLES battles. */
 export function isProvisional(battles: number): boolean {
@@ -92,6 +93,7 @@ export function toLeaderboardEntries(stats: readonly ModelStat[]): LeaderboardEn
         provisional,
         eloShare: eloShare(stat.eloScore, lowest, highest),
         crowd: stat.crowd ?? null,
+        ...(isRetiredModel(stat.modelName, stat.active) ? { retired: true } : {}),
       };
     })
     .sort(byRank);

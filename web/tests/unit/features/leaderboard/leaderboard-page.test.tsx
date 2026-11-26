@@ -71,7 +71,7 @@ describe('LeaderboardPage', () => {
     renderPage();
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
-      'Every model, ranked by blind votes.',
+      'Every model, on one public board.',
     );
     expect(screen.getByRole('heading', { name: /How to read the board/ })).toBeInTheDocument();
     expect(screen.getByText('Loading the leaderboard')).toBeInTheDocument();

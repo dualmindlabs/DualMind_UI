@@ -12,6 +12,7 @@ import { RangeBar } from './range-bar';
 import { RankMovement } from './rank-movement';
 import { RankRange } from './rank-range';
 import { RecordBar } from './record-bar';
+import { RetiredBadge } from './retired-badge';
 
 export interface BoardCardListProps {
   /** Filtered and sorted. */
@@ -92,6 +93,7 @@ function BoardCard({
             {entry.providerLabel}
             {entry.servedBy ? ` · ${entry.servedBy}` : ''}
           </span>
+          {entry.retired ? <RetiredBadge className="w-fit" /> : null}
         </div>
       </div>
       <span className="grid justify-items-end gap-0.5 text-right">

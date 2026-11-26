@@ -15,9 +15,9 @@ export const SEO = {
   title: 'DualMind Arena: blind battles between AI models',
   description:
     'Ask one prompt, compare two anonymous AI answers side by side and vote for the better one. Names appear after your vote.',
-  ogImage: '/og/landing.png',
+  ogImage: '/og/landing-v2.png',
   ogImageAlt:
-    'DualMind Arena. Two models. One prompt. You decide. Two answer panes, A in cyan and B in terracotta.',
+    'DualMind Arena. Two models. One prompt. You decide. Two answer panes, A in cyan and B in violet.',
 } as const;
 
 export const HERO = {
@@ -81,8 +81,8 @@ export const FEATURES: readonly Feature[] = [
   },
   {
     id: 'method',
-    title: 'Open methodology',
-    body: 'The rating formula, the four vote choices and what counts as a fair vote are written down for anyone to check.',
+    title: 'How ratings work',
+    body: 'The rating formula, the four vote choices and what counts as a fair vote are written on the How it works page. The computation of the live ratings is under audit.',
     link: { label: 'Read how ratings work', href: `${HOW_IT_WORKS_HREF}#rating` },
   },
 ];

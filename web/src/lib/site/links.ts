@@ -20,11 +20,12 @@ export const SUPPORT_EMAIL = 'support@dualmindlab.tech';
 
 /**
  * The Grievance Officer contact that India's IT Rules 2021 (rule 3(2)) ask an intermediary to
- * publish. OWNER TO CONFIRM: no officer has been named yet and the mailbox may not exist, so the
- * address is plain configurable text and the name is a marked placeholder, never a made-up person.
+ * publish. OWNER TO CONFIRM: no officer has been named yet and the mailbox may not exist. The
+ * name is an empty string until the owner sets a real one: the Terms then print no officer line
+ * (never a made-up person, never a visible placeholder). Set it before launch.
  */
 export const GRIEVANCE_EMAIL = 'grievance@dualmindlab.tech';
-export const GRIEVANCE_OFFICER_NAME = '[Name to be published by the site owner]';
+export const GRIEVANCE_OFFICER_NAME = '' as string;
 
 /** A mailto link that reports one shared page; the share id goes into the subject and body. */
 export function reportShareHref(shareId: string, pageUrl: string): string {

@@ -1,4 +1,4 @@
-import { type FormEvent, useState } from 'react';
+import { type FormEvent, useEffect, useState } from 'react';
 
 import { Button, buttonVariants } from '@/components/ui/button';
 import { useAuth } from '@/hooks/use-auth';
@@ -11,7 +11,13 @@ import {
 } from '@/lib/supabase';
 
 import { useBreachCheck } from '../hooks/use-breach-check';
-import { callbackErrorMessage, type CallbackUrl } from '../lib/callback-url';
+import {
+  callbackErrorMessage,
+  type CallbackUrl,
+  isRecoveryLink,
+  readRecoveryMark,
+  writeRecoveryMark,
+} from '../lib/callback-url';
 import { FormStatus } from './form-status';
 import { NewPasswordFields } from './new-password-fields';
 import { accountLabel } from './signed-in-notice';
@@ -28,15 +34,33 @@ function NewLinkAction() {
   );
 }
 
+function tabStorage(): Storage | null {
+  try {
+    return typeof window === 'undefined' ? null : window.sessionStorage;
+  } catch {
+    return null;
+  }
+}
+
+
 /**
  * `/update-password.html`, the target of the reset email (unchanged address). supabase-js turns
  * the recovery tokens in the #hash into a session; this page then sets the new password. An
  * expired or used link, or a visit without one, gets a plain explanation and a new-link button.
- * The form shows only for a recovery link: a signed-in visitor who opens the page directly cannot
- * change the password this way (Settings asks for the current password).
+ * The form shows only with proof of a reset link: the recovery tokens in this visit's URL, the
+ * `PASSWORD_RECOVERY` event, or a marker this tab set after one of those (so a reload, after
+ * supabase-js has removed the tokens, does not burn the link). `?type=recovery` alone proves
+ * nothing: a signed-in visitor who opens the page directly cannot change the password this way
+ * (Settings asks for the current password). The real control is server-side, Supabase "Secure
+ * password change" (KNOWN_ISSUES.md): every client check can be skipped from devtools.
  */
 export function UpdatePasswordPage({ link }: { link: CallbackUrl }) {
-  const { status: authStatus, user, client } = useAuth();
+  const { status: authStatus, user, client, lastEvent } = useAuth();
+  const proven =
+    isRecoveryLink(link) || lastEvent === 'PASSWORD_RECOVERY' || readRecoveryMark(tabStorage());
+  useEffect(() => {
+    if (proven && !link.error) writeRecoveryMark(tabStorage(), true);
+  }, [proven, link.error]);
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [passwordError, setPasswordError] = useState<string | null>(null);
@@ -83,6 +107,7 @@ export function UpdatePasswordPage({ link }: { link: CallbackUrl }) {
       const supabase = await client();
       const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
+      writeRecoveryMark(tabStorage(), false);
       setDone(true);
     } catch (error) {
       setStatus(null);
@@ -110,7 +135,7 @@ export function UpdatePasswordPage({ link }: { link: CallbackUrl }) {
         This takes a moment.
       </StatusCard>
     );
-  } else if (authStatus === 'signed-out' || !user || link.type !== 'recovery') {
+  } else if (authStatus === 'signed-out' || !user || !proven) {
     content = (
       <StatusCard tone="error" title="Open the link from your email" action={<NewLinkAction />}>
         This page needs the link from your password reset email. Each link works once, for one hour.

@@ -59,6 +59,14 @@ export function BoardStatus({
               of <span className="font-mono tabular-nums">{formatCount(total)}</span> {noun}
             </>
           )}
+          {updatedAt > 0 ? (
+            <span className="text-muted" data-testid="board-updated">
+              {' · '}Updated{' '}
+              <time dateTime={new Date(updatedAt).toISOString()}>
+                {formatClockWithZone(updatedAt)}
+              </time>
+            </span>
+          ) : null}
         </p>
         <div className="flex items-center gap-2">
           {isMock ? <Badge variant="warn">Demo data</Badge> : null}

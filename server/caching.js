@@ -51,6 +51,13 @@ export const CACHE_RULES = [
     },
   },
   {
+    name: 'og-image',
+    applies:
+      '/og/* share images: revalidated, never immutable, so a corrected image can reach unfurlers (a changed picture also gets a new file name)',
+    cacheControl: REVALIDATE,
+    test: ({ pathname }) => pathname.startsWith('/og/'),
+  },
+  {
     name: 'image',
     applies: 'Images (.png .jpg .jpeg .webp .gif .svg .ico)',
     cacheControl: IMMUTABLE_CACHE,

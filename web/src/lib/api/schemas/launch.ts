@@ -24,6 +24,26 @@ export const NO_PUBLIC_CONFIG: PublicConfig = {
   turnstileSiteKey: null,
 };
 
+/** One counter of `GET /api/arena/quota`: how many battles of one kind are left today. */
+const quotaPartSchema = withAliases(
+  z.object({ enabled: flag(false), limit: count, remaining: count }),
+);
+
+/**
+ * `GET /api/arena/quota` ("battles left today", behind a backend flag: 404 while off). The counts
+ * are per backend process, so they are a display aid, not a promise. `privateArena` is only sent
+ * to a signed-in caller.
+ */
+export const quotaSchema = withAliases(
+  z.object({
+    signedIn: flag(false),
+    guest: quotaPartSchema.optional(),
+    privateArena: quotaPartSchema.optional(),
+  }),
+);
+export type Quota = z.output<typeof quotaSchema>;
+export type QuotaPart = z.output<typeof quotaPartSchema>;
+
 /** A private arena: your own prompt set, run as blind battles that only you vote on. */
 export const privateArenaSchema = withAliases(
   z.object({

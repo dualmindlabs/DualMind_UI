@@ -73,6 +73,12 @@ const nextId = () => `turn-${Date.now().toString(36)}-${(sequence += 1)}`;
  * on the first prompt, calls the API (never retried: each call stores a comparison), plays the
  * progressive reveal, sends votes through the offline queue, and announces each state politely.
  */
+/** A 4xx that is about the prompt: too long (413) or a message that names the prompt. */
+export function isPromptRejection(error: unknown): boolean {
+  if (!isApiErrorKind(error, 'validation')) return false;
+  return error.status === 413 || /\bprompt\b/i.test(error.message);
+}
+
 export function useBattle({
   threadId,
   onThreadCreated,
@@ -241,7 +247,13 @@ export function useBattle({
             announce(FORBIDDEN_THREAD_MESSAGE);
             return;
           }
-          const kind = isApiErrorKind(error, 'rate_limited', 'validation') ? error.kind : undefined;
+          // The "edit your prompt" voice is for prompt errors only. Another 4xx (a missing model,
+          // a conflict, a payload the proxy refused) gets the plain failure card with Try again.
+          const kind = isApiErrorKind(error, 'rate_limited')
+            ? error.kind
+            : isPromptRejection(error)
+              ? 'validation'
+              : undefined;
           dispatch({
             type: 'fail',
             id,

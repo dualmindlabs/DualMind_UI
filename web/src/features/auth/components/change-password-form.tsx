@@ -47,8 +47,12 @@ export interface ChangePasswordFormProps {
 export function ChangePasswordForm({
   onChanged,
   onCancel,
-  usesPassword = true,
+  usesPassword: startsWithPassword = true,
 }: ChangePasswordFormProps) {
+  // An account made with the email-code tab has provider `email` but no password, so the
+  // current-password path always offers the emailed code as a way out.
+  const [viaCode, setViaCode] = useState(!startsWithPassword);
+  const usesPassword = !viaCode;
   const { client, user } = useAuth();
   const [current, setCurrent] = useState('');
   const [currentError, setCurrentError] = useState<string | null>(null);
@@ -207,6 +211,22 @@ export function ChangePasswordForm({
               Email me a code
             </Button>
           </div>
+        </div>
+      )}
+      {usesPassword && startsWithPassword && (
+        <div>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setViaCode(true);
+              setCurrentError(null);
+            }}
+            disabled={pending}
+          >
+            No password yet, or forgot it? Email me a code instead
+          </Button>
         </div>
       )}
       <NewPasswordFields

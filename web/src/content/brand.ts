@@ -7,4 +7,11 @@ export const BRAND_PRIMARY_LEAD = 'Two models. One prompt.';
 /** The human-voice (italic) half of the primary line, for headings that set it apart. */
 export const BRAND_PRIMARY_VOICE = 'You decide.';
 export const BRAND_PRIMARY = `${BRAND_PRIMARY_LEAD} ${BRAND_PRIMARY_VOICE}`;
-export const BRAND_SUPPORTING = 'Blind battles between AI models, ranked by votes.';
+export const BRAND_SUPPORTING = 'Blind battles between AI models, with a public leaderboard.';
+
+/**
+ * True while the leaderboard ratings are under audit (KNOWN_ISSUES.md). While it is true, nothing
+ * predicts from the ratings (the win odds after a vote are hidden) and the audit notes stay up.
+ * Set it to false only after the ratings are recomputed from the recorded votes.
+ */
+export const RATINGS_UNDER_AUDIT = true;

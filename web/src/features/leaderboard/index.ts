@@ -17,6 +17,7 @@ export { ModelDetails, type ModelDetailsProps } from './components/model-details
 export { ProviderBadge, type ProviderBadgeProps } from './components/provider-badge';
 export { RankNumber, type RankNumberProps } from './components/rank-number';
 export { SortToggle, type SortToggleProps } from './components/sort-toggle';
+export { RetiredBadge } from './components/retired-badge';
 export { UnratedBadge } from './components/unrated-badge';
 
 // Hooks

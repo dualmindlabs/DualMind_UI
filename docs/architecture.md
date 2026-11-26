@@ -171,6 +171,7 @@ One table; the first matching row wins, and without a match the Workers static a
 | share | `/share` and everything below it: the share page, set by `server/share.js` | `no-store, no-cache, must-revalidate` |
 | web-page | HTML pages of the web app (from the manifest) and the SPA fallback | `no-cache`: revalidated on every visit, cheap because Workers static assets send an ETag (a matching `If-None-Match` gets a 304) |
 | legacy-code | legacy HTML (also directory URLs and clean URLs such as `/login-modern`), JS, CSS and JSON | `no-store, no-cache, must-revalidate, max-age=0`, until the cutover |
+| og-image | `/og/*` share images | `no-cache` (never immutable; a changed picture also gets a new file name) |
 | image | `.png .jpg .jpeg .webp .gif .svg .ico` | `public, max-age=31536000, immutable`, as before |
 
 `/design/` and `/__spa-fallback` also send `X-Robots-Tag: noindex, nofollow`.
