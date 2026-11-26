@@ -225,8 +225,8 @@ describe('GET /leaderboard.md', () => {
     expect(markdown.headers.get('etag')).toMatch(/^"lbmd-[0-9a-f]{16}"$/);
     expect(markdown.headers.get('cache-status')).toBe('DualMind; fwd=miss');
     const text = await markdown.text();
-    expect(text).toContain('| 1 | llama-3.3-70b-instruct-fp8-fast | cloudflare | 1150.0 | 64.58% | 96 |  |');
-    expect(text).toContain('| 2 | llama-3.1-70b-instruct | cloudflare | 1140.0 | 61.60% | 250 |  |');
+    expect(text).toContain('| 1 | llama-3.3-70b-instruct-fp8-fast | cloudflare | 1150.0 | 64.58% | 96 | pick-only |');
+    expect(text).toContain('| 2 | llama-3.1-70b-instruct | cloudflare | 1140.0 | 61.60% | 250 | retired |');
     expect(text).toContain(`Updated: ${new Date(clock).toISOString()}.`);
     expect(text).toContain('fewer than 5 battles');
     expect(text).toContain(`Data as JSON: https://${host}/api/v2/leaderboard`);
@@ -299,7 +299,7 @@ describe('renderLeaderboardMarkdown', () => {
   });
 
   it('marks provisional models as preliminary and handles an empty list', () => {
-    expect(renderLeaderboardMarkdown(data({ provisional: true, totalResponses: 3 }), 'https://x.test')).toContain('| 3 | preliminary |');
+    expect(renderLeaderboardMarkdown(data({ provisional: true, totalResponses: 3 }), 'https://x.test')).toContain('| 3 | preliminary, pick-only |');
     const empty = renderLeaderboardMarkdown({ items: [], meta: data().meta }, 'https://x.test');
     expect(empty).toContain('| Rank | Model |');
     expect(empty).not.toContain('| 1 |');

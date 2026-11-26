@@ -1,6 +1,5 @@
-import { describe, expect, it } from 'vitest';
-
 import { modelAvailability } from '@contract/availability';
+import { describe, expect, it } from 'vitest';
 
 import { type Availability, toLeaderboard } from '@/features/leaderboard';
 import { leaderboardSchema } from '@/lib/api/schemas/leaderboard';
