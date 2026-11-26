@@ -4,7 +4,7 @@ on:
   push:
     branches: [main, master]
   pull_request:
-    branches: [main, master, cycle2/launch-gaps, cycle3/truth-and-trust]
+    branches: [main, master, cycle2/launch-gaps, cycle3/truth-and-trust, cycle4/trust-sweep]
 
 jobs:
   build-and-lint:
