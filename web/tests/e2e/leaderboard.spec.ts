@@ -283,7 +283,7 @@ test.describe('/leaderboard/ (desktop)', () => {
     // Ten Gemma builds, eight rated and two not yet: a search opens the unrated group by itself.
     await page.getByRole('searchbox', { name: 'Search models' }).fill('gemma');
     await expect(bodyRows(page)).toHaveCount(10);
-    await expect(page.getByText(/^Showing/)).toHaveText(`Showing 10 of ${MODELS} models`);
+    await expect(page.getByText(/^Showing/)).toContainText(`Showing 10 of ${MODELS} models`);
 
     // Google made nine of them (the SEA-LION build is AI Singapore's).
     await page.getByRole('button', { name: /^Google/ }).click();

@@ -12,7 +12,7 @@ import { describe, expect, it } from 'vitest';
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..', '..');
 
 const SKIP_DIRS = new Set(['node_modules', 'dist', '.git']);
-const TEXT_FILE = /\.(tsx?|jsx?|mjs|html|md)$/;
+const TEXT_FILE = /\.(tsx?|jsx?|mjs|html|md|webmanifest|txt)$/;
 
 function walk(target: string): string[] {
   const info = statSync(target);
@@ -39,6 +39,7 @@ const CLAIMS: readonly RegExp[] = [
 describe('rating claims', () => {
   const files = [
     path.join(repo, 'web', 'src'),
+    path.join(repo, 'web', 'public'),
     path.join(repo, 'waitlist-worker', 'src'),
     path.join(repo, 'waitlist-worker', 'index.html'),
     path.join(repo, 'server'),
