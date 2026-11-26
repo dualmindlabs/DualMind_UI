@@ -50,7 +50,8 @@ const demo = () =>
 describe('LandingPage', () => {
   beforeEach(() => {
     stubLeaderboard('ok');
-    vi.mocked(sendPromptToSignIn).mockClear();
+    vi.mocked(sendPromptToSignIn).mockReset();
+    vi.mocked(sendPromptToSignIn).mockReturnValue(true);
   });
 
   it('has one h1, landmarks, a skip link and no skipped heading levels', () => {
@@ -99,7 +100,7 @@ describe('LandingPage', () => {
     expect(screen.getByTestId('leaderboard-preview')).toHaveTextContent(
       'The live leaderboard is not answering right now.',
     );
-    expect(screen.getByTestId('model-strip-source')).toHaveTextContent('List as of 20 Oct 2026');
+    expect(screen.getByTestId('model-strip-source')).toHaveTextContent('List as of 25 Nov 2026');
   });
 
   it('plays the demo with the keyboard: vote, reveal, announce, next', async () => {
@@ -158,7 +159,9 @@ describe('LandingPage', () => {
     await waitFor(() => expect(demo()).toHaveAttribute('data-run', '1'));
     const before = demo().getAttribute('data-run');
     const status = screen.getByTestId('hero-status');
-    expect(status).toHaveTextContent('Your own prompt runs on real models after a free sign-in.');
+    expect(status).toHaveTextContent(
+      'Your own prompt runs on real models after a free sign-in. No credit card.',
+    );
     const field = screen.getByRole('textbox', { name: 'Ask both models' });
     await user.type(field, 'Write a sonnet about tabs and spaces{Enter}');
     expect(vi.mocked(sendPromptToSignIn)).toHaveBeenCalledWith(
@@ -168,6 +171,49 @@ describe('LandingPage', () => {
     // The demo did not restart with someone else's answer to the visitor's question.
     expect(screen.queryByTestId('asked-note')).toBeNull();
     expect(demo()).toHaveAttribute('data-run', before ?? '1');
+  });
+
+  it('does not say the prompt goes with the visitor when the browser would not keep it', async () => {
+    vi.mocked(sendPromptToSignIn).mockReturnValue(false);
+    const user = userEvent.setup();
+    renderLanding();
+    await waitFor(() => expect(demo()).toHaveAttribute('data-run', '1'));
+    await user.type(screen.getByRole('textbox', { name: 'Ask both models' }), 'Hello there{Enter}');
+    const status = screen.getByTestId('hero-status');
+    expect(status).toHaveTextContent('Your browser would not keep your prompt');
+    expect(status).not.toHaveTextContent('goes with you');
+  });
+
+  it('states the lineup honestly: no numbers until the live board arrives, then the live count', async () => {
+    renderLanding();
+    const line = screen.getByTestId('hero-lineup');
+    expect(line).toHaveTextContent(
+      'mostly open-weight models such as Llama, Qwen, Mistral and Gemma',
+    );
+    await waitFor(() =>
+      expect(line).toHaveTextContent(/^\d+ live models from \d+ providers?, mostly/),
+    );
+  });
+
+  it('shows who builds it, with real links only', () => {
+    renderLanding();
+    const strip = screen.getByRole('region', { name: 'Built by DualMind Labs' });
+    expect(within(strip).getByRole('link', { name: /GitHub/ })).toHaveAttribute(
+      'href',
+      'https://github.com/dualmindlabs/DualMind_UI',
+    );
+    expect(within(strip).getByRole('link', { name: /Changelog/ })).toHaveAttribute(
+      'href',
+      'https://github.com/dualmindlabs/DualMind_UI/blob/master/CHANGELOG.md',
+    );
+    expect(within(strip).getByRole('link', { name: /support@dualmindlab\.tech/ })).toHaveAttribute(
+      'href',
+      'mailto:support@dualmindlab.tech',
+    );
+    expect(within(strip).getByRole('link', { name: 'dualmindlab.tech' })).toHaveAttribute(
+      'href',
+      'https://dualmindlab.tech',
+    );
   });
 
   it('plays the matching recorded battle from a chip', async () => {

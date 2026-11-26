@@ -9,7 +9,7 @@ export const privacyContent: PageContent = {
   heading: { text: 'Privacy,', human: 'in plain words.' },
   intro:
     'This policy explains what DualMind Arena ("we", "us") collects when you use the Arena at arena.dualmindlab.tech and the waitlist at early.dualmindlab.tech, and what we do with it.',
-  updated: '2026-10-20',
+  updated: '2026-11-25',
   sections: [
     {
       id: 'summary',
@@ -20,6 +20,24 @@ export const privacyContent: PageContent = {
           tone: 'summary',
           title: 'The short version',
           text: 'We store your account details, your prompts and the answers, and your votes, so the Arena works. Your prompts go to the AI model providers that answer them. We do not use analytics, advertising or tracking pixels, and we do not sell your data. You can ask us to delete your account and data at privacy@dualmindlab.tech.',
+        },
+      ],
+    },
+    {
+      id: 'who-is-responsible',
+      heading: 'Who is responsible',
+      blocks: [
+        {
+          type: 'paragraph',
+          text: 'DualMind Labs, the team behind DualMind Arena, decides why and how the personal data described here is processed. In data protection terms, it is the controller.',
+        },
+        {
+          type: 'list',
+          items: [
+            'Privacy and data requests, including access, correction and deletion: privacy@dualmindlab.tech',
+            'General help: support@dualmindlab.tech',
+            'A postal address for legal notices: write to privacy@dualmindlab.tech and we will send it.',
+          ],
         },
       ],
     },
@@ -122,6 +140,11 @@ export const privacyContent: PageContent = {
               description: 'Hosting for the DualMind API, which stores threads, answers and votes.',
             },
             {
+              term: 'Have I Been Pwned (Pwned Passwords)',
+              description:
+                'When you choose a password on the sign-up, password reset and Settings pages, your browser checks it against the Pwned Passwords service at api.pwnedpasswords.com to warn you about passwords that appeared in known breaches. Only the first five characters of a SHA-1 hash of the password are sent, never the password and never your email address, and the full hash is compared in your browser. Like any website, the service sees your IP address.',
+            },
+            {
               term: 'AI model providers',
               description:
                 'The company that runs the model answering a prompt receives that prompt, and in a conversation the earlier messages, so it can reply. Which providers receive your prompt depends on the models you or the Arena choose. The Models page shows the models in use. Each provider handles the prompt under its own terms.',
@@ -130,7 +153,7 @@ export const privacyContent: PageContent = {
         },
         {
           type: 'paragraph',
-          text: 'Some pages load fonts or code libraries from a content delivery network. That network can see your IP address and browser details when it serves the file.',
+          text: 'The Arena serves its own fonts and scripts from arena.dualmindlab.tech, so its pages do not load fonts or code from third-party content delivery networks. Cloudflare, which delivers the site, sees your IP address and browser details when it serves any file.',
         },
         {
           type: 'paragraph',
@@ -150,7 +173,7 @@ export const privacyContent: PageContent = {
       blocks: [
         {
           type: 'paragraph',
-          text: 'We do not use cookies for tracking. The Arena keeps your sign-in session and a few settings in your browser’s local storage, and sets one cookie only on preview links before launch. The Cookie Policy lists each item.',
+          text: 'We do not use cookies for tracking. The Arena keeps your sign-in session and a few settings in your browser’s local storage. While the Arena is in pre-launch preview, a preview link also sets one cookie (dm_preview); once the Arena is open to everyone, we set no cookie of our own. The Cookie Policy lists each item.',
         },
       ],
     },

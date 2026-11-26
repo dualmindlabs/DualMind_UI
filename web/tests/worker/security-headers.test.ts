@@ -135,7 +135,7 @@ describe('headers on real responses', () => {
       'max-age=63072000; includeSubDomains',
     );
     expect(response.headers.get('cross-origin-opener-policy')).toBe('same-origin');
-    expect(response.headers.get('permissions-policy')).toContain('microphone=(self)');
+    expect(response.headers.get('permissions-policy')).toContain('microphone=()');
   });
 
   it('web page without a manifest: the same policy, report-only, so scripts still run', async () => {

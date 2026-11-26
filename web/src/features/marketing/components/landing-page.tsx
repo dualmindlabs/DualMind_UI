@@ -9,6 +9,7 @@ import { useDemoBattle } from '../hooks/use-demo-battle';
 import { useLiveStats } from '../hooks/use-live-stats';
 import { findBattleIndex } from '../lib/demo-machine';
 import { BattleSection } from './battle-section';
+import { BuiltByStrip } from './built-by-strip';
 import { ClosingCta } from './closing-cta';
 import { FeaturesSection } from './features-section';
 import { HeroSection } from './hero-section';
@@ -50,6 +51,7 @@ export function LandingPage() {
         <StepsSection stats={stats} />
         <FeaturesSection stats={stats} />
         <LeaderboardPreview stats={stats} />
+        <BuiltByStrip />
         <ClosingCta />
       </main>
       <SiteFooter />

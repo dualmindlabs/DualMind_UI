@@ -4,7 +4,12 @@ import { Emblem } from '@/components/layout/emblem';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils/cn';
 
-import { HOW_IT_WORKS_HREF, LEADERBOARD_HREF, SIGN_IN_HREF } from '../content/landing';
+import {
+  HOW_IT_WORKS_HREF,
+  LEADERBOARD_HREF,
+  PRICING_HREF,
+  SIGN_IN_HREF,
+} from '../content/landing';
 
 const PROMISES = ['Blind votes', 'Public Elo ratings', 'Open methodology'] as const;
 
@@ -68,6 +73,14 @@ export function ClosingCta() {
               className="inline-flex min-h-8 items-center rounded-sm text-fg-soft underline decoration-line-strong underline-offset-4 hover:text-fg"
             >
               How it works
+            </a>
+          </li>
+          <li>
+            <a
+              href={PRICING_HREF}
+              className="inline-flex min-h-8 items-center rounded-sm text-fg-soft underline decoration-line-strong underline-offset-4 hover:text-fg"
+            >
+              Pricing
             </a>
           </li>
         </ul>

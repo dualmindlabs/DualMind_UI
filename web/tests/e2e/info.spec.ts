@@ -49,6 +49,13 @@ const pages: PageSpec[] = [
     text: 'Do I need an account?',
   },
   {
+    slug: 'pricing',
+    path: '/pricing/',
+    title: 'Pricing · DualMind Arena',
+    h1: 'Free during the beta, no card needed.',
+    text: 'The limits that apply today',
+  },
+  {
     slug: 'privacy',
     path: '/privacy/',
     title: 'Privacy Policy · DualMind Arena',
@@ -410,8 +417,8 @@ test.describe('Legal pages', () => {
     await page.goto('/privacy/');
     await expect(page.getByRole('note').first()).toContainText('We do not use analytics');
     await expect(page.getByText('Last updated')).toBeVisible();
-    await expect(page.locator('time')).toHaveAttribute('datetime', '2026-10-20');
-    await expect(page.locator('time')).toHaveText('20 October 2026');
+    await expect(page.locator('time')).toHaveAttribute('datetime', '2026-11-25');
+    await expect(page.locator('time')).toHaveText('25 November 2026');
     // Legal pages have no entrance effects.
     expect(await page.locator('[data-reveal]').count()).toBe(0);
     expect(await page.locator('canvas').count()).toBe(0);

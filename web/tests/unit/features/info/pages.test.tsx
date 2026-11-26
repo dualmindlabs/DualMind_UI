@@ -12,6 +12,8 @@ import {
   infoMeta,
   notFoundMeta,
   NotFoundPage,
+  pricingContent,
+  PricingPage,
   privacyContent,
   PrivacyPage,
 } from '@/features/info';
@@ -69,10 +71,26 @@ describe('info pages', () => {
     );
   });
 
+  it('Pricing: one h1, the free-beta summary and a WebApplication with a free offer', () => {
+    renderWithShell(<PricingPage />, '/pricing/');
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
+    expect(screen.getAllByRole('note')[0]).toHaveTextContent('free while it is in beta');
+    const ld = infoMeta(pricingContent).find(tag => 'script:ld+json' in tag) as
+      { 'script:ld+json': Record<string, unknown> } | undefined;
+    const app = ld?.['script:ld+json'];
+    expect(app?.['@type']).toBe('WebApplication');
+    expect(app?.isAccessibleForFree).toBe(true);
+    expect(app?.offers).toMatchObject({ '@type': 'Offer', price: '0' });
+    const canonical = infoMeta(pricingContent).find(
+      tag => 'rel' in tag && tag.rel === 'canonical',
+    ) as { href: string };
+    expect(canonical.href).toMatch(/\/pricing\/$/);
+  });
+
   it('Privacy: summary box, last updated date and a table of contents', () => {
     renderWithShell(<PrivacyPage />, '/privacy/');
     expect(screen.getAllByRole('note')[0]).toHaveTextContent('We do not use analytics');
-    expect(screen.getByText('20 October 2026')).toHaveAttribute('datetime', '2026-10-20');
+    expect(screen.getByText('25 November 2026')).toHaveAttribute('datetime', '2026-11-25');
     const nav = screen.getAllByRole('navigation', { name: 'On this page' })[0] as HTMLElement;
     expect(within(nav).getAllByRole('link')).toHaveLength(privacyContent.sections.length - 1);
   });

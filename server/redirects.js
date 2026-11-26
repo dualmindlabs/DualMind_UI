@@ -100,3 +100,46 @@ export function redirectResponse(url, rules = LEGACY_REDIRECTS) {
   target.search = url.search;
   return new Response(null, { status: 301, headers: { Location: target.toString() } });
 }
+
+/**
+ * The prerendered pages of the web app (web/react-router.config.ts). Workers static assets answer
+ * `/leaderboard` with a temporary 307 to `/leaderboard/`; a permanent 301 tells search engines
+ * which URL is the real one. A test fails when a prerendered page is missing from this list.
+ * Only exact paths: client-only routes (/share, /settings, /compare) never redirect.
+ * @type {ReadonlySet<string>}
+ */
+export const TRAILING_SLASH_PAGES = new Set([
+  '/design',
+  '/leaderboard',
+  '/models',
+  '/methodology',
+  '/about',
+  '/credits',
+  '/how-it-works',
+  '/faq',
+  '/pricing',
+  '/privacy',
+  '/terms',
+  '/cookies',
+  '/developers',
+  '/login',
+  '/signup',
+  '/forgot-password',
+]);
+
+/**
+ * A 301 from a page's address without the trailing slash to the one with it (query kept), for
+ * GET and HEAD only, or null.
+ * @param {URL} url
+ * @param {string} [method]
+ * @returns {Response | null}
+ */
+export function trailingSlashRedirect(url, method = 'GET') {
+  const verb = method.toUpperCase();
+  if ((verb !== 'GET' && verb !== 'HEAD') || !TRAILING_SLASH_PAGES.has(url.pathname)) {
+    return null;
+  }
+  const target = new URL(`${url.pathname}/`, url);
+  target.search = url.search;
+  return new Response(null, { status: 301, headers: { Location: target.toString() } });
+}

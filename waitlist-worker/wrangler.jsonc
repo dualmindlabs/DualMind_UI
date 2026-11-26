@@ -22,8 +22,10 @@
     }
   ],
   "observability": {
+    // Logs on, sampled: the waitlist is low traffic, so half of the requests are kept.
     "logs": {
-      "enabled": false,
+      "enabled": true,
+      "head_sampling_rate": 0.5,
       "invocation_logs": true
     }
   }
