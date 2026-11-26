@@ -28,6 +28,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/components/ui/sonner';
 import { useApiClient } from '@/hooks/use-api-client';
+import { track } from '@/lib/analytics';
 import {
   FEATURE_FLAGS,
   featureFlagQuery,
@@ -39,7 +40,6 @@ import {
   type Visibility,
 } from '@/lib/api';
 import { sharePath, shareUrl } from '@/lib/site/share';
-import { track } from '@/lib/analytics';
 import { canShareNatively, copyText, shareNatively } from '@/lib/utils/clipboard';
 import { cn } from '@/lib/utils/cn';
 

@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'r
 
 import { useApiClient } from '@/hooks/use-api-client';
 import { useShouldReduceMotion } from '@/hooks/use-should-reduce-motion';
+import { track } from '@/lib/analytics';
 import {
   ApiError,
   apiKeys,
@@ -16,7 +17,6 @@ import {
   type VoteModels,
   type VoteQueue,
 } from '@/lib/api';
-import { track } from '@/lib/analytics';
 import { resolveDisplayName } from '@/lib/models/display-name';
 
 import { createAttemptTracker } from '../lib/battle-attempt';

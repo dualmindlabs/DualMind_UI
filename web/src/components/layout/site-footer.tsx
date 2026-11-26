@@ -1,8 +1,8 @@
 import { ArrowUpRight } from 'lucide-react';
 import type { ReactNode } from 'react';
 
-import { Emblem } from '@/components/layout/emblem';
 import { AnalyticsChoicesButton } from '@/components/layout/analytics-consent';
+import { Emblem } from '@/components/layout/emblem';
 import { Wordmark } from '@/components/layout/wordmark';
 import { buttonVariants } from '@/components/ui/button';
 import { BRAND_SUPPORTING } from '@/content/brand';
