@@ -25,13 +25,15 @@ vi.mock('@/hooks/use-features', () => ({
 
 // "Battles left today" has its own tests (tests/unit/lib/api/launch.test.ts, use-quota.test.tsx);
 // here it is a controllable stub so the scripted replies below stay in call order.
-const quotaState = vi.hoisted(() => ({
-  value: { guest: null, privateArena: null, refresh: () => {} } as {
-    guest: { enabled: boolean; limit: number; remaining: number } | null;
-    privateArena: null;
-    refresh: () => void;
-  },
-}));
+interface QuotaStub {
+  guest: { enabled: boolean; limit: number; remaining: number } | null;
+  privateArena: null;
+  refresh: () => void;
+}
+const quotaState = vi.hoisted(() => {
+  const value: QuotaStub = { guest: null, privateArena: null, refresh: () => {} };
+  return { value };
+});
 vi.mock('@/hooks/use-quota', () => ({ useQuota: () => quotaState.value }));
 
 vi.mock('@/lib/turnstile', () => ({

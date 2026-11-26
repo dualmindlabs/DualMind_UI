@@ -1,9 +1,9 @@
 import { type ReactNode, useRef, useState } from 'react';
 import { vi } from 'vitest';
 
-import { DraftContext } from '@/features/arena/hooks/use-draft';
 import { ArenaContext, type ArenaState } from '@/features/arena/hooks/use-arena';
 import type { BattleApi } from '@/features/arena/hooks/use-battle';
+import { DraftContext } from '@/features/arena/hooks/use-draft';
 import type { LiveTurn } from '@/features/arena/lib/battle-machine';
 
 /** A battle API with no network: the turns given, and spies for every action. */

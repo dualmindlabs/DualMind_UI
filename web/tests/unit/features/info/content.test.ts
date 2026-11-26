@@ -142,7 +142,7 @@ describe('info page content', () => {
     const text = terms ? allText(terms).join('\n') : '';
     expect(text).toContain(GRIEVANCE_EMAIL);
     // No invented person and no visible placeholder: a real name, or no line.
-    expect(GRIEVANCE_OFFICER_NAME).not.toMatch(/[\[\]]/);
+    expect(GRIEVANCE_OFFICER_NAME).not.toMatch(/[[\]]/);
     if (GRIEVANCE_OFFICER_NAME.trim() === '') {
       expect(text).not.toContain('Grievance Officer:');
     } else {
