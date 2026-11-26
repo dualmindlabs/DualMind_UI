@@ -241,7 +241,13 @@ export function useBattle({
             announce(FORBIDDEN_THREAD_MESSAGE);
             return;
           }
-          dispatch({ type: 'fail', id, message: getUserMessage(error) });
+          const kind = isApiErrorKind(error, 'rate_limited', 'validation') ? error.kind : undefined;
+          dispatch({
+            type: 'fail',
+            id,
+            message: getUserMessage(error),
+            ...(kind ? { kind } : {}),
+          });
           announce(`The answers did not arrive. ${getUserMessage(error)}`);
         } finally {
           if (controller.current === abort) controller.current = null;

@@ -1,3 +1,5 @@
+import { GRIEVANCE_EMAIL, GRIEVANCE_OFFICER_NAME } from '@/lib/site/links';
+
 import type { PageContent } from './types';
 
 export const termsContent: PageContent = {
@@ -9,7 +11,7 @@ export const termsContent: PageContent = {
   heading: { text: 'Terms of Service,', human: 'plainly.' },
   intro:
     'These terms apply when you use DualMind Arena ("the Service"). By using it you agree to them. If you do not agree, please do not use the Service.',
-  updated: '2026-10-20',
+  updated: '2026-11-26',
   sections: [
     {
       id: 'summary',
@@ -165,6 +167,28 @@ export const termsContent: PageContent = {
       ],
     },
     {
+      id: 'grievance',
+      heading: 'Complaints and reports',
+      blocks: [
+        {
+          type: 'paragraph',
+          text: 'To report a shared page, an answer or any other content that breaks these terms or the law, write to the Grievance Officer below. Every shared page has a "Report this page" link that fills in the address of the page for you.',
+        },
+        {
+          type: 'list',
+          items: [
+            `Grievance Officer: ${GRIEVANCE_OFFICER_NAME}`,
+            `Email: ${GRIEVANCE_EMAIL}`,
+            'We aim to acknowledge a complaint within 24 hours and to resolve it within 15 days.',
+          ],
+        },
+        {
+          type: 'paragraph',
+          text: 'Answers on this site are written by AI models and are not reviewed by us before they are shown. Shared pages are public: anyone with the link can read them.',
+        },
+      ],
+    },
+    {
       id: 'contact',
       heading: 'Contact',
       blocks: [
@@ -173,6 +197,7 @@ export const termsContent: PageContent = {
           items: [
             'General questions: support@dualmindlab.tech',
             'Privacy and data requests: privacy@dualmindlab.tech',
+            `Complaints and reports: ${GRIEVANCE_EMAIL}`,
           ],
         },
       ],

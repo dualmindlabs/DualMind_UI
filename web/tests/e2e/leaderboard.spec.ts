@@ -129,7 +129,7 @@ test.describe('prerendered pages', () => {
   for (const { url, title, h1, text, image } of [
     {
       url: '/leaderboard/',
-      title: 'AI model leaderboard: Elo from blind votes · DualMind Arena',
+      title: 'AI model leaderboard: Elo ratings, under audit · DualMind Arena',
       h1: 'blind votes.',
       text: 'How to read',
       image: 'leaderboard',

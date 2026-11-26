@@ -26,14 +26,15 @@ export function LeaderboardHero({ summary, updatedAt, refreshing, stale }: Leade
       <div aria-hidden="true" className="absolute inset-0 -z-10 bg-grid opacity-70" />
       <PageContainer className="grid gap-12 pt-14 pb-12 md:pt-24 md:pb-20 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:items-end lg:gap-16">
         <div className="grid max-w-3xl gap-7">
-          <p className="kicker">Leaderboard · Elo from blind votes</p>
+          <p className="kicker">Leaderboard · Elo ratings, under audit</p>
           <h1 className="max-w-[14ch] text-h1 text-fg">
             Every model, ranked by <span className="human-voice text-human">blind votes.</span>
           </h1>
           <p className="max-w-[52ch] text-lead text-fg-soft">
             Two anonymous models answer the same prompt. People vote for the better answer before
-            they see any names, and each vote moves an Elo rating. Models without enough battles or
-            votes yet are listed as not yet rated, without a rank.
+            they see any names. The ratings below are computed by the leaderboard service and are
+            under audit while we check them against the recorded votes. Models without enough
+            battles or votes yet are listed as not yet rated, without a rank.
           </p>
           <div className="flex flex-wrap items-center gap-3">
             <a href={ARENA_HREF} className={cn(buttonVariants({ variant: 'primary' }), 'press')}>

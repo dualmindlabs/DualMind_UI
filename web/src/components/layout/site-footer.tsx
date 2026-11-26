@@ -76,7 +76,7 @@ export function SiteFooter({ status, navLabel = 'Footer', className }: SiteFoote
           </a>
           <p className="max-w-[36ch] text-ui-sm text-muted">
             Two anonymous models answer the same prompt. You pick the better one, then see who wrote
-            it. Every vote moves the public leaderboard.
+            it. A public leaderboard ranks the models.
           </p>
           {status ? <div data-slot="footer-status">{status}</div> : null}
         </div>

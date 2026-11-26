@@ -107,6 +107,40 @@ describe('a thread that belongs to another account (403)', () => {
   });
 });
 
+describe('a turn that failed, by the kind of failure', () => {
+  const failed = (overrides: Partial<LiveTurn>) =>
+    turn({ phase: 'error', a: null, b: null, unrated: null, ...overrides });
+
+  it('asks for an edit, not a retry, when the API did not accept the prompt', () => {
+    view(
+      failed({
+        error: 'Prompt is too long (max 8000 characters).',
+        errorKind: 'validation',
+      }),
+    );
+    expect(screen.getByRole('alert')).toHaveTextContent('Edit your prompt');
+    expect(screen.getByRole('alert')).toHaveTextContent('Prompt is too long');
+    expect(screen.queryByRole('button', { name: /Try again/ })).toBeNull();
+  });
+
+  it('says slow down for a rate limit, whatever the words in the message', () => {
+    view(
+      failed({
+        error: 'Too many requests. Wait a moment and try again.',
+        errorKind: 'rate_limited',
+      }),
+    );
+    expect(screen.getByRole('alert')).toHaveTextContent('Slow down a moment');
+    expect(screen.getByRole('button', { name: /Try again/ })).toBeInTheDocument();
+  });
+
+  it('does not read the message: a limit in the words alone is not a rate limit', () => {
+    view(failed({ error: 'The model reached its output limit.', errorKind: null }));
+    expect(screen.getByRole('alert')).toHaveTextContent('No answers this time');
+    expect(screen.queryByText('Slow down a moment')).toBeNull();
+  });
+});
+
 describe('voteFailure', () => {
   it('stops for 403 and 404, and leaves the bar open for anything else', () => {
     expect(voteFailure(new ApiError({ kind: 'forbidden', status: 403, message: 'x' }))).toEqual({

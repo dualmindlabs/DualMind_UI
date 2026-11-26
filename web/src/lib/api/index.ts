@@ -56,6 +56,7 @@ export {
   COMPARE_MAX_PROMPT_CHARS,
   type CompareInput,
   isCompareShareId,
+  MAX_PROMPT_CHARS,
 } from './endpoints/compare';
 export { type Round2Input } from './endpoints/cross-examine';
 export { FEATURE_FLAGS } from './endpoints/flags';

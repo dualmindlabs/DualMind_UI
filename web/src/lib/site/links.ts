@@ -18,10 +18,25 @@ export const GITHUB_URL = 'https://github.com/dualmindlabs/DualMind_UI';
 /** The support address already used across the site (FAQ, privacy page). */
 export const SUPPORT_EMAIL = 'support@dualmindlab.tech';
 
+/**
+ * The Grievance Officer contact that India's IT Rules 2021 (rule 3(2)) ask an intermediary to
+ * publish. OWNER TO CONFIRM: no officer has been named yet and the mailbox may not exist, so the
+ * address is plain configurable text and the name is a marked placeholder, never a made-up person.
+ */
+export const GRIEVANCE_EMAIL = 'grievance@dualmindlab.tech';
+export const GRIEVANCE_OFFICER_NAME = '[Name to be published by the site owner]';
+
+/** A mailto link that reports one shared page; the share id goes into the subject and body. */
+export function reportShareHref(shareId: string, pageUrl: string): string {
+  const subject = `Report shared page ${shareId}`;
+  const body = `I am reporting the shared page ${pageUrl}\n\nWhat is wrong with it:\n`;
+  return `mailto:${GRIEVANCE_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
 /** The header navigation (design-direction.md section 12, global shell). */
 export const primaryNav: readonly SiteLink[] = [
   { label: 'Arena', href: '/', description: 'Ask once, compare two anonymous models' },
-  { label: 'Leaderboard', href: '/leaderboard/', description: 'Rankings from every vote' },
+  { label: 'Leaderboard', href: '/leaderboard/', description: 'Model rankings' },
   { label: 'Models', href: '/models/', description: 'Every model in the Arena' },
   { label: 'How it works', href: '/how-it-works/', description: 'Battles, votes and ratings' },
 ];

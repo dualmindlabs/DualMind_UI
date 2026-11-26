@@ -8,7 +8,7 @@ import { PROVISIONAL_BATTLES, RATINGS_HELP_HREF } from '../lib/constants';
 const ITEMS = [
   {
     term: 'Elo rating',
-    text: 'Each vote is a match between the two models in a battle. The winner takes rating points from the loser, and an upset moves more points than an expected result.',
+    text: 'Elo is a rating system where each vote counts as a match between two models, and an upset moves more points than an expected result. The ratings shown here are computed by the leaderboard service, and we are auditing that they follow from the recorded votes.',
   },
   {
     term: 'Win rate',
@@ -52,7 +52,7 @@ export function Methodology({ crowd = false }: { crowd?: boolean }) {
           kicker="Methodology"
           title="How to read"
           accent="the board."
-          lead="Numbers come straight from the Arena's public API and refresh every minute while this page is open. Nothing is adjusted or hidden."
+          lead="Numbers come straight from the Arena's public API and refresh every minute while this page is open. The ratings are under audit while we check them against the recorded votes."
           className="mb-10 md:mb-14"
         />
         <dl className="grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">

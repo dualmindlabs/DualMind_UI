@@ -4,11 +4,11 @@ export const aboutContent: PageContent = {
   slug: 'about',
   title: 'About DualMind Arena',
   description:
-    'DualMind Arena is a place to compare AI models blind, side by side. You vote, and the votes feed a public Elo leaderboard. Built by DualMind Labs.',
+    'DualMind Arena is a place to compare AI models blind, side by side. You vote, and a public leaderboard shows an Elo rating for each model. Built by DualMind Labs.',
   eyebrow: 'About',
   heading: { text: 'Compare AI models,', human: 'blind.' },
   intro:
-    'DualMind Arena puts two anonymous AI answers next to each other and asks you to pick the better one. Your votes feed a public Elo leaderboard. It is built by DualMind Labs.',
+    'DualMind Arena puts two anonymous AI answers next to each other and asks you to pick the better one. A public leaderboard shows an Elo rating for each model. It is built by DualMind Labs.',
   sections: [
     {
       id: 'what-it-is',
@@ -20,7 +20,7 @@ export const aboutContent: PageContent = {
         },
         {
           type: 'paragraph',
-          text: 'Every vote updates the rating of the two models involved. Together the votes make a public leaderboard that shows how models compare on real prompts from real people.',
+          text: 'Votes are recorded for the two models involved. The public leaderboard shows how models compare on real prompts from real people. Its ratings are under audit while we check them against the recorded votes.',
         },
       ],
     },
@@ -71,7 +71,7 @@ export const aboutContent: PageContent = {
       blocks: [
         {
           type: 'paragraph',
-          text: 'The leaderboard ranks models by an Elo rating computed from votes. It also shows each model’s wins, losses and ties. The rating is a summary of many people’s preferences, not a measure of one model being better at everything.',
+          text: 'The leaderboard ranks models by an Elo rating computed by the leaderboard service, which is under audit. It also shows each model’s wins, losses and ties. The rating is a summary of many people’s preferences, not a measure of one model being better at everything.',
         },
         {
           type: 'paragraph',

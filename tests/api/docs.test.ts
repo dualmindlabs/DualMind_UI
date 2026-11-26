@@ -278,6 +278,13 @@ describe('renderLeaderboardMarkdown', () => {
     expect(row.split(/(?<!\\)\|/).length).toBe(9);
   });
 
+  it('gives provisional models no rank and says the ratings are under audit', () => {
+    const text = renderLeaderboardMarkdown(data({ provisional: true, totalResponses: 3, eloRank: 17 }), 'https://x.test');
+    expect(text).not.toContain('| 17 |');
+    expect(text).toContain('under audit');
+    expect(text).not.toContain('from blind head-to-head votes');
+  });
+
   it('marks provisional models as preliminary and handles an empty list', () => {
     expect(renderLeaderboardMarkdown(data({ provisional: true, totalResponses: 3 }), 'https://x.test')).toContain('| 3 | preliminary |');
     const empty = renderLeaderboardMarkdown({ items: [], meta: data().meta }, 'https://x.test');

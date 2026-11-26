@@ -98,7 +98,7 @@ export interface LiveTurn {
   crossExamine: CrossExamineTurn;
   error: string | null;
   /** What kind of failure `error` is, when the screen offers more than Try again. */
-  errorKind: 'forbidden' | null;
+  errorKind: TurnErrorKind | null;
   /** Epoch ms: sent, answers arrived (or the stream started), text fully shown. */
   sentAt: number;
   answeredAt: number | null;
@@ -151,9 +151,15 @@ export type BattleAction =
   | { type: 'vote-failed'; id: string; message: string }
   /** The API refused the vote for good (403, 404): voting closes, the answers stay. */
   | { type: 'vote-closed'; id: string }
-  | { type: 'fail'; id: string; message: string; kind?: 'forbidden' }
+  | { type: 'fail'; id: string; message: string; kind?: TurnErrorKind }
   | { type: 'stop'; id: string }
   | { type: 'reset'; threadId?: string | null };
+
+/**
+ * What sort of failure a turn ended with, when the screen offers more than Try again: a thread that
+ * belongs to someone else, a rate limit (wait), or a prompt the API will not take (edit it).
+ */
+export type TurnErrorKind = 'forbidden' | 'rate_limited' | 'validation';
 
 export const INITIAL_BATTLE: BattleState = { threadId: null, turns: [] };
 

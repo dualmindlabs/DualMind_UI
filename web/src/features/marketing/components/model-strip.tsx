@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { ModelMark } from '@/components/ui/model-mark';
 import { type LogoItem, LogoLoop } from '@/components/vendor/reactbits/logo-loop';
-import { modelMaker, resolveDisplayName } from '@/lib/models/display-name';
+import { isHumanName, modelMaker, resolveDisplayName } from '@/lib/models/display-name';
 
 import { MODEL_SNAPSHOT, MODEL_SNAPSHOT_DATE } from '../content/model-snapshot';
 import type { LiveStatsState } from '../hooks/use-live-stats';
@@ -25,7 +25,8 @@ export function ModelStrip({ stats }: { stats: LiveStatsState }) {
         maker: model.providerLabel,
       }))
     : MODEL_SNAPSHOT.map(model => ({
-        name: resolveDisplayName(model.name),
+        // Names that already read well ("Gemma 3n E2B IT") are kept as they are.
+        name: resolveDisplayName(model.name, isHumanName(model.name) ? model.name : undefined),
         maker: modelMaker(model.name, model.providerId).label,
       }));
 

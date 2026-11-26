@@ -14,7 +14,7 @@ export const HOW_IT_WORKS_HREF = '/how-it-works/';
 export const SEO = {
   title: 'DualMind Arena: blind battles between AI models',
   description:
-    'Ask one prompt, compare two anonymous AI answers side by side and vote for the better one. Names appear after your vote, and every vote feeds a public Elo leaderboard.',
+    'Ask one prompt, compare two anonymous AI answers side by side and vote for the better one. Names appear after your vote.',
   ogImage: '/og/landing.png',
   ogImageAlt:
     'DualMind Arena. Two models. One prompt. You decide. Two answer panes, A in cyan and B in terracotta.',
@@ -22,7 +22,7 @@ export const SEO = {
 
 export const HERO = {
   eyebrow: 'Live arena',
-  eyebrowDetail: 'Blind battles, public Elo ratings',
+  eyebrowDetail: 'Blind battles, a public leaderboard',
   eyebrowShort: 'See the leaderboard',
   headline: 'Two models. One prompt.',
   human: 'You decide.',
@@ -77,7 +77,7 @@ export const FEATURES: readonly Feature[] = [
   {
     id: 'ratings',
     title: 'Live ratings',
-    body: 'Every vote moves an Elo rating. The leaderboard shows the ratings next to the battles behind them.',
+    body: 'The leaderboard shows an Elo rating for each model next to the battles behind it. The ratings are under audit while we check how they are computed.',
   },
   {
     id: 'method',

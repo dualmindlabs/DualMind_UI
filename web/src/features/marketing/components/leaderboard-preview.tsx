@@ -33,7 +33,7 @@ export function LeaderboardPreview({ stats }: { stats: LiveStatsState }) {
             kicker="Leaderboard"
             title="The standings,"
             accent="live."
-            lead="The top five right now, read from the same public leaderboard every vote updates."
+            lead="The top five right now, read from the same public leaderboard."
           />
           <a
             href={LEADERBOARD_HREF}

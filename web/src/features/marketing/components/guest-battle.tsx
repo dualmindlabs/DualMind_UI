@@ -41,7 +41,7 @@ export const GUEST_SIGNUP_HREF = `${SIGNUP_PATH}?redirect=${encodeURIComponent('
 /**
  * "Try one battle without an account" (flag off by default). One prompt of up to 500 characters,
  * a Cloudflare Turnstile check, two anonymous answers. Voting is for accounts: after the answers
- * the page asks the visitor to sign up for the vote and the reveal. No model name is ever shown
+ * the page asks the visitor to sign up to run the prompt again as a rated battle (a guest battle has no owner, so it cannot be voted on). No model name is ever shown
  * here, even if the API sends one.
  */
 export function GuestBattle({
@@ -153,10 +153,12 @@ export function GuestBattle({
             </div>
             <div className="grid gap-3 rounded-lg border border-human/40 bg-human-tint p-4">
               <p className="text-ui-sm text-fg">
-                Which one was better? Create a free account to vote and see which models wrote them.
+                This answer pair is not saved to an account, so it cannot be voted on. Create a free
+                account to run your prompt again as a rated battle, then vote and see which models
+                wrote the answers.
               </p>
               <Button className="w-fit" onClick={signUp}>
-                Sign up to vote and reveal
+                Sign up to run it as a rated battle
               </Button>
             </div>
           </div>

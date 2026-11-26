@@ -1,9 +1,20 @@
-import { CloudOff, Hourglass, LifeBuoy, Lock, type LucideIcon, Plus, RotateCw } from 'lucide-react';
+import {
+  CloudOff,
+  Hourglass,
+  LifeBuoy,
+  Lock,
+  type LucideIcon,
+  PencilLine,
+  Plus,
+  RotateCw,
+} from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { useOnlineStatus } from '@/hooks/use-online-status';
 import { cn } from '@/lib/utils/cn';
+
+import type { TurnErrorKind } from '../lib/battle-machine';
 
 type Tone = 'warn' | 'bad' | 'info';
 
@@ -74,14 +85,13 @@ export function UnratedNotice({ children }: { children: ReactNode }) {
   );
 }
 
-const RATE_LIMITED = /too many|rate.?limit|slow down|quota|try again later|limit/i;
-
 /**
- * A turn that did not produce answers. Four voices, one shape: the thread belongs to another
- * account (New battle), the visitor is out of requests for now (wait, no retry button spam), the
- * device is offline (the draft is safe; retry when back), anything else (Try again). The text
- * always starts "The answers did not arrive." for the generic case, which tests and screen
- * readers rely on.
+ * A turn that did not produce answers. Five voices, one shape: the thread belongs to another
+ * account (New battle), the visitor is out of requests for now (wait), the API did not accept the
+ * prompt (edit it: sending it again would fail the same way), the device is offline (the draft is
+ * safe; retry when back), anything else (Try again). The voice comes from the error's `kind`, never
+ * from words in its message. The text starts "The answers did not arrive." for the generic case,
+ * which tests and screen readers rely on.
  */
 export function TurnError({
   kind,
@@ -89,7 +99,7 @@ export function TurnError({
   onRetry,
   onNewBattle,
 }: {
-  kind: 'forbidden' | null;
+  kind: TurnErrorKind | null;
   message: string | null;
   onRetry: () => void;
   onNewBattle: () => void;
@@ -132,7 +142,20 @@ export function TurnError({
       </Callout>
     );
   }
-  if (message && RATE_LIMITED.test(message)) {
+  if (kind === 'validation') {
+    return (
+      <Callout
+        alert
+        tone="warn"
+        icon={PencilLine}
+        title="Edit your prompt"
+        testId="turn-validation"
+      >
+        {message}
+      </Callout>
+    );
+  }
+  if (kind === 'rate_limited') {
     return (
       <Callout
         alert
