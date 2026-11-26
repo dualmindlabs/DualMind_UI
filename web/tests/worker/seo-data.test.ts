@@ -67,7 +67,7 @@ describe('the data written into the page', () => {
     expect(list['@type']).toBe('ItemList');
     expect(list.url).toBe(`${ORIGIN}/leaderboard/`);
     expect(list.numberOfItems).toBe(3);
-    expect(list.itemListElement.map(entry => [entry.position, entry.name])).toEqual([
+    expect(list.itemListElement.map((entry: { position: number; name: string }) => [entry.position, entry.name])).toEqual([
       [1, 'model-1'],
       [2, 'model-2'],
       [3, 'model-3'],

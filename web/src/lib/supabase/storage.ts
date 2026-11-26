@@ -10,8 +10,6 @@
  * - Signing out also empties the offline vote queue (`dm.voteQueue.v1`: votes belong to the user
  *   who cast them) and the cached profile.
  */
-import type { Session } from '@supabase/supabase-js';
-
 import { VOTE_QUEUE_STORAGE_KEY } from '@/lib/api';
 import { LEGACY_SESSION_KEY } from '@/lib/session/handoff';
 
