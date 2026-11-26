@@ -34,6 +34,9 @@ test('signup states: success, returning visitor, same email again, invalid', asy
   await expect(page.getByTestId('signup-success')).toBeVisible();
   await page.screenshot({ path: shotPath(testInfo, '04-duplicate') });
 
+  // The success view replaces the form; reload to get the form back for the invalid case.
+  await page.reload();
+  await settle(page);
   await input.fill('ada@');
   await input.press('Enter');
   await expect(page.locator('#signup-status')).toContainText('Enter a valid email address');

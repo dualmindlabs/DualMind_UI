@@ -410,8 +410,8 @@ test.describe('Legal pages', () => {
     await page.goto('/privacy/');
     await expect(page.getByRole('note').first()).toContainText('We do not use analytics');
     await expect(page.getByText('Last updated')).toBeVisible();
-    await expect(page.locator('time')).toHaveAttribute('datetime', '2026-10-20');
-    await expect(page.locator('time')).toHaveText('20 October 2026');
+    await expect(page.locator('time')).toHaveAttribute('datetime', '2026-11-26');
+    await expect(page.locator('time')).toHaveText('26 November 2026');
     // Legal pages have no entrance effects.
     expect(await page.locator('[data-reveal]').count()).toBe(0);
     expect(await page.locator('canvas').count()).toBe(0);

@@ -344,8 +344,6 @@ describe('fallbackPageMeta: tags for the other client-only pages', () => {
 
   it.each([
     ['/settings/', 'Settings · DualMind Arena'],
-    ['/auth-callback.html', 'Signing you in · DualMind Arena'],
-    ['/update-password.html', 'Choose a new password · DualMind Arena'],
     ['/private/', 'Private arena · DualMind Arena'],
   ])('%s gets its own title', (path, title) => {
     expect(fallbackPageMeta(path, ORIGIN)?.title).toBe(title);
@@ -354,6 +352,9 @@ describe('fallbackPageMeta: tags for the other client-only pages', () => {
   it('has nothing for other paths', () => {
     expect(fallbackPageMeta('/leaderboard/', ORIGIN)).toBeNull();
     expect(fallbackPageMeta('/share/abc', ORIGIN)).toBeNull();
+    // The auth pages are never shared and already write their own tags once they render.
+    expect(fallbackPageMeta('/auth-callback.html', ORIGIN)).toBeNull();
+    expect(fallbackPageMeta('/update-password.html', ORIGIN)).toBeNull();
   });
 });
 
