@@ -61,10 +61,7 @@ function Rank({ entry, className }: { entry: LeaderboardEntry; className?: strin
   return <RankNumber rank={entry.rank} className={className} />;
 }
 
-function RankNumber({ rank, className }: {
-  rank: number | null;
-  className?: string;
-}) {
+function RankNumber({ rank, className }: { rank: number | null; className?: string | undefined }) {
   if (rank === null) return <UnratedBadge />;
   return (
     <span
