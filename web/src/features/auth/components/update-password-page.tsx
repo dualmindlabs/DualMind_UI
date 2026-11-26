@@ -59,9 +59,16 @@ export function UpdatePasswordPage({ link }: { link: CallbackUrl }) {
   // Only the event proves a reset link. The marker is written from the event alone, so a reload
   // keeps the form for an hour; it never comes from the URL (cycle 5 P2-1).
   const recovered = lastEvent === 'PASSWORD_RECOVERY';
-  const proven = recovered || readRecoveryMark(tabStorage());
+  // supabase-js follows PASSWORD_RECOVERY with other events (SIGNED_IN, TOKEN_REFRESHED), which
+  // replace `lastEvent`: once the event has been seen, the proof stays for this page.
+  const [seen, setSeen] = useState(false);
+  const proven = seen || recovered || readRecoveryMark(tabStorage());
   useEffect(() => {
-    if (recovered && !link.error) writeRecoveryMark(tabStorage(), true);
+    if (recovered && !link.error) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- remembers an event that later events overwrite
+      setSeen(true);
+      writeRecoveryMark(tabStorage(), true);
+    }
   }, [recovered, link.error]);
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
