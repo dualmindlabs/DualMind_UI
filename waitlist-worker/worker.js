@@ -4,8 +4,9 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    // Waitlist API: POST /api/signup saves an email in D1 (see server/signup.js). Handled before
-    // the traffic log below, so signup requests are never logged with their IP.
+    // Waitlist API: POST /api/signup saves an email in D1 (see server/signup.js). There is no
+    // traffic log here: it ran only for requests no static file matched, mostly bots, and it
+    // wrote raw IP addresses.
     if (url.pathname === '/api/signup') {
       return handleSignup(request, env);
     }
@@ -15,24 +16,6 @@ export default {
         headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' },
       });
     }
-
-    const referer = request.headers.get('referer') || 'direct';
-    const ua = request.headers.get('user-agent') || 'unknown';
-    const ip = request.headers.get('cf-connecting-ip') || 'unknown';
-    const country = request.cf?.country || 'unknown';
-
-    // Log every request so you can see traffic in wrangler tail / Workers Logs
-    console.log(JSON.stringify({
-      type: 'waitlist-traffic',
-      timestamp: new Date().toISOString(),
-      method: request.method,
-      pathname: url.pathname,
-      search: url.search,
-      referer,
-      ua,
-      ip,
-      country
-    }));
 
     // 1. Check Flagship or environment variable flag
     let isWishlistActive = true;
@@ -57,12 +40,28 @@ export default {
     // 3. Serve the standalone waitlist static assets
     if (env?.ASSETS?.fetch) {
       const assetResponse = await env.ASSETS.fetch(request);
-      const response = new Response(assetResponse.body, assetResponse);
-      response.headers.set('X-Waitlist-Traffic', 'logged');
-      response.headers.set('X-Traffic-Referer', referer);
-      return response;
+      if (assetResponse.status === 404) {
+        return notFoundPage(request, env, assetResponse);
+      }
+      return assetResponse;
     }
 
     return new Response('DualMind Waitlist', { status: 200 });
   }
 };
+
+// An unknown address gets the 404 page (public/404.html, served as /404) with status 404. If the
+// page itself cannot be loaded, the plain 404 from the assets stands.
+async function notFoundPage(request, env, fallback) {
+  try {
+    const page = await env.ASSETS.fetch(new Request(new URL('/404', request.url)));
+    if (page.status !== 200) return fallback;
+    const headers = new Headers(page.headers);
+    headers.set('Cache-Control', 'no-cache');
+    headers.set('X-Robots-Tag', 'noindex');
+    headers.delete('etag');
+    return new Response(request.method === 'HEAD' ? null : page.body, { status: 404, headers });
+  } catch {
+    return fallback;
+  }
+}

@@ -50,6 +50,7 @@ describe('legacy redirects', () => {
       ['/how-it-works/how-it-works', '/how-it-works/'],
       ['/careers', '/about/'],
       ['/auth-verify.html', '/'],
+      ['/auth-verify', '/'],
       ['/verify.html', '/'],
       ['/login-modern.html', '/login/'],
       ['/login-modern', '/login/'],

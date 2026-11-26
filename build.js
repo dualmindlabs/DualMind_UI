@@ -33,7 +33,6 @@ const webClientDir = path.join(webDir, 'build', 'client');
 // Slice S11 dropped the legacy share/ page: /share/<id> is the web app's client-only share page
 // (server/share.js), and nothing in dist/ may live under /share/.
 const filesToCopy = [
-    'auth-verify.html',
     'config.js',
     'manifest.json',
     'theme.js',
@@ -293,6 +292,26 @@ function connectSrcFromEnv() {
     return [url.origin, `wss://${url.host}`, PWNED_PASSWORDS_ORIGIN];
 }
 
+// Cycle 2 launch features, all off unless their build variables are set. When one is on, the CSP
+// must let its Cloudflare-owned script and calls through; when it is off, the policy stays as
+// tight as before.
+//   VITE_ANALYTICS_TOKEN        Cloudflare Web Analytics beacon (loads only after consent)
+//   VITE_FEATURE_GUEST_BATTLE   Cloudflare Turnstile widget on the landing page
+function launchOrigins() {
+    const on = value => ['1', 'true', 'yes', 'on'].includes(String(value || '').trim().toLowerCase());
+    const out = { scriptSrc: [], frameSrc: [], connectSrc: [] };
+    if (/^[A-Za-z0-9]{16,64}$/.test((process.env.VITE_ANALYTICS_TOKEN || '').trim())) {
+        out.scriptSrc.push('https://static.cloudflareinsights.com');
+        out.connectSrc.push('https://cloudflareinsights.com');
+    }
+    if (on(process.env.VITE_FEATURE_GUEST_BATTLE)) {
+        out.scriptSrc.push('https://challenges.cloudflare.com');
+        out.frameSrc.push('https://challenges.cloudflare.com');
+    }
+    return out;
+}
+const launch = launchOrigins();
+
 const scriptHashes = new Set();
 for (const target of webHtmlTargets) {
     for (const hash of inlineScriptHashes(fs.readFileSync(path.join(distDir, target), 'utf8'))) {
@@ -303,7 +322,9 @@ const webManifest = {
     version: 1,
     pages: webHtmlTargets.map(pageUrl).sort(),
     scriptHashes: [...scriptHashes].sort(),
-    connectSrc: connectSrcFromEnv(),
+    connectSrc: [...connectSrcFromEnv(), ...launch.connectSrc],
+    scriptSrc: launch.scriptSrc,
+    frameSrc: launch.frameSrc,
 };
 fs.writeFileSync(path.join(distDir, WEB_MANIFEST_FILE), `${JSON.stringify(webManifest, null, 2)}\n`);
 

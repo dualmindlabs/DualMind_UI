@@ -100,7 +100,7 @@ export const aboutContent: PageContent = {
             {
               term: 'Privacy',
               description:
-                'We store your account, your prompts and the answers, and your votes so the Arena works. There are no analytics, no advertising and no tracking pixels, and we do not sell your data. The details are in the [Privacy Policy](/privacy/).',
+                'We store your account, your prompts and the answers, and your votes so the Arena works. There is no advertising and there are no tracking pixels, analytics are off unless you accept optional, cookieless visit counting, and we do not sell your data. The details are in the [Privacy Policy](/privacy/).',
             },
           ],
         },

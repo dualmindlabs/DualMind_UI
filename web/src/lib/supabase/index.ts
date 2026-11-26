@@ -43,6 +43,7 @@ export {
 export { toUserSyncInput } from './profile';
 export {
   AUTH_CALLBACK_PATH,
+  callbackUrl,
   DEFAULT_REDIRECT,
   FORGOT_PASSWORD_PATH,
   LOGIN_PATH,
@@ -60,6 +61,7 @@ export {
   LEGACY_AUTH_KEYS,
 } from './storage';
 export {
+  ALLOWED_PHONE_COUNTRY_CODES,
   normalizeEmail,
   normalizeOtp,
   normalizePhone,

@@ -1,4 +1,5 @@
 import type { SharedThread, ThreadMode } from '@/lib/api';
+import { DATE_LOCALE } from '@/lib/utils/locale';
 
 /** What the share page says about a thread above its transcript. */
 export interface ShareSummary {
@@ -9,7 +10,7 @@ export interface ShareSummary {
   turns: number;
   /** At least one battle turn was voted on, so its names are shown. */
   voted: boolean;
-  /** The newest time on the thread, for "Shared from a battle on 21 Oct 2026". */
+  /** The newest time on the thread, for "Shared from a battle on Oct 21, 2026". */
   date: Date | null;
 }
 
@@ -48,8 +49,8 @@ export function shareSummary({ thread, messages }: SharedThread): ShareSummary {
   };
 }
 
-/** "21 Oct 2026", in the page's language. */
-export function formatShareDate(date: Date, locale = 'en-GB'): string {
+/** "Oct 21, 2026", in the site's one date locale (lib/utils/locale.ts). */
+export function formatShareDate(date: Date, locale: string = DATE_LOCALE): string {
   return new Intl.DateTimeFormat(locale, {
     day: 'numeric',
     month: 'short',

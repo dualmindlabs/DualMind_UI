@@ -59,6 +59,15 @@ export {
 } from './endpoints/compare';
 export { type Round2Input } from './endpoints/cross-examine';
 export { FEATURE_FLAGS } from './endpoints/flags';
+export {
+  GUEST_PROMPT_MAX_CHARS,
+  type GuestBattleInput,
+  PRIVATE_ARENA_MAX_ARENAS,
+  PRIVATE_ARENA_MAX_PROMPTS,
+  PRIVATE_ARENA_NAME_MAX_CHARS,
+  PRIVATE_PROMPT_MAX_CHARS,
+  type PrivateArenaInput,
+} from './endpoints/launch';
 export { type SpeechInput } from './endpoints/speech';
 export {
   type CreateThreadInput,
@@ -81,6 +90,7 @@ export {
   type SelectionMode,
   VOTE_CHOICES,
   type VoteChoice,
+  type VoteModels,
   type VoteReceipt,
   type VoteResult,
 } from './schemas/arena';
@@ -95,6 +105,15 @@ export type {
 export type { CrowdCategory, CrowdStat } from './schemas/crowd';
 export type { FeatureFlag } from './schemas/flags';
 export type { Health } from './schemas/health';
+export {
+  NO_PUBLIC_CONFIG,
+  PRIVATE_VOTE_CHOICES,
+  type PrivateArena,
+  type PrivateBattle,
+  type PrivateBoardRow,
+  type PrivateVoteChoice,
+  type PublicConfig,
+} from './schemas/launch';
 export type { LeaderboardData, ModelStat } from './schemas/leaderboard';
 export { displayNameFromModelName, KNOWN_PROVIDERS, type ModelSummary } from './schemas/models';
 export {
@@ -152,6 +171,9 @@ export {
   meQuery,
   modelQuery,
   modelsQuery,
+  privateArenasQuery,
+  privateBoardQuery,
+  publicConfigQuery,
   sharedThreadQuery,
   threadMessagesQuery,
   threadQuery,

@@ -92,7 +92,7 @@ describe('info page content', () => {
   it('gives each legal page a summary callout and the update date', () => {
     for (const slug of ['privacy', 'terms', 'cookies']) {
       const page = infoPages.find(p => p.slug === slug);
-      expect(page?.updated).toBe('2026-11-25');
+      expect(page?.updated).toBe(slug === 'terms' ? '2026-11-25' : '2026-11-26');
       const hasSummary = page?.sections.some(section =>
         section.blocks.some(block => block.type === 'callout' && block.tone === 'summary'),
       );

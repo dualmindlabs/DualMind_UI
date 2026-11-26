@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 
+import { AnalyticsConsent } from '@/components/layout/analytics-consent';
 import { ApiProvider } from '@/components/layout/api-provider';
 import { AuthProvider } from '@/components/layout/auth-provider';
 import { CommandPaletteProvider } from '@/components/layout/command-palette-provider';
@@ -25,6 +26,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
               {children}
               <DeferredCommandPalette />
               <DeferredToaster />
+              <AnalyticsConsent />
             </CommandPaletteProvider>
           </TooltipProvider>
         </MotionProvider>

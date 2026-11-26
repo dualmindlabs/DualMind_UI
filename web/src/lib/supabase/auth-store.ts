@@ -28,7 +28,6 @@ import {
   clearSignedOutData,
   type KeyValueStorage,
   type ScannableStorage,
-  writeLegacySession,
 } from './storage';
 
 export type AuthStatus = 'loading' | 'signed-in' | 'signed-out' | 'unavailable';
@@ -276,7 +275,6 @@ export function createAuthStore(options: AuthStoreOptions): AuthStore {
 
   const applySession = (session: Session | null, event: AuthChangeEvent | null) => {
     if (session) {
-      writeLegacySession(local, session);
       dispatch({ type: 'session', session, event });
       syncProfile(session);
       return;

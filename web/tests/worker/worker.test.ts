@@ -109,6 +109,48 @@ describe('waitlist gate (FORCE_WAITLIST)', () => {
   });
 });
 
+describe('waitlist gate: legal pages stay public', () => {
+  it.each([
+    '/privacy/',
+    '/privacy',
+    '/terms/',
+    '/cookies/',
+    '/.well-known/security.txt',
+    '/assets/root-AbCd_123.js',
+    '/favicon.ico',
+    '/og/share.png',
+  ])('%s is not redirected to the waitlist', async pathAndQuery => {
+    const response = await call(pathAndQuery);
+    expect(response.status).not.toBe(302);
+  });
+
+  it('serves a prerendered legal page without the preview cookie', async () => {
+    assets = fakeAssets({
+      ...DIST,
+      '/privacy/index.html': '<!doctype html><title>Privacy · DualMind Arena</title>',
+    });
+    const response = await worker.fetch(new Request(`${ORIGIN}/privacy/`), { ASSETS: assets });
+    expect(response.status).toBe(200);
+    expect(await response.text()).toContain('Privacy');
+  });
+
+  it.each(['/', '/leaderboard/', '/privacy/x', '/assets', '/.well-known', '/api/health'])(
+    '%s is still gated',
+    async pathAndQuery => {
+      expect((await call(pathAndQuery)).status).toBe(302);
+    },
+  );
+
+  it('only GET and HEAD pass', async () => {
+    expect((await call('/privacy/', { method: 'POST' })).status).toBe(302);
+  });
+
+  it('the FORCE_WAITLIST variable "false" switches the gate off', async () => {
+    const response = await call('/', { env: { FORCE_WAITLIST: 'false' } });
+    expect(response.status).toBe(200);
+  });
+});
+
 describe('web app pages', () => {
   it('serves the prerendered /design/ page, kept out of search results', async () => {
     const response = await preview('/design/');
@@ -329,6 +371,8 @@ describe('routing helpers (server/routing.js)', () => {
       '/settings/',
       '/compare',
       '/compare/*',
+      '/private',
+      '/private/',
     ]);
     expect(isSpaFallbackRoute('/compare/')).toBe(true);
     expect(isSpaFallbackRoute('/compare/AbCdEfGhIjKlMnOpQrSt12')).toBe(true);
@@ -376,6 +420,8 @@ describe('routing helpers (server/routing.js)', () => {
     expect(response?.headers.get('X-Robots-Tag')).toBe('noindex, nofollow');
     expect(isNoindexPath('/settings/')).toBe(true);
     expect(isNoindexPath('/settings')).toBe(true);
+    expect(isNoindexPath('/private/')).toBe(true);
+    expect(isNoindexPath('/private')).toBe(true);
   });
 
   it('returns null when the fallback page is missing', async () => {

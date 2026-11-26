@@ -208,3 +208,67 @@ describe('a battle that cannot be voted on', () => {
     expect(run(submitted, { type: 'fail', id: 't1', message: 'm' }).turns[0]?.errorKind).toBeNull();
   });
 });
+
+// Cycle 2 audit P1-3: a backend that masks model names sends them only in the vote response.
+describe('a masked battle (names arrive with the vote)', () => {
+  const masked = (text: string): Answer => ({
+    text,
+    model: null,
+    usage: null,
+    finishReason: null,
+    responseTimeMs: 900,
+    timestamp: null,
+  });
+  const names = {
+    left: { id: null, name: 'vendor/alpha-1', displayName: 'Alpha 1', provider: 'vendor' },
+    right: { id: null, name: 'vendor/beta-2', displayName: 'Beta 2', provider: 'vendor' },
+  };
+
+  const voting = () =>
+    run(
+      INITIAL_BATTLE,
+      { type: 'submit', id: 't1', prompt: 'Hi', mode: 'battle', at: 0 },
+      { type: 'answers', id: 't1', comparisonId: 'c1', a: masked('A'), b: masked('B'), at: 10 },
+      { type: 'shown', id: 't1', at: 20 },
+      { type: 'vote', id: 't1', choice: 'right' },
+    );
+
+  it('has no names before the vote', () => {
+    const state = voting();
+    expect(state.turns[0]?.a?.model).toBeNull();
+    expect(state.turns[0]?.b?.model).toBeNull();
+  });
+
+  it('fills both names from the vote response', () => {
+    const state = run(voting(), { type: 'voted', id: 't1', queued: false, models: names });
+    expect(state.turns[0]?.a?.model?.name).toBe('vendor/alpha-1');
+    expect(state.turns[0]?.b?.model?.name).toBe('vendor/beta-2');
+    expect(state.turns[0]?.phase).toBe('revealed');
+  });
+
+  it('a vote queued offline leaves the names empty until it is sent', () => {
+    const state = run(voting(), { type: 'voted', id: 't1', queued: true });
+    expect(state.turns[0]?.a?.model).toBeNull();
+    expect(state.turns[0]?.votePending).toBe(true);
+  });
+
+  it('never replaces a name the battle response already had', () => {
+    const named = run(
+      INITIAL_BATTLE,
+      { type: 'submit', id: 't1', prompt: 'Hi', mode: 'battle', at: 0 },
+      {
+        type: 'answers',
+        id: 't1',
+        comparisonId: 'c1',
+        a: answer('A', 'alpha'),
+        b: answer('B', 'beta'),
+        at: 10,
+      },
+      { type: 'shown', id: 't1', at: 20 },
+      { type: 'vote', id: 't1', choice: 'left' },
+      { type: 'voted', id: 't1', queued: false, models: names },
+    );
+    expect(named.turns[0]?.a?.model?.name).toBe('alpha');
+    expect(named.turns[0]?.b?.model?.name).toBe('beta');
+  });
+});

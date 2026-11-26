@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { handleSignup, MAX_BODY_BYTES, MAX_USER_AGENT_LENGTH, normaliseEmail, sanitiseRef } from '../server/signup.js';
+import { ALLOWED_HOSTS, clientKey, handleSignup, MAX_BODY_BYTES, MAX_USER_AGENT_LENGTH, normaliseEmail, sanitiseRef } from '../server/signup.js';
 import worker from '../worker.js';
 
 // Unit tests for the Worker's POST /api/signup handler (server/signup.js), run in Node with a fake
@@ -76,13 +76,38 @@ test('a new email is stored lower-cased with ref, country and user agent: 201 cr
   expect(db.statements[0]).toContain('ON CONFLICT(email) DO NOTHING');
 });
 
-test('the same email again, in any case: 200 exists, nothing added', async () => {
+test('the same email again, in any case: the same 201 answer, nothing added', async () => {
   const db = fakeDb();
-  expect((await call(signupRequest({ email: 'dup@example.com' }), db)).status).toBe(201);
+  const first = await call(signupRequest({ email: 'dup@example.com' }), db);
   const again = await call(signupRequest({ email: 'DUP@Example.com' }), db);
-  expect(again.status).toBe(200);
-  expect(again.body).toEqual({ status: 'exists' });
+  expect(first.status).toBe(201);
+  expect(again.status).toBe(201);
+  expect(again.body).toEqual(first.body);
   expect(db.rows).toHaveLength(1);
+});
+
+test('only our own hostname may serve the signup (not workers.dev)', async () => {
+  expect(ALLOWED_HOSTS).toContain('early.dualmindlab.tech');
+  const host = 'https://dualmind-waitlist.example.workers.dev';
+  const request = new Request(`${host}/api/signup`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Origin: host, 'Sec-Fetch-Site': 'same-origin' },
+    body: JSON.stringify({ email: 'a@b.co' }),
+  });
+  const response = await call(request);
+  expect(response.status).toBe(403);
+  expect(response.db.rows).toEqual([]);
+});
+
+test('the rate-limit key of an IPv6 client is its /64', () => {
+  expect(clientKey('203.0.113.7')).toBe('203.0.113.7');
+  expect(clientKey('::ffff:203.0.113.7')).toBe('203.0.113.7');
+  const a = clientKey('2001:db8:abcd:12:1:2:3:4');
+  expect(a).toBe('2001:0db8:abcd:0012::/64');
+  expect(clientKey('2001:DB8:abcd:12:ffff:ffff:ffff:ffff')).toBe(a);
+  expect(clientKey('2001:db8:abcd:13::1')).not.toBe(a);
+  expect(clientKey('2001:db8::1')).toBe('2001:0db8:0000:0000::/64');
+  expect(clientKey('::1')).toBe('0000:0000:0000:0000::/64');
 });
 
 test('email validation', () => {
@@ -221,4 +246,24 @@ test('the Worker routes /api/signup to the handler and answers other /api/ paths
   expect(db.rows).toHaveLength(1);
   const other = await worker.fetch(new Request(`${ORIGIN}/api/other`), { DB: db });
   expect(other.status).toBe(404);
+});
+
+
+test('an unknown address gets the 404 page with status 404', async () => {
+  const assets = {
+    fetch: async (request: Request) => {
+      const { pathname } = new URL(request.url);
+      if (pathname === '/404') {
+        return new Response('<title>Page not found</title>', { status: 200, headers: { 'content-type': 'text/html' } });
+      }
+      return new Response('', { status: 404 });
+    },
+  };
+  const response = await worker.fetch(new Request(`${ORIGIN}/does-not-exist`), { ASSETS: assets });
+  expect(response.status).toBe(404);
+  expect(await response.text()).toContain('Page not found');
+  expect(response.headers.get('x-robots-tag')).toBe('noindex');
+  // No traffic headers that echo the referer.
+  expect(response.headers.get('x-traffic-referer')).toBeNull();
+  expect(response.headers.get('x-waitlist-traffic')).toBeNull();
 });

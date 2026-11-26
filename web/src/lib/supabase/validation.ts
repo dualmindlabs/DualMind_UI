@@ -43,26 +43,33 @@ export function validateOtp(value: string): string | null {
 }
 
 /**
- * A phone number in E.164 (`+919876543210`), or null. Numbers with a `+` keep their country
- * code; ten digits without one are Indian numbers (+91), as the legacy page assumed.
+ * The country codes a phone sign-in may text. An SMS code costs money in every country and is the
+ * target of SMS-pumping fraud, so only the markets served are allowed (cycle 2 audit P0-1). Widen
+ * it together with Twilio's geographic permissions, never alone.
+ */
+export const ALLOWED_PHONE_COUNTRY_CODES: readonly string[] = ['91'];
+
+/**
+ * A phone number in E.164 (`+919876543210`), or null. The number must start with `+` and an
+ * allowed country code: a bare ten-digit number used to be read as Indian (+91), which sent a
+ * visitor's code to a stranger in India. 8 to 15 digits, no leading zero.
  */
 export function normalizePhone(value: string): string | null {
   const trimmed = value.trim();
+  if (!trimmed.startsWith('+')) return null;
   const digits = trimmed.replace(/\D/g, '');
-  if (trimmed.startsWith('+')) {
-    return digits.length >= 8 && digits.length <= 15 && !digits.startsWith('0')
-      ? `+${digits}`
-      : null;
-  }
-  if (digits.length === 10) return `+91${digits}`;
-  if (digits.length === 12 && digits.startsWith('91')) return `+${digits}`;
-  return null;
+  if (digits.length < 8 || digits.length > 15 || digits.startsWith('0')) return null;
+  return ALLOWED_PHONE_COUNTRY_CODES.some(code => digits.startsWith(code)) ? `+${digits}` : null;
 }
 
 export function validatePhone(value: string): string | null {
-  if (value.trim() === '') return 'Enter your phone number.';
+  const trimmed = value.trim();
+  if (trimmed === '') return 'Enter your phone number.';
+  if (!trimmed.startsWith('+')) {
+    return 'Start with the country code, for example +91 98765 43210.';
+  }
   return normalizePhone(value) === null
-    ? 'Enter your number with its country code, for example +91 98765 43210.'
+    ? 'Phone sign-in is only available for numbers with the country code +91 for now.'
     : null;
 }
 

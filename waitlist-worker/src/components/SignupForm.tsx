@@ -2,9 +2,10 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { HONEYPOT_FIELD, joinWaitlist, readDeviceNote, type DeviceNote } from '@/lib/waitlist';
 import { useHydrated, useReducedMotion } from '@/lib/media';
 import { cn } from '@/lib/cn';
+import { LINKS } from '@/content/links';
 import Magnet from './reactbits/Magnet';
 import { BorderBeam } from './magicui/border-beam';
-import { Alert, ArrowRight, Check, Info, Spinner } from './icons';
+import { Alert, ArrowRight, Check, Spinner } from './icons';
 
 export const EMAIL_INPUT_ID = 'email';
 
@@ -12,12 +13,11 @@ type FormState =
   | { kind: 'idle' }
   | { kind: 'pending' }
   | { kind: 'invalid' }
-  | { kind: 'duplicate'; email: string }
   | { kind: 'error' }
   | { kind: 'limited' }
   | { kind: 'joined'; email: string };
 
-const HINT = "We'll only email you about the launch. No spam, and you can opt out anytime.";
+const HINT = "We'll only email you about the launch. No spam.";
 
 export function SignupForm({ refCode }: { refCode: string | null }) {
   const [state, setState] = useState<FormState>({ kind: 'idle' });
@@ -59,12 +59,10 @@ export function SignupForm({ refCode }: { refCode: string | null }) {
     setState({ kind: 'pending' });
     const normalised = email.toLowerCase();
     const outcome = await joinWaitlist(email, refCode, honeypotRef.current?.value ?? '');
-    if (outcome === 'joined' || outcome === 'duplicate') setNote({ kind: 'joined', email: normalised });
+    if (outcome === 'joined') setNote({ kind: 'joined', email: normalised });
     if (outcome === 'joined') {
       input.value = '';
       setState({ kind: 'joined', email: normalised });
-    } else if (outcome === 'duplicate') {
-      setState({ kind: 'duplicate', email: normalised });
     } else if (outcome === 'invalid') {
       setState({ kind: 'invalid' });
       input.focus();
@@ -83,9 +81,7 @@ export function SignupForm({ refCode }: { refCode: string | null }) {
   const tone =
     state.kind === 'invalid' || state.kind === 'error' || state.kind === 'limited'
       ? 'bad'
-      : state.kind === 'duplicate'
-        ? 'info'
-        : 'quiet';
+      : 'quiet';
 
   return (
     <div className="w-full max-w-[620px]" data-state={state.kind}>
@@ -151,7 +147,7 @@ export function SignupForm({ refCode }: { refCode: string | null }) {
                 if (state.kind !== 'idle' && state.kind !== 'pending') setState({ kind: 'idle' });
               }}
               className={cn(
-                'h-14 w-full min-w-0 rounded-[14px] sm:w-auto sm:flex-1 border bg-ink/80 px-5 text-base text-fg placeholder:text-muted/70 transition-[border-color,box-shadow] duration-200',
+                'h-14 w-full min-w-0 rounded-[14px] sm:w-auto sm:flex-1 border bg-ink/80 px-5 text-base text-fg placeholder:text-muted transition-[border-color,box-shadow] duration-200',
                 'focus:outline-none focus-visible:outline-none focus:ring-4',
                 state.kind === 'invalid'
                   ? 'border-bad/70 focus:border-bad focus:ring-bad/15'
@@ -191,7 +187,7 @@ export function SignupForm({ refCode }: { refCode: string | null }) {
         aria-live="polite"
         className={cn(
           'mt-3.5 flex min-h-6 items-start gap-2 px-1 text-[14px] leading-snug',
-          tone === 'bad' ? 'text-bad' : tone === 'info' ? 'text-cyan' : 'text-muted',
+          tone === 'bad' ? 'text-bad' : 'text-muted',
         )}
       >
         {state.kind === 'invalid' && (
@@ -212,20 +208,12 @@ export function SignupForm({ refCode }: { refCode: string | null }) {
             Too many tries from this network. Please wait a few minutes and try again.
           </>
         )}
-        {state.kind === 'duplicate' && (
-          <>
-            <Info className="mt-px size-4 flex-none" />
-            <span>
-              <span className="[overflow-wrap:anywhere]">{state.email}</span> is already on the list. Nothing more to do.
-            </span>
-          </>
-        )}
         {state.kind === 'pending' && <span className="sr-only">Saving your spot…</span>}
         {(state.kind === 'idle' || state.kind === 'pending') && (
           <span aria-hidden={pending || undefined} data-testid="signup-hint">
             {note?.kind === 'joined' ? (
               <>
-                You've already joined from this device as <span className="text-fg-soft [overflow-wrap:anywhere]">{note.email}</span>.
+                You've already joined from this device.
               </>
             ) : note?.kind === 'legacy' ? (
               <>
@@ -238,6 +226,22 @@ export function SignupForm({ refCode }: { refCode: string | null }) {
             )}
           </span>
         )}
+      </p>
+
+      <p className="mt-1 px-1 text-[13px] leading-snug text-muted" data-testid="signup-notice">
+        We use your email only to tell you when the Arena opens. To leave the list, email{' '}
+        <a className="underline underline-offset-2" href={LINKS.optOut}>
+          privacy@dualmindlab.tech
+        </a>
+        . See the{' '}
+        <a className="underline underline-offset-2" href={LINKS.privacy}>
+          privacy policy
+        </a>{' '}
+        and{' '}
+        <a className="underline underline-offset-2" href={LINKS.terms}>
+          terms
+        </a>
+        .
       </p>
     </div>
   );

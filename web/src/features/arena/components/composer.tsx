@@ -7,6 +7,7 @@ import {
   PromptInputActions,
   PromptInputTextarea,
 } from '@/components/vendor/prompt-kit/prompt-input';
+import { PROMPT_DATA_WARNING } from '@/content/prompt-warning';
 import { useModifierKey } from '@/hooks/use-modifier-key';
 import { cn } from '@/lib/utils/cn';
 
@@ -121,6 +122,7 @@ export function Composer({
           )}
         >
           <PromptInputTextarea
+            dir="auto"
             aria-label="Your prompt"
             placeholder={
               followUp ? 'Ask a follow-up, same two models' : MODE_DETAILS[mode].placeholder
@@ -229,6 +231,12 @@ export function Composer({
           </PromptInputActions>
         </PromptInput>
       </div>
+      <p
+        data-testid="prompt-data-warning"
+        className={cn('mt-2 px-2 text-caption text-muted', hero && 'text-center')}
+      >
+        {PROMPT_DATA_WARNING}
+      </p>
     </form>
   );
 }

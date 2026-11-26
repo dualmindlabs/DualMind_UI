@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/use-auth';
+import { saveAuthHandoff } from '@/lib/session/auth-handoff';
 import {
-  AUTH_CALLBACK_PATH,
   authErrorMessage,
+  callbackUrl,
   normalizeEmail,
   normalizePhone,
   validateEmail,
@@ -30,7 +31,7 @@ const COPY: Record<CodeChannel, { label: string; send: string; back: string; hin
     label: 'Phone number',
     send: 'Text me a code',
     back: 'Use a different number',
-    hint: 'With the country code, for example +91 98765 43210. Ten digits without one count as an Indian (+91) number.',
+    hint: 'With the country code, for example +91 98765 43210. Only +91 numbers can sign in this way for now.',
   },
 };
 
@@ -47,9 +48,12 @@ function displayPhone(e164: string): string {
 export function CodeSignIn({
   channel,
   onSignedIn,
+  redirectTo = '/',
 }: {
   channel: CodeChannel;
   onSignedIn: (session: Session) => void;
+  /** Where the email link continues (the validated `?redirect=`). */
+  redirectTo?: string;
 }) {
   const { client } = useAuth();
   const copy = COPY[channel];
@@ -61,12 +65,13 @@ export function CodeSignIn({
 
   const send = async (target: string): Promise<string | null> => {
     try {
+      saveAuthHandoff(redirectTo);
       const supabase = await client();
       const { error } =
         channel === 'email'
           ? await supabase.auth.signInWithOtp({
               email: target,
-              options: { emailRedirectTo: `${window.location.origin}${AUTH_CALLBACK_PATH}` },
+              options: { emailRedirectTo: callbackUrl(window.location.origin, redirectTo) },
             })
           : await supabase.auth.signInWithOtp({ phone: target });
       if (error) throw error;

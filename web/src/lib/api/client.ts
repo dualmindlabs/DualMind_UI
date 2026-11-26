@@ -5,6 +5,7 @@ import { type CompareEndpoints, createCompareEndpoints } from './endpoints/compa
 import { createCrossExamineEndpoints, type CrossExamineEndpoints } from './endpoints/cross-examine';
 import { createFlagEndpoints, type FlagEndpoints } from './endpoints/flags';
 import { createHealthEndpoints, type HealthEndpoints } from './endpoints/health';
+import { createLaunchEndpoints, type LaunchEndpoints } from './endpoints/launch';
 import { createLeaderboardEndpoints, type LeaderboardEndpoints } from './endpoints/leaderboard';
 import { createModelEndpoints, type ModelEndpoints } from './endpoints/models';
 import { createSpeechEndpoints, type SpeechEndpoints } from './endpoints/speech';
@@ -36,7 +37,8 @@ export interface ApiClient
     ThreadEndpoints,
     UserEndpoints,
     SpeechEndpoints,
-    FlagEndpoints {
+    FlagEndpoints,
+    LaunchEndpoints {
   /** '' for same-origin, otherwise the absolute base URL. */
   readonly baseUrl: string;
   /** True when answers come from the mock adapter. The UI must label such content as a demo. */
@@ -80,6 +82,7 @@ export function createApiClient(options: ApiClientOptions = {}): ApiClient {
     ...createUserEndpoints(transport),
     ...createSpeechEndpoints(transport),
     ...createFlagEndpoints(transport),
+    ...createLaunchEndpoints(transport),
   });
 }
 

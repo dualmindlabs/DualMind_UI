@@ -2,6 +2,7 @@ import { queryOptions } from '@tanstack/react-query';
 
 import type { ApiClient } from '../client';
 import { DEFAULT_THREAD_LIMIT } from '../endpoints/threads';
+import { NO_PUBLIC_CONFIG } from '../schemas/launch';
 import { apiKeys } from './keys';
 import { STALE_TIMES } from './query-client';
 
@@ -129,5 +130,39 @@ export function featureFlagQuery(api: ApiClient, key: string) {
     queryKey: apiKeys.featureFlags.detail(key),
     queryFn: ({ signal }) => api.getFeatureFlag(key, viaQuery(signal)),
     staleTime: STALE_TIMES.featureFlag,
+  });
+}
+
+/**
+ * The launch features the backend has on (`GET /api/config/public`). Any failure (a backend
+ * without the route, a network error) means "nothing extra", so the UI falls back to the
+ * standard experience instead of showing an error.
+ */
+export function publicConfigQuery(api: ApiClient) {
+  return queryOptions({
+    queryKey: apiKeys.publicConfig(),
+    queryFn: async ({ signal }) => {
+      try {
+        return await api.getPublicConfig(viaQuery(signal));
+      } catch {
+        return NO_PUBLIC_CONFIG;
+      }
+    },
+    staleTime: STALE_TIMES.featureFlag,
+    retry: false,
+  });
+}
+
+export function privateArenasQuery(api: ApiClient) {
+  return queryOptions({
+    queryKey: apiKeys.privateArenas.list(),
+    queryFn: ({ signal }) => api.listPrivateArenas(viaQuery(signal)),
+  });
+}
+
+export function privateBoardQuery(api: ApiClient, id: string) {
+  return queryOptions({
+    queryKey: apiKeys.privateArenas.board(id),
+    queryFn: ({ signal }) => api.getPrivateBoard(id, viaQuery(signal)),
   });
 }

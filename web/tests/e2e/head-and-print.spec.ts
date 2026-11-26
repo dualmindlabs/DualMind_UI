@@ -106,21 +106,25 @@ test.describe('document head', () => {
     });
   }
 
+  // The worker writes the share card into these pages and the router writes it again once they
+  // render, so a tag can appear twice: the check is that the router's own value is there.
   for (const url of ['/update-password.html', '/auth-callback.html']) {
     test(`${url} (client-only): the same share card and locale once it renders`, async ({
       page,
     }) => {
       await page.goto(url);
-      await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
+      await expect(
+        page.locator(`meta[property="og:image"][content="${SITE}/og-default.png"]`),
+      ).toHaveCount(1);
+      await expect(page.locator('meta[property="og:locale"]').first()).toHaveAttribute(
         'content',
-        `${SITE}/og-default.png`,
+        'en_US',
       );
-      await expect(page.locator('meta[property="og:locale"]')).toHaveAttribute('content', 'en_US');
-      await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute(
+      await expect(page.locator('meta[name="twitter:card"]').first()).toHaveAttribute(
         'content',
         'summary_large_image',
       );
-      await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+      await expect(page.locator('meta[name="robots"]').first()).toHaveAttribute(
         'content',
         'noindex, nofollow',
       );

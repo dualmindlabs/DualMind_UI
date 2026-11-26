@@ -32,20 +32,28 @@ export const REMOVED_HEADERS = Object.freeze(['X-XSS-Protection']);
 
 /**
  * The enforced policy for web app pages.
- * @param {{ scriptHashes?: readonly string[], connectSrc?: readonly string[] }} [options]
+ * @param {{ scriptHashes?: readonly string[], connectSrc?: readonly string[], scriptSrc?: readonly string[], frameSrc?: readonly string[] }} [options]
  *   scriptHashes: base64 sha256 hashes of the inline scripts (from build.js)
  *   connectSrc: extra origins for fetch/WebSocket, e.g. the Supabase project (from build.js)
+ *   scriptSrc, frameSrc: extra https origins, only when a launch feature needs one (the analytics
+ *     beacon, the Turnstile widget); empty by default, so the policy stays as tight as before
  */
-export function webContentSecurityPolicy({ scriptHashes = [], connectSrc = [] } = {}) {
+export function webContentSecurityPolicy({
+  scriptHashes = [],
+  connectSrc = [],
+  scriptSrc = [],
+  frameSrc = [],
+} = {}) {
   const hashes = scriptHashes.map(hash => `'sha256-${hash}'`);
   return [
     "default-src 'self'",
-    ['script-src', "'self'", ...hashes].join(' '),
+    ['script-src', "'self'", ...scriptSrc, ...hashes].join(' '),
     // React writes style attributes (swatches, bar widths); no inline <style> blocks are used.
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob:",
     "font-src 'self'",
     ['connect-src', "'self'", ...connectSrc].join(' '),
+    ...(frameSrc.length > 0 ? [['frame-src', ...frameSrc].join(' ')] : []),
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",

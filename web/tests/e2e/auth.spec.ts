@@ -350,7 +350,8 @@ test.describe('sign in', () => {
     const stored = await page.evaluate(key => window.localStorage.getItem(key), STORAGE_KEY);
     expect(stored).toContain('refresh-e2e');
     const legacy = await page.evaluate(() => window.localStorage.getItem('dualmind.auth.supabase'));
-    expect(legacy).toContain('refresh-e2e');
+    // No second copy of the tokens under the legacy key any more.
+    expect(legacy).toBeNull();
 
     // On the next page the API client sends the user's token.
     await expect
@@ -402,16 +403,13 @@ test.describe('sign in', () => {
     });
   });
 
-  test('with a phone code: the number goes out in E.164', async ({ page }) => {
+  test('the phone code tab is hidden while the phone sign-in flag is off', async ({ page }) => {
     const calls = await mockSupabase(page);
-    await page.goto('/login/?redirect=%2Fmodels%2F');
-    await page.getByRole('tab', { name: 'Phone code' }).click();
-    await page.getByLabel('Phone number').fill('98765 43210');
-    await page.getByRole('button', { name: 'Text me a code' }).click();
-    await expect(page.getByRole('status').filter({ hasText: '+91 98765 43210' })).toBeVisible();
-    expect(calls.find('/auth/v1/otp')?.postDataJSON()).toMatchObject({ phone: '+919876543210' });
-    await page.getByRole('textbox', { name: 'Verification code' }).fill('111111');
-    await expect(page.getByRole('alert').filter({ hasText: 'expired' })).toBeVisible();
+    await page.goto('/login/');
+    await expect(page.getByRole('tab', { name: 'Email code' })).toBeVisible();
+    await expect(page.getByRole('tab', { name: 'Phone code' })).toHaveCount(0);
+    await expect(page.getByText('or with your email', { exact: true })).toBeVisible();
+    expect(calls.find('/auth/v1/otp')).toBeUndefined();
   });
 
   test('the OAuth buttons send the browser to the provider, returning to the bare origin', async ({
@@ -653,7 +651,7 @@ test.describe('accessibility, layout and screenshots', () => {
     // Targets first: the callback screen below signs the browser in, and a signed-in visitor
     // sees "You are signed in" on /login/ instead of the tabs.
     await page.goto('/login/');
-    for (const name of ['Password', 'Email code', 'Phone code']) {
+    for (const name of ['Password', 'Email code']) {
       const box = await page.getByRole('tab', { name }).boundingBox();
       expect(box?.height ?? 0, name).toBeGreaterThanOrEqual(44);
     }
@@ -702,4 +700,47 @@ test.describe('accessibility, layout and screenshots', () => {
       });
     }
   }
+});
+
+// Cycle 2 audit P1-6: Google refuses sign-in inside in-app browsers, so say so up front.
+test.describe('in-app browsers', () => {
+  test.use({
+    userAgent:
+      'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 LinkedInApp/9.30.1234',
+  });
+
+  test('/login/ warns that Google does not work there and keeps the other ways in', async ({
+    page,
+  }) => {
+    await mockSupabase(page);
+    await page.goto('/login/');
+    const notice = page.getByTestId('in-app-browser-notice');
+    await expect(notice).toContainText('Open this page in your browser to use Google');
+    await expect(page.getByRole('button', { name: 'Copy link' })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Continue with GitHub/ })).toBeVisible();
+    await expect(page.getByRole('tab', { name: 'Email code' })).toBeVisible();
+  });
+});
+
+// Cycle 2 audit P1-5: the draft and the destination survive the OAuth round trip.
+test('Continue with Google keeps the prompt draft and the destination in localStorage', async ({
+  page,
+}) => {
+  await mockSupabase(page);
+  await page.goto('/login/?redirect=%2Fcompare%2F');
+  await page.evaluate(() =>
+    window.sessionStorage.setItem(
+      'dm.promptDraft.v1',
+      JSON.stringify({ text: 'Kept across sign-in', savedAt: Date.now() }),
+    ),
+  );
+  await page.getByRole('button', { name: /Continue with Google/ }).click();
+  await page.waitForURL(`${SUPABASE}/auth/v1/authorize**`);
+  // Back on the app's own origin, the record the sign-in page left is still there.
+  await page.goto('/login/');
+  const record = await page.evaluate(() => window.localStorage.getItem('dm.authHandoff.v1'));
+  expect(JSON.parse(record ?? '{}')).toMatchObject({
+    draft: 'Kept across sign-in',
+    redirect: '/compare/',
+  });
 });

@@ -28,6 +28,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/components/ui/sonner';
 import { useApiClient } from '@/hooks/use-api-client';
+import { track } from '@/lib/analytics';
 import {
   FEATURE_FLAGS,
   featureFlagQuery,
@@ -135,6 +136,7 @@ function ShareForm({ thread }: { thread: Thread }) {
   const copy = async () => {
     if (await copyText(url)) {
       setCopied(true);
+      track('share');
       toast.success('Link copied', { description: url });
     } else {
       toast.error('Could not copy the link', {

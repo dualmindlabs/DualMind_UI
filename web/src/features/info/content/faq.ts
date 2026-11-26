@@ -129,7 +129,7 @@ export const faqContent: PageContent = {
           type: 'faq',
           question: 'What do you do with my data?',
           answer: [
-            'We store your account details, your prompts and the answers, and your votes. We use them to run the Arena, show you your history and calculate the leaderboard. We do not run analytics or advertising on the site and we do not sell your data.',
+            'We store your account details, your prompts and the answers, and your votes. We use them to run the Arena, show you your history and calculate the leaderboard. We do not run advertising on the site and we do not sell your data. Analytics are off unless you accept optional, cookieless visit counting.',
             'Your prompts are sent to the model providers so they can answer. The Privacy Policy has the full list.',
           ],
         },

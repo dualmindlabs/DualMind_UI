@@ -84,6 +84,18 @@ describe('submit', () => {
     expect(data.size).toBe(0);
   });
 
+  it('passes the model names a masking backend sends with the vote', async () => {
+    const { queue, send } = setup();
+    const models = {
+      left: { id: null, name: 'vendor/alpha', displayName: 'Alpha', provider: 'vendor' },
+      right: { id: null, name: 'vendor/beta', displayName: 'Beta', provider: 'vendor' },
+    };
+    send.mockResolvedValueOnce({ success: true, models });
+    await expect(queue.submit(vote('c-1'))).resolves.toEqual({ status: 'sent', models });
+    send.mockResolvedValueOnce({ success: true, models: { left: 'x' } });
+    await expect(queue.submit(vote('c-2'))).resolves.toEqual({ status: 'sent' });
+  });
+
   it('queues the vote in versioned storage on a transient failure', async () => {
     const { queue, send, data } = setup();
     const error = failure('network');

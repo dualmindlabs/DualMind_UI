@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Cycle 2 launch gaps ([#132](https://github.com/dualmindlabs/DualMind_UI/issues/132))
+
+All risky features are behind flags and OFF by default (`web/src/config/features.ts`, `web/.env.example`).
+
+- **Phone sign-in** (SMS pumping, P0): the Phone code tab is hidden unless `VITE_FEATURE_PHONE_SIGNIN` is set, and a number must start with `+` and an allow-listed country code (`+91` for now); a bare ten-digit number is no longer read as Indian. Owner steps: Twilio geographic permissions and Supabase's hourly SMS limit.
+- **Waitlist gate**: `/privacy/`, `/terms/`, `/cookies/`, `/.well-known/*` and the files they load pass the gate (`server/gate.js`); `FORCE_WAITLIST="false"` as a Worker variable also switches the gate off. The waitlist links the Arena's privacy policy and terms and says how to leave the list.
+- **Waitlist worker**: `workers_dev` off, the signup refuses any host but `early.dualmindlab.tech`, the rate limit keys an IPv6 client by its /64, a known email gets the same answer as a new one (no enumeration, and the device note no longer shows an email), unknown URLs get a 404 page, the raw-IP traffic log and the referer header are gone, security headers (HSTS, CSP, frame-ancestors) come from `_headers`, and the email placeholder has readable contrast.
+- **Arena worker**: `workers_dev` off (branch preview URLs stay on); compare, critique, guest-battle and private-arena battles count as battle-class (6 per minute), private-arena votes as votes; public leaderboard reads that the Cache API can answer are not counted; `/share/<id>` looks the API up only for UUID ids and counts a lookup that misses the edge cache in the read group; `/auth-verify` and the diagnostics page are gone.
+- **Auth funnel**: the prompt draft and the wanted page survive a sign-up (the confirmation link opens a new tab) and an OAuth round trip, through a one-hour, read-once localStorage record (`lib/session/auth-handoff.ts`); `emailRedirectTo` carries `?redirect=`; in-app browsers (LinkedIn, Instagram, Facebook, TikTok, ...) get a "Open this page in your browser to use Google" notice with a copy-link button.
+- **Search**: `/leaderboard/` and `/models/` carry an ItemList (JSON-LD) and a `<noscript>` table of the top 20 models, written by the Worker with HTMLRewriter from the cached leaderboard (1.5 s timeout, fail-safe). Compare links, settings and the auth callbacks get a title, description and share card.
+- **Blind battles**: the UI works whether or not the backend masks model names: names come from the vote response when the battle response has none, and a vote queued offline says the names appear when it is sent.
+- **One session copy**: the legacy `dualmind.auth.supabase` copy of the tokens is no longer written (migration and clearing stay for one more release).
+- **Accessibility and copy**: `dir="auto"` on the composer, prompts and answers; one date locale (en-US); a "do not put passwords, keys or personal data in prompts" line under both prompt boxes.
+- **Guest battle** (`VITE_FEATURE_GUEST_BATTLE` plus the backend flag): one battle without an account with a Turnstile check; the visitor signs up to vote and see the models. The Turnstile script loads only when the visitor focuses the box.
+- **Analytics** (`VITE_ANALYTICS_TOKEN`): the Cloudflare Web Analytics beacon, cookieless, only after consent and never with Do Not Track or Global Privacy Control; funnel events `visit`, `first_battle`, `vote`, `signup`, `share` are emitted as `dm:funnel` window events (Cloudflare Web Analytics has no custom events). The privacy and cookie pages describe it.
+- **Private arena** (`VITE_FEATURE_PRIVATE_ARENA` plus the backend flag): `/private/` with your own prompt set (3 arenas of 50 prompts), blind battles, your own board; "Pro (coming soon)" is a placeholder, there is no billing.
+
 ### Removed
 
 - The classic arena (cutover slice S13a, Harsh's go on 22 Oct): `/?arena=legacy`, "Open the classic arena" in the account menu and the command palette, `/legacy-app.html` (now a 404), the legacy home page and its `js/`, `css/` and `components/`. Signed-in visitors and Supabase auth returns stay on `/` for the new arena; a leftover `?arena=` parameter or `dm.arena` value is ignored. `config.js` stays until the Cloudflare build variables are set (needs-harsh item 1a).

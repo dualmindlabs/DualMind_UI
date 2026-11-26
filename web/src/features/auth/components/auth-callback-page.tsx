@@ -1,9 +1,10 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { buttonVariants } from '@/components/ui/button';
 import { config } from '@/config/env';
 import { supabaseConfig } from '@/config/supabase';
 import { useAuth } from '@/hooks/use-auth';
+import { claimAuthHandoff } from '@/lib/session/auth-handoff';
 import { browserSessionStorage, LOGIN_PATH, safeRedirect, sendWelcomeOnce } from '@/lib/supabase';
 import { cn } from '@/lib/utils/cn';
 
@@ -57,7 +58,11 @@ export function AuthCallbackPage({ link }: { link: CallbackUrl }) {
   const { status, session } = useAuth();
   const welcomed = useRef(false);
   const signedIn = !link.error && status === 'signed-in' && session !== null;
-  const target = safeRedirect(link.redirect, config.siteUrl);
+  // A new tab after email confirmation has no `?redirect=` when the link lost it; the record the
+  // sign-up page left in localStorage restores both the destination and the prompt draft.
+  const [handoffRedirect] = useState(() => claimAuthHandoff(config.siteUrl)?.redirect ?? '/');
+  const linkTarget = safeRedirect(link.redirect, config.siteUrl);
+  const target = linkTarget === '/' ? handoffRedirect : linkTarget;
   const progress = useAutoRedirect(signedIn ? target : null, CALLBACK_REDIRECT_SECONDS);
 
   useEffect(() => {

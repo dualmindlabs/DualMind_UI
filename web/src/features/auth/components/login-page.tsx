@@ -4,6 +4,7 @@ import { Link, useLocation } from 'react-router';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { config } from '@/config/env';
+import { buildFlags } from '@/config/features';
 import { supabaseConfig } from '@/config/supabase';
 import { browserLocalStorage, sendLoginNotice, SIGNUP_PATH, withRedirect } from '@/lib/supabase';
 
@@ -21,7 +22,8 @@ import { PromptDraftNotice } from './prompt-draft-notice';
 const TAB = 'h-11 flex-1 px-2 pointer-coarse:h-11';
 
 /**
- * `/login/`: Google and GitHub, then email and password, an email code or a text-message code.
+ * `/login/`: Google and GitHub, then email and password or an email code. A text-message code
+ * is there only while the phone sign-in flag is on (src/config/features.ts; off by default).
  * After signing in, the browser goes to the validated `?redirect=` or `/` (which hands signed-in
  * visitors to the arena), with a full page load.
  */
@@ -53,7 +55,9 @@ export function LoginPage() {
               <OAuthButtons onError={setProviderError} />
               <FormStatus error={providerError} status={null} />
             </div>
-            <OrDivider label="or with your email or phone" />
+            <OrDivider
+              label={buildFlags.phoneSignIn ? 'or with your email or phone' : 'or with your email'}
+            />
             <Tabs defaultValue="password" className="gap-6">
               <TabsList aria-label="How to sign in" className="w-full">
                 <TabsTrigger value="password" className={TAB}>
@@ -62,19 +66,23 @@ export function LoginPage() {
                 <TabsTrigger value="email-code" className={TAB}>
                   Email code
                 </TabsTrigger>
-                <TabsTrigger value="phone-code" className={TAB}>
-                  Phone code
-                </TabsTrigger>
+                {buildFlags.phoneSignIn ? (
+                  <TabsTrigger value="phone-code" className={TAB}>
+                    Phone code
+                  </TabsTrigger>
+                ) : null}
               </TabsList>
               <TabsContent value="password">
                 <PasswordSignIn onSignedIn={onSignedIn} />
               </TabsContent>
               <TabsContent value="email-code">
-                <CodeSignIn channel="email" onSignedIn={onSignedIn} />
+                <CodeSignIn channel="email" onSignedIn={onSignedIn} redirectTo={target} />
               </TabsContent>
-              <TabsContent value="phone-code">
-                <CodeSignIn channel="phone" onSignedIn={onSignedIn} />
-              </TabsContent>
+              {buildFlags.phoneSignIn ? (
+                <TabsContent value="phone-code">
+                  <CodeSignIn channel="phone" onSignedIn={onSignedIn} redirectTo={target} />
+                </TabsContent>
+              ) : null}
             </Tabs>
           </div>
         </AuthGate>

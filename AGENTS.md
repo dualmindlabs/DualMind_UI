@@ -137,7 +137,7 @@ Mode changes are dispatched as `mode-change` CustomEvent and handled surgically 
 
 ### Auth pages
 
-- Classic pages now live in `legacy/pages/` (`login-modern.html`, `signup-modern.html`, `forgot-password.html`, `update-password.html`, `auth-callback.html`, `verify.html`); only `auth-verify.html` is still at the root. The web app (`web/`) serves sign-in now.
+- Classic pages now live in `legacy/pages/` (`login-modern.html`, `signup-modern.html`, `forgot-password.html`, `update-password.html`, `auth-callback.html`, `verify.html`); `auth-verify.html` was removed (cycle 2). The web app (`web/`) serves sign-in now.
 - They loaded `config.js` + `js/auth/supabase-init.js` + specific JS (`legacy/pages/login/auth-complete.js`, `js/auth-modern.js`, etc.).
 - They do **not** load `js/ui/app.js`.
 

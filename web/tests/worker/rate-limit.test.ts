@@ -7,6 +7,9 @@ import {
   BINDING_TIMEOUT_MS,
   checkRateLimit,
   classify,
+  isPublicCacheHit,
+  LEADERBOARD_CACHE_KEY_PATH,
+  LEADERBOARD_CACHE_MAX_AGE_MS,
   limiterKey,
   policyHeader,
   RATE_LIMIT_GROUPS,
@@ -53,6 +56,15 @@ describe('classify', () => {
     ['GET', '/api/v2/openapi.json', 'read'],
     ['GET', '/api/arena/dualchat', 'read'],
     ['POST', '/api/arena/chat/', 'battle'],
+    ['POST', '/api/compare', 'battle'],
+    ['POST', '/api/arena/comparisons/c1/critique', 'battle'],
+    ['POST', '/api/arena/guest-battle', 'battle'],
+    ['POST', '/api/private-arenas/a1/battle', 'battle'],
+    ['POST', '/api/private-arenas/a1/vote', 'vote'],
+    ['POST', '/api/private-arenas', 'write'],
+    ['GET', '/api/private-arenas/a1/board', 'read'],
+    ['GET', '/api/config/public', 'read'],
+    ['GET', '/api/arena/comparisons/c1/critique', 'read'],
   ])('%s %s is %s', (method, path, group) => {
     expect(classify(method, path)).toBe(group);
   });
@@ -319,5 +331,91 @@ describe('wrangler.jsonc', () => {
   it('builds the policy strings from the same constants', () => {
     expect(policyHeader('vote')).toBe('"vote";q=10;w=10');
     expect(policyHeader('read')).toBe('"read";q=30;w=10');
+  });
+});
+
+describe('cache hits on public reads', () => {
+  const cacheWith = (storedAt: number | null) => ({
+    match: vi.fn(() =>
+      Promise.resolve(
+        storedAt === null
+          ? undefined
+          : new Response('{}', { headers: { 'X-DM-Stored-At': String(storedAt) } }),
+      ),
+    ),
+  });
+  const NOW = 1_000_000_000;
+
+  it('keeps the cache key and window in step with the leaderboard cache', async () => {
+    const { CACHE_KEY_PATH, STALE_SECONDS } =
+      await import('../../../server/v2/leaderboard/cache.ts');
+    expect(LEADERBOARD_CACHE_KEY_PATH).toBe(CACHE_KEY_PATH);
+    expect(LEADERBOARD_CACHE_MAX_AGE_MS).toBe(STALE_SECONDS * 1000);
+  });
+
+  it('is true for an anonymous leaderboard read the cache can answer', async () => {
+    const cache = cacheWith(NOW - 5000);
+    expect(
+      await isPublicCacheHit(request('GET', '/api/v2/leaderboard'), { cache, now: () => NOW }),
+    ).toBe(true);
+    expect(cache.match).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    ['a miss', cacheWith(null), 'GET', '/api/v2/leaderboard', {}],
+    ['a stale copy', cacheWith(NOW - 700_000), 'GET', '/api/v2/leaderboard', {}],
+    [
+      'a signed-in read',
+      cacheWith(NOW),
+      'GET',
+      '/api/v2/leaderboard',
+      { authorization: 'Bearer x' },
+    ],
+    ['another path', cacheWith(NOW), 'GET', '/api/arena/models', {}],
+    ['a POST', cacheWith(NOW), 'POST', '/api/v2/leaderboard', {}],
+  ])('is false for %s', async (_name, cache, method, path, headers) => {
+    expect(await isPublicCacheHit(request(method, path, headers), { cache, now: () => NOW })).toBe(
+      false,
+    );
+  });
+
+  it('is false when there is no cache, and never throws', async () => {
+    expect(await isPublicCacheHit(request('GET', '/api/v2/leaderboard'), { cache: null })).toBe(
+      false,
+    );
+    const broken = { match: vi.fn(() => Promise.reject(new Error('boom'))) };
+    expect(await isPublicCacheHit(request('GET', '/api/v2/leaderboard'), { cache: broken })).toBe(
+      false,
+    );
+  });
+
+  it('checkRateLimit does not count a read that is a cache hit', async () => {
+    const { binding } = fakeBinding(false);
+    const gate = await checkRateLimit(
+      request('GET', '/api/v2/leaderboard'),
+      { RL_READ: binding },
+      { log: noLog, isCacheHit: () => Promise.resolve(true) },
+    );
+    expect(gate.response).toBeNull();
+    expect(binding.limit).not.toHaveBeenCalled();
+  });
+
+  it('still counts a miss, and a battle is never exempt', async () => {
+    const { binding } = fakeBinding(false);
+    const miss = await checkRateLimit(
+      request('GET', '/api/v2/leaderboard'),
+      { RL_READ: binding },
+      { log: noLog, isCacheHit: () => Promise.resolve(false) },
+    );
+    expect(miss.response?.status).toBe(429);
+    const battle = fakeBinding(false);
+    const isCacheHit = vi.fn(() => Promise.resolve(true));
+    const denied = await checkRateLimit(
+      request('POST', '/api/arena/dualchat'),
+      { RL_BATTLE: battle.binding },
+      { log: noLog, isCacheHit },
+    );
+    expect(denied.response?.status).toBe(429);
+    expect(isCacheHit).not.toHaveBeenCalled();
   });
 });

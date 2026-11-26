@@ -4,12 +4,12 @@ export const privacyContent: PageContent = {
   slug: 'privacy',
   title: 'Privacy Policy',
   description:
-    'What DualMind Arena collects, why, who handles it, how long we keep it and how to delete it. No analytics, no advertising and no data sales.',
+    'What DualMind Arena collects, why, who handles it, how long we keep it and how to delete it. Analytics only if you agree, no advertising and no data sales.',
   eyebrow: 'Legal',
   heading: { text: 'Privacy,', human: 'in plain words.' },
   intro:
     'This policy explains what DualMind Arena ("we", "us") collects when you use the Arena at arena.dualmindlab.tech and the waitlist at early.dualmindlab.tech, and what we do with it.',
-  updated: '2026-11-25',
+  updated: '2026-11-26',
   sections: [
     {
       id: 'summary',
@@ -19,7 +19,7 @@ export const privacyContent: PageContent = {
           type: 'callout',
           tone: 'summary',
           title: 'The short version',
-          text: 'We store your account details, your prompts and the answers, and your votes, so the Arena works. Your prompts go to the AI model providers that answer them. We do not use analytics, advertising or tracking pixels, and we do not sell your data. You can ask us to delete your account and data at privacy@dualmindlab.tech.',
+          text: 'We store your account details, your prompts and the answers, and your votes, so the Arena works. Your prompts go to the AI model providers that answer them. We do not use analytics, advertising or tracking pixels, and we do not sell your data. The one possible exception is optional, cookieless visit counting that stays off unless you accept it. You can ask us to delete your account and data at privacy@dualmindlab.tech.',
         },
       ],
     },
@@ -89,11 +89,29 @@ export const privacyContent: PageContent = {
         {
           type: 'list',
           items: [
-            'We do not load analytics scripts and we do not measure page views or sessions.',
+            'We do not load analytics scripts or measure page views and sessions, unless you accept the optional, cookieless counting described below.',
             'We do not show advertising and we do not share data with advertisers.',
             'We do not use tracking pixels or cross-site tracking.',
             'We do not sell your personal data.',
             'We do not run A/B tests on you.',
+          ],
+        },
+      ],
+    },
+    {
+      id: 'optional-analytics',
+      heading: 'Optional visit counting',
+      blocks: [
+        {
+          type: 'paragraph',
+          text: 'We may turn on Cloudflare Web Analytics to count how many people visit the Arena and which steps they reach, such as a first battle or a vote. It sets no cookies, keeps no personal profile and does not follow you across sites. Your prompts, answers and email address are never part of it.',
+        },
+        {
+          type: 'list',
+          items: [
+            'It is off by default. When it is on, a banner asks first and nothing loads until you accept.',
+            'If your browser sends Do Not Track or Global Privacy Control, we do not ask and we do not count you.',
+            'You can change your mind at any time with the Analytics choices button in the footer. Your choice is kept in your browser’s local storage.',
           ],
         },
       ],
@@ -163,7 +181,7 @@ export const privacyContent: PageContent = {
           type: 'callout',
           tone: 'warning',
           title: 'Do not put secrets in prompts',
-          text: 'Prompts are processed by third-party model providers and stored in your history. Do not enter passwords, personal identity numbers or confidential material.',
+          text: 'Prompts are processed by third-party model providers and stored in your history. Do not enter passwords, keys, personal identity numbers or confidential material.',
         },
       ],
     },

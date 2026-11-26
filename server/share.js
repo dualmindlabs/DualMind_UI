@@ -8,7 +8,8 @@
 //   page's title, description, canonical URL, Open Graph and Twitter tags into the HTML with
 //   HTMLRewriter. For a thread the API returns WITHOUT a token (public or unlisted, while the
 //   API's `public_sharing` flag is on), the title is the first prompt; anything else (private,
-//   unknown, an API error or a slow API) gets the generic share tags. No visitor credential is
+//   unknown, an API error or a slow API) gets the generic share tags. Only UUID-shaped ids are
+//   looked up at all, and a lookup that misses the edge cache counts against the read limit. No visitor credential is
 //   ever sent upstream, so a private thread can never leak into a preview.
 // - The upstream lookup has a short timeout and is kept in the edge cache (Cache API) for a
 //   couple of minutes, so a link pasted in a busy chat does not hit the API for every preview.
@@ -20,6 +21,14 @@ import { matchesOneSegment, serveSpaFallback } from './routing.js';
 
 /** Thread ids: the API's UUIDs, kept loose (letters, digits, - and _) for other id formats. */
 export const SHARE_ID_RE = /^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/;
+
+/** Only UUID-shaped ids are looked up upstream: a random slug costs no API call at all. */
+export const SHARE_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** @param {unknown} value */
+export function isShareUuid(value) {
+  return typeof value === 'string' && SHARE_UUID_RE.test(value);
+}
 
 /** Query parameters of old share links, in the order the legacy page read them. */
 export const SHARE_QUERY_KEYS = Object.freeze(['threadId', 'thread', 'id']);
@@ -110,6 +119,67 @@ export function genericShareMeta(origin, id) {
     image: `${origin}${SHARE_IMAGE.path}`,
     imageAlt: SHARE_IMAGE.alt,
     robots: 'noindex, nofollow',
+    shared: false,
+  };
+}
+
+/** Titles and descriptions of the client-only pages that are not share links. */
+const FALLBACK_PAGES = [
+  {
+    test: pathname => pathname === '/compare' || pathname.startsWith('/compare/'),
+    title: `Shared comparison · ${SITE}`,
+    description:
+      'Two AI models answered the same prompt side by side. Open the shared comparison, then run your own.',
+    robots: 'noindex, nofollow',
+  },
+  {
+    test: pathname => pathname === '/private' || pathname === '/private/',
+    title: `Private arena · ${SITE}`,
+    description: 'Run blind battles on your own prompts and keep the results to yourself.',
+    robots: 'noindex, nofollow',
+  },
+  {
+    test: pathname => pathname === '/settings' || pathname === '/settings/',
+    title: `Settings · ${SITE}`,
+    description: 'Your profile, how the Arena looks and behaves, and a copy of your data.',
+    robots: 'noindex, nofollow',
+  },
+  {
+    test: pathname => pathname === '/auth-callback.html',
+    title: `Signing you in · ${SITE}`,
+    description: 'Finishing your sign-in to DualMind Arena.',
+    robots: 'noindex, nofollow',
+  },
+  {
+    test: pathname => pathname === '/update-password.html',
+    title: `Choose a new password · ${SITE}`,
+    description: 'Set a new password for your DualMind Arena account.',
+    robots: 'noindex, nofollow',
+  },
+];
+
+/**
+ * The tags for a client-only page that is not a share link (compare links, settings, the auth
+ * callback pages ...): a title, a description and the site's share card, so a pasted link no
+ * longer unfurls as a blank card. Always noindex. Null for any other path.
+ * @param {string} pathname
+ * @param {string} origin
+ * @returns {ShareMeta | null}
+ */
+export function fallbackPageMeta(pathname, origin) {
+  const page = FALLBACK_PAGES.find(candidate => candidate.test(pathname));
+  if (!page) return null;
+  const clean = pathname.length > 1 ? pathname.replace(/\/+$/, '') : pathname;
+  // Compare links carry a result id: the canonical is the page itself, with no query.
+  const url = `${origin}${clean}${pathname === '/private/' || pathname === '/private' ? '/' : ''}`;
+  return {
+    title: page.title,
+    ogTitle: page.title.replace(` · ${SITE}`, ''),
+    description: page.description,
+    url,
+    image: `${origin}${SHARE_IMAGE.path}`,
+    imageAlt: SHARE_IMAGE.alt,
+    robots: page.robots,
     shared: false,
   };
 }
@@ -269,7 +339,7 @@ export function shareFactsFrom(threadBody, messagesBody) {
 /**
  * The two Cache API methods used here (caches.default in the Workers runtime).
  * @typedef {{ match: (request: Request) => Promise<Response | undefined>, put: (request: Request, response: Response) => Promise<void> }} ShareMetaCache
- * @typedef {{ fetchImpl?: (input: string, init: RequestInit) => Promise<Response>, cache?: ShareMetaCache | null, timeoutMs?: number, waitUntil?: ((promise: Promise<unknown>) => void) | undefined, log?: (event: object) => void }} ShareMetaOptions
+ * @typedef {{ fetchImpl?: (input: string, init: RequestInit) => Promise<Response>, cache?: ShareMetaCache | null, timeoutMs?: number, allowLookup?: () => Promise<boolean>, waitUntil?: ((promise: Promise<unknown>) => void) | undefined, log?: (event: object) => void }} ShareMetaOptions
  */
 
 function defaultCache() {
@@ -299,6 +369,7 @@ export async function loadShareFacts(id, env, origin, options = {}) {
     fetchImpl = (input, init) => globalThis.fetch(input, init),
     cache = defaultCache(),
     timeoutMs = SHARE_META_TIMEOUT_MS,
+    allowLookup,
     waitUntil,
     log = event => console.log(JSON.stringify(event)),
   } = options;
@@ -313,6 +384,21 @@ export async function loadShareFacts(id, env, origin, options = {}) {
       }
     } catch {
       // A broken cache entry is a miss.
+    }
+  }
+
+  // Cache hits above are free. An upstream lookup is counted (the Worker passes the read limiter
+  // here); over the limit the page gets the generic tags and nothing is cached.
+  if (allowLookup) {
+    let allowed = true;
+    try {
+      allowed = await allowLookup();
+    } catch {
+      allowed = true;
+    }
+    if (!allowed) {
+      log({ event: 'share_meta_fallback', outcome: 'rate_limited', ms: 0 });
+      return null;
     }
   }
 
@@ -385,7 +471,7 @@ export async function serveSharePage(request, env, ctx, options = {}) {
 
   const url = new URL(request.url);
   const id = shareIdFromUrl(url);
-  const facts = id
+  const facts = id && isShareUuid(id)
     ? await loadShareFacts(id, env, url.origin, {
         waitUntil: ctx?.waitUntil ? promise => ctx.waitUntil(promise) : undefined,
         ...options,

@@ -4,7 +4,8 @@
  * The form posts to the waitlist Worker's own endpoint, on the same origin (server/signup.js),
  * which stores the email in Cloudflare D1:
  *   POST /api/signup  { "email": "<lower-cased>", "ref": "<ref, when present>" }
- *   201 { "status": "created" } = joined, 200 { "status": "exists" } = already on the list,
+ *   201 { "status": "created" } = joined (also for an address that is already on the list: the
+ *   server answers the same, so the form cannot reveal who signed up),
  *   400 = invalid email, 429 = too many tries, anything else (or no answer in 10 s) = error.
  *
  * localStorage only remembers the last email that joined from this browser (DEVICE_KEY), to greet a
@@ -21,7 +22,7 @@ export const LEGACY_KEY = 'dualmind_waitlist';
 export const HONEYPOT_FIELD = 'website';
 const REQUEST_TIMEOUT_MS = 10_000;
 
-export type JoinOutcome = 'joined' | 'duplicate' | 'invalid' | 'rate_limited' | 'error';
+export type JoinOutcome = 'joined' | 'invalid' | 'rate_limited' | 'error';
 
 export async function joinWaitlist(email: string, ref: string | null, honeypot = ''): Promise<JoinOutcome> {
   const normalised = email.trim().toLowerCase();
@@ -50,9 +51,10 @@ export async function joinWaitlist(email: string, ref: string | null, honeypot =
   } catch {
     return 'error';
   }
+  // An older deploy answered 200 "exists" for a known address; both mean "on the list".
   if (status !== 'created' && status !== 'exists') return 'error';
   remember(normalised);
-  return status === 'created' ? 'joined' : 'duplicate';
+  return 'joined';
 }
 
 export type DeviceNote = { kind: 'joined'; email: string } | { kind: 'legacy'; email: string };

@@ -7,9 +7,11 @@ import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { config } from '@/config/env';
 import { useAuth } from '@/hooks/use-auth';
+import { track } from '@/lib/analytics';
+import { saveAuthHandoff } from '@/lib/session/auth-handoff';
 import {
-  AUTH_CALLBACK_PATH,
   authErrorMessage,
+  callbackUrl,
   checkPwnedPassword,
   evaluatePassword,
   LOGIN_PATH,
@@ -54,7 +56,15 @@ const LINK =
   'font-medium text-mind-a underline decoration-mind-a/40 underline-offset-4 hover:decoration-current';
 
 /** "Check your email": the confirmation link is on its way; resend with a cooldown. */
-function ConfirmEmail({ email, onBack }: { email: string; onBack: () => void }) {
+function ConfirmEmail({
+  email,
+  target,
+  onBack,
+}: {
+  email: string;
+  target: string;
+  onBack: () => void;
+}) {
   const { client } = useAuth();
   const cooldown = useCooldown(RESEND_COOLDOWN_SECONDS);
   const [status, setStatus] = useState<string | null>(null);
@@ -68,7 +78,7 @@ function ConfirmEmail({ email, onBack }: { email: string; onBack: () => void }) 
       const { error: resendError } = await supabase.auth.resend({
         type: 'signup',
         email,
-        options: { emailRedirectTo: `${window.location.origin}${AUTH_CALLBACK_PATH}` },
+        options: { emailRedirectTo: callbackUrl(window.location.origin, target) },
       });
       if (resendError) throw resendError;
       setStatus(`We sent the link to ${email} again.`);
@@ -166,16 +176,19 @@ export function SignupPage() {
           return;
         }
       }
+      // The confirmation link opens a new tab: keep the prompt and the destination for it.
+      saveAuthHandoff(target);
       const supabase = await client();
       const { data, error } = await supabase.auth.signUp({
         email: normalizeEmail(email),
         password,
         options: {
           data: { full_name: name.trim(), avatar_url: null },
-          emailRedirectTo: `${window.location.origin}${AUTH_CALLBACK_PATH}`,
+          emailRedirectTo: callbackUrl(window.location.origin, target),
         },
       });
       if (error) throw error;
+      track('signup');
       if (data.session) {
         setStatus('Account created. Taking you to the Arena');
         goTo(target);
@@ -202,7 +215,7 @@ export function SignupPage() {
         <PromptDraftNotice title="Create your account to run your prompt" />
         <AuthGate target={target}>
           {confirmFor ? (
-            <ConfirmEmail email={confirmFor} onBack={() => setConfirmFor(null)} />
+            <ConfirmEmail email={confirmFor} target={target} onBack={() => setConfirmFor(null)} />
           ) : (
             <div className="grid gap-6">
               <div className="grid gap-3">

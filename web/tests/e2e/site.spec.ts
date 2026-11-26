@@ -154,6 +154,7 @@ const redirects: Array<[from: string, to: string]> = [
   ['/careers', '/about/'],
   ['/careers/', '/about/'],
   ['/auth-verify.html', '/'],
+  ['/auth-verify', '/'],
   ['/verify.html', '/'],
 ];
 
@@ -188,4 +189,46 @@ test('/api/health goes through the hardened proxy', async ({ request }) => {
   expect(headers['access-control-allow-origin']).toBeUndefined();
   expect(headers['x-dualmind-proxy-backend']).toBeUndefined();
   expect(headers['strict-transport-security']).toBeTruthy();
+});
+
+// Cycle 2: the pre-launch gate keeps the legal pages public, because the waitlist links to them.
+test('the gate lets the legal pages through but still redirects the Arena', async ({ request }) => {
+  const noCookie = { maxRedirects: 0 };
+  for (const path of ['/privacy/', '/terms/', '/cookies/']) {
+    const response = await request.get(path, noCookie);
+    expect(response.status(), path).toBe(200);
+    expect(await response.text()).toContain('<title>');
+  }
+  const gated = await request.get('/leaderboard/', noCookie);
+  expect(gated.status()).toBe(302);
+  expect(gated.headers()['location']).toContain('early.dualmindlab.tech');
+});
+
+test('/private/ is client-only and noindex, and says it is not open while the flag is off', async ({
+  request,
+}) => {
+  const response = await request.get('/private/', withCookie);
+  expect(response.status()).toBe(200);
+  expect(response.headers()['x-robots-tag']).toBe('noindex, nofollow');
+  const html = await response.text();
+  expect(html).toContain('<title>Private arena · DualMind Arena</title>');
+  expect(html).toContain('og:title');
+});
+
+test('compare links and the auth callback get link-preview tags, not a blank card', async ({
+  request,
+}) => {
+  const compare = await request.get('/compare/AbCdEfGhIjKlMnOpQrSt12', withCookie);
+  expect(compare.status()).toBe(200);
+  const html = await compare.text();
+  expect(html).toContain('Shared comparison · DualMind Arena');
+  expect(html).toContain('property="og:image"');
+  expect(await (await request.get('/auth-callback.html', withCookie)).text()).toContain(
+    'Signing you in · DualMind Arena',
+  );
+});
+
+test('the removed /auth-verify page redirects home', async ({ request }) => {
+  const response = await request.get('/auth-verify', withCookie);
+  expect(response.status()).toBe(301);
 });

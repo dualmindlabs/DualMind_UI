@@ -1,9 +1,11 @@
-/** "12 Nov 2026"; an unreadable date gives an empty string. */
+import { DATE_LOCALE } from '@/lib/utils/locale';
+
+/** "Nov 12, 2026"; an unreadable date gives an empty string. */
 export function formatDay(iso: string | null): string {
   if (iso === null) return '';
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return '';
-  return new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' }).format(date);
+  return new Intl.DateTimeFormat(DATE_LOCALE, { dateStyle: 'medium' }).format(date);
 }
 
 /** "3.2 s" or "840 ms". */

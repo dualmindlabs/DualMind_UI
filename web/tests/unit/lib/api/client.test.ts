@@ -11,8 +11,10 @@ import { jsonResponse, rejectionOf, scriptedFetch } from './helpers';
 
 /** The function surface from docs/redesign/migration-plan.md section 5, plus getFeatureFlag. */
 const ENDPOINT_FUNCTIONS = [
+  'createPrivateArena',
   'createThread',
   'deleteCompare',
+  'deletePrivateArena',
   'deleteThread',
   'getBoard',
   'getCompare',
@@ -25,10 +27,14 @@ const ENDPOINT_FUNCTIONS = [
   'getLeaderboardMethodology',
   'getMe',
   'getModel',
+  'getPrivateArena',
+  'getPrivateBoard',
+  'getPublicConfig',
   'getSharedThread',
   'getThread',
   'isCompareAvailable',
   'listModels',
+  'listPrivateArenas',
   'listThreadMessages',
   'listThreads',
   'renameThread',
@@ -38,11 +44,14 @@ const ENDPOINT_FUNCTIONS = [
   'setCompareShared',
   'setThreadVisibility',
   'startBattle',
+  'startGuestBattle',
+  'startPrivateBattle',
   'streamChat',
   'submitRound2Vote',
   'syncUser',
   'textToSpeech',
   'vote',
+  'votePrivateBattle',
 ];
 
 describe('createApiClient', () => {

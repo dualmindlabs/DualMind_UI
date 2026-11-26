@@ -51,6 +51,10 @@ export default [
   // to /login/?redirect=%2Fsettings%2F (hooks/use-require-auth.ts).
   route('settings', 'routes/settings.tsx'),
 
+  // The private arena (cycle 2, behind VITE_FEATURE_PRIVATE_ARENA and the backend's own flag):
+  // signed-in work on your own prompt set, client-only and noindex like /settings/.
+  route('private', 'routes/private.tsx'),
+
   // Compare mode (backend flag be9_compare_mode): /compare/ and /compare/<shareId>, client-only.
   route('compare/:shareId?', 'routes/compare.tsx'),
 
