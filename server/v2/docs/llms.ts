@@ -11,7 +11,7 @@ export function renderLlmsTxt(origin: string): string {
     '',
     `- [Leaderboard (Markdown)](${origin}/leaderboard.md): current ranking, one table`,
     `- [Leaderboard (JSON)](${origin}/api/v2/leaderboard): same data with typed fields`,
-    `- [Data licence](${origin}/data/): CC BY 4.0 for the leaderboard numbers; model answers stay under each provider's terms and are for analysis and evaluation only`,
+    `- [Data license](${origin}/data/): CC BY 4.0 for the leaderboard numbers; model answers stay under each provider's terms and are for analysis and evaluation only`,
     `- [Methodology](${origin}/methodology/): how the ratings are computed`,
     '',
     '## API',

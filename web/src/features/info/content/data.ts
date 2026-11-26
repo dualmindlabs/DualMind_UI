@@ -2,13 +2,13 @@ import type { PageContent } from './types';
 
 /**
  * /data/: what a reader, a researcher or a crawler may do with DualMind Arena data. The rule that
- * matters: the licence is split. Aggregate numbers are ours to license; model answers are not
+ * matters: the license is split. Aggregate numbers are ours to license; model answers are not
  * (they are the providers' output, under the providers' terms), so no page here says CC BY for
  * them. The Content-Signal values are the ones build.js writes into robots.txt (a test pins both).
  */
 export const dataContent: PageContent = {
   slug: 'data',
-  title: 'Data licence',
+  title: 'Data license',
   description:
     'What you may do with DualMind Arena data: leaderboard numbers under CC BY 4.0, prompts only with consent, model answers under each provider’s own terms.',
   eyebrow: 'Data',
@@ -65,7 +65,7 @@ export const dataContent: PageContent = {
           type: 'callout',
           tone: 'warning',
           title: 'Not CC BY',
-          text: 'The answers are written by models run by other companies. We do not own them, so we cannot license them, and nothing on this site gives them a Creative Commons licence.',
+          text: 'The answers are written by models run by other companies. We do not own them, so we cannot license them, and nothing on this site gives them a Creative Commons license.',
         },
         {
           type: 'list',
@@ -83,7 +83,7 @@ export const dataContent: PageContent = {
       blocks: [
         {
           type: 'paragraph',
-          text: 'Our robots.txt carries a Content-Signal line: search=yes, ai-input=yes, ai-train=no. That means indexing for search and quoting in an AI answer are welcome, and using the site to train AI models is not. A signal is a request that well-behaved crawlers follow. It is not a technical block and it does not change the licences above.',
+          text: 'Our robots.txt carries a Content-Signal line: search=yes, ai-input=yes, ai-train=no. That means indexing for search and quoting in an AI answer are welcome, and using the site to train AI models is not. A signal is a request that well-behaved crawlers follow. It is not a technical block and it does not change the licenses above.',
         },
         {
           type: 'paragraph',
@@ -97,7 +97,7 @@ export const dataContent: PageContent = {
       blocks: [
         {
           type: 'paragraph',
-          text: 'To have a prompt, a conversation or an account removed, or to report a licence problem, write to support@dualmindlab.tech. Say what you want removed and from which account or link. The Privacy Policy explains how long we keep data and your other rights.',
+          text: 'To have a prompt, a conversation or an account removed, or to report a license problem, write to support@dualmindlab.tech. Say what you want removed and from which account or link. The Privacy Policy explains how long we keep data and your other rights.',
         },
       ],
     },

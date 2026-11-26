@@ -15,7 +15,7 @@ import {
 
 import { renderWithShell } from '../../render-with-shell';
 
-// The data licence is split on purpose (cycle 5): numbers are ours, answers are the providers'.
+// The data license is split on purpose (cycle 5): numbers are ours, answers are the providers'.
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../../..');
 const SIGNAL = 'search=yes, ai-input=yes, ai-train=no';
@@ -40,7 +40,7 @@ function text(block: Block): string[] {
 const section = (id: string) => dataContent.sections.find(item => item.id === id)!;
 const sectionText = (id: string) => section(id).blocks.flatMap(text).join(' ');
 
-describe('data licence content', () => {
+describe('data license content', () => {
   it('has a summary callout, a date and a short description', () => {
     expect(dataContent.updated).toBe('2026-11-26');
     expect(
@@ -55,7 +55,7 @@ describe('data licence content', () => {
     expect(sectionText('leaderboard-numbers')).toMatch(/credit/i);
   });
 
-  it('never gives model answers a Creative Commons licence', () => {
+  it('never gives model answers a Creative Commons license', () => {
     const answers = sectionText('model-answers');
     expect(answers).toMatch(/provider/i);
     expect(answers).toMatch(/analysis and evaluation/i);

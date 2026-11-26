@@ -72,7 +72,7 @@ const pages: PageSpec[] = [
   {
     slug: 'data',
     path: '/data/',
-    title: 'Data licence · DualMind Arena',
+    title: 'Data license · DualMind Arena',
     h1: 'Our data, and what you may do with it.',
     text: 'Not CC BY',
   },

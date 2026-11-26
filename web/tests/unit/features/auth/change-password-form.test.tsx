@@ -2,7 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ReactElement } from 'react';
 import { MemoryRouter } from 'react-router';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ApiProvider } from '@/components/layout/api-provider';
 import { AuthProvider } from '@/components/layout/auth-provider';
@@ -140,6 +140,8 @@ describe('ChangePasswordForm', () => {
     expect(auth.updateUser).toHaveBeenCalledWith({ password: STRONG, nonce: '123456' });
   });
 });
+
+afterEach(() => window.sessionStorage.removeItem('dm.recovery.v1'));
 
 describe('UpdatePasswordPage', () => {
   const link = (overrides: Partial<CallbackUrl>): CallbackUrl => ({

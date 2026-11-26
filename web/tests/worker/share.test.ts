@@ -479,7 +479,8 @@ describe('the share page through the Worker', () => {
     expect(head.status).toBe(200);
     expect(head.headers.get('cache-control')).toBe(SHARE_NO_STORE);
     const post = await get(`/share/${ID}`, 'POST');
-    expect(post.status).toBe(404);
+    // Pages and files are read-only: any other method is a 405 (cycle 5).
+    expect(post.status).toBe(405);
   });
 
   it('no longer serves the legacy share page, which used to drop the id with a 307', async () => {
