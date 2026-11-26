@@ -60,10 +60,10 @@ type SignalSource = {
 export function trackingBlocked(
   source: SignalSource | undefined = typeof navigator === 'undefined'
     ? undefined
-    : (navigator as unknown as SignalSource),
+    : navigator,
   win: { doNotTrack?: string | null } | undefined = typeof window === 'undefined'
     ? undefined
-    : window,
+    : (window as unknown as { doNotTrack?: string | null }),
 ): boolean {
   const dnt = [source?.doNotTrack, source?.msDoNotTrack, win?.doNotTrack];
   if (dnt.some(value => value === '1' || value === 'yes')) return true;
