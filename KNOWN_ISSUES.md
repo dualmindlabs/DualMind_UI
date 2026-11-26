@@ -1,13 +1,13 @@
 # Known issues: DualMind Arena (frontend)
 
-This file lists verified bugs in the Arena frontend (this repo) and its hosting: the `dualmind-arena` Cloudflare Worker and an old Vercel project. The statuses were refreshed on 2026-11-23 against `master` (`4fb584a`) and the live site at `https://arena.dualmindlab.tech`. The detail sections below keep the evidence from 2026-10-18 and are marked where it is out of date. API, data and backend CI issues are tracked in the backend repo (see the last section).
+This file lists verified bugs in the Arena frontend (this repo) and its hosting: the `dualmind-arena` Cloudflare Worker and an old Vercel project. The statuses were refreshed on 2026-11-25 against `master` (`9c4ddfd`) and the live site at `https://arena.dualmindlab.tech`; the launch-readiness checklist is [issue #130](https://github.com/dualmindlabs/DualMind_UI/issues/130). The detail sections below keep the evidence from 2026-10-18 and are marked where it is out of date. API, data and backend CI issues are tracked in the backend repo (see the last section).
 
 Found a security problem? Please report it privately to the maintainers instead of opening a public issue.
 
-Last updated: 2026-11-23
+Last updated: 2026-11-25
 
 **Status:** Confirmed = reproduced in code and/or live. Likely = strong evidence, not reproduced end to end. Not reproduced = could not confirm.
-**Numbering:** `#1`–`#11` are the Arena bugs reported on 2026-10-17. The backend file uses the same numbers. `N7` was found while verifying them on 2026-10-18. `N8`-`N10` are new on 2026-11-23.
+**Numbering:** `#1`–`#11` are the Arena bugs reported on 2026-10-17. The backend file uses the same numbers. `N7` was found while verifying them on 2026-10-18. `N8`-`N10` are new on 2026-11-23; `N11`-`N13` on 2026-11-25.
 
 ## Summary
 
@@ -19,8 +19,11 @@ Last updated: 2026-11-23
 | 11 | Old Vercel integration (`v0-dual-mind-ui`) fails on every push | Low | Confirmed |
 | N7 | Unused API client methods call routes that don't exist | Low | Confirmed in code on 2026-10-18; not re-checked live |
 | N8 | The arena host redirects every request, `robots.txt` and `sitemap.xml` included, to the waitlist | Medium | By design until launch; confirmed live 2026-11-23 |
-| N9 | `master` still carries the classic arena; the release PR [#87](https://github.com/dualmindlabs/DualMind_UI/pull/87) is open | Medium | Open, waiting for a merge decision |
-| N10 | Dead scripts and retired pages sat in the repository root | Low | Fixed by this change: deleted or moved to `legacy/` |
+| N9 | `master` still carried the classic arena; the release PR [#87](https://github.com/dualmindlabs/DualMind_UI/pull/87) was open | Medium | Fixed: #87 merged on 2026-11-23, the classic arena is gone from `master` |
+| N10 | Dead scripts and retired pages sat in the repository root | Low | Fixed: deleted or moved to `legacy/` |
+| N11 | The live site may run an older build than `master` (the landing page still preloaded the arena chunks on 2026-11-25) | Medium | Open: confirm the Workers Builds deployment (owner) |
+| N12 | Lighthouse performance on `/` is only a warning (`warn`, 0.9), not a gate | Low | Open: raise it to an `error` after measuring the live site |
+| N13 | Legacy files are still served (`/manifest.json`, `/config.js`, the placeholder `/og-image.png`) | Low | Open: needs the Cloudflare `VITE_SUPABASE_*` build variables first (owner) |
 
 ---
 
@@ -99,8 +102,7 @@ Last updated: 2026-11-23
 
 ### N9 · `master` still carries the classic arena
 
-- **Severity:** Medium · **Status:** Open, needs a decision.
-- **Where:** [#87](https://github.com/dualmindlabs/DualMind_UI/pull/87) (`feat/arena-cutover` into `master`) removes the classic arena (`index.html`, `js/`, `css/`, `components/`, the legacy `leaderboard/` and `models/` files) and brings the redesign. It is open and 74 commits ahead of `master`. Merge order and conflicts are in `docs/RELEASE-MERGE.md` on that branch. Until it merges, this file describes `master`, and some code paths named above (`js/api/...`, `components/ShareModal.js`) disappear with it.
+- **Severity:** Medium · **Status:** Fixed. [#87](https://github.com/dualmindlabs/DualMind_UI/pull/87) (`feat/arena-cutover` into `master`) merged on 2026-11-23: the classic arena (`index.html`, `js/`, `css/`, `components/`, the legacy `leaderboard/` and `models/` files) is gone and the React app is what `master` builds. Some code paths named in the older sections above (`js/api/...`, `components/ShareModal.js`) no longer exist; they stay there as the record of what was found. What the live site serves is N11.
 
 ### N10 · Dead scripts and retired pages in the repository root
 
@@ -122,6 +124,23 @@ Still open, by design or because it needs an owner:
 - **A vote queued offline** on a masked battle shows the names only after a reload of the thread: the queue flush does not feed the open turn.
 - **The rating copy** (Elo, one vote at a time) still says "Elo" until the crowd board (Bradley-Terry) is switched on; change it in the same release.
 - **Sign-in notice emails** are throttled only in the browser: confirm the `email-wel-safe` function has its own per-user limit.
+
+### N11 · The live site may run an older build than `master`
+
+- **Severity:** Medium · **Status:** Open, needs the owner. · **Found:** 2026-11-25
+- **Where:** Cloudflare Workers Builds for `dualmind-arena`.
+- **How to reproduce:** the live landing page HTML still has `modulepreload` links for the `arena-*.js`, `compare-*.js`, `leaderboard-*.js` and `models-*.js` chunks, which [#127](https://github.com/dualmindlabs/DualMind_UI/pull/127) removed from `master`, and the live `sitemap.xml` `lastmod` was 2026-11-23.
+- **Fix:** check Workers → `dualmind-arena` → Deployments and re-run the build for `master`.
+
+### N12 · Lighthouse performance is a warning, not a gate
+
+- **Severity:** Low · **Status:** Open. `web/lighthouserc.json` asserts performance at 0.9 as `warn`; accessibility, best practices and SEO are `error`. A floor of 0.85 as `error` was considered, but the last measured mobile score of the deployed landing page was well below it (0.65 before #127), so a hard gate would fail CI on a number the code cannot move by itself. Measure `/` after the deployment in N11, then raise the assertion.
+
+### N13 · Legacy files are still served
+
+- **Severity:** Low · **Status:** Open, order-dependent. `/manifest.json` (old PWA manifest, broken icons), `/config.js` and the 1x1 placeholder `/og-image.png` are still in `dist/`. `build.js` falls back to the public Supabase values in `config.js` when `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are not set, so set both in Cloudflare first, then finish S13b in `docs/RELEASE-MERGE.md` (drop the files from `build.js`, point `/og-image.png` to `/og-default.png`). `FORCE_WAITLIST` (N8) is a separate, owner-only switch.
+
+---
 
 ## Related issues in the other repo
 

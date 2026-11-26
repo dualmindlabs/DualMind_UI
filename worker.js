@@ -44,7 +44,7 @@ import { checkRateLimit, isPublicCacheHit } from './server/rate-limit.js';
 import { sanitizeRequestId } from './server/request-id.js';
 import { cacheControlFor } from './server/caching.js';
 import { gateEnabled, isGatePassthrough } from './server/gate.js';
-import { redirectResponse } from './server/redirects.js';
+import { redirectResponse, trailingSlashRedirect } from './server/redirects.js';
 import {
   isNoindexPath,
   isSpaFallbackRoute,
@@ -183,6 +183,13 @@ const arena = {
     const redirect = redirectResponse(url);
     if (redirect) {
       return redirect;
+    }
+
+    // Trailing-slash pages: /leaderboard answers 301 to /leaderboard/ (the static assets server
+    // would use a temporary 307).
+    const slashRedirect = trailingSlashRedirect(url, request.method);
+    if (slashRedirect) {
+      return slashRedirect;
     }
 
     // 3. Client-only routes of the new web app (web/): React Router's SPA fallback page with

@@ -3,7 +3,9 @@ import { Suspense } from 'react';
 import { ArenaBoot, LazyArenaApp, useHomeView } from '@/features/arena';
 import { LandingPage, landingSeo } from '@/features/marketing';
 import type { SessionHandoffHandle } from '@/lib/session/handoff';
+import { ORG_GITHUB_URL, ORG_SITE_URL } from '@/lib/site/links';
 import { absoluteUrl, pageMeta, SITE_NAME } from '@/lib/site/page-meta';
+import { webApplicationJsonLd } from '@/lib/site/structured-data';
 
 import type { Route } from './+types/home';
 
@@ -36,10 +38,11 @@ export const meta: Route.MetaFunction = () =>
           '@type': 'Organization',
           '@id': `${absoluteUrl('/')}#organization`,
           name: 'DualMind Labs',
-          url: 'https://dualmindlab.tech',
+          url: ORG_SITE_URL,
           logo: absoluteUrl('/icon-512.png'),
-          sameAs: ['https://github.com/dualmindlabs'],
+          sameAs: [ORG_GITHUB_URL],
         },
+        webApplicationJsonLd(),
       ],
     },
   });

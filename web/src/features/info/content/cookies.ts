@@ -4,7 +4,7 @@ export const cookiesContent: PageContent = {
   slug: 'cookies',
   title: 'Cookie Policy',
   description:
-    'DualMind Arena sets no tracking cookies. This page lists the browser storage it does use: sign-in session, theme and one pre-launch preview cookie.',
+    'DualMind Arena sets no tracking cookies. This page lists the browser storage it uses: sign-in session, theme, settings and a pre-launch preview cookie.',
   eyebrow: 'Legal',
   heading: { text: 'Cookies,', human: 'almost none.' },
   intro:
@@ -25,7 +25,7 @@ export const cookiesContent: PageContent = {
     },
     {
       id: 'cookies-we-set',
-      heading: 'The one cookie',
+      heading: 'The preview cookie',
       blocks: [
         {
           type: 'definitions',
@@ -33,7 +33,7 @@ export const cookiesContent: PageContent = {
             {
               term: 'dm_preview',
               description:
-                'Set only when you open a link with the preview code, which lets you see the Arena before it opens to everyone. It lasts 30 days and only tells our server to show you the Arena instead of the waitlist. It is removed when you open the link that turns the preview off, or when you clear your cookies.',
+                'Only while the Arena is in pre-launch preview, and only when you open a link with the preview code, which lets you see the Arena before it opens to everyone. Once the Arena is open to everyone this cookie is no longer set. It lasts 30 days and only tells our server to show you the Arena instead of the waitlist. It is removed when you open the link that turns the preview off, or when you clear your cookies.',
             },
           ],
         },
@@ -133,7 +133,7 @@ export const cookiesContent: PageContent = {
         },
         {
           type: 'paragraph',
-          text: 'If you clear it all, you will be signed out and your theme and model choices will reset. The Arena still works if you block the preview cookie, since normal visitors never receive it.',
+          text: 'If you clear it all, you will be signed out and your theme and model choices will reset. The Arena still works if you block the preview cookie, since visitors without a preview link never receive it.',
         },
         {
           type: 'paragraph',
@@ -147,7 +147,7 @@ export const cookiesContent: PageContent = {
       blocks: [
         {
           type: 'paragraph',
-          text: 'Some pages load fonts or code libraries from a content delivery network. These requests share your IP address and browser details with that network, the same as any web request. The Privacy Policy covers the providers that handle your data.',
+          text: 'The Arena serves its own fonts and scripts, so its pages do not load them from third-party content delivery networks. When you choose a password, your browser checks it against the Pwned Passwords service of Have I Been Pwned, sending only the first five characters of a hash, never the password. The Privacy Policy covers the providers that handle your data.',
         },
       ],
     },

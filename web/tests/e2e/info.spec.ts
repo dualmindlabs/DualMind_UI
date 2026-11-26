@@ -49,6 +49,13 @@ const pages: PageSpec[] = [
     text: 'Do I need an account?',
   },
   {
+    slug: 'pricing',
+    path: '/pricing/',
+    title: 'Pricing · DualMind Arena',
+    h1: 'Free during the beta, no card needed.',
+    text: 'The limits that apply today',
+  },
+  {
     slug: 'privacy',
     path: '/privacy/',
     title: 'Privacy Policy · DualMind Arena',

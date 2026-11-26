@@ -14,7 +14,7 @@ export const BASE_SECURITY_HEADERS = Object.freeze({
   'Strict-Transport-Security': 'max-age=63072000; includeSubDomains',
   'X-Content-Type-Options': 'nosniff',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
-  'Permissions-Policy': 'camera=(), geolocation=(), payment=(), usb=(), microphone=(self)',
+  'Permissions-Policy': 'camera=(), geolocation=(), payment=(), usb=(), microphone=()',
   'Cross-Origin-Opener-Policy': 'same-origin',
   // Old browsers; frame-ancestors 'none' in the CSP is the modern equivalent.
   'X-Frame-Options': 'DENY',

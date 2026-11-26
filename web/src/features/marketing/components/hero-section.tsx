@@ -1,6 +1,6 @@
 import { ArrowRight } from 'lucide-react';
 
-import { HERO, LEADERBOARD_HREF } from '../content/landing';
+import { HERO, LEADERBOARD_HREF, lineupLine } from '../content/landing';
 import type { LiveStatsState } from '../hooks/use-live-stats';
 import { DuelPreview } from './duel-preview';
 import { HeroBackdrop } from './hero-backdrop';
@@ -64,6 +64,16 @@ export function HeroSection({ onAsk, stats }: HeroSectionProps) {
 
           <p className="mt-6 max-w-[34rem] animate-rise text-lead text-fg-soft [animation-delay:300ms]">
             {HERO.subhead}
+          </p>
+          <p
+            className="mt-3 max-w-[34rem] animate-rise text-ui-sm text-muted [animation-delay:360ms]"
+            data-testid="hero-lineup"
+          >
+            {lineupLine(
+              stats.status === 'ready'
+                ? { models: stats.stats.models, providers: stats.stats.providers.length }
+                : null,
+            )}
           </p>
 
           <HeroComposer

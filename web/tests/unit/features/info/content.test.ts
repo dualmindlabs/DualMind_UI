@@ -3,10 +3,13 @@ import { describe, expect, it } from 'vitest';
 import { BRAND_PRIMARY, BRAND_SUPPORTING } from '@/content/brand';
 import {
   type Block,
+  cookiesContent,
   creditsContent,
   infoPages,
   MAX_DESCRIPTION_LENGTH,
   type PageContent,
+  pricingContent,
+  privacyContent,
 } from '@/features/info';
 
 function blockText(block: Block): string[] {
@@ -122,6 +125,31 @@ describe('info page content', () => {
         expect(text).not.toMatch(/—/);
       }
     }
+  });
+
+  it('Pricing says free during the beta, is not in the editorial list and obeys the page rules', () => {
+    expect(infoPages.map(page => page.slug)).not.toContain('pricing');
+    expect(pricingContent.slug).toBe('pricing');
+    expect(pricingContent.description.length).toBeGreaterThan(40);
+    expect(pricingContent.description.length).toBeLessThanOrEqual(MAX_DESCRIPTION_LENGTH);
+    const text = allText(pricingContent).join('\n');
+    expect(text).toMatch(/free during the beta/i);
+    expect(text).toMatch(/credit card/i);
+    expect(text).not.toMatch(/\p{Extended_Pictographic}|—/u);
+    expect(text).not.toMatch(/\b(testimonial|trusted by|\d+ (?:users|teams))\b/i);
+    const ids = pricingContent.sections.map(section => section.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it('privacy and cookies disclose the breach check and no longer mention a CDN for fonts', () => {
+    const privacy = allText(privacyContent).join('\n');
+    expect(privacy).toMatch(/pwnedpasswords\.com/);
+    expect(privacy).toMatch(/Who is responsible/);
+    expect(privacy).toMatch(/DualMind Labs/);
+    expect(privacy).not.toMatch(/load fonts or code libraries from a content delivery network/);
+    const cookies = allText(cookiesContent).join('\n');
+    expect(cookies).not.toMatch(/load fonts or code libraries from a content delivery network/);
+    expect(cookies).toMatch(/only while the Arena is in pre-launch preview/i);
   });
 
   it('keeps the credits page out of the editorial list but gives it a heading and description', () => {
