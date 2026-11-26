@@ -453,6 +453,7 @@ jobs:
           path: screenshots
 
       - name: List the screenshots in the job summary
+        continue-on-error: true
         run: |
           {
             echo "### Screenshots"
@@ -462,6 +463,7 @@ jobs:
             for f in screenshots/*.png; do
               [ -e "$f" ] && echo "- \`$(basename "$f")\`"
             done
+            true
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Every shard passed

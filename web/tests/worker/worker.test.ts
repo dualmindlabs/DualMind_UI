@@ -190,10 +190,10 @@ describe('web app pages', () => {
     expect(response.headers.get('content-security-policy')).toContain("script-src 'self' 'sha256-");
   });
 
-  it('redirects /design to /design/', async () => {
+  it('redirects /design to /design/ with a permanent 301', async () => {
     const response = await preview('/design');
-    expect(response.status).toBe(307);
-    expect(response.headers.get('location')).toBe('/design/');
+    expect(response.status).toBe(301);
+    expect(response.headers.get('location')).toBe('https://arena.dualmindlab.tech/design/');
   });
 
   it('caches hashed build files for a year', async () => {

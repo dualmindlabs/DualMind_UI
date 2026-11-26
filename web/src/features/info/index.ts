@@ -16,6 +16,7 @@ export { CreditsPage } from './components/credits-page';
 export { FaqPage } from './components/faq-page';
 export { HowItWorksPage } from './components/how-it-works-page';
 export { NotFoundPage } from './components/not-found-page';
+export { PricingPage } from './components/pricing-page';
 export { PrivacyPage } from './components/privacy-page';
 export { TermsPage } from './components/terms-page';
 export * from './content';

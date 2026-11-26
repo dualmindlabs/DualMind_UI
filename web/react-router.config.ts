@@ -30,6 +30,7 @@ export default {
     '/credits',
     '/how-it-works',
     '/faq',
+    '/pricing',
     '/privacy',
     '/terms',
     '/cookies',

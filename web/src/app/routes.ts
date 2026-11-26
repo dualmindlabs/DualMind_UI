@@ -22,6 +22,8 @@ export default [
   route('credits', 'routes/credits.tsx'),
   route('how-it-works', 'routes/how-it-works.tsx'),
   route('faq', 'routes/faq.tsx'),
+  // What it costs: free during the beta, with the real limits.
+  route('pricing', 'routes/pricing.tsx'),
   route('privacy', 'routes/privacy.tsx'),
   route('terms', 'routes/terms.tsx'),
   route('cookies', 'routes/cookies.tsx'),

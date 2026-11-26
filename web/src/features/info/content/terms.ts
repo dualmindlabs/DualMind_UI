@@ -197,6 +197,7 @@ export const termsContent: PageContent = {
         {
           type: 'list',
           items: [
+            'The Service is run by DualMind Labs.',
             'General questions: support@dualmindlab.tech',
             'Privacy and data requests: privacy@dualmindlab.tech',
             `Complaints and reports: ${GRIEVANCE_EMAIL}`,

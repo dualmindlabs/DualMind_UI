@@ -5,6 +5,7 @@ import { RoleBadge } from '@/components/ui/role-badge';
 import { useArena } from '../hooks/use-arena';
 import { MODE_DETAILS } from '../lib/modes';
 import { DuelEmblem } from './duel-emblem';
+import { RevealCoachMark } from './reveal-coach-mark';
 
 /**
  * The empty arena's heading: the duel mark, the mode's eyebrow (with the A and B marks in a
@@ -37,6 +38,7 @@ export function EmptyState({
         <span className="block human-voice text-human">{details.heading.human}</span>
       </h1>
       <p className="max-w-xl text-ui text-fg-soft sm:text-lead">{details.lead}</p>
+      {mode === 'battle' ? <RevealCoachMark /> : null}
     </div>
   );
 }

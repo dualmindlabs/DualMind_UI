@@ -65,6 +65,12 @@ test('/ is prerendered: headline, demo answers, SEO tags and the hand-off script
   expect(head).toContain('name="twitter:card" content="summary_large_image"');
   expect(head).toContain('"@type":"WebSite"');
   expect(head).toContain('"@type":"Organization"');
+  expect(head).toContain('"@type":"WebApplication"');
+  expect(head).toContain('"isAccessibleForFree":true');
+  expect(head).toContain('"price":"0"');
+  // The built-by strip is part of the prerendered page, with real links only.
+  expect(html).toContain('Built by DualMind Labs');
+  expect(html).toContain('https://github.com/dualmindlabs/DualMind_UI/blob/master/CHANGELOG.md');
   expect(head).not.toMatch(/name="robots" content="noindex/);
   // The hand-off runs in <head>, before the theme script and before anything is painted.
   expect(head.indexOf('update-password.html')).toBeGreaterThan(-1);
