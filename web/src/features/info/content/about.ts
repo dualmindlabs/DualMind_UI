@@ -4,7 +4,7 @@ export const aboutContent: PageContent = {
   slug: 'about',
   title: 'About DualMind Arena',
   description:
-    'DualMind Arena is a place to compare AI models blind, side by side. You vote, and a public leaderboard shows an Elo rating for each model. Built by DualMind Labs.',
+    'DualMind Arena is a place to compare AI models blind, side by side. You vote, and a public leaderboard ranks them. Built by DualMind Labs.',
   eyebrow: 'About',
   heading: { text: 'Compare AI models,', human: 'blind.' },
   intro:
