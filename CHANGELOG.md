@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Cycle 3 truth and trust ([#134](https://github.com/dualmindlabs/DualMind_UI/issues/134))
+
+- **Rating copy**: no page, preview tag, `/leaderboard.md`, `/llms.txt` or crawler table says that every vote moves an Elo rating; they say the ratings are computed by the leaderboard service and are under audit.
+- **Guest battle**: the button and the line under the answers say the visitor signs up to run the prompt again as a rated battle (a guest battle has no owner, so it cannot be voted on).
+- **Public shares**: an AI-generated notice and a "Report this page" link on every shared page; Terms have a "Complaints and reports" section with a Grievance Officer slot (name is a placeholder, see KNOWN_ISSUES).
+- **Passwords**: Settings asks for the current password (or an emailed code for an account without one) before it saves a new one; `/update-password.html` shows its form only for a reset link.
+- **Arena prompt box**: the same 8,000-character limit as Compare, with a counter; failures pick their message by error kind (rate limit, edit your prompt), not by words in the message.
+- **Landing**: the "In the arena now" list drops four retired Groq models and keeps readable names; the home description is shorter.
+- **Search**: the crawler table and `/leaderboard.md` give models with fewer than 5 battles no rank.
+- **Privacy**: says that each model provider sets its own rules for prompts.
+
 ### Cycle 2 launch gaps ([#132](https://github.com/dualmindlabs/DualMind_UI/issues/132))
 
 All risky features are behind flags and OFF by default (`web/src/config/features.ts`, `web/.env.example`).

@@ -15,13 +15,13 @@ export function renderLeaderboardMarkdown(data: LeaderboardResponse, origin: str
   const lines = [
     '# DualMind Arena leaderboard',
     '',
-    `Updated: ${meta.generatedAt}. Ratings are Elo scores from blind head-to-head votes. Models marked "preliminary" have fewer than ${meta.provisionalBelow} battles.`,
+    `Updated: ${meta.generatedAt}. Ratings are Elo scores computed by the leaderboard service. They are under audit: we are checking that they follow from the recorded blind votes. Models marked "preliminary" have fewer than ${meta.provisionalBelow} battles and have no rank.`,
     '',
     '| Rank | Model | Provider | Elo | Win rate | Battles | Status |',
     '| ---: | --- | --- | ---: | ---: | ---: | --- |',
     ...items.map(
       item =>
-        `| ${item.eloRank} | ${escapeMarkdownCell(item.displayName)} | ${escapeMarkdownCell(item.providerName)} | ${item.eloScore.toFixed(1)} | ${item.winRate.toFixed(2)}% | ${item.totalResponses} | ${item.provisional ? 'preliminary' : ''} |`,
+        `| ${item.provisional ? '' : item.eloRank} | ${escapeMarkdownCell(item.displayName)} | ${escapeMarkdownCell(item.providerName)} | ${item.eloScore.toFixed(1)} | ${item.winRate.toFixed(2)}% | ${item.totalResponses} | ${item.provisional ? 'preliminary' : ''} |`,
     ),
     '',
     `Data as JSON: ${origin}/api/v2/leaderboard`,

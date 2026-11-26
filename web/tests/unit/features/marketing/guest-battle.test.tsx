@@ -87,7 +87,9 @@ describe('GuestBattle', () => {
     });
     expect(calls[0]?.headers.get('authorization')).toBeNull();
 
-    await userEvent.click(screen.getByRole('button', { name: 'Sign up to vote and reveal' }));
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Sign up to run it as a rated battle' }),
+    );
     expect(assign).toHaveBeenCalledWith(GUEST_SIGNUP_HREF);
     expect(window.sessionStorage.getItem(PROMPT_DRAFT_KEY)).toContain('What is recursion?');
   });

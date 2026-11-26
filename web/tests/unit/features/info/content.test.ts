@@ -11,6 +11,7 @@ import {
   pricingContent,
   privacyContent,
 } from '@/features/info';
+import { GRIEVANCE_EMAIL, GRIEVANCE_OFFICER_NAME } from '@/lib/site/links';
 
 function blockText(block: Block): string[] {
   switch (block.type) {
@@ -92,7 +93,7 @@ describe('info page content', () => {
   it('gives each legal page a summary callout and the update date', () => {
     for (const slug of ['privacy', 'terms', 'cookies']) {
       const page = infoPages.find(p => p.slug === slug);
-      expect(page?.updated).toBe(slug === 'terms' ? '2026-11-25' : '2026-11-26');
+      expect(page?.updated).toBe('2026-11-26');
       const hasSummary = page?.sections.some(section =>
         section.blocks.some(block => block.type === 'callout' && block.tone === 'summary'),
       );
@@ -125,6 +126,34 @@ describe('info page content', () => {
         expect(text).not.toMatch(/—/);
       }
     }
+  });
+
+  it('does not say that every vote moves or updates the ratings', () => {
+    for (const page of infoPages) {
+      for (const text of allText(page)) {
+        expect(text, page.slug).not.toMatch(
+          /\bevery vote\b[^.]{0,30}\b(?:moves?|updates?|feeds?)\b/i,
+        );
+        expect(text, page.slug).not.toMatch(/\beach vote (?:updates|moves)\b/i);
+        expect(text, page.slug).not.toMatch(/\bvotes feed (?:a|the) public elo/i);
+      }
+    }
+  });
+
+  it('names the Grievance Officer slot and the complaint address in the Terms', () => {
+    const terms = infoPages.find(page => page.slug === 'terms');
+    const text = terms ? allText(terms).join('\n') : '';
+    expect(text).toContain('Grievance Officer');
+    expect(text).toContain(GRIEVANCE_EMAIL);
+    // No invented person: until the owner names one, the name is a marked placeholder.
+    expect(GRIEVANCE_OFFICER_NAME).toMatch(/^\[.+\]$/);
+    expect(text).toContain(GRIEVANCE_OFFICER_NAME);
+  });
+
+  it('says in the privacy page that providers set their own rules for prompts', () => {
+    const privacy = infoPages.find(page => page.slug === 'privacy');
+    const text = privacy ? allText(privacy).join('\n') : '';
+    expect(text).toMatch(/do not control whether a model provider keeps a prompt/);
   });
 
   it('Pricing says free during the beta, is not in the editorial list and obeys the page rules', () => {

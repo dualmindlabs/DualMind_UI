@@ -1,3 +1,5 @@
+import { GRIEVANCE_EMAIL } from '@/lib/site/links';
+
 import type { PageContent } from './types';
 
 export const privacyContent: PageContent = {
@@ -165,9 +167,13 @@ export const privacyContent: PageContent = {
             {
               term: 'AI model providers',
               description:
-                'The company that runs the model answering a prompt receives that prompt, and in a conversation the earlier messages, so it can reply. Which providers receive your prompt depends on the models you or the Arena choose. The Models page shows the models in use. Each provider handles the prompt under its own terms.',
+                'The company that runs the model answering a prompt receives that prompt, and in a conversation the earlier messages, so it can reply. Which providers receive your prompt depends on the models you or the Arena choose. The Models page shows the models in use, and each model is labeled with the platform that runs it, such as Cloudflare Workers AI, Groq or Google. Each provider handles the prompt under its own terms.',
             },
           ],
+        },
+        {
+          type: 'paragraph',
+          text: 'We do not control whether a model provider keeps a prompt, for how long, or whether it uses prompts to improve its own models. That depends on the provider’s terms and on the plan we use with it, and we have not summarized each provider’s rules here. Read the provider’s own privacy terms if this matters to you, and do not send anything you would not want a provider to keep.',
         },
         {
           type: 'paragraph',
@@ -277,6 +283,7 @@ export const privacyContent: PageContent = {
           items: [
             'Privacy and data requests: privacy@dualmindlab.tech',
             'General help: support@dualmindlab.tech',
+            `Complaints and reports: ${GRIEVANCE_EMAIL}`,
           ],
         },
       ],

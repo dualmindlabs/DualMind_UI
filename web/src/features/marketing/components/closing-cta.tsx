@@ -11,7 +11,7 @@ import {
   SIGN_IN_HREF,
 } from '../content/landing';
 
-const PROMISES = ['Blind votes', 'Public Elo ratings', 'Open methodology'] as const;
+const PROMISES = ['Blind votes', 'Public leaderboard', 'Open methodology'] as const;
 
 /**
  * The closing call to action and the hand-off to the footer: one big sentence, one primary button

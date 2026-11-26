@@ -9,6 +9,7 @@ import {
 } from '@/components/vendor/prompt-kit/prompt-input';
 import { PROMPT_DATA_WARNING } from '@/content/prompt-warning';
 import { useModifierKey } from '@/hooks/use-modifier-key';
+import { MAX_PROMPT_CHARS } from '@/lib/api';
 import { cn } from '@/lib/utils/cn';
 
 import { useArena } from '../hooks/use-arena';
@@ -68,11 +69,14 @@ export function Composer({
   const { options } = useModelOptions();
   const choices = useModelChoices(mode === 'battle' ? undefined : options);
   const empty = draft.trim() === '';
+  const tooLong = draft.length > MAX_PROMPT_CHARS;
+  // The count appears when the box is nearly full, so a short prompt shows no number.
+  const showCount = draft.length >= MAX_PROMPT_CHARS * 0.8;
   // The hero composer has room below it; the docked one sits on the bottom edge.
   const picker = { placement: variant === 'hero' ? 'bottom' : 'top', avoidRef } as const;
 
   const send = () => {
-    if (busy || empty) return;
+    if (busy || empty || tooLong) return;
     // Side by side needs both models: a side left on random gets one now (legacy behaviour).
     const left = choices.left ?? (mode === 'side' ? randomOther(options, choices.right) : null);
     const right = choices.right ?? (mode === 'side' ? randomOther(options, left) : null);
@@ -216,7 +220,7 @@ export function Composer({
                   size="icon-sm"
                   aria-label="Send"
                   aria-keyshortcuts="Enter"
-                  disabled={empty}
+                  disabled={empty || tooLong}
                   data-testid="composer-send"
                   // The arrow lifts on hover, like the prompt leaving; disabled, it stays still.
                   className={cn(
@@ -231,6 +235,21 @@ export function Composer({
           </PromptInputActions>
         </PromptInput>
       </div>
+      {showCount ? (
+        <p
+          data-testid="prompt-count"
+          role={tooLong ? 'alert' : undefined}
+          className={cn(
+            'mt-2 px-2 font-mono text-caption tabular-nums',
+            tooLong ? 'text-bad' : 'text-muted',
+            hero && 'text-center',
+          )}
+        >
+          {tooLong
+            ? `Too long to send: ${draft.length.toLocaleString('en-US')} of ${MAX_PROMPT_CHARS.toLocaleString('en-US')} characters. Shorten it.`
+            : `${draft.length.toLocaleString('en-US')} / ${MAX_PROMPT_CHARS.toLocaleString('en-US')}`}
+        </p>
+      ) : null}
       <p
         data-testid="prompt-data-warning"
         className={cn('mt-2 px-2 text-caption text-muted', hero && 'text-center')}

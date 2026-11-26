@@ -42,11 +42,16 @@ const PAGE_TITLE = { leaderboard: 'Leaderboard', models: 'Models' };
  * @typedef {{ items: BoardItem[], meta: { generatedAt: string } }} Board
  */
 
-/** The first SEO_MAX_ITEMS well-formed rows, best first. */
-export function topItems(board) {
+/**
+ * The first SEO_MAX_ITEMS well-formed rows, best first. On the leaderboard, provisional rows are
+ * left out: the methodology page says they have no rank. The models page lists every model.
+ * @param {Board | null | undefined} board
+ * @param {SeoKind} [kind]
+ */
+export function topItems(board, kind = 'leaderboard') {
   const items = Array.isArray(board?.items) ? board.items : [];
   return items
-    .filter(item => item && typeof item.displayName === 'string' && item.displayName !== '')
+    .filter(item => item && typeof item.displayName === 'string' && item.displayName !== '' && !(kind === 'leaderboard' && item.provisional === true))
     .slice(0, SEO_MAX_ITEMS);
 }
 
@@ -62,7 +67,7 @@ export function jsonForScript(value) {
  * @param {string} origin
  */
 export function itemListJsonLd(kind, board, origin) {
-  const items = topItems(board);
+  const items = topItems(board, kind);
   const rating = item => `Elo ${Math.round(item.eloScore)}, ${item.totalResponses} battles`;
   return {
     '@context': 'https://schema.org',
@@ -89,7 +94,7 @@ export function itemListJsonLd(kind, board, origin) {
  * @param {Board} board
  */
 export function noscriptTable(kind, board) {
-  const items = topItems(board);
+  const items = topItems(board, kind);
   const stamp = String(board?.meta?.generatedAt ?? '').slice(0, 10);
   const asOf = /^\d{4}-\d{2}-\d{2}$/.test(stamp) ? ` as of ${stamp}` : '';
   const cell = value => `<td>${escapeHtml(value)}</td>`;
@@ -108,7 +113,7 @@ export function noscriptTable(kind, board) {
     `<noscript data-seo-data><section aria-label="${PAGE_TITLE[kind]} snapshot">` +
     `<h2>${kind === 'leaderboard' ? 'Leaderboard' : 'Models'}${asOf}</h2>` +
     `<table><caption>Top ${items.length} models in the DualMind Arena${asOf}. ` +
-    `Ratings come from blind human votes.</caption><thead>${head}</thead><tbody>${rows}</tbody></table>` +
+    `Ratings are computed by the leaderboard service and are under audit.</caption><thead>${head}</thead><tbody>${rows}</tbody></table>` +
     '</section></noscript>'
   );
 }
@@ -123,7 +128,7 @@ export function noscriptTable(kind, board) {
  */
 export function injectSeoData(response, kind, board, origin) {
   const Rewriter = /** @type {any} */ (globalThis).HTMLRewriter;
-  if (typeof Rewriter !== 'function' || topItems(board).length === 0) return response;
+  if (typeof Rewriter !== 'function' || topItems(board, kind).length === 0) return response;
   const jsonLd = `<script type="application/ld+json" data-seo-data>${jsonForScript(itemListJsonLd(kind, board, origin))}</script>`;
   const table = noscriptTable(kind, board);
   const out = new Rewriter()

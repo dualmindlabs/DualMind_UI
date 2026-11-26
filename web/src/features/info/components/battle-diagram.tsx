@@ -118,7 +118,7 @@ export function BattleDiagram() {
         />
       </div>
       <figcaption className="mx-auto mt-5 max-w-3xl text-center text-ui-sm text-fg-soft">
-        Your prompt goes to two anonymous models at once. You vote. The vote moves both ratings.
+        Your prompt goes to two anonymous models at once. You vote. Your vote is recorded.
       </figcaption>
     </figure>
   );

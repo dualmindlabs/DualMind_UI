@@ -310,6 +310,7 @@ test.describe('profile', () => {
     await expect(page.getByRole('button', { name: 'Account: Countess Ada' })).toBeVisible();
 
     await page.getByRole('button', { name: 'Change password' }).click();
+    await page.getByLabel('Current password', { exact: true }).fill('old-Passw0rd!');
     await page.getByLabel('New password', { exact: true }).fill(STRONG);
     await page.getByLabel('Confirm password', { exact: true }).fill(STRONG);
     await page.getByRole('button', { name: 'Save new password' }).click();

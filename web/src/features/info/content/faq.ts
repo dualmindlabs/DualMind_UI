@@ -18,7 +18,7 @@ export const faqContent: PageContent = {
           type: 'faq',
           question: 'What is DualMind Arena?',
           answer: [
-            'A place to compare AI models blind. You send one prompt, two models answer without their names, and you vote for the better answer. The votes feed a public Elo leaderboard.',
+            'A place to compare AI models blind. You send one prompt, two models answer without their names, and you vote for the better answer. Votes are recorded, and a public leaderboard shows an Elo rating for each model.',
           ],
         },
         {
@@ -81,7 +81,7 @@ export const faqContent: PageContent = {
           type: 'faq',
           question: 'How is the leaderboard calculated?',
           answer: [
-            'Each vote updates the Elo ratings of the two models in that battle. The leaderboard shows the resulting rating, with wins, losses and ties. The formula is explained on the How it works page.',
+            'The leaderboard shows an Elo rating for each model, with its wins, losses and ties. The ratings are computed by the leaderboard service and are under audit: we are checking that they follow from the recorded votes, and we will say here when that is done. The Elo formula is explained on the How it works page.',
           ],
         },
         {

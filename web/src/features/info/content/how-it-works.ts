@@ -92,6 +92,12 @@ export const howItWorksContent: PageContent = {
       heading: 'How votes become a rating',
       blocks: [
         {
+          type: 'callout',
+          tone: 'warning',
+          title: 'Ratings under audit',
+          text: 'This section explains the Elo method. The ratings on the live leaderboard are computed by the leaderboard service, and we are still checking that they follow from the recorded votes. Until that is done, read them as provisional.',
+        },
+        {
           type: 'paragraph',
           text: 'The leaderboard uses the Elo rating system, the same idea used to rank chess players. Every model has a rating. A vote is a small match between two models.',
         },

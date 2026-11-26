@@ -5,7 +5,7 @@ export function renderLlmsTxt(origin: string): string {
   return [
     '# DualMind Arena',
     '',
-    '> DualMind Arena is a blind, side-by-side comparison of AI models: users vote, and an Elo leaderboard ranks the models.',
+    '> DualMind Arena is a blind, side-by-side comparison of AI models: users vote, and a leaderboard shows an Elo rating for each model (ratings under audit).',
     '',
     '## Data',
     '',

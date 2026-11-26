@@ -14,6 +14,7 @@ import { useApiClient } from '@/hooks/use-api-client';
 import { useAuth } from '@/hooks/use-auth';
 import { useHydrated } from '@/hooks/use-hydrated';
 import { leaderboardQuery, type SharedThread } from '@/lib/api';
+import { reportShareHref } from '@/lib/site/links';
 import { shareIdFromLocation, sharePath, shareUrl } from '@/lib/site/share';
 import { canShareNatively, copyText, shareNatively } from '@/lib/utils/clipboard';
 import { cn } from '@/lib/utils/cn';
@@ -156,6 +157,11 @@ function SharedView({ threadId, shared }: { threadId: string; shared: SharedThre
         ) : (
           <ThreadTranscript messages={messages} threadMode={thread.mode} names={names} />
         )}
+        <p className="mt-8 text-ui-sm text-muted print:hidden" data-testid="share-ai-notice">
+          These answers were written by AI models and have not been reviewed. A person chose to
+          share this page.{' '}
+          <a href={reportShareHref(threadId, shareUrl(threadId))}>Report this page</a>
+        </p>
       </PageContainer>
 
       <section
@@ -173,7 +179,7 @@ function SharedView({ threadId, shared }: { threadId: string; shared: SharedThre
             </h2>
             <p className="max-w-reading text-lead text-fg-soft">
               Ask anything. Two anonymous models answer side by side, you pick the better one, and
-              only then do you see who they were. Every vote moves the public leaderboard.
+              only then do you see who they were.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">

@@ -32,6 +32,8 @@ function NewLinkAction() {
  * `/update-password.html`, the target of the reset email (unchanged address). supabase-js turns
  * the recovery tokens in the #hash into a session; this page then sets the new password. An
  * expired or used link, or a visit without one, gets a plain explanation and a new-link button.
+ * The form shows only for a recovery link: a signed-in visitor who opens the page directly cannot
+ * change the password this way (Settings asks for the current password).
  */
 export function UpdatePasswordPage({ link }: { link: CallbackUrl }) {
   const { status: authStatus, user, client } = useAuth();
@@ -108,7 +110,7 @@ export function UpdatePasswordPage({ link }: { link: CallbackUrl }) {
         This takes a moment.
       </StatusCard>
     );
-  } else if (authStatus === 'signed-out' || !user) {
+  } else if (authStatus === 'signed-out' || !user || link.type !== 'recovery') {
     content = (
       <StatusCard tone="error" title="Open the link from your email" action={<NewLinkAction />}>
         This page needs the link from your password reset email. Each link works once, for one hour.

@@ -14,7 +14,9 @@ import {
 import { compact, requireText } from './input';
 
 /** The backend's limits (backend PR 64): the prompt length and the token ceiling. */
-export const COMPARE_MAX_PROMPT_CHARS = 8_000;
+/** The longest prompt the API accepts, in the arena composer and in Compare alike. */
+export const MAX_PROMPT_CHARS = 8_000;
+export const COMPARE_MAX_PROMPT_CHARS = MAX_PROMPT_CHARS;
 export const COMPARE_DEFAULT_MAX_TOKENS = 512;
 
 export interface CompareInput {

@@ -88,6 +88,22 @@ describe('the data written into the page', () => {
     expect(topItems(null)).toEqual([]);
   });
 
+  it('leaves provisional models out of the leaderboard table but not the models list', () => {
+    const mixed = {
+      items: [item(1, 'ranked'), item(2, 'new-model', { provisional: true, totalResponses: 3 })],
+      meta: { generatedAt: '' },
+    };
+    expect(topItems(mixed, 'leaderboard').map(entry => entry.displayName)).toEqual(['ranked']);
+    expect(topItems(mixed, 'models')).toHaveLength(2);
+    expect(noscriptTable('leaderboard', mixed)).not.toContain('new-model');
+  });
+
+  it('does not claim that votes produce the ratings', () => {
+    const html = noscriptTable('leaderboard', board(1));
+    expect(html).toContain('under audit');
+    expect(html).not.toContain('blind human votes');
+  });
+
   it('labels the table with the date of the data and escapes every value', () => {
     const html = noscriptTable('leaderboard', {
       items: [item(1, '<script>alert(1)</script>', { providerName: 'a"b' })],

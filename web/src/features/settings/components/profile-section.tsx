@@ -193,6 +193,7 @@ function PasswordCard({ provider }: { provider: string }) {
       {open ? (
         <div className="max-w-md">
           <ChangePasswordForm
+            usesPassword={usesPassword}
             onChanged={() => {
               setOpen(false);
               toast.success('Password changed', {

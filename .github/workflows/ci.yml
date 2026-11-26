@@ -4,7 +4,7 @@ on:
   push:
     branches: [main, master]
   pull_request:
-    branches: [main, master]
+    branches: [main, master, cycle2/launch-gaps]
 
 jobs:
   build-and-lint:

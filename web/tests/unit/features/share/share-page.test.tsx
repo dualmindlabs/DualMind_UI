@@ -138,6 +138,12 @@ describe('SharePage', () => {
     expect(screen.getByTestId('share-loading')).toBeInTheDocument();
     expect(await screen.findByRole('heading', { level: 1, name: THREAD.title })).toBeVisible();
     expect(screen.getByTestId('share-lead')).toHaveTextContent('a verdict was cast');
+    const notice = screen.getByTestId('share-ai-notice');
+    expect(notice).toHaveTextContent('written by AI models');
+    expect(within(notice).getByRole('link', { name: 'Report this page' })).toHaveAttribute(
+      'href',
+      expect.stringContaining('mailto:grievance@'),
+    );
     const answerA = screen.getByRole('region', { name: /Answer A/ });
     const answerB = screen.getByRole('region', { name: /Answer B/ });
     // Display names come from the public leaderboard once it has loaded.
