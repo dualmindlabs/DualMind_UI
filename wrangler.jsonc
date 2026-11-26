@@ -81,8 +81,12 @@
     { "name": "RL_READ", "namespace_id": "1005", "simple": { "limit": 30, "period": 10 } }
   ],
   "observability": {
+    // Logs on, with head sampling so launch-day traffic cannot run up the log volume: a quarter
+    // of the requests are logged (429s, 5xx, share-preview timeouts and the structured
+    // console events of worker.js and server/). Raise the rate to 1 to debug an incident.
     "logs": {
-      "enabled": false,
+      "enabled": true,
+      "head_sampling_rate": 0.25,
       "invocation_logs": true
     }
   }

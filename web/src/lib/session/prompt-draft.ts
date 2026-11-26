@@ -115,13 +115,15 @@ export const PROMPT_SIGN_IN_HREF = `/login/?redirect=${encodeURIComponent('/')}`
 
 /**
  * The landing page's send: keeps the prompt (when storage allows) and leaves for sign-in with a
- * full page load. Without storage the visitor still signs in, just without the prompt.
+ * full page load. Without storage the visitor still signs in, just without the prompt. Returns
+ * whether the prompt was kept, so the page only says "your prompt goes with you" when it does.
  */
 export function sendPromptToSignIn(
   text: string,
   navigate: (href: string) => void = href => window.location.assign(href),
   storage: DraftStorage | null = draftStorage(),
-): void {
-  savePromptDraft(text, storage);
+): boolean {
+  const kept = savePromptDraft(text, storage);
   navigate(PROMPT_SIGN_IN_HREF);
+  return kept;
 }

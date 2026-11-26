@@ -96,7 +96,7 @@ export interface PageContent {
 }
 
 export type PageSlug =
-  'about' | 'credits' | 'how-it-works' | 'faq' | 'privacy' | 'terms' | 'cookies';
+  'about' | 'credits' | 'how-it-works' | 'faq' | 'pricing' | 'privacy' | 'terms' | 'cookies';
 
 /** Longest allowed meta description. */
 export const MAX_DESCRIPTION_LENGTH = 155;

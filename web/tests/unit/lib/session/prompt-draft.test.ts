@@ -103,7 +103,7 @@ describe('the landing prompt draft', () => {
   it('sends the visitor to sign in, back to the arena, with the prompt kept', () => {
     const storage = memory();
     const navigate = vi.fn();
-    sendPromptToSignIn('Which is bigger, 9.11 or 9.9?', navigate, storage);
+    expect(sendPromptToSignIn('Which is bigger, 9.11 or 9.9?', navigate, storage)).toBe(true);
     expect(navigate).toHaveBeenCalledWith('/login/?redirect=%2F');
     expect(PROMPT_SIGN_IN_HREF).toBe('/login/?redirect=%2F');
     expect(readPromptDraft(storage)).toBe('Which is bigger, 9.11 or 9.9?');
@@ -111,7 +111,7 @@ describe('the landing prompt draft', () => {
 
   it('still sends the visitor to sign in when storage is blocked', () => {
     const navigate = vi.fn();
-    sendPromptToSignIn('Hello', navigate, broken);
+    expect(sendPromptToSignIn('Hello', navigate, broken)).toBe(false);
     expect(navigate).toHaveBeenCalledWith(PROMPT_SIGN_IN_HREF);
   });
 });

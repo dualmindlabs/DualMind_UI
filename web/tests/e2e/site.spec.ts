@@ -27,12 +27,27 @@ test('/design/ is prerendered HTML: title, noindex and content without JavaScrip
   expect(scriptAt).toBeLessThan(html.indexOf('<body'));
 });
 
-test('/design redirects to /design/ (or serves it)', async ({ request }) => {
-  const response = await request.get('/design', withCookie);
-  expect([200, 301, 307, 308]).toContain(response.status());
-  if (response.status() !== 200) {
-    expect(new URL(response.headers()['location'] ?? '', 'http://x').pathname).toBe('/design/');
+test('pages without the trailing slash answer a permanent 301 to the slash form', async ({
+  request,
+}) => {
+  for (const page of ['/design', '/leaderboard', '/pricing', '/privacy']) {
+    const response = await request.get(`${page}?ref=ph`, withCookie);
+    expect(response.status(), page).toBe(301);
+    const location = new URL(response.headers()['location'] ?? '', 'http://x');
+    expect(location.pathname, page).toBe(`${page}/`);
+    expect(location.search, page).toBe('?ref=ph');
   }
+});
+
+test('/.well-known/security.txt is served as text with the required fields', async ({
+  request,
+}) => {
+  const response = await request.get('/.well-known/security.txt', withCookie);
+  expect(response.status()).toBe(200);
+  expect(response.headers()['content-type']).toContain('text/plain');
+  const text = await response.text();
+  expect(text).toMatch(/^Contact: .+/m);
+  expect(text).toMatch(/^Expires: \d{4}-\d{2}-\d{2}T/m);
 });
 
 test('hashed build files are immutable; legacy files keep their headers', async ({ request }) => {
@@ -106,7 +121,7 @@ test('/design/: security headers, enforced CSP with script hashes, ETag revalida
   expect(headers['x-content-type-options']).toBe('nosniff');
   expect(headers['referrer-policy']).toBe('strict-origin-when-cross-origin');
   expect(headers['permissions-policy']).toBe(
-    'camera=(), geolocation=(), payment=(), usb=(), microphone=(self)',
+    'camera=(), geolocation=(), payment=(), usb=(), microphone=()',
   );
   expect(headers['cross-origin-opener-policy']).toBe('same-origin');
   expect(headers['x-frame-options']).toBe('DENY');

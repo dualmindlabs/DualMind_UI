@@ -15,6 +15,12 @@ export interface SiteLink {
 
 /** The public source repository. */
 export const GITHUB_URL = 'https://github.com/dualmindlabs/DualMind_UI';
+/** The organization's own site (the Organization JSON-LD `url`, the built-by strip). */
+export const ORG_SITE_URL = 'https://dualmindlab.tech';
+/** The organization's GitHub page (the Organization JSON-LD `sameAs`, the built-by strip). */
+export const ORG_GITHUB_URL = 'https://github.com/dualmindlabs';
+/** The public changelog: what changed and when, in the repository. */
+export const CHANGELOG_URL = `${GITHUB_URL}/blob/master/CHANGELOG.md`;
 /** The support address already used across the site (FAQ, privacy page). */
 export const SUPPORT_EMAIL = 'support@dualmindlab.tech';
 
@@ -33,7 +39,12 @@ export function reportShareHref(shareId: string, pageUrl: string): string {
   return `mailto:${GRIEVANCE_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 
-/** The header navigation (design-direction.md section 12, global shell). */
+/**
+ * The header navigation (design-direction.md section 12, global shell). Four links on purpose:
+ * the signed-in arena header shows them too, and a fifth overflows it between 1024 and 1280 px
+ * (arena-flow.spec.ts). Pricing is in the footer, the landing page's closing section and the
+ * sitemap.
+ */
 export const primaryNav: readonly SiteLink[] = [
   { label: 'Arena', href: '/', description: 'Ask once, compare two anonymous models' },
   { label: 'Leaderboard', href: '/leaderboard/', description: 'Model rankings' },
@@ -62,6 +73,7 @@ export const footerColumns: readonly FooterColumn[] = [
       { label: 'Arena', href: '/' },
       { label: 'Leaderboard', href: '/leaderboard/' },
       { label: 'Models', href: '/models/' },
+      { label: 'Pricing', href: '/pricing/' },
       { label: 'API', href: '/developers/' },
     ],
   },

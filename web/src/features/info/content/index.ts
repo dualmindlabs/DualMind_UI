@@ -3,6 +3,7 @@ export { cookiesContent } from './cookies';
 export { creditsContent } from './credits';
 export { faqContent } from './faq';
 export { howItWorksContent } from './how-it-works';
+export { pricingContent } from './pricing';
 export { privacyContent } from './privacy';
 export { termsContent } from './terms';
 export {
