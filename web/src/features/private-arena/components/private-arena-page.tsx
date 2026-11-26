@@ -53,7 +53,13 @@ function nameOf(model: VoteModels['left'] | undefined): string {
 }
 
 /** Create a prompt set (a name and one prompt per line). */
-function CreateArena({ disabled, onCreated }: { disabled: boolean; onCreated: (id: string) => void }) {
+function CreateArena({
+  disabled,
+  onCreated,
+}: {
+  disabled: boolean;
+  onCreated: (id: string) => void;
+}) {
   const api = useApiClient();
   const queryClient = useQueryClient();
   const [name, setName] = useState('');
@@ -238,8 +244,16 @@ function Runner({ arena, onDeleted }: { arena: PrivateArena; onDeleted: () => vo
           <div className="grid gap-4 md:grid-cols-2">
             {(
               [
-                ['A', battle.agent1.text, round.kind === 'voted' ? nameOf(round.models?.left) : null],
-                ['B', battle.agent2.text, round.kind === 'voted' ? nameOf(round.models?.right) : null],
+                [
+                  'A',
+                  battle.agent1.text,
+                  round.kind === 'voted' ? nameOf(round.models?.left) : null,
+                ],
+                [
+                  'B',
+                  battle.agent2.text,
+                  round.kind === 'voted' ? nameOf(round.models?.right) : null,
+                ],
               ] as const
             ).map(([label, text, model]) => (
               <article
@@ -283,7 +297,11 @@ function Runner({ arena, onDeleted }: { arena: PrivateArena; onDeleted: () => vo
             loading={round.kind === 'loading'}
             disabled={next === null}
           >
-            {round.kind === 'voted' ? 'Next prompt' : done > 0 ? 'Continue' : 'Run the first battle'}
+            {round.kind === 'voted'
+              ? 'Next prompt'
+              : done > 0
+                ? 'Continue'
+                : 'Run the first battle'}
           </Button>
           {next === null ? (
             <span className="text-ui-sm text-fg-soft">Every prompt has been judged.</span>
@@ -305,7 +323,12 @@ function Runner({ arena, onDeleted }: { arena: PrivateArena; onDeleted: () => vo
       <div className="flex flex-wrap items-center gap-3 border-t border-line pt-4">
         {confirmDelete ? (
           <>
-            <Button variant="destructive" size="sm" loading={remove.isPending} onClick={() => remove.mutate()}>
+            <Button
+              variant="destructive"
+              size="sm"
+              loading={remove.isPending}
+              onClick={() => remove.mutate()}
+            >
               Delete this arena
             </Button>
             <Button variant="ghost" size="sm" onClick={() => setConfirmDelete(false)}>
@@ -377,8 +400,8 @@ function Workspace() {
           <Runner key={current.id} arena={current} onDeleted={() => setSelected(null)} />
         ) : (
           <p className={CARD} data-testid="private-empty">
-            You have no private arenas yet. Create one with your own prompts and judge two
-            anonymous answers to each.
+            You have no private arenas yet. Create one with your own prompts and judge two anonymous
+            answers to each.
           </p>
         )}
       </div>
@@ -428,7 +451,9 @@ function SignedInGate() {
     <div className="max-w-reading pt-10">
       <div className={CARD}>
         <h2 className="text-h3 text-fg">
-          {status === 'unavailable' ? 'Sign-in is unavailable here' : 'Sign in to use private arenas'}
+          {status === 'unavailable'
+            ? 'Sign-in is unavailable here'
+            : 'Sign in to use private arenas'}
         </h2>
         {status === 'unavailable' ? null : (
           <a

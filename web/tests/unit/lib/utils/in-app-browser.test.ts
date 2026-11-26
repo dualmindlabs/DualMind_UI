@@ -24,7 +24,11 @@ describe('detectInAppBrowser', () => {
       'Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/120.0 Mobile Safari/537.36 BytedanceWebview/d8a21c6',
       'TikTok',
     ],
-    ['Snapchat', 'Mozilla/5.0 (iPhone) AppleWebKit/605.1.15 Mobile/15E148 Snapchat/12.0', 'Snapchat'],
+    [
+      'Snapchat',
+      'Mozilla/5.0 (iPhone) AppleWebKit/605.1.15 Mobile/15E148 Snapchat/12.0',
+      'Snapchat',
+    ],
     [
       'a generic Android web view',
       'Mozilla/5.0 (Linux; Android 12; SM-G991B Build/SP1A; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/115.0 Mobile Safari/537.36',

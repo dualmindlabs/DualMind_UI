@@ -38,10 +38,13 @@ const board = (count = 3) => ({
 });
 
 const page = () =>
-  new Response('<!doctype html><html><head><title>L</title></head><body><div id="root"></div></body></html>', {
-    status: 200,
-    headers: { 'content-type': 'text/html; charset=utf-8', etag: '"x"' },
-  });
+  new Response(
+    '<!doctype html><html><head><title>L</title></head><body><div id="root"></div></body></html>',
+    {
+      status: 200,
+      headers: { 'content-type': 'text/html; charset=utf-8', etag: '"x"' },
+    },
+  );
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -79,7 +82,9 @@ describe('the data written into the page', () => {
   it('keeps only the top rows and skips rows without a name', () => {
     const many = board(SEO_MAX_ITEMS + 10);
     expect(topItems(many)).toHaveLength(SEO_MAX_ITEMS);
-    expect(topItems({ items: [item(1, ''), item(2, 'ok')], meta: { generatedAt: '' } })).toHaveLength(1);
+    expect(
+      topItems({ items: [item(1, ''), item(2, 'ok')], meta: { generatedAt: '' } }),
+    ).toHaveLength(1);
     expect(topItems(null)).toEqual([]);
   });
 
@@ -155,7 +160,10 @@ describe('enrichSeoPage is fail-safe', () => {
       expect(log).toHaveBeenCalledWith(expect.objectContaining({ event: 'seo_data_skipped' }));
       const failing = page();
       expect(
-        await enrichSeoPage(request(), failing, { loadBoard: () => Promise.reject(new Error('x')), log }),
+        await enrichSeoPage(request(), failing, {
+          loadBoard: () => Promise.reject(new Error('x')),
+          log,
+        }),
       ).toBe(failing);
       const empty = page();
       expect(
@@ -172,8 +180,14 @@ describe('enrichSeoPage is fail-safe', () => {
       for (const [req, res] of [
         [request('/about/'), page()],
         [request('/leaderboard/', 'HEAD'), page()],
-        [request(), new Response('nope', { status: 404, headers: { 'content-type': 'text/html' } })],
-        [request(), new Response('{}', { status: 200, headers: { 'content-type': 'application/json' } })],
+        [
+          request(),
+          new Response('nope', { status: 404, headers: { 'content-type': 'text/html' } }),
+        ],
+        [
+          request(),
+          new Response('{}', { status: 200, headers: { 'content-type': 'application/json' } }),
+        ],
       ] as const) {
         expect(await enrichSeoPage(req, res, { loadBoard })).toBe(res);
       }
@@ -183,8 +197,8 @@ describe('enrichSeoPage is fail-safe', () => {
 
   it('injectSeoData returns the page itself for an empty board', () => {
     const original = page();
-    expect(injectSeoData(original, 'models', { items: [], meta: { generatedAt: '' } }, ORIGIN)).toBe(
-      original,
-    );
+    expect(
+      injectSeoData(original, 'models', { items: [], meta: { generatedAt: '' } }, ORIGIN),
+    ).toBe(original);
   });
 });

@@ -208,7 +208,7 @@ test('compare links and the auth callback get link-preview tags, not a blank car
   const html = await compare.text();
   expect(html).toContain('Shared comparison · DualMind Arena');
   expect(html).toContain('property="og:image"');
-  expect((await (await request.get('/auth-callback.html', withCookie)).text())).toContain(
+  expect(await (await request.get('/auth-callback.html', withCookie)).text()).toContain(
     'Signing you in · DualMind Arena',
   );
 });

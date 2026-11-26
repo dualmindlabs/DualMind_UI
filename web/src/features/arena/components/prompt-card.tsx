@@ -27,10 +27,7 @@ export function PromptCard({ id, number, prompt, className }: PromptCardProps) {
         <h2 id={id} className="shrink-0 text-caption font-semibold tracking-tight text-human">
           You<span className="sr-only">, prompt {number}</span>
         </h2>
-        <p
-          dir="auto"
-          className="min-w-0 flex-1 truncate text-ui text-fg group-open/prompt:hidden"
-        >
+        <p dir="auto" className="min-w-0 flex-1 truncate text-ui text-fg group-open/prompt:hidden">
           {prompt}
         </p>
         <span className="hidden min-w-0 flex-1 text-caption text-muted group-open/prompt:block">

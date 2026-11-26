@@ -8,7 +8,12 @@ import {
   resetAuthHandoffClaim,
   saveAuthHandoff,
 } from '@/lib/session/auth-handoff';
-import { type DraftStorage, PROMPT_DRAFT_KEY, readPromptDraft, savePromptDraft } from '@/lib/session/prompt-draft';
+import {
+  type DraftStorage,
+  PROMPT_DRAFT_KEY,
+  readPromptDraft,
+  savePromptDraft,
+} from '@/lib/session/prompt-draft';
 
 // Cycle 2 audit P1-5: the prompt draft and the wanted page survive a sign-up (the confirmation
 // link opens a new tab) and an OAuth round trip, once, for an hour at most.
@@ -70,8 +75,12 @@ describe('saveAuthHandoff', () => {
       },
       removeItem: () => undefined,
     };
-    expect(saveAuthHandoff('/compare/', { local: blocked, session: memory(), now: NOW }, ORIGIN)).toBe(false);
-    expect(saveAuthHandoff('/compare/', { local: null, session: memory(), now: NOW }, ORIGIN)).toBe(false);
+    expect(
+      saveAuthHandoff('/compare/', { local: blocked, session: memory(), now: NOW }, ORIGIN),
+    ).toBe(false);
+    expect(saveAuthHandoff('/compare/', { local: null, session: memory(), now: NOW }, ORIGIN)).toBe(
+      false,
+    );
   });
 });
 
@@ -117,7 +126,9 @@ describe('claimAuthHandoff', () => {
     expect(old.data.has(AUTH_HANDOFF_KEY)).toBe(false);
     resetAuthHandoffClaim();
     const future = saved();
-    expect(claimAuthHandoff(ORIGIN, { local: future, session: memory(), now: NOW - 10 * 60_000 })).toBeNull();
+    expect(
+      claimAuthHandoff(ORIGIN, { local: future, session: memory(), now: NOW - 10 * 60_000 }),
+    ).toBeNull();
   });
 
   it('validates the redirect again and ignores a broken record', () => {

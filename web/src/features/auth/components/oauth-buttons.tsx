@@ -30,9 +30,11 @@ function InAppBrowserNotice({ browser }: { browser: string }) {
       className="grid gap-2 rounded-lg border border-warn/50 px-4 py-3 text-ui-sm text-fg-soft"
     >
       <p>
-        <strong className="font-medium text-fg">Open this page in your browser to use Google.</strong>{' '}
-        Google does not allow sign-in inside {browser}. Use GitHub or an email code here, or copy the
-        link and paste it into Safari or Chrome.
+        <strong className="font-medium text-fg">
+          Open this page in your browser to use Google.
+        </strong>{' '}
+        Google does not allow sign-in inside {browser}. Use GitHub or an email code here, or copy
+        the link and paste it into Safari or Chrome.
       </p>
       <Button
         variant="secondary"

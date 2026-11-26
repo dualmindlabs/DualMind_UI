@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { nextPromptIndex, parsePrompts, validateArenaName } from '@/features/private-arena/lib/prompts';
+import {
+  nextPromptIndex,
+  parsePrompts,
+  validateArenaName,
+} from '@/features/private-arena/lib/prompts';
 
 describe('parsePrompts', () => {
   it('takes one prompt per line and ignores blank lines and spaces', () => {

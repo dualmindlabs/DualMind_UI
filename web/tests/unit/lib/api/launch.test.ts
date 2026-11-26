@@ -49,9 +49,15 @@ describe('startGuestBattle', () => {
 
   it('refuses an empty prompt, a prompt over 500 characters or a missing token locally', async () => {
     const { api, calls } = client(jsonResponse(battle));
-    await expect(api.startGuestBattle({ prompt: ' ', turnstileToken: 'tok' })).rejects.toBeInstanceOf(ApiError);
-    await expect(api.startGuestBattle({ prompt: 'x'.repeat(501), turnstileToken: 'tok' })).rejects.toBeInstanceOf(ApiError);
-    await expect(api.startGuestBattle({ prompt: 'ok', turnstileToken: '' })).rejects.toBeInstanceOf(ApiError);
+    await expect(
+      api.startGuestBattle({ prompt: ' ', turnstileToken: 'tok' }),
+    ).rejects.toBeInstanceOf(ApiError);
+    await expect(
+      api.startGuestBattle({ prompt: 'x'.repeat(501), turnstileToken: 'tok' }),
+    ).rejects.toBeInstanceOf(ApiError);
+    await expect(api.startGuestBattle({ prompt: 'ok', turnstileToken: '' })).rejects.toBeInstanceOf(
+      ApiError,
+    );
     expect(calls).toHaveLength(0);
   });
 });
@@ -66,7 +72,9 @@ describe('private arena endpoints', () => {
     expect(created.calls[0]?.body).toEqual({ name: 'Support', prompts: ['one', 'two'] });
     expect(created.calls[0]?.headers.get('authorization')).toBe('Bearer token-1');
 
-    const listed = client(jsonResponse([{ id: 'a1', name: 'Support', promptCount: 2, battlesDone: 1 }]));
+    const listed = client(
+      jsonResponse([{ id: 'a1', name: 'Support', promptCount: 2, battlesDone: 1 }]),
+    );
     await expect(listed.api.listPrivateArenas()).resolves.toEqual([
       { id: 'a1', name: 'Support', promptCount: 2, battlesDone: 1 },
     ]);
@@ -76,7 +84,9 @@ describe('private arena endpoints', () => {
   });
 
   it('runs a battle, votes with both_bad spelled the backend way, and reads the board', async () => {
-    const run = client(jsonResponse({ battleId: 'b1', agent1: { text: 'A' }, agent2: { text: 'B' } }));
+    const run = client(
+      jsonResponse({ battleId: 'b1', agent1: { text: 'A' }, agent2: { text: 'B' } }),
+    );
     const result = await run.api.startPrivateBattle('a1', 2);
     expect(result.battleId).toBe('b1');
     expect(run.calls[0]?.url).toBe('/api/private-arenas/a1/battle');
@@ -95,9 +105,13 @@ describe('private arena endpoints', () => {
     ).rejects.toBeInstanceOf(ApiError);
 
     const unnamed = client(jsonResponse({}));
-    await expect(unnamed.api.votePrivateBattle('a1', { battleId: 'b1', choice: 'tie' })).resolves.toBeNull();
+    await expect(
+      unnamed.api.votePrivateBattle('a1', { battleId: 'b1', choice: 'tie' }),
+    ).resolves.toBeNull();
 
-    const board = client(jsonResponse([{ model: 'vendor/alpha', wins: 3, losses: 1, ties: 0, battles: 4 }]));
+    const board = client(
+      jsonResponse([{ model: 'vendor/alpha', wins: 3, losses: 1, ties: 0, battles: 4 }]),
+    );
     await expect(board.api.getPrivateBoard('a1')).resolves.toEqual([
       { model: 'vendor/alpha', wins: 3, losses: 1, ties: 0, battles: 4 },
     ]);
@@ -117,7 +131,9 @@ describe('guestBattleMessage', () => {
     new ApiError({ kind, code, message: 'm', status: 400 });
 
   it('says what to do for each failure', () => {
-    expect(guestBattleMessage(error('forbidden', 'TURNSTILE_FAILED'))).toMatch(/check did not pass/);
+    expect(guestBattleMessage(error('forbidden', 'TURNSTILE_FAILED'))).toMatch(
+      /check did not pass/,
+    );
     expect(guestBattleMessage(error('rate_limited', 'RATE'))).toMatch(/today/);
     expect(guestBattleMessage(error('not_found', 'NOT_FOUND'))).toMatch(/not available/);
     expect(guestBattleMessage(error('server', 'BOOM')).length).toBeGreaterThan(0);

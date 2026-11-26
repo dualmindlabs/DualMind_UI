@@ -24,10 +24,12 @@ vi.mock('@/hooks/use-features', () => ({
 }));
 
 vi.mock('@/lib/turnstile', () => ({
-  renderTurnstile: vi.fn((_container: HTMLElement, _key: string, onToken: (t: string | null) => void) => {
-    onToken('turnstile-token');
-    return Promise.resolve({ reset: vi.fn(), remove: vi.fn() });
-  }),
+  renderTurnstile: vi.fn(
+    (_container: HTMLElement, _key: string, onToken: (t: string | null) => void) => {
+      onToken('turnstile-token');
+      return Promise.resolve({ reset: vi.fn(), remove: vi.fn() });
+    },
+  ),
 }));
 
 const assign = vi.fn();
@@ -79,7 +81,10 @@ describe('GuestBattle', () => {
     expect(document.body).not.toHaveTextContent('secret-one');
     expect(document.body).not.toHaveTextContent('secret-two');
     expect(calls[0]?.url).toBe('/api/arena/guest-battle');
-    expect(calls[0]?.body).toEqual({ prompt: 'What is recursion?', turnstileToken: 'turnstile-token' });
+    expect(calls[0]?.body).toEqual({
+      prompt: 'What is recursion?',
+      turnstileToken: 'turnstile-token',
+    });
     expect(calls[0]?.headers.get('authorization')).toBeNull();
 
     await userEvent.click(screen.getByRole('button', { name: 'Sign up to vote and reveal' }));
@@ -100,6 +105,8 @@ describe('GuestBattle', () => {
     const run = screen.getByRole('button', { name: 'Run the battle' });
     await waitFor(() => expect(run).toBeEnabled());
     await userEvent.click(run);
-    expect(await screen.findByTestId('guest-battle-status')).toHaveTextContent(/check did not pass/);
+    expect(await screen.findByTestId('guest-battle-status')).toHaveTextContent(
+      /check did not pass/,
+    );
   });
 });

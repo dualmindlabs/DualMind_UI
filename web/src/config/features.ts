@@ -47,8 +47,7 @@ export function parseFeatures(env: EnvSource): FeatureConfig {
       guestBattle: isOn(env, 'VITE_FEATURE_GUEST_BATTLE'),
       privateArena: isOn(env, 'VITE_FEATURE_PRIVATE_ARENA'),
     },
-    analyticsToken:
-      typeof token === 'string' && TOKEN_RE.test(token.trim()) ? token.trim() : null,
+    analyticsToken: typeof token === 'string' && TOKEN_RE.test(token.trim()) ? token.trim() : null,
   };
 }
 

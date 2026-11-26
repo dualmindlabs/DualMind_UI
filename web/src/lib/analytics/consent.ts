@@ -58,9 +58,7 @@ type SignalSource = {
  * Control. Such a visitor is never asked and never counted.
  */
 export function trackingBlocked(
-  source: SignalSource | undefined = typeof navigator === 'undefined'
-    ? undefined
-    : navigator,
+  source: SignalSource | undefined = typeof navigator === 'undefined' ? undefined : navigator,
   win: { doNotTrack?: string | null } | undefined = typeof window === 'undefined'
     ? undefined
     : (window as unknown as { doNotTrack?: string | null }),

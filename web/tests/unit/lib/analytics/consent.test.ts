@@ -1,6 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { analyticsEnabled, BEACON_SRC, FUNNEL_EVENT, loadBeacon, track, unloadBeacon } from '@/lib/analytics';
+import {
+  analyticsEnabled,
+  BEACON_SRC,
+  FUNNEL_EVENT,
+  loadBeacon,
+  track,
+  unloadBeacon,
+} from '@/lib/analytics';
 import {
   analyticsActive,
   CONSENT_KEY,
@@ -67,7 +74,9 @@ describe('trackingBlocked', () => {
 
   it('is false without a signal', () => {
     expect(trackingBlocked({ doNotTrack: '0' }, undefined)).toBe(false);
-    expect(trackingBlocked({ doNotTrack: null, globalPrivacyControl: false }, { doNotTrack: null })).toBe(false);
+    expect(
+      trackingBlocked({ doNotTrack: null, globalPrivacyControl: false }, { doNotTrack: null }),
+    ).toBe(false);
     expect(trackingBlocked({}, undefined)).toBe(false);
   });
 });
@@ -108,7 +117,10 @@ describe('the beacon', () => {
     expect(scripts).toHaveLength(1);
     const script = scripts[0] as HTMLScriptElement;
     expect(script.src).toBe(BEACON_SRC);
-    expect(JSON.parse(script.getAttribute('data-cf-beacon') ?? '{}')).toEqual({ token: TOKEN, spa: true });
+    expect(JSON.parse(script.getAttribute('data-cf-beacon') ?? '{}')).toEqual({
+      token: TOKEN,
+      spa: true,
+    });
     unloadBeacon();
     expect(document.querySelector('script[data-dm-analytics]')).toBeNull();
   });

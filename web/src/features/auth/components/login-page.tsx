@@ -55,7 +55,9 @@ export function LoginPage() {
               <OAuthButtons onError={setProviderError} />
               <FormStatus error={providerError} status={null} />
             </div>
-            <OrDivider label={buildFlags.phoneSignIn ? 'or with your email or phone' : 'or with your email'} />
+            <OrDivider
+              label={buildFlags.phoneSignIn ? 'or with your email or phone' : 'or with your email'}
+            />
             <Tabs defaultValue="password" className="gap-6">
               <TabsList aria-label="How to sign in" className="w-full">
                 <TabsTrigger value="password" className={TAB}>

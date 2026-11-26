@@ -46,7 +46,6 @@ function renderLogin(store: AuthStore, path = '/login/') {
   );
 }
 
-
 // Cycle 2 audit P0-1: the phone tab exists only behind VITE_FEATURE_PHONE_SIGNIN, and even then
 // only an explicit +91 number is accepted.
 vi.mock('@/config/features', async importOriginal => {
@@ -77,7 +76,9 @@ describe('LoginPage with the phone sign-in flag on', () => {
     await userEvent.clear(input);
     await userEvent.type(input, '+1 415 555 0100');
     await userEvent.click(screen.getByRole('button', { name: 'Text me a code' }));
-    expect(await screen.findByText(/only available for numbers with the country code \+91/)).toBeVisible();
+    expect(
+      await screen.findByText(/only available for numbers with the country code \+91/),
+    ).toBeVisible();
   });
 });
 

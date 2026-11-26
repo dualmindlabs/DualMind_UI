@@ -101,7 +101,9 @@ describe('PrivateArenaPage', () => {
     expect(calls.find(call => call.url.endsWith('/battle'))?.body).toEqual({ promptIndex: 0 });
 
     await userEvent.click(screen.getByRole('button', { name: 'Both are bad' }));
-    await waitFor(() => expect(screen.getByRole('article', { name: 'Answer A' })).toHaveTextContent('Alpha'));
+    await waitFor(() =>
+      expect(screen.getByRole('article', { name: 'Answer A' })).toHaveTextContent('Alpha'),
+    );
     expect(screen.getByRole('article', { name: 'Answer B' })).toHaveTextContent('Beta');
     expect(calls.find(call => call.url.endsWith('/vote'))?.body).toEqual({
       battleId: 'b1',
@@ -144,6 +146,8 @@ describe('PrivateArenaPage', () => {
     const pro = screen.getByTestId('private-pro');
     expect(pro).toHaveTextContent('Pro (coming soon)');
     expect(pro).toHaveTextContent('Nothing to buy today');
-    expect(screen.queryByRole('button', { name: /upgrade|subscribe|pay/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /upgrade|subscribe|pay/i }),
+    ).not.toBeInTheDocument();
   });
 });

@@ -5,7 +5,8 @@
  * `POST /api/arena/guest-battle`, which verifies it server-side with the secret key.
  */
 
-export const TURNSTILE_SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+export const TURNSTILE_SRC =
+  'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
 
 interface TurnstileApi {
   render: (

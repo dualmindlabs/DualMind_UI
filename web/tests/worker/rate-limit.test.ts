@@ -347,7 +347,8 @@ describe('cache hits on public reads', () => {
   const NOW = 1_000_000_000;
 
   it('keeps the cache key and window in step with the leaderboard cache', async () => {
-    const { CACHE_KEY_PATH, STALE_SECONDS } = await import('../../../server/v2/leaderboard/cache.ts');
+    const { CACHE_KEY_PATH, STALE_SECONDS } =
+      await import('../../../server/v2/leaderboard/cache.ts');
     expect(LEADERBOARD_CACHE_KEY_PATH).toBe(CACHE_KEY_PATH);
     expect(LEADERBOARD_CACHE_MAX_AGE_MS).toBe(STALE_SECONDS * 1000);
   });
@@ -363,19 +364,29 @@ describe('cache hits on public reads', () => {
   it.each([
     ['a miss', cacheWith(null), 'GET', '/api/v2/leaderboard', {}],
     ['a stale copy', cacheWith(NOW - 700_000), 'GET', '/api/v2/leaderboard', {}],
-    ['a signed-in read', cacheWith(NOW), 'GET', '/api/v2/leaderboard', { authorization: 'Bearer x' }],
+    [
+      'a signed-in read',
+      cacheWith(NOW),
+      'GET',
+      '/api/v2/leaderboard',
+      { authorization: 'Bearer x' },
+    ],
     ['another path', cacheWith(NOW), 'GET', '/api/arena/models', {}],
     ['a POST', cacheWith(NOW), 'POST', '/api/v2/leaderboard', {}],
   ])('is false for %s', async (_name, cache, method, path, headers) => {
-    expect(
-      await isPublicCacheHit(request(method, path, headers), { cache, now: () => NOW }),
-    ).toBe(false);
+    expect(await isPublicCacheHit(request(method, path, headers), { cache, now: () => NOW })).toBe(
+      false,
+    );
   });
 
   it('is false when there is no cache, and never throws', async () => {
-    expect(await isPublicCacheHit(request('GET', '/api/v2/leaderboard'), { cache: null })).toBe(false);
+    expect(await isPublicCacheHit(request('GET', '/api/v2/leaderboard'), { cache: null })).toBe(
+      false,
+    );
     const broken = { match: vi.fn(() => Promise.reject(new Error('boom'))) };
-    expect(await isPublicCacheHit(request('GET', '/api/v2/leaderboard'), { cache: broken })).toBe(false);
+    expect(await isPublicCacheHit(request('GET', '/api/v2/leaderboard'), { cache: broken })).toBe(
+      false,
+    );
   });
 
   it('checkRateLimit does not count a read that is a cache hit', async () => {

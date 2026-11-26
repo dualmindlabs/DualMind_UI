@@ -25,7 +25,11 @@ function subscribe(onChange: () => void): () => void {
 
 /** The stored choice; null on the server and while hydrating, so the first render matches. */
 function useConsent(): Consent | null {
-  return useSyncExternalStore(subscribe, () => readConsent(), () => null);
+  return useSyncExternalStore(
+    subscribe,
+    () => readConsent(),
+    () => null,
+  );
 }
 
 /** The footer button asks the banner to open again. */
@@ -93,9 +97,9 @@ export function AnalyticsConsent() {
         Count visits without tracking you?
       </h2>
       <p className="text-ui-sm text-fg-soft">
-        We would like to measure how many people use the Arena with Cloudflare Web Analytics. It sets
-        no cookies, keeps no personal profile and does not follow you across sites. Your prompts and
-        answers are never part of it. Read the{' '}
+        We would like to measure how many people use the Arena with Cloudflare Web Analytics. It
+        sets no cookies, keeps no personal profile and does not follow you across sites. Your
+        prompts and answers are never part of it. Read the{' '}
         <a href="/privacy/" className="underline underline-offset-4">
           privacy policy
         </a>

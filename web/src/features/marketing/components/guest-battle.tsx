@@ -122,8 +122,8 @@ export function GuestBattle({
             Try one battle, no account
           </h2>
           <p className="text-ui-sm text-fg-soft">
-            Ask one question and read two anonymous answers. Voting and the reveal of the models
-            are for accounts, and a free account takes a minute.
+            Ask one question and read two anonymous answers. Voting and the reveal of the models are
+            for accounts, and a free account takes a minute.
           </p>
         </div>
 
