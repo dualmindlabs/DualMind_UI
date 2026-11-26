@@ -102,7 +102,7 @@ function varyOnAccept(headers) {
 
 /**
  * @param {Request} request
- * @param {{ BACKEND_URL?: string }} env
+ * @param {{ BACKEND_URL?: string, BACKEND_PROXY_SECRET?: string }} env
  * @param {{ fetchImpl?: typeof fetch, timeoutMs?: number, newId?: () => string, log?: (event: object) => void }} [options]
  * @returns {Promise<Response>}
  */
@@ -144,6 +144,16 @@ export async function proxyApi(request, env, options = {}) {
     }
   }
   headers.set('x-request-id', requestId);
+  // The backend limits guests per visitor, so it needs the visitor's address and proof that the
+  // header comes from this proxy. Only CF-Connecting-IP (set by Cloudflare, never the client's
+  // own X-Forwarded-For) is used; both headers are built here, never copied from the request, and
+  // sent only when the secret is configured (a Worker secret, never in the repo).
+  const proxySecret = env?.BACKEND_PROXY_SECRET;
+  const visitorIp = request.headers.get('cf-connecting-ip');
+  if (proxySecret && visitorIp) {
+    headers.set('x-dualmind-proxy-secret', proxySecret);
+    headers.set('x-dualmind-client-ip', visitorIp);
+  }
   if (alias) {
     headers.set('content-type', 'application/json');
     headers.set('accept', ALIAS_ACCEPT);

@@ -133,6 +133,7 @@ Fixed in the cycle 4 PR for [#136](https://github.com/dualmindlabs/DualMind_UI/i
 - **The waitlist share image** (`waitlist-worker/public/og.jpg`) still shows an "Enter the arena" button on a page where nobody can enter; the picture needs a new file name when it is redrawn.
 - **Retired models**: until the API sends `active` on every row, `web/src/features/leaderboard/lib/retired.ts` names them by hand.
 - **Ranks differ** between the page (rated models only) and `/leaderboard.md`, the crawler table and the ItemList (the API's `eloRank`); the fix belongs in the leaderboard service.
+- **Owner action: proxy secret.** The Worker now sends the visitor address (`X-DualMind-Client-IP`) and `X-DualMind-Proxy-Secret` to the API when the Worker secret `BACKEND_PROXY_SECRET` is set; set the same value as `Limits__TrustedProxySecret` on the API, or every guest still counts as one address.
 - **The cookie list** now covers every key the app writes; add a new key there when you add one.
 
 ## Related issues in the other repo

@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Guest battle and private arena** render answers as Markdown (the hardened renderer, loaded as its own chunk); the privacy and cookie pages cover guest prompts, Turnstile and the storage keys they had left out.
 - **Product**: "battles left today" counters (hidden when `GET /api/arena/quota` is absent), an "Updated" time on the leaderboard and models pages, "via platform" next to the maker in the vote reveal when the API sends `provider`.
 - **Small fixes**: the prompt counter announces once, the landing handoff keeps up to 8,000 characters, only prompt errors say "Edit your prompt" (with "Put the prompt back"), "Receipts are off today" on the methodology page, `robots.txt` lets crawlers read `/api/v2/leaderboard` and `/api/v2/openapi.json`, the About page says the source is source-available.
+- **Proxy**: `/api` forwards `CF-Connecting-IP` as `X-DualMind-Client-IP` with `X-DualMind-Proxy-Secret` (Worker secret `BACKEND_PROXY_SECRET`, skipped when unset), so the API's guest limits and quota work per visitor.
 - **CI** also runs for pull requests whose base is `cycle3/truth-and-trust`.
 
 ### Cycle 3 truth and trust ([#134](https://github.com/dualmindlabs/DualMind_UI/issues/134))

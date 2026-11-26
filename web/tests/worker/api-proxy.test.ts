@@ -38,6 +38,48 @@ const json = (body: unknown, init: ResponseInit = {}) =>
     headers: { 'content-type': 'application/json', ...(init.headers ?? {}) },
   });
 
+describe('visitor address for the backend', () => {
+  const secretEnv = { BACKEND_PROXY_SECRET: 's3cret' };
+
+  it('sends the Cloudflare visitor address and the secret, replacing client copies', async () => {
+    const upstream = fakeUpstream(() => json({ ok: true }));
+    await proxyApi(
+      apiRequest('/api/arena/quota', {
+        headers: {
+          'CF-Connecting-IP': '203.0.113.9',
+          'X-Forwarded-For': '1.2.3.4',
+          'X-DualMind-Client-IP': '6.6.6.6',
+          'X-DualMind-Proxy-Secret': 'guess',
+        },
+      }),
+      secretEnv,
+      { fetchImpl: upstream.fetchImpl },
+    );
+    const sent = upstream.calls[0]?.headers;
+    expect(sent?.get('x-dualmind-client-ip')).toBe('203.0.113.9');
+    expect(sent?.get('x-dualmind-proxy-secret')).toBe('s3cret');
+    expect(sent?.get('x-forwarded-for')).toBeNull();
+  });
+
+  it('sends neither header without the secret, and never a client-supplied one', async () => {
+    const upstream = fakeUpstream(() => json({ ok: true }));
+    await proxyApi(
+      apiRequest('/api/arena/quota', {
+        headers: {
+          'CF-Connecting-IP': '203.0.113.9',
+          'X-DualMind-Client-IP': '6.6.6.6',
+          'X-DualMind-Proxy-Secret': 'guess',
+        },
+      }),
+      {},
+      { fetchImpl: upstream.fetchImpl },
+    );
+    const sent = upstream.calls[0]?.headers;
+    expect(sent?.get('x-dualmind-client-ip')).toBeNull();
+    expect(sent?.get('x-dualmind-proxy-secret')).toBeNull();
+  });
+});
+
 describe('request side', () => {
   it('forwards only the allowed headers, plus a request id', async () => {
     const upstream = fakeUpstream(() => json({ ok: true }));
