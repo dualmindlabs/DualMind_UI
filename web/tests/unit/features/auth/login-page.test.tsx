@@ -53,7 +53,7 @@ describe('LoginPage', () => {
     expect(screen.getByText('VITE_SUPABASE_URL')).toBeInTheDocument();
   });
 
-  it('offers OAuth, password and email code to a signed-out visitor, and no phone tab', async () => {
+  it('offers OAuth, password and email code to a signed-out visitor, and no phone tab', () => {
     renderLogin(storeWith(null));
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
       'Welcome back to the Arena.',

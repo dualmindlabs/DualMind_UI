@@ -63,7 +63,7 @@ export function trackingBlocked(
     : (navigator as unknown as SignalSource),
   win: { doNotTrack?: string | null } | undefined = typeof window === 'undefined'
     ? undefined
-    : (window as unknown as { doNotTrack?: string | null }),
+    : window,
 ): boolean {
   const dnt = [source?.doNotTrack, source?.msDoNotTrack, win?.doNotTrack];
   if (dnt.some(value => value === '1' || value === 'yes')) return true;

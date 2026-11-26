@@ -10,7 +10,7 @@ import { LoginPage } from '@/features/auth';
 import { createApiClient, createQueryClient } from '@/lib/api';
 import { type AuthStore, createAuthStore } from '@/lib/supabase';
 
-import { fakeSession, memoryStorage } from '../../lib/supabase/helpers';
+import { type fakeSession, memoryStorage } from '../../lib/supabase/helpers';
 
 const CONFIG = {
   url: 'https://abcd.supabase.co',

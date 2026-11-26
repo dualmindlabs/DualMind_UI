@@ -66,7 +66,7 @@ const arena = { id: 'a1', name: 'Support replies', promptCount: 2, battlesDone: 
 
 describe('PrivateArenaPage', () => {
   it('lists your arena, runs a blind battle, reveals the models after the vote', async () => {
-    const { fetch, calls } = scriptedFetch(async call => {
+    const { fetch, calls } = scriptedFetch(call => {
       const { url } = call;
       const method = call.init.method;
       if (url === '/api/private-arenas' && method === 'GET') return jsonResponse([arena]);
@@ -113,7 +113,7 @@ describe('PrivateArenaPage', () => {
   });
 
   it('creates an arena from one prompt per line and checks the form first', async () => {
-    const { fetch, calls } = scriptedFetch(async call => {
+    const { fetch, calls } = scriptedFetch(call => {
       if (call.init.method === 'POST') return jsonResponse({ id: 'a2' });
       return jsonResponse([]);
     });

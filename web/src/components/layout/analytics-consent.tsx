@@ -59,6 +59,7 @@ export function AnalyticsConsent() {
   const consent = useConsent();
   const reopen = useReopen();
   const [mounted, setMounted] = useState(false);
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- client-only flag; the first render must match the prerendered HTML
   useEffect(() => setMounted(true), []);
   const blocked = mounted && trackingBlocked();
 
@@ -116,6 +117,7 @@ export function AnalyticsConsent() {
  */
 export function AnalyticsChoicesButton({ className }: { className?: string }) {
   const [shown, setShown] = useState(false);
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- client-only flag; the first render must match the prerendered HTML
   useEffect(() => setShown(featureConfig.analyticsToken !== null && !trackingBlocked()), []);
   if (!shown) return null;
   return (

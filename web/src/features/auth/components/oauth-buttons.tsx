@@ -8,7 +8,6 @@ import { copyText } from '@/lib/utils/clipboard';
 import { detectInAppBrowser } from '@/lib/utils/in-app-browser';
 
 import { useRedirectTarget } from '../hooks/use-redirect-target';
-
 import { GitHubMark, GoogleMark } from './provider-icons';
 
 type Provider = 'google' | 'github';
@@ -71,6 +70,7 @@ export function OAuthButtons({
   const [pending, setPending] = useState<Provider | null>(null);
   // The user agent is only known in the browser; the first render matches the prerendered HTML.
   const [inApp, setInApp] = useState<string | null>(null);
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- the user agent is client-only
   useEffect(() => setInApp(detectInAppBrowser(navigator.userAgent)), []);
 
   const start = async (provider: Provider) => {

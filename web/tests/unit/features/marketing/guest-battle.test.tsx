@@ -87,7 +87,7 @@ describe('GuestBattle', () => {
     expect(window.sessionStorage.getItem(PROMPT_DRAFT_KEY)).toContain('What is recursion?');
   });
 
-  it('keeps the button off until there is a prompt and a token, and caps the prompt at 500', async () => {
+  it('keeps the button off until there is a prompt and a token, and caps the prompt at 500', () => {
     renderGuest(jsonResponse({}));
     const input = screen.getByLabelText('Your prompt for the free battle');
     expect(input).toHaveAttribute('maxlength', '500');

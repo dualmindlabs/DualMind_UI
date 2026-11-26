@@ -59,7 +59,7 @@ describe('saveAuthHandoff', () => {
     const other = memory();
     savePromptDraft('x', other, NOW);
     saveAuthHandoff('https://evil.test/', { local: other, session: other, now: NOW }, ORIGIN);
-    expect(JSON.parse(other.data.get(AUTH_HANDOFF_KEY) ?? '{}').redirect).toBe('/');
+    expect(JSON.parse(other.data.get(AUTH_HANDOFF_KEY) ?? '{}')).toMatchObject({ redirect: '/' });
   });
 
   it('survives blocked storage', () => {
